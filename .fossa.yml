@@ -1,0 +1,9 @@
+version: 3
+
+server: https://app.fossa.com
+
+project:
+  id: github.com/openfga/java-sdk
+  name: github.com/openfga/java-sdk
+  link: openfga.dev
+  url: github.com/openfga/java-sdk
