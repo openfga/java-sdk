@@ -10,13 +10,13 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.api.invoker;
+package dev.openfga.api.client;
 
 import java.net.http.HttpHeaders;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class ApiException extends Exception {
     private int code = 0;
     private HttpHeaders responseHeaders = null;

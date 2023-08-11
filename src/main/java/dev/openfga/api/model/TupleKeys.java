@@ -26,7 +26,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({TupleKeys.JSON_PROPERTY_TUPLE_KEYS})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class TupleKeys {
     public static final String JSON_PROPERTY_TUPLE_KEYS = "tuple_keys";
     private List<TupleKey> tupleKeys = new ArrayList<>();

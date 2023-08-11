@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.api.invoker;
+package dev.openfga.api.client;
 
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import java.text.DateFormat;

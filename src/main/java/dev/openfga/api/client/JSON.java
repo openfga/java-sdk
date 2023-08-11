@@ -1,4 +1,4 @@
-package dev.openfga.api.invoker;
+package dev.openfga.api.client;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
@@ -14,7 +14,7 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class JSON {
     private ObjectMapper mapper;
 

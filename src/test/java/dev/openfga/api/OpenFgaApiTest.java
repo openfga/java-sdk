@@ -18,8 +18,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
-import dev.openfga.api.invoker.ApiClient;
-import dev.openfga.api.invoker.ApiException;
+import dev.openfga.api.client.*;
 import dev.openfga.api.model.*;
 import java.time.Duration;
 import java.util.List;

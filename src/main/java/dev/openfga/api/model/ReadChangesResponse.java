@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ReadChangesResponse.JSON_PROPERTY_CHANGES, ReadChangesResponse.JSON_PROPERTY_CONTINUATION_TOKEN})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class ReadChangesResponse {
     public static final String JSON_PROPERTY_CHANGES = "changes";
     private List<TupleChange> changes = new ArrayList<>();

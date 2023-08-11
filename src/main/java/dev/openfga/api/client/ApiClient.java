@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.api.invoker;
+package dev.openfga.api.client;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -52,7 +52,7 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
  */
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class ApiClient {
 
     private HttpClient.Builder builder;

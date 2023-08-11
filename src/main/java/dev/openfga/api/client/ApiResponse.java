@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.api.invoker;
+package dev.openfga.api.client;
 
 import java.util.List;
 import java.util.Map;

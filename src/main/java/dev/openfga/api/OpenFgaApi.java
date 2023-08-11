@@ -14,10 +14,10 @@ package dev.openfga.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.api.invoker.ApiClient;
-import dev.openfga.api.invoker.ApiException;
-import dev.openfga.api.invoker.ApiResponse;
-import dev.openfga.api.invoker.Pair;
+import dev.openfga.api.client.ApiClient;
+import dev.openfga.api.client.ApiException;
+import dev.openfga.api.client.ApiResponse;
+import dev.openfga.api.client.Pair;
 import dev.openfga.api.model.CheckRequest;
 import dev.openfga.api.model.CheckResponse;
 import dev.openfga.api.model.CreateStoreRequest;
@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-10T23:45:10.540161Z[Etc/UTC]")
+        date = "2023-08-11T21:07:38.017940Z[Etc/UTC]")
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
