@@ -33,7 +33,7 @@ import java.util.StringJoiner;
 })
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class Userset {
     public static final String JSON_PROPERTY_THIS = "this";
     private Object _this;

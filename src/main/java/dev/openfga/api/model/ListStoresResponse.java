@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ListStoresResponse.JSON_PROPERTY_STORES, ListStoresResponse.JSON_PROPERTY_CONTINUATION_TOKEN})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class ListStoresResponse {
     public static final String JSON_PROPERTY_STORES = "stores";
     private List<Store> stores = new ArrayList<>();

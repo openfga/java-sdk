@@ -75,10 +75,15 @@ gradlew
 gradlew.bat
 settings.gradle
 src/main/java/dev/openfga/api/OpenFgaApi.java
+src/main/java/dev/openfga/api/client/ApiBearerToken.java
 src/main/java/dev/openfga/api/client/ApiClient.java
 src/main/java/dev/openfga/api/client/ApiException.java
 src/main/java/dev/openfga/api/client/ApiResponse.java
+src/main/java/dev/openfga/api/client/BaseConfiguration.java
+src/main/java/dev/openfga/api/client/ClientCredentials.java
 src/main/java/dev/openfga/api/client/Configuration.java
+src/main/java/dev/openfga/api/client/Configuration.java
+src/main/java/dev/openfga/api/client/CredentialsMethod.java
 src/main/java/dev/openfga/api/client/JSON.java
 src/main/java/dev/openfga/api/client/Pair.java
 src/main/java/dev/openfga/api/client/RFC3339DateFormat.java
@@ -137,9 +142,13 @@ src/main/java/dev/openfga/api/model/WriteAssertionsRequest.java
 src/main/java/dev/openfga/api/model/WriteAuthorizationModelRequest.java
 src/main/java/dev/openfga/api/model/WriteAuthorizationModelResponse.java
 src/main/java/dev/openfga/api/model/WriteRequest.java
+src/main/java/dev/openfga/errors/FgaInvalidParameterException.java
+src/main/java/dev/openfga/util/StringUtil.java
 src/test-integration/java/dev/openfga/api/OpenFgaApiIntegrationTest.java
 src/test/java/dev/openfga/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/api/OpenFgaApiTest.java
+src/test/java/dev/openfga/api/client/ClientCredentialsTest.java
+src/test/java/dev/openfga/api/client/ConfigurationTest.java
 src/test/java/dev/openfga/api/model/AnyTest.java
 src/test/java/dev/openfga/api/model/AssertionTest.java
 src/test/java/dev/openfga/api/model/AuthorizationModelTest.java
@@ -194,3 +203,4 @@ src/test/java/dev/openfga/api/model/WriteAssertionsRequestTest.java
 src/test/java/dev/openfga/api/model/WriteAuthorizationModelRequestTest.java
 src/test/java/dev/openfga/api/model/WriteAuthorizationModelResponseTest.java
 src/test/java/dev/openfga/api/model/WriteRequestTest.java
+src/test/java/dev/openfga/util/StringUtilTest.java

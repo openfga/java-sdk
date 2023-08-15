@@ -26,7 +26,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Assertion.JSON_PROPERTY_TUPLE_KEY, Assertion.JSON_PROPERTY_EXPECTATION})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class Assertion {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
     private TupleKey tupleKey;

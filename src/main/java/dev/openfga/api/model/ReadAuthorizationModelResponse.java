@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ReadAuthorizationModelResponse.JSON_PROPERTY_AUTHORIZATION_MODEL})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class ReadAuthorizationModelResponse {
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL = "authorization_model";
     private AuthorizationModel authorizationModel;

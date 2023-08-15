@@ -26,7 +26,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Nodes.JSON_PROPERTY_NODES})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class Nodes {
     public static final String JSON_PROPERTY_NODES = "nodes";
     private List<Node> nodes = new ArrayList<>();

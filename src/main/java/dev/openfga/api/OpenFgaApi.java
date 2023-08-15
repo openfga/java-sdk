@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.api.client.ApiClient;
 import dev.openfga.api.client.ApiException;
 import dev.openfga.api.client.ApiResponse;
+import dev.openfga.api.client.Configuration;
 import dev.openfga.api.client.Pair;
 import dev.openfga.api.model.CheckRequest;
 import dev.openfga.api.model.CheckResponse;
@@ -52,26 +53,24 @@ import java.util.function.Consumer;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-11T21:23:49.205789Z[Etc/UTC]")
+        date = "2023-08-16T16:59:21.258606Z[Etc/UTC]")
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
+    private final Configuration memberVarConfiguration;
     private final String memberVarBaseUri;
-    private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Duration memberVarReadTimeout;
+    private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-    public OpenFgaApi() {
-        this(new ApiClient());
-    }
-
-    public OpenFgaApi(ApiClient apiClient) {
+    public OpenFgaApi(ApiClient apiClient, Configuration configuration) {
         memberVarHttpClient = apiClient.getHttpClient();
         memberVarObjectMapper = apiClient.getObjectMapper();
-        memberVarBaseUri = apiClient.getBaseUri();
+        memberVarConfiguration = configuration;
+        memberVarBaseUri = configuration.getApiUrl();
+        memberVarReadTimeout = configuration.getReadTimeout();
         memberVarInterceptor = apiClient.getRequestInterceptor();
-        memberVarReadTimeout = apiClient.getReadTimeout();
         memberVarResponseInterceptor = apiClient.getResponseInterceptor();
         memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
     }

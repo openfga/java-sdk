@@ -18,12 +18,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.api.client.*;
 import dev.openfga.api.model.*;
+import java.net.http.HttpClient;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class OpenFgaApiIntegrationTest {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private static final String DEFAULT_AUTH_MODEL =
             "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
@@ -36,8 +37,9 @@ public class OpenFgaApiIntegrationTest {
 
     @BeforeEach
     public void initializeApi() {
-        ApiClient apiClient = new ApiClient().setHost("localhost").setPort(8080);
-        api = new OpenFgaApi(apiClient);
+        Configuration apiConfig = new Configuration("http://localhost:8080");
+        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), mapper);
+        api = new OpenFgaApi(apiClient, apiConfig);
     }
 
     @Test
@@ -64,8 +66,8 @@ public class OpenFgaApiIntegrationTest {
 
         // Then
         ListStoresResponse response = api.listStores(100, null);
-        boolean itWasDeleted = response.getStores().stream().map(Store::getName).noneMatch(storeName::equals);
-        assertTrue(itWasDeleted, String.format("No stores should remain with the name %s.", storeName));
+        boolean itWasDeleted = response.getStores().stream().map(Store::getId).noneMatch(storeId::equals);
+        assertTrue(itWasDeleted, String.format("No stores should remain with the id %s.", storeId));
     }
 
     @Test
