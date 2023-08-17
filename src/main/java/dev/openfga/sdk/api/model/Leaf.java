@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Leaf.JSON_PROPERTY_USERS, Leaf.JSON_PROPERTY_COMPUTED, Leaf.JSON_PROPERTY_TUPLE_TO_USERSET})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-17T22:31:33.475227Z[Etc/UTC]")
+        date = "2023-08-17T22:34:59.729055Z[Etc/UTC]")
 public class Leaf {
     public static final String JSON_PROPERTY_USERS = "users";
     private Users users;

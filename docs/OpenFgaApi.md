@@ -39,7 +39,7 @@ All URIs are relative to *http://localhost*
 
 ## check
 
-> CheckResponse check(storeId, body)
+> CompletableFuture<CheckResponse> check(storeId, body)
 
 Check whether a user is authorized to access an object
 
@@ -54,6 +54,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -64,8 +65,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         CheckRequest body = new CheckRequest(); // CheckRequest | 
         try {
-            CheckResponse result = apiInstance.check(storeId, body);
-            System.out.println(result);
+            CompletableFuture<CheckResponse> result = apiInstance.check(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#check");
             System.err.println("Status code: " + e.getCode());
@@ -87,7 +88,7 @@ public class Example {
 
 ### Return type
 
-[**CheckResponse**](CheckResponse.md)
+CompletableFuture<[**CheckResponse**](CheckResponse.md)>
 
 
 ### Authorization
@@ -109,7 +110,7 @@ No authorization required
 
 ## checkWithHttpInfo
 
-> ApiResponse<CheckResponse> check checkWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<CheckResponse>> check checkWithHttpInfo(storeId, body)
 
 Check whether a user is authorized to access an object
 
@@ -125,6 +126,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -135,10 +137,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         CheckRequest body = new CheckRequest(); // CheckRequest | 
         try {
-            ApiResponse<CheckResponse> response = apiInstance.checkWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<CheckResponse>> response = apiInstance.checkWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#check");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#check");
             System.err.println("Status code: " + e.getCode());
@@ -160,7 +169,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**CheckResponse**](CheckResponse.md)>
+CompletableFuture<ApiResponse<[**CheckResponse**](CheckResponse.md)>>
 
 
 ### Authorization
@@ -183,7 +192,7 @@ No authorization required
 
 ## createStore
 
-> CreateStoreResponse createStore(body)
+> CompletableFuture<CreateStoreResponse> createStore(body)
 
 Create a store
 
@@ -198,6 +207,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -207,8 +217,8 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         CreateStoreRequest body = new CreateStoreRequest(); // CreateStoreRequest | 
         try {
-            CreateStoreResponse result = apiInstance.createStore(body);
-            System.out.println(result);
+            CompletableFuture<CreateStoreResponse> result = apiInstance.createStore(body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#createStore");
             System.err.println("Status code: " + e.getCode());
@@ -229,7 +239,7 @@ public class Example {
 
 ### Return type
 
-[**CreateStoreResponse**](CreateStoreResponse.md)
+CompletableFuture<[**CreateStoreResponse**](CreateStoreResponse.md)>
 
 
 ### Authorization
@@ -251,7 +261,7 @@ No authorization required
 
 ## createStoreWithHttpInfo
 
-> ApiResponse<CreateStoreResponse> createStore createStoreWithHttpInfo(body)
+> CompletableFuture<ApiResponse<CreateStoreResponse>> createStore createStoreWithHttpInfo(body)
 
 Create a store
 
@@ -267,6 +277,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -276,10 +287,17 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         CreateStoreRequest body = new CreateStoreRequest(); // CreateStoreRequest | 
         try {
-            ApiResponse<CreateStoreResponse> response = apiInstance.createStoreWithHttpInfo(body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<CreateStoreResponse>> response = apiInstance.createStoreWithHttpInfo(body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#createStore");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#createStore");
             System.err.println("Status code: " + e.getCode());
@@ -300,7 +318,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**CreateStoreResponse**](CreateStoreResponse.md)>
+CompletableFuture<ApiResponse<[**CreateStoreResponse**](CreateStoreResponse.md)>>
 
 
 ### Authorization
@@ -323,7 +341,7 @@ No authorization required
 
 ## deleteStore
 
-> void deleteStore(storeId)
+> CompletableFuture<Void> deleteStore(storeId)
 
 Delete a store
 
@@ -338,6 +356,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -347,7 +366,7 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         String storeId = "storeId_example"; // String | 
         try {
-            apiInstance.deleteStore(storeId);
+            CompletableFuture<Void> result = apiInstance.deleteStore(storeId);
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#deleteStore");
             System.err.println("Status code: " + e.getCode());
@@ -369,7 +388,7 @@ public class Example {
 ### Return type
 
 
-null (empty response body)
+CompletableFuture<void> (empty response body)
 
 ### Authorization
 
@@ -390,7 +409,7 @@ No authorization required
 
 ## deleteStoreWithHttpInfo
 
-> ApiResponse<Void> deleteStore deleteStoreWithHttpInfo(storeId)
+> CompletableFuture<ApiResponse<Void>> deleteStore deleteStoreWithHttpInfo(storeId)
 
 Delete a store
 
@@ -406,6 +425,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -415,9 +435,16 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         String storeId = "storeId_example"; // String | 
         try {
-            ApiResponse<Void> response = apiInstance.deleteStoreWithHttpInfo(storeId);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
+            CompletableFuture<ApiResponse<Void>> response = apiInstance.deleteStoreWithHttpInfo(storeId);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#deleteStore");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#deleteStore");
             System.err.println("Status code: " + e.getCode());
@@ -439,7 +466,7 @@ public class Example {
 ### Return type
 
 
-ApiResponse<Void>
+CompletableFuture<ApiResponse<Void>>
 
 ### Authorization
 
@@ -461,7 +488,7 @@ No authorization required
 
 ## expand
 
-> ExpandResponse expand(storeId, body)
+> CompletableFuture<ExpandResponse> expand(storeId, body)
 
 Expand all relationships in userset tree format, and following userset rewrite rules.  Useful to reason about and debug a certain relationship
 
@@ -476,6 +503,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -486,8 +514,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ExpandRequest body = new ExpandRequest(); // ExpandRequest | 
         try {
-            ExpandResponse result = apiInstance.expand(storeId, body);
-            System.out.println(result);
+            CompletableFuture<ExpandResponse> result = apiInstance.expand(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#expand");
             System.err.println("Status code: " + e.getCode());
@@ -509,7 +537,7 @@ public class Example {
 
 ### Return type
 
-[**ExpandResponse**](ExpandResponse.md)
+CompletableFuture<[**ExpandResponse**](ExpandResponse.md)>
 
 
 ### Authorization
@@ -531,7 +559,7 @@ No authorization required
 
 ## expandWithHttpInfo
 
-> ApiResponse<ExpandResponse> expand expandWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<ExpandResponse>> expand expandWithHttpInfo(storeId, body)
 
 Expand all relationships in userset tree format, and following userset rewrite rules.  Useful to reason about and debug a certain relationship
 
@@ -547,6 +575,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -557,10 +586,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ExpandRequest body = new ExpandRequest(); // ExpandRequest | 
         try {
-            ApiResponse<ExpandResponse> response = apiInstance.expandWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ExpandResponse>> response = apiInstance.expandWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#expand");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#expand");
             System.err.println("Status code: " + e.getCode());
@@ -582,7 +618,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ExpandResponse**](ExpandResponse.md)>
+CompletableFuture<ApiResponse<[**ExpandResponse**](ExpandResponse.md)>>
 
 
 ### Authorization
@@ -605,7 +641,7 @@ No authorization required
 
 ## getStore
 
-> GetStoreResponse getStore(storeId)
+> CompletableFuture<GetStoreResponse> getStore(storeId)
 
 Get a store
 
@@ -620,6 +656,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -629,8 +666,8 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         String storeId = "storeId_example"; // String | 
         try {
-            GetStoreResponse result = apiInstance.getStore(storeId);
-            System.out.println(result);
+            CompletableFuture<GetStoreResponse> result = apiInstance.getStore(storeId);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#getStore");
             System.err.println("Status code: " + e.getCode());
@@ -651,7 +688,7 @@ public class Example {
 
 ### Return type
 
-[**GetStoreResponse**](GetStoreResponse.md)
+CompletableFuture<[**GetStoreResponse**](GetStoreResponse.md)>
 
 
 ### Authorization
@@ -673,7 +710,7 @@ No authorization required
 
 ## getStoreWithHttpInfo
 
-> ApiResponse<GetStoreResponse> getStore getStoreWithHttpInfo(storeId)
+> CompletableFuture<ApiResponse<GetStoreResponse>> getStore getStoreWithHttpInfo(storeId)
 
 Get a store
 
@@ -689,6 +726,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -698,10 +736,17 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         String storeId = "storeId_example"; // String | 
         try {
-            ApiResponse<GetStoreResponse> response = apiInstance.getStoreWithHttpInfo(storeId);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<GetStoreResponse>> response = apiInstance.getStoreWithHttpInfo(storeId);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#getStore");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#getStore");
             System.err.println("Status code: " + e.getCode());
@@ -722,7 +767,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**GetStoreResponse**](GetStoreResponse.md)>
+CompletableFuture<ApiResponse<[**GetStoreResponse**](GetStoreResponse.md)>>
 
 
 ### Authorization
@@ -745,7 +790,7 @@ No authorization required
 
 ## listObjects
 
-> ListObjectsResponse listObjects(storeId, body)
+> CompletableFuture<ListObjectsResponse> listObjects(storeId, body)
 
 List all objects of the given type that the user has a relation with
 
@@ -760,6 +805,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -770,8 +816,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ListObjectsRequest body = new ListObjectsRequest(); // ListObjectsRequest | 
         try {
-            ListObjectsResponse result = apiInstance.listObjects(storeId, body);
-            System.out.println(result);
+            CompletableFuture<ListObjectsResponse> result = apiInstance.listObjects(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#listObjects");
             System.err.println("Status code: " + e.getCode());
@@ -793,7 +839,7 @@ public class Example {
 
 ### Return type
 
-[**ListObjectsResponse**](ListObjectsResponse.md)
+CompletableFuture<[**ListObjectsResponse**](ListObjectsResponse.md)>
 
 
 ### Authorization
@@ -815,7 +861,7 @@ No authorization required
 
 ## listObjectsWithHttpInfo
 
-> ApiResponse<ListObjectsResponse> listObjects listObjectsWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<ListObjectsResponse>> listObjects listObjectsWithHttpInfo(storeId, body)
 
 List all objects of the given type that the user has a relation with
 
@@ -831,6 +877,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -841,10 +888,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ListObjectsRequest body = new ListObjectsRequest(); // ListObjectsRequest | 
         try {
-            ApiResponse<ListObjectsResponse> response = apiInstance.listObjectsWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ListObjectsResponse>> response = apiInstance.listObjectsWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#listObjects");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#listObjects");
             System.err.println("Status code: " + e.getCode());
@@ -866,7 +920,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ListObjectsResponse**](ListObjectsResponse.md)>
+CompletableFuture<ApiResponse<[**ListObjectsResponse**](ListObjectsResponse.md)>>
 
 
 ### Authorization
@@ -889,7 +943,7 @@ No authorization required
 
 ## listStores
 
-> ListStoresResponse listStores(pageSize, continuationToken)
+> CompletableFuture<ListStoresResponse> listStores(pageSize, continuationToken)
 
 List all stores
 
@@ -904,6 +958,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -914,8 +969,8 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ListStoresResponse result = apiInstance.listStores(pageSize, continuationToken);
-            System.out.println(result);
+            CompletableFuture<ListStoresResponse> result = apiInstance.listStores(pageSize, continuationToken);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#listStores");
             System.err.println("Status code: " + e.getCode());
@@ -937,7 +992,7 @@ public class Example {
 
 ### Return type
 
-[**ListStoresResponse**](ListStoresResponse.md)
+CompletableFuture<[**ListStoresResponse**](ListStoresResponse.md)>
 
 
 ### Authorization
@@ -959,7 +1014,7 @@ No authorization required
 
 ## listStoresWithHttpInfo
 
-> ApiResponse<ListStoresResponse> listStores listStoresWithHttpInfo(pageSize, continuationToken)
+> CompletableFuture<ApiResponse<ListStoresResponse>> listStores listStoresWithHttpInfo(pageSize, continuationToken)
 
 List all stores
 
@@ -975,6 +1030,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -985,10 +1041,17 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ApiResponse<ListStoresResponse> response = apiInstance.listStoresWithHttpInfo(pageSize, continuationToken);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ListStoresResponse>> response = apiInstance.listStoresWithHttpInfo(pageSize, continuationToken);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#listStores");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#listStores");
             System.err.println("Status code: " + e.getCode());
@@ -1010,7 +1073,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ListStoresResponse**](ListStoresResponse.md)>
+CompletableFuture<ApiResponse<[**ListStoresResponse**](ListStoresResponse.md)>>
 
 
 ### Authorization
@@ -1033,7 +1096,7 @@ No authorization required
 
 ## read
 
-> ReadResponse read(storeId, body)
+> CompletableFuture<ReadResponse> read(storeId, body)
 
 Get tuples from the store that matches a query, without following userset rewrite rules
 
@@ -1048,6 +1111,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1058,8 +1122,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ReadRequest body = new ReadRequest(); // ReadRequest | 
         try {
-            ReadResponse result = apiInstance.read(storeId, body);
-            System.out.println(result);
+            CompletableFuture<ReadResponse> result = apiInstance.read(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#read");
             System.err.println("Status code: " + e.getCode());
@@ -1081,7 +1145,7 @@ public class Example {
 
 ### Return type
 
-[**ReadResponse**](ReadResponse.md)
+CompletableFuture<[**ReadResponse**](ReadResponse.md)>
 
 
 ### Authorization
@@ -1103,7 +1167,7 @@ No authorization required
 
 ## readWithHttpInfo
 
-> ApiResponse<ReadResponse> read readWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<ReadResponse>> read readWithHttpInfo(storeId, body)
 
 Get tuples from the store that matches a query, without following userset rewrite rules
 
@@ -1119,6 +1183,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1129,10 +1194,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         ReadRequest body = new ReadRequest(); // ReadRequest | 
         try {
-            ApiResponse<ReadResponse> response = apiInstance.readWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ReadResponse>> response = apiInstance.readWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#read");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#read");
             System.err.println("Status code: " + e.getCode());
@@ -1154,7 +1226,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ReadResponse**](ReadResponse.md)>
+CompletableFuture<ApiResponse<[**ReadResponse**](ReadResponse.md)>>
 
 
 ### Authorization
@@ -1177,7 +1249,7 @@ No authorization required
 
 ## readAssertions
 
-> ReadAssertionsResponse readAssertions(storeId, authorizationModelId)
+> CompletableFuture<ReadAssertionsResponse> readAssertions(storeId, authorizationModelId)
 
 Read assertions for an authorization model ID
 
@@ -1192,6 +1264,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1202,8 +1275,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         String authorizationModelId = "authorizationModelId_example"; // String | 
         try {
-            ReadAssertionsResponse result = apiInstance.readAssertions(storeId, authorizationModelId);
-            System.out.println(result);
+            CompletableFuture<ReadAssertionsResponse> result = apiInstance.readAssertions(storeId, authorizationModelId);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAssertions");
             System.err.println("Status code: " + e.getCode());
@@ -1225,7 +1298,7 @@ public class Example {
 
 ### Return type
 
-[**ReadAssertionsResponse**](ReadAssertionsResponse.md)
+CompletableFuture<[**ReadAssertionsResponse**](ReadAssertionsResponse.md)>
 
 
 ### Authorization
@@ -1247,7 +1320,7 @@ No authorization required
 
 ## readAssertionsWithHttpInfo
 
-> ApiResponse<ReadAssertionsResponse> readAssertions readAssertionsWithHttpInfo(storeId, authorizationModelId)
+> CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertions readAssertionsWithHttpInfo(storeId, authorizationModelId)
 
 Read assertions for an authorization model ID
 
@@ -1263,6 +1336,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1273,10 +1347,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         String authorizationModelId = "authorizationModelId_example"; // String | 
         try {
-            ApiResponse<ReadAssertionsResponse> response = apiInstance.readAssertionsWithHttpInfo(storeId, authorizationModelId);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ReadAssertionsResponse>> response = apiInstance.readAssertionsWithHttpInfo(storeId, authorizationModelId);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#readAssertions");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAssertions");
             System.err.println("Status code: " + e.getCode());
@@ -1298,7 +1379,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ReadAssertionsResponse**](ReadAssertionsResponse.md)>
+CompletableFuture<ApiResponse<[**ReadAssertionsResponse**](ReadAssertionsResponse.md)>>
 
 
 ### Authorization
@@ -1321,7 +1402,7 @@ No authorization required
 
 ## readAuthorizationModel
 
-> ReadAuthorizationModelResponse readAuthorizationModel(storeId, id)
+> CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(storeId, id)
 
 Return a particular version of an authorization model
 
@@ -1336,6 +1417,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1346,8 +1428,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         String id = "id_example"; // String | 
         try {
-            ReadAuthorizationModelResponse result = apiInstance.readAuthorizationModel(storeId, id);
-            System.out.println(result);
+            CompletableFuture<ReadAuthorizationModelResponse> result = apiInstance.readAuthorizationModel(storeId, id);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAuthorizationModel");
             System.err.println("Status code: " + e.getCode());
@@ -1369,7 +1451,7 @@ public class Example {
 
 ### Return type
 
-[**ReadAuthorizationModelResponse**](ReadAuthorizationModelResponse.md)
+CompletableFuture<[**ReadAuthorizationModelResponse**](ReadAuthorizationModelResponse.md)>
 
 
 ### Authorization
@@ -1391,7 +1473,7 @@ No authorization required
 
 ## readAuthorizationModelWithHttpInfo
 
-> ApiResponse<ReadAuthorizationModelResponse> readAuthorizationModel readAuthorizationModelWithHttpInfo(storeId, id)
+> CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModel readAuthorizationModelWithHttpInfo(storeId, id)
 
 Return a particular version of an authorization model
 
@@ -1407,6 +1489,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1417,10 +1500,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         String id = "id_example"; // String | 
         try {
-            ApiResponse<ReadAuthorizationModelResponse> response = apiInstance.readAuthorizationModelWithHttpInfo(storeId, id);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> response = apiInstance.readAuthorizationModelWithHttpInfo(storeId, id);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#readAuthorizationModel");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAuthorizationModel");
             System.err.println("Status code: " + e.getCode());
@@ -1442,7 +1532,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ReadAuthorizationModelResponse**](ReadAuthorizationModelResponse.md)>
+CompletableFuture<ApiResponse<[**ReadAuthorizationModelResponse**](ReadAuthorizationModelResponse.md)>>
 
 
 ### Authorization
@@ -1465,7 +1555,7 @@ No authorization required
 
 ## readAuthorizationModels
 
-> ReadAuthorizationModelsResponse readAuthorizationModels(storeId, pageSize, continuationToken)
+> CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(storeId, pageSize, continuationToken)
 
 Return all the authorization models for a particular store
 
@@ -1480,6 +1570,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1491,8 +1582,8 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ReadAuthorizationModelsResponse result = apiInstance.readAuthorizationModels(storeId, pageSize, continuationToken);
-            System.out.println(result);
+            CompletableFuture<ReadAuthorizationModelsResponse> result = apiInstance.readAuthorizationModels(storeId, pageSize, continuationToken);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAuthorizationModels");
             System.err.println("Status code: " + e.getCode());
@@ -1515,7 +1606,7 @@ public class Example {
 
 ### Return type
 
-[**ReadAuthorizationModelsResponse**](ReadAuthorizationModelsResponse.md)
+CompletableFuture<[**ReadAuthorizationModelsResponse**](ReadAuthorizationModelsResponse.md)>
 
 
 ### Authorization
@@ -1537,7 +1628,7 @@ No authorization required
 
 ## readAuthorizationModelsWithHttpInfo
 
-> ApiResponse<ReadAuthorizationModelsResponse> readAuthorizationModels readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken)
+> CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModels readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken)
 
 Return all the authorization models for a particular store
 
@@ -1553,6 +1644,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1564,10 +1656,17 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ApiResponse<ReadAuthorizationModelsResponse> response = apiInstance.readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> response = apiInstance.readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#readAuthorizationModels");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readAuthorizationModels");
             System.err.println("Status code: " + e.getCode());
@@ -1590,7 +1689,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ReadAuthorizationModelsResponse**](ReadAuthorizationModelsResponse.md)>
+CompletableFuture<ApiResponse<[**ReadAuthorizationModelsResponse**](ReadAuthorizationModelsResponse.md)>>
 
 
 ### Authorization
@@ -1613,7 +1712,7 @@ No authorization required
 
 ## readChanges
 
-> ReadChangesResponse readChanges(storeId, type, pageSize, continuationToken)
+> CompletableFuture<ReadChangesResponse> readChanges(storeId, type, pageSize, continuationToken)
 
 Return a list of all the tuple changes
 
@@ -1628,6 +1727,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1640,8 +1740,8 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ReadChangesResponse result = apiInstance.readChanges(storeId, type, pageSize, continuationToken);
-            System.out.println(result);
+            CompletableFuture<ReadChangesResponse> result = apiInstance.readChanges(storeId, type, pageSize, continuationToken);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readChanges");
             System.err.println("Status code: " + e.getCode());
@@ -1665,7 +1765,7 @@ public class Example {
 
 ### Return type
 
-[**ReadChangesResponse**](ReadChangesResponse.md)
+CompletableFuture<[**ReadChangesResponse**](ReadChangesResponse.md)>
 
 
 ### Authorization
@@ -1687,7 +1787,7 @@ No authorization required
 
 ## readChangesWithHttpInfo
 
-> ApiResponse<ReadChangesResponse> readChanges readChangesWithHttpInfo(storeId, type, pageSize, continuationToken)
+> CompletableFuture<ApiResponse<ReadChangesResponse>> readChanges readChangesWithHttpInfo(storeId, type, pageSize, continuationToken)
 
 Return a list of all the tuple changes
 
@@ -1703,6 +1803,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1715,10 +1816,17 @@ public class Example {
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
         try {
-            ApiResponse<ReadChangesResponse> response = apiInstance.readChangesWithHttpInfo(storeId, type, pageSize, continuationToken);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<ReadChangesResponse>> response = apiInstance.readChangesWithHttpInfo(storeId, type, pageSize, continuationToken);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#readChanges");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#readChanges");
             System.err.println("Status code: " + e.getCode());
@@ -1742,7 +1850,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**ReadChangesResponse**](ReadChangesResponse.md)>
+CompletableFuture<ApiResponse<[**ReadChangesResponse**](ReadChangesResponse.md)>>
 
 
 ### Authorization
@@ -1765,7 +1873,7 @@ No authorization required
 
 ## write
 
-> Object write(storeId, body)
+> CompletableFuture<Object> write(storeId, body)
 
 Add or delete tuples from the store
 
@@ -1780,6 +1888,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1790,8 +1899,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         WriteRequest body = new WriteRequest(); // WriteRequest | 
         try {
-            Object result = apiInstance.write(storeId, body);
-            System.out.println(result);
+            CompletableFuture<Object> result = apiInstance.write(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#write");
             System.err.println("Status code: " + e.getCode());
@@ -1813,7 +1922,7 @@ public class Example {
 
 ### Return type
 
-**Object**
+CompletableFuture<**Object**>
 
 
 ### Authorization
@@ -1835,7 +1944,7 @@ No authorization required
 
 ## writeWithHttpInfo
 
-> ApiResponse<Object> write writeWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<Object>> write writeWithHttpInfo(storeId, body)
 
 Add or delete tuples from the store
 
@@ -1851,6 +1960,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1861,10 +1971,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         WriteRequest body = new WriteRequest(); // WriteRequest | 
         try {
-            ApiResponse<Object> response = apiInstance.writeWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<Object>> response = apiInstance.writeWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#write");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#write");
             System.err.println("Status code: " + e.getCode());
@@ -1886,7 +2003,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<**Object**>
+CompletableFuture<ApiResponse<**Object**>>
 
 
 ### Authorization
@@ -1909,7 +2026,7 @@ No authorization required
 
 ## writeAssertions
 
-> void writeAssertions(storeId, authorizationModelId, body)
+> CompletableFuture<Void> writeAssertions(storeId, authorizationModelId, body)
 
 Upsert assertions for an authorization model ID
 
@@ -1924,6 +2041,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -1935,7 +2053,7 @@ public class Example {
         String authorizationModelId = "authorizationModelId_example"; // String | 
         WriteAssertionsRequest body = new WriteAssertionsRequest(); // WriteAssertionsRequest | 
         try {
-            apiInstance.writeAssertions(storeId, authorizationModelId, body);
+            CompletableFuture<Void> result = apiInstance.writeAssertions(storeId, authorizationModelId, body);
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#writeAssertions");
             System.err.println("Status code: " + e.getCode());
@@ -1959,7 +2077,7 @@ public class Example {
 ### Return type
 
 
-null (empty response body)
+CompletableFuture<void> (empty response body)
 
 ### Authorization
 
@@ -1980,7 +2098,7 @@ No authorization required
 
 ## writeAssertionsWithHttpInfo
 
-> ApiResponse<Void> writeAssertions writeAssertionsWithHttpInfo(storeId, authorizationModelId, body)
+> CompletableFuture<ApiResponse<Void>> writeAssertions writeAssertionsWithHttpInfo(storeId, authorizationModelId, body)
 
 Upsert assertions for an authorization model ID
 
@@ -1996,6 +2114,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -2007,9 +2126,16 @@ public class Example {
         String authorizationModelId = "authorizationModelId_example"; // String | 
         WriteAssertionsRequest body = new WriteAssertionsRequest(); // WriteAssertionsRequest | 
         try {
-            ApiResponse<Void> response = apiInstance.writeAssertionsWithHttpInfo(storeId, authorizationModelId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
+            CompletableFuture<ApiResponse<Void>> response = apiInstance.writeAssertionsWithHttpInfo(storeId, authorizationModelId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#writeAssertions");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#writeAssertions");
             System.err.println("Status code: " + e.getCode());
@@ -2033,7 +2159,7 @@ public class Example {
 ### Return type
 
 
-ApiResponse<Void>
+CompletableFuture<ApiResponse<Void>>
 
 ### Authorization
 
@@ -2055,7 +2181,7 @@ No authorization required
 
 ## writeAuthorizationModel
 
-> WriteAuthorizationModelResponse writeAuthorizationModel(storeId, body)
+> CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(storeId, body)
 
 Create a new authorization model
 
@@ -2070,6 +2196,7 @@ import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -2080,8 +2207,8 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         WriteAuthorizationModelRequest body = new WriteAuthorizationModelRequest(); // WriteAuthorizationModelRequest | 
         try {
-            WriteAuthorizationModelResponse result = apiInstance.writeAuthorizationModel(storeId, body);
-            System.out.println(result);
+            CompletableFuture<WriteAuthorizationModelResponse> result = apiInstance.writeAuthorizationModel(storeId, body);
+            System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#writeAuthorizationModel");
             System.err.println("Status code: " + e.getCode());
@@ -2103,7 +2230,7 @@ public class Example {
 
 ### Return type
 
-[**WriteAuthorizationModelResponse**](WriteAuthorizationModelResponse.md)
+CompletableFuture<[**WriteAuthorizationModelResponse**](WriteAuthorizationModelResponse.md)>
 
 
 ### Authorization
@@ -2125,7 +2252,7 @@ No authorization required
 
 ## writeAuthorizationModelWithHttpInfo
 
-> ApiResponse<WriteAuthorizationModelResponse> writeAuthorizationModel writeAuthorizationModelWithHttpInfo(storeId, body)
+> CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModel writeAuthorizationModelWithHttpInfo(storeId, body)
 
 Create a new authorization model
 
@@ -2141,6 +2268,7 @@ import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
 
 public class Example {
     public static void main(String[] args) {
@@ -2151,10 +2279,17 @@ public class Example {
         String storeId = "storeId_example"; // String | 
         WriteAuthorizationModelRequest body = new WriteAuthorizationModelRequest(); // WriteAuthorizationModelRequest | 
         try {
-            ApiResponse<WriteAuthorizationModelResponse> response = apiInstance.writeAuthorizationModelWithHttpInfo(storeId, body);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
+            CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> response = apiInstance.writeAuthorizationModelWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#writeAuthorizationModel");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#writeAuthorizationModel");
             System.err.println("Status code: " + e.getCode());
@@ -2176,7 +2311,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**WriteAuthorizationModelResponse**](WriteAuthorizationModelResponse.md)>
+CompletableFuture<ApiResponse<[**WriteAuthorizationModelResponse**](WriteAuthorizationModelResponse.md)>>
 
 
 ### Authorization

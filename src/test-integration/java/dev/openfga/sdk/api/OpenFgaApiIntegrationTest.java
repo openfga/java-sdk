@@ -43,20 +43,20 @@ public class OpenFgaApiIntegrationTest {
     }
 
     @Test
-    public void createStore() throws ApiException {
+    public void createStore() throws Exception {
         // Given
         String storeName = thisTestName();
         CreateStoreRequest createStoreRequest = new CreateStoreRequest().name(storeName);
 
         // When
-        CreateStoreResponse response = api.createStore(createStoreRequest);
+        CreateStoreResponse response = api.createStore(createStoreRequest).get();
 
         // Then
         assertEquals("OpenFgaApiIntegrationTest.createStore", response.getName());
     }
 
     @Test
-    public void deleteStore() throws ApiException {
+    public void deleteStore() throws Exception {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
@@ -65,26 +65,26 @@ public class OpenFgaApiIntegrationTest {
         api.deleteStore(storeId);
 
         // Then
-        ListStoresResponse response = api.listStores(100, null);
+        ListStoresResponse response = api.listStores(100, null).get();
         boolean itWasDeleted = response.getStores().stream().map(Store::getId).noneMatch(storeId::equals);
         assertTrue(itWasDeleted, String.format("No stores should remain with the id %s.", storeId));
     }
 
     @Test
-    public void getStore() throws ApiException {
+    public void getStore() throws Exception {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
 
         // When
-        GetStoreResponse response = api.getStore(storeId);
+        GetStoreResponse response = api.getStore(storeId).get();
 
         // Then
         assertEquals(storeName, response.getName());
     }
 
     @Test
-    public void listStores() throws ApiException {
+    public void listStores() throws Exception {
         // Given
         String testName = thisTestName();
         String store1 = testName + "-store1";
@@ -96,7 +96,7 @@ public class OpenFgaApiIntegrationTest {
         }
 
         // When
-        ListStoresResponse response = api.listStores(100, null);
+        ListStoresResponse response = api.listStores(100, null).get();
 
         // Then
         for (String store : stores) {
@@ -113,7 +113,8 @@ public class OpenFgaApiIntegrationTest {
         String authModelId = writeAuthModel(storeId);
 
         // When
-        ReadAuthorizationModelResponse response = api.readAuthorizationModel(storeId, authModelId);
+        ReadAuthorizationModelResponse response =
+                api.readAuthorizationModel(storeId, authModelId).get();
 
         // Then
         AuthorizationModel authModel = response.getAuthorizationModel();
@@ -132,7 +133,8 @@ public class OpenFgaApiIntegrationTest {
         String authModelId = writeAuthModel(storeId);
 
         // When
-        ReadAuthorizationModelsResponse response = api.readAuthorizationModels(storeId, 100, null);
+        ReadAuthorizationModelsResponse response =
+                api.readAuthorizationModels(storeId, 100, null).get();
 
         // Then
         response.getAuthorizationModels().stream()
@@ -152,7 +154,7 @@ public class OpenFgaApiIntegrationTest {
     }
 
     @Test
-    public void writeAuthModel() throws ApiException, JsonProcessingException {
+    public void writeAuthModel() throws Exception {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
@@ -160,7 +162,8 @@ public class OpenFgaApiIntegrationTest {
                 mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
 
         // When
-        WriteAuthorizationModelResponse response = api.writeAuthorizationModel(storeId, request);
+        WriteAuthorizationModelResponse response =
+                api.writeAuthorizationModel(storeId, request).get();
 
         // Then
         assertNotNull(response);
@@ -180,7 +183,7 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.write(storeId, writeRequest);
-        ReadResponse response = api.read(storeId, readRequest);
+        ReadResponse response = api.read(storeId, readRequest).get();
 
         // Then
         TupleKey key = response.getTuples().get(0).getKey();
@@ -201,7 +204,7 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.write(storeId, writeRequest);
-        CheckResponse response = api.check(storeId, checkRequest);
+        CheckResponse response = api.check(storeId, checkRequest).get();
 
         // Then
         assertTrue(response.getAllowed());
@@ -219,7 +222,7 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.write(storeId, writeRequest);
-        ExpandResponse response = api.expand(storeId, expandRequest);
+        ExpandResponse response = api.expand(storeId, expandRequest).get();
 
         // Then
         assertNotNull(response.getTree());
@@ -241,7 +244,8 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.write(storeId, writeRequest);
-        ListObjectsResponse response = api.listObjects(storeId, listObjectsRequest);
+        ListObjectsResponse response =
+                api.listObjects(storeId, listObjectsRequest).get();
 
         // Then
         assertEquals(1, response.getObjects().size());
@@ -258,7 +262,8 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.write(storeId, writeRequest);
-        ReadChangesResponse response = api.readChanges(storeId, null, null, null);
+        ReadChangesResponse response =
+                api.readChanges(storeId, null, null, null).get();
 
         // Then
         assertEquals(1, response.getChanges().size());
@@ -280,7 +285,8 @@ public class OpenFgaApiIntegrationTest {
 
         // When
         api.writeAssertions(storeId, authModelId, writeRequest);
-        ReadAssertionsResponse response = api.readAssertions(storeId, authModelId);
+        ReadAssertionsResponse response =
+                api.readAssertions(storeId, authModelId).get();
 
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
@@ -294,8 +300,9 @@ public class OpenFgaApiIntegrationTest {
      * test method createStore().
      * @return The created Store ID
      */
-    private String createStore(String storeName) throws ApiException {
-        CreateStoreResponse response = api.createStore(new CreateStoreRequest().name(storeName));
+    private String createStore(String storeName) throws Exception {
+        CreateStoreResponse response =
+                api.createStore(new CreateStoreRequest().name(storeName)).get();
         return response.getId();
     }
 
@@ -304,10 +311,11 @@ public class OpenFgaApiIntegrationTest {
      * no-arguments @Test writeAuthModel() method.
      * @return The created Authorization Model ID
      */
-    private String writeAuthModel(String storeId) throws ApiException, JsonProcessingException {
+    private String writeAuthModel(String storeId) throws Exception {
         WriteAuthorizationModelRequest request =
                 mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
-        WriteAuthorizationModelResponse response = api.writeAuthorizationModel(storeId, request);
+        WriteAuthorizationModelResponse response =
+                api.writeAuthorizationModel(storeId, request).get();
         return response.getAuthorizationModelId();
     }
 

@@ -49,11 +49,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-17T22:31:33.475227Z[Etc/UTC]")
+        date = "2023-08-17T22:34:59.729055Z[Etc/UTC]")
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
@@ -75,11 +76,9 @@ public class OpenFgaApi {
         memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
     }
 
-    protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-        String body =
-                response.body() == null ? null : new String(response.body().readAllBytes());
-        String message = formatExceptionMessage(operationId, response.statusCode(), body);
-        return new ApiException(response.statusCode(), message, response.headers(), body);
+    private ApiException getApiException(String operationId, HttpResponse<String> response) {
+        String message = formatExceptionMessage(operationId, response.statusCode(), response.body());
+        return new ApiException(response.statusCode(), message, response.headers(), response.body());
     }
 
     private String formatExceptionMessage(String operationId, int statusCode, String body) {
@@ -94,12 +93,32 @@ public class OpenFgaApi {
      * The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
      * @param storeId  (required)
      * @param body  (required)
-     * @return CheckResponse
+     * @return CompletableFuture&lt;CheckResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CheckResponse check(String storeId, CheckRequest body) throws ApiException {
-        ApiResponse<CheckResponse> localVarResponse = checkWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<CheckResponse> check(String storeId, CheckRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("check", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<CheckResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -107,37 +126,37 @@ public class OpenFgaApi {
      * The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;CheckResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;CheckResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<CheckResponse> checkWithHttpInfo(String storeId, CheckRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body);
+    public CompletableFuture<ApiResponse<CheckResponse>> checkWithHttpInfo(String storeId, CheckRequest body)
+            throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("check", localVarResponse);
-                }
-                return new ApiResponse<CheckResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<CheckResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("check", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<CheckResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<CheckResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -178,49 +197,69 @@ public class OpenFgaApi {
      * Create a store
      * Create a unique OpenFGA store which will be used to store authorization models and relationship tuples.
      * @param body  (required)
-     * @return CreateStoreResponse
+     * @return CompletableFuture&lt;CreateStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CreateStoreResponse createStore(CreateStoreRequest body) throws ApiException {
-        ApiResponse<CreateStoreResponse> localVarResponse = createStoreWithHttpInfo(body);
-        return localVarResponse.getData();
+    public CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("createStore", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<CreateStoreResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
      * Create a store
      * Create a unique OpenFGA store which will be used to store authorization models and relationship tuples.
      * @param body  (required)
-     * @return ApiResponse&lt;CreateStoreResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;CreateStoreResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<CreateStoreResponse> createStoreWithHttpInfo(CreateStoreRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body);
+    public CompletableFuture<ApiResponse<CreateStoreResponse>> createStoreWithHttpInfo(CreateStoreRequest body)
+            throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("createStore", localVarResponse);
-                }
-                return new ApiResponse<CreateStoreResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<CreateStoreResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("createStore", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<CreateStoreResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<CreateStoreResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -257,47 +296,51 @@ public class OpenFgaApi {
      * Delete a store
      * Delete an OpenFGA store. This does not delete the data associated with the store, like tuples or authorization models.
      * @param storeId  (required)
+     * @return CompletableFuture&lt;Void&gt;
      * @throws ApiException if fails to make API call
      */
-    public void deleteStore(String storeId) throws ApiException {
-        deleteStoreWithHttpInfo(storeId);
+    public CompletableFuture<Void> deleteStore(String storeId) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("deleteStore", localVarResponse));
+                        }
+                        return CompletableFuture.completedFuture(null);
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
      * Delete a store
      * Delete an OpenFGA store. This does not delete the data associated with the store, like tuples or authorization models.
      * @param storeId  (required)
-     * @return ApiResponse&lt;Void&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;Void&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<Void> deleteStoreWithHttpInfo(String storeId) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId);
+    public CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(String storeId) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("deleteStore", localVarResponse);
-                }
-                return new ApiResponse<Void>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        null);
-            } finally {
-                // Drain the InputStream
-                while (localVarResponse.body().read() != -1) {
-                    // Ignore
-                }
-                localVarResponse.body().close();
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("deleteStore", localVarResponse));
+                        }
+                        return CompletableFuture.completedFuture(new ApiResponse<Void>(
+                                localVarResponse.statusCode(),
+                                localVarResponse.headers().map(),
+                                null));
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -329,12 +372,32 @@ public class OpenFgaApi {
      * The Expand API will return all users and usersets that have certain relationship with an object in a certain store. This is different from the &#x60;/stores/{store_id}/read&#x60; API in that both users and computed usersets are returned. Body parameters &#x60;tuple_key.object&#x60; and &#x60;tuple_key.relation&#x60; are all required. The response will return a tree whose leaves are the specific users and usersets. Union, intersection and difference operator are located in the intermediate nodes.  ## Example To expand all users that have the &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60;, use the Expand API with the following request body &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will be a userset tree of the users and usersets that have read access to the document. &#x60;&#x60;&#x60;json {   \&quot;tree\&quot;:{     \&quot;root\&quot;:{       \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,       \&quot;union\&quot;:{         \&quot;nodes\&quot;:[           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;users\&quot;:{                 \&quot;users\&quot;:[                   \&quot;user:bob\&quot;                 ]               }             }           },           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;computed\&quot;:{                 \&quot;userset\&quot;:\&quot;document:2021-budget#writer\&quot;               }             }           }         ]       }     }   } } &#x60;&#x60;&#x60; The caller can then call expand API for the &#x60;writer&#x60; relationship for the &#x60;document:2021-budget&#x60;.
      * @param storeId  (required)
      * @param body  (required)
-     * @return ExpandResponse
+     * @return CompletableFuture&lt;ExpandResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ExpandResponse expand(String storeId, ExpandRequest body) throws ApiException {
-        ApiResponse<ExpandResponse> localVarResponse = expandWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<ExpandResponse> expand(String storeId, ExpandRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("expand", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ExpandResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -342,37 +405,37 @@ public class OpenFgaApi {
      * The Expand API will return all users and usersets that have certain relationship with an object in a certain store. This is different from the &#x60;/stores/{store_id}/read&#x60; API in that both users and computed usersets are returned. Body parameters &#x60;tuple_key.object&#x60; and &#x60;tuple_key.relation&#x60; are all required. The response will return a tree whose leaves are the specific users and usersets. Union, intersection and difference operator are located in the intermediate nodes.  ## Example To expand all users that have the &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60;, use the Expand API with the following request body &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will be a userset tree of the users and usersets that have read access to the document. &#x60;&#x60;&#x60;json {   \&quot;tree\&quot;:{     \&quot;root\&quot;:{       \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,       \&quot;union\&quot;:{         \&quot;nodes\&quot;:[           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;users\&quot;:{                 \&quot;users\&quot;:[                   \&quot;user:bob\&quot;                 ]               }             }           },           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;computed\&quot;:{                 \&quot;userset\&quot;:\&quot;document:2021-budget#writer\&quot;               }             }           }         ]       }     }   } } &#x60;&#x60;&#x60; The caller can then call expand API for the &#x60;writer&#x60; relationship for the &#x60;document:2021-budget&#x60;.
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;ExpandResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ExpandResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ExpandResponse> expandWithHttpInfo(String storeId, ExpandRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body);
+    public CompletableFuture<ApiResponse<ExpandResponse>> expandWithHttpInfo(String storeId, ExpandRequest body)
+            throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("expand", localVarResponse);
-                }
-                return new ApiResponse<ExpandResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ExpandResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("expand", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ExpandResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ExpandResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -414,49 +477,68 @@ public class OpenFgaApi {
      * Get a store
      * Returns an OpenFGA store by its identifier
      * @param storeId  (required)
-     * @return GetStoreResponse
+     * @return CompletableFuture&lt;GetStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public GetStoreResponse getStore(String storeId) throws ApiException {
-        ApiResponse<GetStoreResponse> localVarResponse = getStoreWithHttpInfo(storeId);
-        return localVarResponse.getData();
+    public CompletableFuture<GetStoreResponse> getStore(String storeId) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("getStore", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<GetStoreResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
      * Get a store
      * Returns an OpenFGA store by its identifier
      * @param storeId  (required)
-     * @return ApiResponse&lt;GetStoreResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;GetStoreResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<GetStoreResponse> getStoreWithHttpInfo(String storeId) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId);
+    public CompletableFuture<ApiResponse<GetStoreResponse>> getStoreWithHttpInfo(String storeId) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("getStore", localVarResponse);
-                }
-                return new ApiResponse<GetStoreResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<GetStoreResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("getStore", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<GetStoreResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<GetStoreResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -488,12 +570,33 @@ public class OpenFgaApi {
      * The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first.
      * @param storeId  (required)
      * @param body  (required)
-     * @return ListObjectsResponse
+     * @return CompletableFuture&lt;ListObjectsResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ListObjectsResponse listObjects(String storeId, ListObjectsRequest body) throws ApiException {
-        ApiResponse<ListObjectsResponse> localVarResponse = listObjectsWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<ListObjectsResponse> listObjects(String storeId, ListObjectsRequest body)
+            throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = listObjectsRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("listObjects", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ListObjectsResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -501,38 +604,37 @@ public class OpenFgaApi {
      * The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first.
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;ListObjectsResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ListObjectsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ListObjectsResponse> listObjectsWithHttpInfo(String storeId, ListObjectsRequest body)
-            throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = listObjectsRequestBuilder(storeId, body);
+    public CompletableFuture<ApiResponse<ListObjectsResponse>> listObjectsWithHttpInfo(
+            String storeId, ListObjectsRequest body) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("listObjects", localVarResponse);
-                }
-                return new ApiResponse<ListObjectsResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ListObjectsResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = listObjectsRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("listObjects", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ListObjectsResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ListObjectsResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -575,12 +677,33 @@ public class OpenFgaApi {
      * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ListStoresResponse
+     * @return CompletableFuture&lt;ListStoresResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ListStoresResponse listStores(Integer pageSize, String continuationToken) throws ApiException {
-        ApiResponse<ListStoresResponse> localVarResponse = listStoresWithHttpInfo(pageSize, continuationToken);
-        return localVarResponse.getData();
+    public CompletableFuture<ListStoresResponse> listStores(Integer pageSize, String continuationToken)
+            throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = listStoresRequestBuilder(pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("listStores", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ListStoresResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -588,38 +711,37 @@ public class OpenFgaApi {
      * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ApiResponse&lt;ListStoresResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ListStoresResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ListStoresResponse> listStoresWithHttpInfo(Integer pageSize, String continuationToken)
-            throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = listStoresRequestBuilder(pageSize, continuationToken);
+    public CompletableFuture<ApiResponse<ListStoresResponse>> listStoresWithHttpInfo(
+            Integer pageSize, String continuationToken) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("listStores", localVarResponse);
-                }
-                return new ApiResponse<ListStoresResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ListStoresResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = listStoresRequestBuilder(pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("listStores", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ListStoresResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ListStoresResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -665,12 +787,32 @@ public class OpenFgaApi {
      * The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;).
      * @param storeId  (required)
      * @param body  (required)
-     * @return ReadResponse
+     * @return CompletableFuture&lt;ReadResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ReadResponse read(String storeId, ReadRequest body) throws ApiException {
-        ApiResponse<ReadResponse> localVarResponse = readWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<ReadResponse> read(String storeId, ReadRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("read", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -678,37 +820,37 @@ public class OpenFgaApi {
      * The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;).
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;ReadResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ReadResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ReadResponse> readWithHttpInfo(String storeId, ReadRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body);
+    public CompletableFuture<ApiResponse<ReadResponse>> readWithHttpInfo(String storeId, ReadRequest body)
+            throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("read", localVarResponse);
-                }
-                return new ApiResponse<ReadResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ReadResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("read", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ReadResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -750,13 +892,33 @@ public class OpenFgaApi {
      * The ReadAssertions API will return, for a given authorization model id, all the assertions stored for it. An assertion is an object that contains a tuple key, and the expectation of whether a call to the Check API of that tuple key will return true or false.
      * @param storeId  (required)
      * @param authorizationModelId  (required)
-     * @return ReadAssertionsResponse
+     * @return CompletableFuture&lt;ReadAssertionsResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ReadAssertionsResponse readAssertions(String storeId, String authorizationModelId) throws ApiException {
-        ApiResponse<ReadAssertionsResponse> localVarResponse =
-                readAssertionsWithHttpInfo(storeId, authorizationModelId);
-        return localVarResponse.getData();
+    public CompletableFuture<ReadAssertionsResponse> readAssertions(String storeId, String authorizationModelId)
+            throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = readAssertionsRequestBuilder(storeId, authorizationModelId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("readAssertions", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadAssertionsResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -764,38 +926,37 @@ public class OpenFgaApi {
      * The ReadAssertions API will return, for a given authorization model id, all the assertions stored for it. An assertion is an object that contains a tuple key, and the expectation of whether a call to the Check API of that tuple key will return true or false.
      * @param storeId  (required)
      * @param authorizationModelId  (required)
-     * @return ApiResponse&lt;ReadAssertionsResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ReadAssertionsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ReadAssertionsResponse> readAssertionsWithHttpInfo(String storeId, String authorizationModelId)
-            throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = readAssertionsRequestBuilder(storeId, authorizationModelId);
+    public CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertionsWithHttpInfo(
+            String storeId, String authorizationModelId) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("readAssertions", localVarResponse);
-                }
-                return new ApiResponse<ReadAssertionsResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ReadAssertionsResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = readAssertionsRequestBuilder(storeId, authorizationModelId);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("readAssertions", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ReadAssertionsResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadAssertionsResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -835,12 +996,35 @@ public class OpenFgaApi {
      * The ReadAuthorizationModel API returns an authorization model by its identifier. The response will return the authorization model for the particular version.  ## Example To retrieve the authorization model with ID &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; for the store, call the GET authorization-models by ID API with &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; as the &#x60;id&#x60; path parameter.  The API will return: &#x60;&#x60;&#x60;json {   \&quot;authorization_model\&quot;:{     \&quot;id\&quot;:\&quot;01G5JAVJ41T49E9TT3SKVS7X1J\&quot;,     \&quot;type_definitions\&quot;:[       {         \&quot;type\&quot;:\&quot;user\&quot;       },       {         \&quot;type\&quot;:\&quot;document\&quot;,         \&quot;relations\&quot;:{           \&quot;reader\&quot;:{             \&quot;union\&quot;:{               \&quot;child\&quot;:[                 {                   \&quot;this\&quot;:{}                 },                 {                   \&quot;computedUserset\&quot;:{                     \&quot;object\&quot;:\&quot;\&quot;,                     \&quot;relation\&quot;:\&quot;writer\&quot;                   }                 }               ]             }           },           \&quot;writer\&quot;:{             \&quot;this\&quot;:{}           }         }       }     ]   } } &#x60;&#x60;&#x60; In the above example, there are 2 types (&#x60;user&#x60; and &#x60;document&#x60;). The &#x60;document&#x60; type has 2 relations (&#x60;writer&#x60; and &#x60;reader&#x60;).
      * @param storeId  (required)
      * @param id  (required)
-     * @return ReadAuthorizationModelResponse
+     * @return CompletableFuture&lt;ReadAuthorizationModelResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ReadAuthorizationModelResponse readAuthorizationModel(String storeId, String id) throws ApiException {
-        ApiResponse<ReadAuthorizationModelResponse> localVarResponse = readAuthorizationModelWithHttpInfo(storeId, id);
-        return localVarResponse.getData();
+    public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(String storeId, String id)
+            throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = readAuthorizationModelRequestBuilder(storeId, id);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("readAuthorizationModel", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<ReadAuthorizationModelResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -848,39 +1032,39 @@ public class OpenFgaApi {
      * The ReadAuthorizationModel API returns an authorization model by its identifier. The response will return the authorization model for the particular version.  ## Example To retrieve the authorization model with ID &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; for the store, call the GET authorization-models by ID API with &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; as the &#x60;id&#x60; path parameter.  The API will return: &#x60;&#x60;&#x60;json {   \&quot;authorization_model\&quot;:{     \&quot;id\&quot;:\&quot;01G5JAVJ41T49E9TT3SKVS7X1J\&quot;,     \&quot;type_definitions\&quot;:[       {         \&quot;type\&quot;:\&quot;user\&quot;       },       {         \&quot;type\&quot;:\&quot;document\&quot;,         \&quot;relations\&quot;:{           \&quot;reader\&quot;:{             \&quot;union\&quot;:{               \&quot;child\&quot;:[                 {                   \&quot;this\&quot;:{}                 },                 {                   \&quot;computedUserset\&quot;:{                     \&quot;object\&quot;:\&quot;\&quot;,                     \&quot;relation\&quot;:\&quot;writer\&quot;                   }                 }               ]             }           },           \&quot;writer\&quot;:{             \&quot;this\&quot;:{}           }         }       }     ]   } } &#x60;&#x60;&#x60; In the above example, there are 2 types (&#x60;user&#x60; and &#x60;document&#x60;). The &#x60;document&#x60; type has 2 relations (&#x60;writer&#x60; and &#x60;reader&#x60;).
      * @param storeId  (required)
      * @param id  (required)
-     * @return ApiResponse&lt;ReadAuthorizationModelResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ReadAuthorizationModelResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ReadAuthorizationModelResponse> readAuthorizationModelWithHttpInfo(String storeId, String id)
-            throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = readAuthorizationModelRequestBuilder(storeId, id);
+    public CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModelWithHttpInfo(
+            String storeId, String id) throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("readAuthorizationModel", localVarResponse);
-                }
-                return new ApiResponse<ReadAuthorizationModelResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<
-                                                ReadAuthorizationModelResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = readAuthorizationModelRequestBuilder(storeId, id);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("readAuthorizationModel", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ReadAuthorizationModelResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<ReadAuthorizationModelResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -919,14 +1103,36 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ReadAuthorizationModelsResponse
+     * @return CompletableFuture&lt;ReadAuthorizationModelsResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ReadAuthorizationModelsResponse readAuthorizationModels(
+    public CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
             String storeId, Integer pageSize, String continuationToken) throws ApiException {
-        ApiResponse<ReadAuthorizationModelsResponse> localVarResponse =
-                readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken);
-        return localVarResponse.getData();
+        try {
+            HttpRequest.Builder localVarRequestBuilder =
+                    readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("readAuthorizationModels", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<ReadAuthorizationModelsResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -935,40 +1141,40 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ApiResponse&lt;ReadAuthorizationModelsResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ReadAuthorizationModelsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ReadAuthorizationModelsResponse> readAuthorizationModelsWithHttpInfo(
+    public CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModelsWithHttpInfo(
             String storeId, Integer pageSize, String continuationToken) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder =
-                readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken);
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("readAuthorizationModels", localVarResponse);
-                }
-                return new ApiResponse<ReadAuthorizationModelsResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<
-                                                ReadAuthorizationModelsResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder =
+                    readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("readAuthorizationModels", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ReadAuthorizationModelsResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<ReadAuthorizationModelsResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -1022,14 +1228,34 @@ public class OpenFgaApi {
      * @param type  (optional)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ReadChangesResponse
+     * @return CompletableFuture&lt;ReadChangesResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public ReadChangesResponse readChanges(String storeId, String type, Integer pageSize, String continuationToken)
-            throws ApiException {
-        ApiResponse<ReadChangesResponse> localVarResponse =
-                readChangesWithHttpInfo(storeId, type, pageSize, continuationToken);
-        return localVarResponse.getData();
+    public CompletableFuture<ReadChangesResponse> readChanges(
+            String storeId, String type, Integer pageSize, String continuationToken) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder =
+                    readChangesRequestBuilder(storeId, type, pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("readChanges", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadChangesResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -1039,39 +1265,38 @@ public class OpenFgaApi {
      * @param type  (optional)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @return ApiResponse&lt;ReadChangesResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;ReadChangesResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<ReadChangesResponse> readChangesWithHttpInfo(
+    public CompletableFuture<ApiResponse<ReadChangesResponse>> readChangesWithHttpInfo(
             String storeId, String type, Integer pageSize, String continuationToken) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder =
-                readChangesRequestBuilder(storeId, type, pageSize, continuationToken);
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("readChanges", localVarResponse);
-                }
-                return new ApiResponse<ReadChangesResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<ReadChangesResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder =
+                    readChangesRequestBuilder(storeId, type, pageSize, continuationToken);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("readChanges", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<ReadChangesResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<ReadChangesResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -1124,12 +1349,32 @@ public class OpenFgaApi {
      * The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples while &#x60;deletes&#x60; removes existing tuples. The API is not idempotent: if, later on, you try to add the same tuple, or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @return Object
+     * @return CompletableFuture&lt;Object&gt;
      * @throws ApiException if fails to make API call
      */
-    public Object write(String storeId, WriteRequest body) throws ApiException {
-        ApiResponse<Object> localVarResponse = writeWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<Object> write(String storeId, WriteRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("write", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<Object>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -1137,37 +1382,37 @@ public class OpenFgaApi {
      * The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples while &#x60;deletes&#x60; removes existing tuples. The API is not idempotent: if, later on, you try to add the same tuple, or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;Object&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;Object&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<Object> writeWithHttpInfo(String storeId, WriteRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body);
+    public CompletableFuture<ApiResponse<Object>> writeWithHttpInfo(String storeId, WriteRequest body)
+            throws ApiException {
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("write", localVarResponse);
-                }
-                return new ApiResponse<Object>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<Object>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("write", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<Object>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody, new TypeReference<Object>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -1210,11 +1455,25 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param authorizationModelId  (required)
      * @param body  (required)
+     * @return CompletableFuture&lt;Void&gt;
      * @throws ApiException if fails to make API call
      */
-    public void writeAssertions(String storeId, String authorizationModelId, WriteAssertionsRequest body)
-            throws ApiException {
-        writeAssertionsWithHttpInfo(storeId, authorizationModelId, body);
+    public CompletableFuture<Void> writeAssertions(
+            String storeId, String authorizationModelId, WriteAssertionsRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder =
+                    writeAssertionsRequestBuilder(storeId, authorizationModelId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("writeAssertions", localVarResponse));
+                        }
+                        return CompletableFuture.completedFuture(null);
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -1223,38 +1482,30 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param authorizationModelId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;Void&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;Void&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<Void> writeAssertionsWithHttpInfo(
+    public CompletableFuture<ApiResponse<Void>> writeAssertionsWithHttpInfo(
             String storeId, String authorizationModelId, WriteAssertionsRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = writeAssertionsRequestBuilder(storeId, authorizationModelId, body);
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("writeAssertions", localVarResponse);
-                }
-                return new ApiResponse<Void>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        null);
-            } finally {
-                // Drain the InputStream
-                while (localVarResponse.body().read() != -1) {
-                    // Ignore
-                }
-                localVarResponse.body().close();
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder =
+                    writeAssertionsRequestBuilder(storeId, authorizationModelId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(getApiException("writeAssertions", localVarResponse));
+                        }
+                        return CompletableFuture.completedFuture(new ApiResponse<Void>(
+                                localVarResponse.statusCode(),
+                                localVarResponse.headers().map(),
+                                null));
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -1304,14 +1555,35 @@ public class OpenFgaApi {
      * The WriteAuthorizationModel API will add a new authorization model to a store. Each item in the &#x60;type_definitions&#x60; array is a type definition as specified in the field &#x60;type_definition&#x60;. The response will return the authorization model&#39;s ID in the &#x60;id&#x60; field.  ## Example To add an authorization model with &#x60;user&#x60; and &#x60;document&#x60; type definitions, call POST authorization-models API with the body:  &#x60;&#x60;&#x60;json {   \&quot;type_definitions\&quot;:[     {       \&quot;type\&quot;:\&quot;user\&quot;     },     {       \&quot;type\&quot;:\&quot;document\&quot;,       \&quot;relations\&quot;:{         \&quot;reader\&quot;:{           \&quot;union\&quot;:{             \&quot;child\&quot;:[               {                 \&quot;this\&quot;:{}               },               {                 \&quot;computedUserset\&quot;:{                   \&quot;object\&quot;:\&quot;\&quot;,                   \&quot;relation\&quot;:\&quot;writer\&quot;                 }               }             ]           }         },         \&quot;writer\&quot;:{           \&quot;this\&quot;:{}         }       }     }   ] } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include the version id for this authorization model, which will look like  &#x60;&#x60;&#x60; {\&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot;} &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @return WriteAuthorizationModelResponse
+     * @return CompletableFuture&lt;WriteAuthorizationModelResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public WriteAuthorizationModelResponse writeAuthorizationModel(String storeId, WriteAuthorizationModelRequest body)
-            throws ApiException {
-        ApiResponse<WriteAuthorizationModelResponse> localVarResponse =
-                writeAuthorizationModelWithHttpInfo(storeId, body);
-        return localVarResponse.getData();
+    public CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(
+            String storeId, WriteAuthorizationModelRequest body) throws ApiException {
+        try {
+            HttpRequest.Builder localVarRequestBuilder = writeAuthorizationModelRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("writeAuthorizationModel", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<WriteAuthorizationModelResponse>() {}));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
@@ -1319,39 +1591,39 @@ public class OpenFgaApi {
      * The WriteAuthorizationModel API will add a new authorization model to a store. Each item in the &#x60;type_definitions&#x60; array is a type definition as specified in the field &#x60;type_definition&#x60;. The response will return the authorization model&#39;s ID in the &#x60;id&#x60; field.  ## Example To add an authorization model with &#x60;user&#x60; and &#x60;document&#x60; type definitions, call POST authorization-models API with the body:  &#x60;&#x60;&#x60;json {   \&quot;type_definitions\&quot;:[     {       \&quot;type\&quot;:\&quot;user\&quot;     },     {       \&quot;type\&quot;:\&quot;document\&quot;,       \&quot;relations\&quot;:{         \&quot;reader\&quot;:{           \&quot;union\&quot;:{             \&quot;child\&quot;:[               {                 \&quot;this\&quot;:{}               },               {                 \&quot;computedUserset\&quot;:{                   \&quot;object\&quot;:\&quot;\&quot;,                   \&quot;relation\&quot;:\&quot;writer\&quot;                 }               }             ]           }         },         \&quot;writer\&quot;:{           \&quot;this\&quot;:{}         }       }     }   ] } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include the version id for this authorization model, which will look like  &#x60;&#x60;&#x60; {\&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot;} &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @return ApiResponse&lt;WriteAuthorizationModelResponse&gt;
+     * @return CompletableFuture&lt;ApiResponse&lt;WriteAuthorizationModelResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public ApiResponse<WriteAuthorizationModelResponse> writeAuthorizationModelWithHttpInfo(
+    public CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModelWithHttpInfo(
             String storeId, WriteAuthorizationModelRequest body) throws ApiException {
-        HttpRequest.Builder localVarRequestBuilder = writeAuthorizationModelRequestBuilder(storeId, body);
         try {
-            HttpResponse<InputStream> localVarResponse =
-                    memberVarHttpClient.send(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (memberVarResponseInterceptor != null) {
-                memberVarResponseInterceptor.accept(localVarResponse);
-            }
-            try {
-                if (localVarResponse.statusCode() / 100 != 2) {
-                    throw getApiException("writeAuthorizationModel", localVarResponse);
-                }
-                return new ApiResponse<WriteAuthorizationModelResponse>(
-                        localVarResponse.statusCode(),
-                        localVarResponse.headers().map(),
-                        localVarResponse.body() == null
-                                ? null
-                                : memberVarObjectMapper.readValue(
-                                        localVarResponse.body(),
-                                        new TypeReference<
-                                                WriteAuthorizationModelResponse>() {}) // closes the InputStream
-                        );
-            } finally {
-            }
-        } catch (IOException e) {
-            throw new ApiException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(e);
+            HttpRequest.Builder localVarRequestBuilder = writeAuthorizationModelRequestBuilder(storeId, body);
+            return memberVarHttpClient
+                    .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenComposeAsync(localVarResponse -> {
+                        if (memberVarAsyncResponseInterceptor != null) {
+                            memberVarAsyncResponseInterceptor.accept(localVarResponse);
+                        }
+                        if (localVarResponse.statusCode() / 100 != 2) {
+                            return CompletableFuture.failedFuture(
+                                    getApiException("writeAuthorizationModel", localVarResponse));
+                        }
+                        try {
+                            String responseBody = localVarResponse.body();
+                            return CompletableFuture.completedFuture(new ApiResponse<WriteAuthorizationModelResponse>(
+                                    localVarResponse.statusCode(),
+                                    localVarResponse.headers().map(),
+                                    responseBody == null || responseBody.isBlank()
+                                            ? null
+                                            : memberVarObjectMapper.readValue(
+                                                    responseBody,
+                                                    new TypeReference<WriteAuthorizationModelResponse>() {})));
+                        } catch (IOException e) {
+                            return CompletableFuture.failedFuture(new ApiException(e));
+                        }
+                    });
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
