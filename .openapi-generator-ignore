@@ -1,0 +1,8 @@
+**/ServerConfiguration.java
+**/ServerVariable.java
+src/main/AndroidManifest.xml
+build.sbt
+pom.xml
+.github/workflows/maven.yml
+git_push.sh
+.travis.yml
