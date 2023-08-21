@@ -26,7 +26,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ObjectRelation.JSON_PROPERTY_OBJECT, ObjectRelation.JSON_PROPERTY_RELATION})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T20:03:24.252549Z[Etc/UTC]")
+        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
 public class ObjectRelation {
     public static final String JSON_PROPERTY_OBJECT = "object";
     private String _object;

@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Difference.JSON_PROPERTY_BASE, Difference.JSON_PROPERTY_SUBTRACT})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T20:03:24.252549Z[Etc/UTC]")
+        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
 public class Difference {
     public static final String JSON_PROPERTY_BASE = "base";
     private Userset base;
