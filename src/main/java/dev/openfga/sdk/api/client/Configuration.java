@@ -24,7 +24,7 @@ import java.net.http.HttpRequest;
 import java.time.Duration;
 
 /**
- * Configurations for an ApiClient.
+ * Configurations for an api client.
  */
 public class Configuration implements BaseConfiguration {
     public static final String VERSION = "0.0.1";
@@ -49,7 +49,6 @@ public class Configuration implements BaseConfiguration {
     /**
      * Assert that the configuration is valid.
      */
-    @Override
     public void assertValid() throws FgaInvalidParameterException {
         // If apiUrl is null/empty/whitespace it will resolve to
         // DEFAULT_API_URL when getApiUrl is called.
@@ -74,12 +73,38 @@ public class Configuration implements BaseConfiguration {
     }
 
     /**
+     * Construct a new {@link Configuration} with any non-null values of a {@link ConfigurationOverride} and remaining values from this {@link Configuration}.
+     *
+     * @param configurationOverride The values to override
+     * @return A new {@link Configuration} with values of this Configuration mixed with non-null values of configurationOverride
+     */
+    public Configuration override(ConfigurationOverride configurationOverride) {
+        Configuration result = new Configuration(apiUrl);
+
+        String overrideApiUrl = configurationOverride.getApiUrl();
+        if (overrideApiUrl != null) {
+            result.apiUrl(overrideApiUrl);
+        }
+
+        String overrideUserAgent = configurationOverride.getUserAgent();
+        result.userAgent(overrideUserAgent != null ? overrideUserAgent : userAgent);
+
+        Duration overrideReadTimeout = configurationOverride.getReadTimeout();
+        result.readTimeout(overrideReadTimeout != null ? overrideReadTimeout : readTimeout);
+
+        Duration overrideConnectTimeout = configurationOverride.getConnectTimeout();
+        result.connectTimeout(overrideConnectTimeout != null ? overrideConnectTimeout : connectTimeout);
+
+        return result;
+    }
+
+    /**
      * Set the API URL for the http client.
      *
      * @param apiUrl The URL.
      * @return This object.
      */
-    public BaseConfiguration apiUrl(String apiUrl) {
+    public Configuration apiUrl(String apiUrl) {
         this.apiUrl = apiUrl;
         return this;
     }
@@ -104,7 +129,7 @@ public class Configuration implements BaseConfiguration {
      * @param userAgent The user agent.
      * @return This object.
      */
-    public BaseConfiguration userAgent(String userAgent) {
+    public Configuration userAgent(String userAgent) {
         this.userAgent = userAgent;
         return this;
     }
@@ -130,7 +155,7 @@ public class Configuration implements BaseConfiguration {
      *                    effectively infinite value.
      * @return This object.
      */
-    public BaseConfiguration readTimeout(Duration readTimeout) {
+    public Configuration readTimeout(Duration readTimeout) {
         this.readTimeout = readTimeout;
         return this;
     }
@@ -162,7 +187,7 @@ public class Configuration implements BaseConfiguration {
      * @param connectTimeout connection timeout in milliseconds
      * @return This object.
      */
-    public BaseConfiguration connectTimeout(Duration connectTimeout) {
+    public Configuration connectTimeout(Duration connectTimeout) {
         this.connectTimeout = connectTimeout;
         return this;
     }

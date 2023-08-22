@@ -12,12 +12,9 @@
 
 package dev.openfga.sdk.api.client;
 
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.time.Duration;
 
 public interface BaseConfiguration {
-    void assertValid() throws FgaInvalidParameterException;
-
     String getApiUrl();
 
     String getUserAgent();

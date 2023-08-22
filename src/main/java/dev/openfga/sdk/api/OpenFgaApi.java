@@ -18,6 +18,7 @@ import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.client.ConfigurationOverride;
 import dev.openfga.sdk.api.client.Pair;
 import dev.openfga.sdk.api.model.CheckRequest;
 import dev.openfga.sdk.api.model.CheckResponse;
@@ -39,6 +40,7 @@ import dev.openfga.sdk.api.model.WriteAssertionsRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelResponse;
 import dev.openfga.sdk.api.model.WriteRequest;
+import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -54,11 +56,11 @@ import java.util.function.Consumer;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
+        date = "2023-08-22T23:54:43.912230Z[Etc/UTC]")
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
-    private final Configuration memberVarConfiguration;
+    private final Configuration configuration;
     private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
@@ -66,7 +68,7 @@ public class OpenFgaApi {
     public OpenFgaApi(ApiClient apiClient, Configuration configuration) {
         memberVarHttpClient = apiClient.getHttpClient();
         memberVarObjectMapper = apiClient.getObjectMapper();
-        memberVarConfiguration = configuration;
+        this.configuration = configuration;
         memberVarInterceptor = apiClient.getRequestInterceptor();
         memberVarResponseInterceptor = apiClient.getResponseInterceptor();
         memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
@@ -92,8 +94,9 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;CheckResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<CheckResponse> check(String storeId, CheckRequest body) throws ApiException {
-        return check(storeId, body, memberVarConfiguration);
+    public CompletableFuture<CheckResponse> check(String storeId, CheckRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return check(storeId, body, this.configuration);
     }
 
     /**
@@ -101,12 +104,18 @@ public class OpenFgaApi {
      * The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;CheckResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<CheckResponse> check(String storeId, CheckRequest body, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<CheckResponse> check(
+            String storeId, CheckRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return check(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<CheckResponse> check(String storeId, CheckRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
@@ -140,8 +149,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<CheckResponse>> checkWithHttpInfo(String storeId, CheckRequest body)
-            throws ApiException {
-        return checkWithHttpInfo(storeId, body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return checkWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -149,14 +158,21 @@ public class OpenFgaApi {
      * The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;CheckResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<CheckResponse>> checkWithHttpInfo(
-            String storeId, CheckRequest body, Configuration configuration) throws ApiException {
+            String storeId, CheckRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return checkWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<CheckResponse>> checkWithHttpInfo(
+            String storeId, CheckRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = checkRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -185,7 +201,7 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder checkRequestBuilder(String storeId, CheckRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling check");
@@ -195,11 +211,14 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling check");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -210,7 +229,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -227,20 +246,27 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;CreateStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest body) throws ApiException {
-        return createStore(body, memberVarConfiguration);
+    public CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return createStore(body, this.configuration);
     }
 
     /**
      * Create a store
      * Create a unique OpenFGA store which will be used to store authorization models and relationship tuples.
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;CreateStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest body, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<CreateStoreResponse> createStore(
+            CreateStoreRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return createStore(body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body, configuration);
             return memberVarHttpClient
@@ -273,22 +299,28 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<CreateStoreResponse>> createStoreWithHttpInfo(CreateStoreRequest body)
-            throws ApiException {
-        return createStoreWithHttpInfo(body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return createStoreWithHttpInfo(body, this.configuration);
     }
 
     /**
      * Create a store
      * Create a unique OpenFGA store which will be used to store authorization models and relationship tuples.
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;CreateStoreResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<CreateStoreResponse>> createStoreWithHttpInfo(
-            CreateStoreRequest body, Configuration configuration) throws ApiException {
+            CreateStoreRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return createStoreWithHttpInfo(body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<CreateStoreResponse>> createStoreWithHttpInfo(
+            CreateStoreRequest body, Configuration configuration) throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = createStoreRequestBuilder(body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -317,17 +349,20 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder createStoreRequestBuilder(CreateStoreRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException(400, "Missing the required parameter 'body' when calling createStore");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores";
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -338,7 +373,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -355,19 +390,25 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;Void&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<Void> deleteStore(String storeId) throws ApiException {
-        return deleteStore(storeId, memberVarConfiguration);
+    public CompletableFuture<Void> deleteStore(String storeId) throws ApiException, FgaInvalidParameterException {
+        return deleteStore(storeId, this.configuration);
     }
 
     /**
      * Delete a store
      * Delete an OpenFGA store. This does not delete the data associated with the store, like tuples or authorization models.
      * @param storeId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;Void&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<Void> deleteStore(String storeId, Configuration configuration) throws ApiException {
+    public CompletableFuture<Void> deleteStore(String storeId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return deleteStore(storeId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<Void> deleteStore(String storeId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId, configuration);
             return memberVarHttpClient
@@ -390,22 +431,29 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;ApiResponse&lt;Void&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(String storeId) throws ApiException {
-        return deleteStoreWithHttpInfo(storeId, memberVarConfiguration);
+    public CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(String storeId)
+            throws ApiException, FgaInvalidParameterException {
+        return deleteStoreWithHttpInfo(storeId, this.configuration);
     }
 
     /**
      * Delete a store
      * Delete an OpenFGA store. This does not delete the data associated with the store, like tuples or authorization models.
      * @param storeId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;Void&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(String storeId, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(
+            String storeId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return deleteStoreWithHttpInfo(storeId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<Void>> deleteStoreWithHttpInfo(String storeId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = deleteStoreRequestBuilder(storeId, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -426,22 +474,25 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder deleteStoreRequestBuilder(String storeId, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling deleteStore");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -459,8 +510,9 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;ExpandResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ExpandResponse> expand(String storeId, ExpandRequest body) throws ApiException {
-        return expand(storeId, body, memberVarConfiguration);
+    public CompletableFuture<ExpandResponse> expand(String storeId, ExpandRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return expand(storeId, body, this.configuration);
     }
 
     /**
@@ -468,12 +520,18 @@ public class OpenFgaApi {
      * The Expand API will return all users and usersets that have certain relationship with an object in a certain store. This is different from the &#x60;/stores/{store_id}/read&#x60; API in that both users and computed usersets are returned. Body parameters &#x60;tuple_key.object&#x60; and &#x60;tuple_key.relation&#x60; are all required. The response will return a tree whose leaves are the specific users and usersets. Union, intersection and difference operator are located in the intermediate nodes.  ## Example To expand all users that have the &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60;, use the Expand API with the following request body &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will be a userset tree of the users and usersets that have read access to the document. &#x60;&#x60;&#x60;json {   \&quot;tree\&quot;:{     \&quot;root\&quot;:{       \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,       \&quot;union\&quot;:{         \&quot;nodes\&quot;:[           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;users\&quot;:{                 \&quot;users\&quot;:[                   \&quot;user:bob\&quot;                 ]               }             }           },           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;computed\&quot;:{                 \&quot;userset\&quot;:\&quot;document:2021-budget#writer\&quot;               }             }           }         ]       }     }   } } &#x60;&#x60;&#x60; The caller can then call expand API for the &#x60;writer&#x60; relationship for the &#x60;document:2021-budget&#x60;.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ExpandResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ExpandResponse> expand(String storeId, ExpandRequest body, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<ExpandResponse> expand(
+            String storeId, ExpandRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return expand(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ExpandResponse> expand(String storeId, ExpandRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
@@ -507,8 +565,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ExpandResponse>> expandWithHttpInfo(String storeId, ExpandRequest body)
-            throws ApiException {
-        return expandWithHttpInfo(storeId, body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return expandWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -516,14 +574,21 @@ public class OpenFgaApi {
      * The Expand API will return all users and usersets that have certain relationship with an object in a certain store. This is different from the &#x60;/stores/{store_id}/read&#x60; API in that both users and computed usersets are returned. Body parameters &#x60;tuple_key.object&#x60; and &#x60;tuple_key.relation&#x60; are all required. The response will return a tree whose leaves are the specific users and usersets. Union, intersection and difference operator are located in the intermediate nodes.  ## Example To expand all users that have the &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60;, use the Expand API with the following request body &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will be a userset tree of the users and usersets that have read access to the document. &#x60;&#x60;&#x60;json {   \&quot;tree\&quot;:{     \&quot;root\&quot;:{       \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,       \&quot;union\&quot;:{         \&quot;nodes\&quot;:[           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;users\&quot;:{                 \&quot;users\&quot;:[                   \&quot;user:bob\&quot;                 ]               }             }           },           {             \&quot;type\&quot;:\&quot;document:2021-budget#reader\&quot;,             \&quot;leaf\&quot;:{               \&quot;computed\&quot;:{                 \&quot;userset\&quot;:\&quot;document:2021-budget#writer\&quot;               }             }           }         ]       }     }   } } &#x60;&#x60;&#x60; The caller can then call expand API for the &#x60;writer&#x60; relationship for the &#x60;document:2021-budget&#x60;.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ExpandResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ExpandResponse>> expandWithHttpInfo(
-            String storeId, ExpandRequest body, Configuration configuration) throws ApiException {
+            String storeId, ExpandRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return expandWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ExpandResponse>> expandWithHttpInfo(
+            String storeId, ExpandRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = expandRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -552,7 +617,7 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder expandRequestBuilder(String storeId, ExpandRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling expand");
@@ -562,12 +627,15 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling expand");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath =
                 "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -578,7 +646,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -595,20 +663,26 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;GetStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<GetStoreResponse> getStore(String storeId) throws ApiException {
-        return getStore(storeId, memberVarConfiguration);
+    public CompletableFuture<GetStoreResponse> getStore(String storeId)
+            throws ApiException, FgaInvalidParameterException {
+        return getStore(storeId, this.configuration);
     }
 
     /**
      * Get a store
      * Returns an OpenFGA store by its identifier
      * @param storeId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;GetStoreResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<GetStoreResponse> getStore(String storeId, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<GetStoreResponse> getStore(String storeId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return getStore(storeId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<GetStoreResponse> getStore(String storeId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId, configuration);
             return memberVarHttpClient
@@ -640,22 +714,29 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;ApiResponse&lt;GetStoreResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ApiResponse<GetStoreResponse>> getStoreWithHttpInfo(String storeId) throws ApiException {
-        return getStoreWithHttpInfo(storeId, memberVarConfiguration);
+    public CompletableFuture<ApiResponse<GetStoreResponse>> getStoreWithHttpInfo(String storeId)
+            throws ApiException, FgaInvalidParameterException {
+        return getStoreWithHttpInfo(storeId, this.configuration);
     }
 
     /**
      * Get a store
      * Returns an OpenFGA store by its identifier
      * @param storeId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;GetStoreResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<GetStoreResponse>> getStoreWithHttpInfo(
-            String storeId, Configuration configuration) throws ApiException {
+            String storeId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return getStoreWithHttpInfo(storeId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<GetStoreResponse>> getStoreWithHttpInfo(
+            String storeId, Configuration configuration) throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = getStoreRequestBuilder(storeId, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -684,22 +765,25 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder getStoreRequestBuilder(String storeId, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling getStore");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -718,8 +802,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ListObjectsResponse> listObjects(String storeId, ListObjectsRequest body)
-            throws ApiException {
-        return listObjects(storeId, body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return listObjects(storeId, body, this.configuration);
     }
 
     /**
@@ -727,12 +811,19 @@ public class OpenFgaApi {
      * The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ListObjectsResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ListObjectsResponse> listObjects(
-            String storeId, ListObjectsRequest body, Configuration configuration) throws ApiException {
+            String storeId, ListObjectsRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return listObjects(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ListObjectsResponse> listObjects(
+            String storeId, ListObjectsRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = listObjectsRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
@@ -766,8 +857,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ListObjectsResponse>> listObjectsWithHttpInfo(
-            String storeId, ListObjectsRequest body) throws ApiException {
-        return listObjectsWithHttpInfo(storeId, body, memberVarConfiguration);
+            String storeId, ListObjectsRequest body) throws ApiException, FgaInvalidParameterException {
+        return listObjectsWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -775,15 +866,21 @@ public class OpenFgaApi {
      * The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first.
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ListObjectsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ListObjectsResponse>> listObjectsWithHttpInfo(
-            String storeId, ListObjectsRequest body, Configuration configuration) throws ApiException {
+            String storeId, ListObjectsRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return listObjectsWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ListObjectsResponse>> listObjectsWithHttpInfo(
+            String storeId, ListObjectsRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder =
-                    listObjectsRequestBuilder(storeId, body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = listObjectsRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -812,7 +909,8 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder listObjectsRequestBuilder(
-            String storeId, ListObjectsRequest body, Configuration configuration) throws ApiException {
+            String storeId, ListObjectsRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling listObjects");
@@ -822,12 +920,15 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling listObjects");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath =
                 "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -838,7 +939,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -857,8 +958,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ListStoresResponse> listStores(Integer pageSize, String continuationToken)
-            throws ApiException {
-        return listStores(pageSize, continuationToken, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return listStores(pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -866,12 +967,19 @@ public class OpenFgaApi {
      * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ListStoresResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ListStoresResponse> listStores(
-            Integer pageSize, String continuationToken, Configuration configuration) throws ApiException {
+            Integer pageSize, String continuationToken, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return listStores(pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ListStoresResponse> listStores(
+            Integer pageSize, String continuationToken, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     listStoresRequestBuilder(pageSize, continuationToken, configuration);
@@ -906,8 +1014,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ListStoresResponse>> listStoresWithHttpInfo(
-            Integer pageSize, String continuationToken) throws ApiException {
-        return listStoresWithHttpInfo(pageSize, continuationToken, memberVarConfiguration);
+            Integer pageSize, String continuationToken) throws ApiException, FgaInvalidParameterException {
+        return listStoresWithHttpInfo(pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -915,15 +1023,22 @@ public class OpenFgaApi {
      * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ListStoresResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ListStoresResponse>> listStoresWithHttpInfo(
-            Integer pageSize, String continuationToken, Configuration configuration) throws ApiException {
+            Integer pageSize, String continuationToken, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return listStoresWithHttpInfo(pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ListStoresResponse>> listStoresWithHttpInfo(
+            Integer pageSize, String continuationToken, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    listStoresRequestBuilder(pageSize, continuationToken, memberVarConfiguration);
+                    listStoresRequestBuilder(pageSize, continuationToken, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -952,7 +1067,11 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder listStoresRequestBuilder(
-            Integer pageSize, String continuationToken, Configuration configuration) throws ApiException {
+            Integer pageSize, String continuationToken, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
+
+        // verify the Configuration is valid
+        configuration.assertValid();
 
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -973,15 +1092,15 @@ public class OpenFgaApi {
                 queryJoiner.add(localVarQueryStringJoiner.toString());
             }
             localVarRequestBuilder.uri(
-                    URI.create(memberVarConfiguration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
+                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
         } else {
-            localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
         }
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -999,8 +1118,9 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;ReadResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ReadResponse> read(String storeId, ReadRequest body) throws ApiException {
-        return read(storeId, body, memberVarConfiguration);
+    public CompletableFuture<ReadResponse> read(String storeId, ReadRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return read(storeId, body, this.configuration);
     }
 
     /**
@@ -1008,12 +1128,18 @@ public class OpenFgaApi {
      * The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;).
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ReadResponse&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<ReadResponse> read(String storeId, ReadRequest body, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<ReadResponse> read(
+            String storeId, ReadRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return read(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ReadResponse> read(String storeId, ReadRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
@@ -1047,8 +1173,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadResponse>> readWithHttpInfo(String storeId, ReadRequest body)
-            throws ApiException {
-        return readWithHttpInfo(storeId, body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return readWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -1056,14 +1182,21 @@ public class OpenFgaApi {
      * The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;).
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ReadResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadResponse>> readWithHttpInfo(
-            String storeId, ReadRequest body, Configuration configuration) throws ApiException {
+            String storeId, ReadRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ReadResponse>> readWithHttpInfo(
+            String storeId, ReadRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = readRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1092,7 +1225,7 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder readRequestBuilder(String storeId, ReadRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling read");
@@ -1102,11 +1235,14 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling read");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -1117,7 +1253,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1136,8 +1272,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAssertionsResponse> readAssertions(String storeId, String authorizationModelId)
-            throws ApiException {
-        return readAssertions(storeId, authorizationModelId, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return readAssertions(storeId, authorizationModelId, this.configuration);
     }
 
     /**
@@ -1145,12 +1281,19 @@ public class OpenFgaApi {
      * The ReadAssertions API will return, for a given authorization model id, all the assertions stored for it. An assertion is an object that contains a tuple key, and the expectation of whether a call to the Check API of that tuple key will return true or false.
      * @param storeId  (required)
      * @param authorizationModelId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ReadAssertionsResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAssertionsResponse> readAssertions(
-            String storeId, String authorizationModelId, Configuration configuration) throws ApiException {
+            String storeId, String authorizationModelId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAssertions(storeId, authorizationModelId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ReadAssertionsResponse> readAssertions(
+            String storeId, String authorizationModelId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     readAssertionsRequestBuilder(storeId, authorizationModelId, configuration);
@@ -1185,8 +1328,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertionsWithHttpInfo(
-            String storeId, String authorizationModelId) throws ApiException {
-        return readAssertionsWithHttpInfo(storeId, authorizationModelId, memberVarConfiguration);
+            String storeId, String authorizationModelId) throws ApiException, FgaInvalidParameterException {
+        return readAssertionsWithHttpInfo(storeId, authorizationModelId, this.configuration);
     }
 
     /**
@@ -1194,15 +1337,23 @@ public class OpenFgaApi {
      * The ReadAssertions API will return, for a given authorization model id, all the assertions stored for it. An assertion is an object that contains a tuple key, and the expectation of whether a call to the Check API of that tuple key will return true or false.
      * @param storeId  (required)
      * @param authorizationModelId  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ReadAssertionsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertionsWithHttpInfo(
-            String storeId, String authorizationModelId, Configuration configuration) throws ApiException {
+            String storeId, String authorizationModelId, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAssertionsWithHttpInfo(
+                storeId, authorizationModelId, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertionsWithHttpInfo(
+            String storeId, String authorizationModelId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    readAssertionsRequestBuilder(storeId, authorizationModelId, memberVarConfiguration);
+                    readAssertionsRequestBuilder(storeId, authorizationModelId, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1231,7 +1382,8 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder readAssertionsRequestBuilder(
-            String storeId, String authorizationModelId, Configuration configuration) throws ApiException {
+            String storeId, String authorizationModelId, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling readAssertions");
@@ -1242,18 +1394,21 @@ public class OpenFgaApi {
                     400, "Missing the required parameter 'authorizationModelId' when calling readAssertions");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/assertions/{authorization_model_id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1272,8 +1427,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(String storeId, String id)
-            throws ApiException {
-        return readAuthorizationModel(storeId, id, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModel(storeId, id, this.configuration);
     }
 
     /**
@@ -1281,12 +1436,18 @@ public class OpenFgaApi {
      * The ReadAuthorizationModel API returns an authorization model by its identifier. The response will return the authorization model for the particular version.  ## Example To retrieve the authorization model with ID &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; for the store, call the GET authorization-models by ID API with &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; as the &#x60;id&#x60; path parameter.  The API will return: &#x60;&#x60;&#x60;json {   \&quot;authorization_model\&quot;:{     \&quot;id\&quot;:\&quot;01G5JAVJ41T49E9TT3SKVS7X1J\&quot;,     \&quot;type_definitions\&quot;:[       {         \&quot;type\&quot;:\&quot;user\&quot;       },       {         \&quot;type\&quot;:\&quot;document\&quot;,         \&quot;relations\&quot;:{           \&quot;reader\&quot;:{             \&quot;union\&quot;:{               \&quot;child\&quot;:[                 {                   \&quot;this\&quot;:{}                 },                 {                   \&quot;computedUserset\&quot;:{                     \&quot;object\&quot;:\&quot;\&quot;,                     \&quot;relation\&quot;:\&quot;writer\&quot;                   }                 }               ]             }           },           \&quot;writer\&quot;:{             \&quot;this\&quot;:{}           }         }       }     ]   } } &#x60;&#x60;&#x60; In the above example, there are 2 types (&#x60;user&#x60; and &#x60;document&#x60;). The &#x60;document&#x60; type has 2 relations (&#x60;writer&#x60; and &#x60;reader&#x60;).
      * @param storeId  (required)
      * @param id  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ReadAuthorizationModelResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(
-            String storeId, String id, Configuration configuration) throws ApiException {
+            String storeId, String id, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModel(storeId, id, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(
+            String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     readAuthorizationModelRequestBuilder(storeId, id, configuration);
@@ -1323,8 +1484,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModelWithHttpInfo(
-            String storeId, String id) throws ApiException {
-        return readAuthorizationModelWithHttpInfo(storeId, id, memberVarConfiguration);
+            String storeId, String id) throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModelWithHttpInfo(storeId, id, this.configuration);
     }
 
     /**
@@ -1332,15 +1493,21 @@ public class OpenFgaApi {
      * The ReadAuthorizationModel API returns an authorization model by its identifier. The response will return the authorization model for the particular version.  ## Example To retrieve the authorization model with ID &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; for the store, call the GET authorization-models by ID API with &#x60;01G5JAVJ41T49E9TT3SKVS7X1J&#x60; as the &#x60;id&#x60; path parameter.  The API will return: &#x60;&#x60;&#x60;json {   \&quot;authorization_model\&quot;:{     \&quot;id\&quot;:\&quot;01G5JAVJ41T49E9TT3SKVS7X1J\&quot;,     \&quot;type_definitions\&quot;:[       {         \&quot;type\&quot;:\&quot;user\&quot;       },       {         \&quot;type\&quot;:\&quot;document\&quot;,         \&quot;relations\&quot;:{           \&quot;reader\&quot;:{             \&quot;union\&quot;:{               \&quot;child\&quot;:[                 {                   \&quot;this\&quot;:{}                 },                 {                   \&quot;computedUserset\&quot;:{                     \&quot;object\&quot;:\&quot;\&quot;,                     \&quot;relation\&quot;:\&quot;writer\&quot;                   }                 }               ]             }           },           \&quot;writer\&quot;:{             \&quot;this\&quot;:{}           }         }       }     ]   } } &#x60;&#x60;&#x60; In the above example, there are 2 types (&#x60;user&#x60; and &#x60;document&#x60;). The &#x60;document&#x60; type has 2 relations (&#x60;writer&#x60; and &#x60;reader&#x60;).
      * @param storeId  (required)
      * @param id  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ReadAuthorizationModelResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModelWithHttpInfo(
-            String storeId, String id, Configuration configuration) throws ApiException {
+            String storeId, String id, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModelWithHttpInfo(storeId, id, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModelWithHttpInfo(
+            String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    readAuthorizationModelRequestBuilder(storeId, id, memberVarConfiguration);
+                    readAuthorizationModelRequestBuilder(storeId, id, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1371,7 +1538,7 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder readAuthorizationModelRequestBuilder(
-            String storeId, String id, Configuration configuration) throws ApiException {
+            String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling readAuthorizationModel");
@@ -1381,18 +1548,21 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'id' when calling readAuthorizationModel");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/authorization-models/{id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{id}", ApiClient.urlEncode(id.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1412,8 +1582,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
-            String storeId, Integer pageSize, String continuationToken) throws ApiException {
-        return readAuthorizationModels(storeId, pageSize, continuationToken, memberVarConfiguration);
+            String storeId, Integer pageSize, String continuationToken)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModels(storeId, pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -1422,13 +1593,20 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ReadAuthorizationModelsResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
+            String storeId, Integer pageSize, String continuationToken, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModels(
+                storeId, pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
             String storeId, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken, configuration);
@@ -1466,8 +1644,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModelsWithHttpInfo(
-            String storeId, Integer pageSize, String continuationToken) throws ApiException {
-        return readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken, memberVarConfiguration);
+            String storeId, Integer pageSize, String continuationToken)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModelsWithHttpInfo(storeId, pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -1476,16 +1655,23 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ReadAuthorizationModelsResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModelsWithHttpInfo(
+            String storeId, Integer pageSize, String continuationToken, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readAuthorizationModelsWithHttpInfo(
+                storeId, pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModelsWithHttpInfo(
             String storeId, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken, memberVarConfiguration);
+                    readAuthorizationModelsRequestBuilder(storeId, pageSize, continuationToken, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1517,12 +1703,15 @@ public class OpenFgaApi {
 
     private HttpRequest.Builder readAuthorizationModelsRequestBuilder(
             String storeId, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(
                     400, "Missing the required parameter 'storeId' when calling readAuthorizationModels");
         }
+
+        // verify the Configuration is valid
+        configuration.assertValid();
 
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -1544,15 +1733,15 @@ public class OpenFgaApi {
                 queryJoiner.add(localVarQueryStringJoiner.toString());
             }
             localVarRequestBuilder.uri(
-                    URI.create(memberVarConfiguration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
+                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
         } else {
-            localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
         }
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1573,8 +1762,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadChangesResponse> readChanges(
-            String storeId, String type, Integer pageSize, String continuationToken) throws ApiException {
-        return readChanges(storeId, type, pageSize, continuationToken, memberVarConfiguration);
+            String storeId, String type, Integer pageSize, String continuationToken)
+            throws ApiException, FgaInvalidParameterException {
+        return readChanges(storeId, type, pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -1584,13 +1774,24 @@ public class OpenFgaApi {
      * @param type  (optional)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ReadChangesResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ReadChangesResponse> readChanges(
+            String storeId,
+            String type,
+            Integer pageSize,
+            String continuationToken,
+            ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readChanges(
+                storeId, type, pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ReadChangesResponse> readChanges(
             String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     readChangesRequestBuilder(storeId, type, pageSize, continuationToken, configuration);
@@ -1627,8 +1828,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadChangesResponse>> readChangesWithHttpInfo(
-            String storeId, String type, Integer pageSize, String continuationToken) throws ApiException {
-        return readChangesWithHttpInfo(storeId, type, pageSize, continuationToken, memberVarConfiguration);
+            String storeId, String type, Integer pageSize, String continuationToken)
+            throws ApiException, FgaInvalidParameterException {
+        return readChangesWithHttpInfo(storeId, type, pageSize, continuationToken, this.configuration);
     }
 
     /**
@@ -1638,16 +1840,27 @@ public class OpenFgaApi {
      * @param type  (optional)
      * @param pageSize  (optional)
      * @param continuationToken  (optional)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;ReadChangesResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<ReadChangesResponse>> readChangesWithHttpInfo(
+            String storeId,
+            String type,
+            Integer pageSize,
+            String continuationToken,
+            ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return readChangesWithHttpInfo(
+                storeId, type, pageSize, continuationToken, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<ReadChangesResponse>> readChangesWithHttpInfo(
             String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    readChangesRequestBuilder(storeId, type, pageSize, continuationToken, memberVarConfiguration);
+                    readChangesRequestBuilder(storeId, type, pageSize, continuationToken, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1677,11 +1890,14 @@ public class OpenFgaApi {
 
     private HttpRequest.Builder readChangesRequestBuilder(
             String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling readChanges");
         }
+
+        // verify the Configuration is valid
+        configuration.assertValid();
 
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -1705,15 +1921,15 @@ public class OpenFgaApi {
                 queryJoiner.add(localVarQueryStringJoiner.toString());
             }
             localVarRequestBuilder.uri(
-                    URI.create(memberVarConfiguration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
+                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
         } else {
-            localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
         }
 
         localVarRequestBuilder.header("Accept", "application/json");
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1731,8 +1947,9 @@ public class OpenFgaApi {
      * @return CompletableFuture&lt;Object&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<Object> write(String storeId, WriteRequest body) throws ApiException {
-        return write(storeId, body, memberVarConfiguration);
+    public CompletableFuture<Object> write(String storeId, WriteRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return write(storeId, body, this.configuration);
     }
 
     /**
@@ -1740,12 +1957,18 @@ public class OpenFgaApi {
      * The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples while &#x60;deletes&#x60; removes existing tuples. The API is not idempotent: if, later on, you try to add the same tuple, or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;Object&gt;
      * @throws ApiException if fails to make API call
      */
-    public CompletableFuture<Object> write(String storeId, WriteRequest body, Configuration configuration)
-            throws ApiException {
+    public CompletableFuture<Object> write(
+            String storeId, WriteRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return write(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<Object> write(String storeId, WriteRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
@@ -1779,8 +2002,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<Object>> writeWithHttpInfo(String storeId, WriteRequest body)
-            throws ApiException {
-        return writeWithHttpInfo(storeId, body, memberVarConfiguration);
+            throws ApiException, FgaInvalidParameterException {
+        return writeWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -1788,14 +2011,21 @@ public class OpenFgaApi {
      * The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples while &#x60;deletes&#x60; removes existing tuples. The API is not idempotent: if, later on, you try to add the same tuple, or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;Object&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<Object>> writeWithHttpInfo(
-            String storeId, WriteRequest body, Configuration configuration) throws ApiException {
+            String storeId, WriteRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return writeWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<Object>> writeWithHttpInfo(
+            String storeId, WriteRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
-            HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body, memberVarConfiguration);
+            HttpRequest.Builder localVarRequestBuilder = writeRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1824,7 +2054,7 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder writeRequestBuilder(String storeId, WriteRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling write");
@@ -1834,11 +2064,14 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling write");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -1849,7 +2082,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -1869,8 +2102,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<Void> writeAssertions(
-            String storeId, String authorizationModelId, WriteAssertionsRequest body) throws ApiException {
-        return writeAssertions(storeId, authorizationModelId, body, memberVarConfiguration);
+            String storeId, String authorizationModelId, WriteAssertionsRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAssertions(storeId, authorizationModelId, body, this.configuration);
     }
 
     /**
@@ -1879,13 +2113,22 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param authorizationModelId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;Void&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<Void> writeAssertions(
+            String storeId,
+            String authorizationModelId,
+            WriteAssertionsRequest body,
+            ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAssertions(storeId, authorizationModelId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<Void> writeAssertions(
             String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     writeAssertionsRequestBuilder(storeId, authorizationModelId, body, configuration);
@@ -1912,8 +2155,9 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<Void>> writeAssertionsWithHttpInfo(
-            String storeId, String authorizationModelId, WriteAssertionsRequest body) throws ApiException {
-        return writeAssertionsWithHttpInfo(storeId, authorizationModelId, body, memberVarConfiguration);
+            String storeId, String authorizationModelId, WriteAssertionsRequest body)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAssertionsWithHttpInfo(storeId, authorizationModelId, body, this.configuration);
     }
 
     /**
@@ -1922,16 +2166,26 @@ public class OpenFgaApi {
      * @param storeId  (required)
      * @param authorizationModelId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;Void&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<Void>> writeAssertionsWithHttpInfo(
+            String storeId,
+            String authorizationModelId,
+            WriteAssertionsRequest body,
+            ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAssertionsWithHttpInfo(
+                storeId, authorizationModelId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<Void>> writeAssertionsWithHttpInfo(
             String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    writeAssertionsRequestBuilder(storeId, authorizationModelId, body, memberVarConfiguration);
+                    writeAssertionsRequestBuilder(storeId, authorizationModelId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -1953,7 +2207,7 @@ public class OpenFgaApi {
 
     private HttpRequest.Builder writeAssertionsRequestBuilder(
             String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
-            throws ApiException {
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling writeAssertions");
@@ -1968,13 +2222,16 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling writeAssertions");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/assertions/{authorization_model_id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -1985,7 +2242,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }
@@ -2004,8 +2261,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(
-            String storeId, WriteAuthorizationModelRequest body) throws ApiException {
-        return writeAuthorizationModel(storeId, body, memberVarConfiguration);
+            String storeId, WriteAuthorizationModelRequest body) throws ApiException, FgaInvalidParameterException {
+        return writeAuthorizationModel(storeId, body, this.configuration);
     }
 
     /**
@@ -2013,12 +2270,19 @@ public class OpenFgaApi {
      * The WriteAuthorizationModel API will add a new authorization model to a store. Each item in the &#x60;type_definitions&#x60; array is a type definition as specified in the field &#x60;type_definition&#x60;. The response will return the authorization model&#39;s ID in the &#x60;id&#x60; field.  ## Example To add an authorization model with &#x60;user&#x60; and &#x60;document&#x60; type definitions, call POST authorization-models API with the body:  &#x60;&#x60;&#x60;json {   \&quot;type_definitions\&quot;:[     {       \&quot;type\&quot;:\&quot;user\&quot;     },     {       \&quot;type\&quot;:\&quot;document\&quot;,       \&quot;relations\&quot;:{         \&quot;reader\&quot;:{           \&quot;union\&quot;:{             \&quot;child\&quot;:[               {                 \&quot;this\&quot;:{}               },               {                 \&quot;computedUserset\&quot;:{                   \&quot;object\&quot;:\&quot;\&quot;,                   \&quot;relation\&quot;:\&quot;writer\&quot;                 }               }             ]           }         },         \&quot;writer\&quot;:{           \&quot;this\&quot;:{}         }       }     }   ] } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include the version id for this authorization model, which will look like  &#x60;&#x60;&#x60; {\&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot;} &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;WriteAuthorizationModelResponse&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(
-            String storeId, WriteAuthorizationModelRequest body, Configuration configuration) throws ApiException {
+            String storeId, WriteAuthorizationModelRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAuthorizationModel(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(
+            String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
                     writeAuthorizationModelRequestBuilder(storeId, body, configuration);
@@ -2055,8 +2319,8 @@ public class OpenFgaApi {
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModelWithHttpInfo(
-            String storeId, WriteAuthorizationModelRequest body) throws ApiException {
-        return writeAuthorizationModelWithHttpInfo(storeId, body, memberVarConfiguration);
+            String storeId, WriteAuthorizationModelRequest body) throws ApiException, FgaInvalidParameterException {
+        return writeAuthorizationModelWithHttpInfo(storeId, body, this.configuration);
     }
 
     /**
@@ -2064,15 +2328,22 @@ public class OpenFgaApi {
      * The WriteAuthorizationModel API will add a new authorization model to a store. Each item in the &#x60;type_definitions&#x60; array is a type definition as specified in the field &#x60;type_definition&#x60;. The response will return the authorization model&#39;s ID in the &#x60;id&#x60; field.  ## Example To add an authorization model with &#x60;user&#x60; and &#x60;document&#x60; type definitions, call POST authorization-models API with the body:  &#x60;&#x60;&#x60;json {   \&quot;type_definitions\&quot;:[     {       \&quot;type\&quot;:\&quot;user\&quot;     },     {       \&quot;type\&quot;:\&quot;document\&quot;,       \&quot;relations\&quot;:{         \&quot;reader\&quot;:{           \&quot;union\&quot;:{             \&quot;child\&quot;:[               {                 \&quot;this\&quot;:{}               },               {                 \&quot;computedUserset\&quot;:{                   \&quot;object\&quot;:\&quot;\&quot;,                   \&quot;relation\&quot;:\&quot;writer\&quot;                 }               }             ]           }         },         \&quot;writer\&quot;:{           \&quot;this\&quot;:{}         }       }     }   ] } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include the version id for this authorization model, which will look like  &#x60;&#x60;&#x60; {\&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot;} &#x60;&#x60;&#x60;
      * @param storeId  (required)
      * @param body  (required)
-     * @param configuration Override the configuration this OpenFgaApi was constructed with
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
      * @return CompletableFuture&lt;ApiResponse&lt;WriteAuthorizationModelResponse&gt;&gt;
      * @throws ApiException if fails to make API call
      */
     public CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModelWithHttpInfo(
-            String storeId, WriteAuthorizationModelRequest body, Configuration configuration) throws ApiException {
+            String storeId, WriteAuthorizationModelRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return writeAuthorizationModelWithHttpInfo(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModelWithHttpInfo(
+            String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             HttpRequest.Builder localVarRequestBuilder =
-                    writeAuthorizationModelRequestBuilder(storeId, body, memberVarConfiguration);
+                    writeAuthorizationModelRequestBuilder(storeId, body, configuration);
             return memberVarHttpClient
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
@@ -2103,7 +2374,8 @@ public class OpenFgaApi {
     }
 
     private HttpRequest.Builder writeAuthorizationModelRequestBuilder(
-            String storeId, WriteAuthorizationModelRequest body, Configuration configuration) throws ApiException {
+            String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         // verify the required parameter 'storeId' is set
         if (storeId == null) {
             throw new ApiException(
@@ -2114,12 +2386,15 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'body' when calling writeAuthorizationModel");
         }
 
+        // verify the Configuration is valid
+        configuration.assertValid();
+
         HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
         String localVarPath = "/stores/{store_id}/authorization-models"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        localVarRequestBuilder.uri(URI.create(memberVarConfiguration.getApiUrl() + localVarPath));
+        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
@@ -2130,7 +2405,7 @@ public class OpenFgaApi {
         } catch (IOException e) {
             throw new ApiException(e);
         }
-        Duration readTimeout = memberVarConfiguration.getReadTimeout();
+        Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
             localVarRequestBuilder.timeout(readTimeout);
         }

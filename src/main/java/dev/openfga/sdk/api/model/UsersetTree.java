@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({UsersetTree.JSON_PROPERTY_ROOT})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
+        date = "2023-08-22T23:54:43.912230Z[Etc/UTC]")
 public class UsersetTree {
     public static final String JSON_PROPERTY_ROOT = "root";
     private Node root;

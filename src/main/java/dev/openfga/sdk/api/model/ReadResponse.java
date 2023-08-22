@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ReadResponse.JSON_PROPERTY_TUPLES, ReadResponse.JSON_PROPERTY_CONTINUATION_TOKEN})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
+        date = "2023-08-22T23:54:43.912230Z[Etc/UTC]")
 public class ReadResponse {
     public static final String JSON_PROPERTY_TUPLES = "tuples";
     private List<Tuple> tuples = new ArrayList<>();

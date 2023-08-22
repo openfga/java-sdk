@@ -49,7 +49,7 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
  */
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-21T23:45:26.204414Z[Etc/UTC]")
+        date = "2023-08-22T23:54:43.912230Z[Etc/UTC]")
 public class ApiClient {
 
     private HttpClient.Builder builder;
