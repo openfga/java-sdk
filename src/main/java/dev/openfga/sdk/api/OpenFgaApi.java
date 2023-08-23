@@ -56,7 +56,7 @@ import java.util.function.Consumer;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-23T01:25:17.613607Z[Etc/UTC]")
+        date = "2023-08-23T20:06:14.249201Z[Etc/UTC]")
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;

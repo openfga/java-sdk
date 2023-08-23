@@ -86,12 +86,10 @@ public class Configuration implements BaseConfiguration {
      * @return A new {@link Configuration} with values of this Configuration mixed with non-null values of configurationOverride
      */
     public Configuration override(ConfigurationOverride configurationOverride) {
-        Configuration result = new Configuration(apiUrl);
+        Configuration result = new Configuration();
 
         String overrideApiUrl = configurationOverride.getApiUrl();
-        if (overrideApiUrl != null) {
-            result.apiUrl(overrideApiUrl);
-        }
+        result.apiUrl(overrideApiUrl != null ? overrideApiUrl : apiUrl);
 
         String overrideUserAgent = configurationOverride.getUserAgent();
         result.userAgent(overrideUserAgent != null ? overrideUserAgent : userAgent);

@@ -16,7 +16,7 @@ import java.net.http.HttpHeaders;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-23T01:25:17.613607Z[Etc/UTC]")
+        date = "2023-08-23T20:06:14.249201Z[Etc/UTC]")
 public class ApiException extends Exception {
     private int code = 0;
     private HttpHeaders responseHeaders = null;
