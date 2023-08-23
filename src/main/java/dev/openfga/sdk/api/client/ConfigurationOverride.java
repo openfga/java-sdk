@@ -42,7 +42,7 @@ public class ConfigurationOverride implements BaseConfiguration {
      * @param apiUrl The URL.
      * @return This object.
      */
-    public BaseConfiguration apiUrl(String apiUrl) {
+    public ConfigurationOverride apiUrl(String apiUrl) {
         this.apiUrl = apiUrl;
         return this;
     }
@@ -63,7 +63,7 @@ public class ConfigurationOverride implements BaseConfiguration {
      * @param userAgent The user agent.
      * @return This object.
      */
-    public BaseConfiguration userAgent(String userAgent) {
+    public ConfigurationOverride userAgent(String userAgent) {
         this.userAgent = userAgent;
         return this;
     }
@@ -89,7 +89,7 @@ public class ConfigurationOverride implements BaseConfiguration {
      *                    effectively infinite value.
      * @return This object.
      */
-    public BaseConfiguration readTimeout(Duration readTimeout) {
+    public ConfigurationOverride readTimeout(Duration readTimeout) {
         this.readTimeout = readTimeout;
         return this;
     }
@@ -121,7 +121,7 @@ public class ConfigurationOverride implements BaseConfiguration {
      * @param connectTimeout connection timeout in milliseconds
      * @return This object.
      */
-    public BaseConfiguration connectTimeout(Duration connectTimeout) {
+    public ConfigurationOverride connectTimeout(Duration connectTimeout) {
         this.connectTimeout = connectTimeout;
         return this;
     }

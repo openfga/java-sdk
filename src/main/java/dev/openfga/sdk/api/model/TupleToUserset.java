@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({TupleToUserset.JSON_PROPERTY_TUPLESET, TupleToUserset.JSON_PROPERTY_COMPUTED_USERSET})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-22T23:54:43.912230Z[Etc/UTC]")
+        date = "2023-08-23T01:25:17.613607Z[Etc/UTC]")
 public class TupleToUserset {
     public static final String JSON_PROPERTY_TUPLESET = "tupleset";
     private ObjectRelation tupleset;
