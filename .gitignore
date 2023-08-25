@@ -19,3 +19,7 @@ hs_err_pid*
 target
 .gradle
 build
+
+# openapi files
+/api/openapi.yaml
+VERSION.txt

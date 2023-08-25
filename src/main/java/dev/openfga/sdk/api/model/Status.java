@@ -28,7 +28,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Status.JSON_PROPERTY_CODE, Status.JSON_PROPERTY_MESSAGE, Status.JSON_PROPERTY_DETAILS})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-25T14:11:21.475596Z[Etc/UTC]")
+        date = "2023-08-25T20:28:06.814651Z[Etc/UTC]")
 public class Status {
     public static final String JSON_PROPERTY_CODE = "code";
     private Integer code;

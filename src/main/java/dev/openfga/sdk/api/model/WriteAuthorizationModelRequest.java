@@ -31,7 +31,7 @@ import java.util.StringJoiner;
 })
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-25T14:11:21.475596Z[Etc/UTC]")
+        date = "2023-08-25T20:28:06.814651Z[Etc/UTC]")
 public class WriteAuthorizationModelRequest {
     public static final String JSON_PROPERTY_TYPE_DEFINITIONS = "type_definitions";
     private List<TypeDefinition> typeDefinitions = new ArrayList<>();

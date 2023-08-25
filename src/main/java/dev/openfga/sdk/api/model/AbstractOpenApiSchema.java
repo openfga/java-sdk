@@ -21,7 +21,7 @@ import java.util.Objects;
  */
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-25T14:11:21.475596Z[Etc/UTC]")
+        date = "2023-08-25T20:28:06.814651Z[Etc/UTC]")
 public abstract class AbstractOpenApiSchema {
 
     // store the actual instance of the schema/object

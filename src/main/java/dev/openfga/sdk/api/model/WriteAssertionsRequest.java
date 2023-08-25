@@ -26,7 +26,7 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({WriteAssertionsRequest.JSON_PROPERTY_ASSERTIONS})
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-25T14:11:21.475596Z[Etc/UTC]")
+        date = "2023-08-25T20:28:06.814651Z[Etc/UTC]")
 public class WriteAssertionsRequest {
     public static final String JSON_PROPERTY_ASSERTIONS = "assertions";
     private List<Assertion> assertions = new ArrayList<>();

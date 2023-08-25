@@ -91,7 +91,115 @@ If your server is configured with [authentication enabled](https://openfga.dev/d
 
 ### Models
 
-[Models](https://github.com/openfga/java-sdk/blob/main/apiModel.ts)
+
+- [Any](https://github.com/openfga/java-sdk/blob/main/docs/Any.md)
+
+- [Assertion](https://github.com/openfga/java-sdk/blob/main/docs/Assertion.md)
+
+- [AuthorizationModel](https://github.com/openfga/java-sdk/blob/main/docs/AuthorizationModel.md)
+
+- [CheckRequest](https://github.com/openfga/java-sdk/blob/main/docs/CheckRequest.md)
+
+- [CheckResponse](https://github.com/openfga/java-sdk/blob/main/docs/CheckResponse.md)
+
+- [Computed](https://github.com/openfga/java-sdk/blob/main/docs/Computed.md)
+
+- [ContextualTupleKeys](https://github.com/openfga/java-sdk/blob/main/docs/ContextualTupleKeys.md)
+
+- [CreateStoreRequest](https://github.com/openfga/java-sdk/blob/main/docs/CreateStoreRequest.md)
+
+- [CreateStoreResponse](https://github.com/openfga/java-sdk/blob/main/docs/CreateStoreResponse.md)
+
+- [Difference](https://github.com/openfga/java-sdk/blob/main/docs/Difference.md)
+
+- [ErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/ErrorCode.md)
+
+- [ExpandRequest](https://github.com/openfga/java-sdk/blob/main/docs/ExpandRequest.md)
+
+- [ExpandResponse](https://github.com/openfga/java-sdk/blob/main/docs/ExpandResponse.md)
+
+- [GetStoreResponse](https://github.com/openfga/java-sdk/blob/main/docs/GetStoreResponse.md)
+
+- [InternalErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/InternalErrorCode.md)
+
+- [InternalErrorMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/InternalErrorMessageResponse.md)
+
+- [Leaf](https://github.com/openfga/java-sdk/blob/main/docs/Leaf.md)
+
+- [ListObjectsRequest](https://github.com/openfga/java-sdk/blob/main/docs/ListObjectsRequest.md)
+
+- [ListObjectsResponse](https://github.com/openfga/java-sdk/blob/main/docs/ListObjectsResponse.md)
+
+- [ListStoresResponse](https://github.com/openfga/java-sdk/blob/main/docs/ListStoresResponse.md)
+
+- [Metadata](https://github.com/openfga/java-sdk/blob/main/docs/Metadata.md)
+
+- [Node](https://github.com/openfga/java-sdk/blob/main/docs/Node.md)
+
+- [Nodes](https://github.com/openfga/java-sdk/blob/main/docs/Nodes.md)
+
+- [NotFoundErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/NotFoundErrorCode.md)
+
+- [ObjectRelation](https://github.com/openfga/java-sdk/blob/main/docs/ObjectRelation.md)
+
+- [PathUnknownErrorMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/PathUnknownErrorMessageResponse.md)
+
+- [ReadAssertionsResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadAssertionsResponse.md)
+
+- [ReadAuthorizationModelResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadAuthorizationModelResponse.md)
+
+- [ReadAuthorizationModelsResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadAuthorizationModelsResponse.md)
+
+- [ReadChangesResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadChangesResponse.md)
+
+- [ReadRequest](https://github.com/openfga/java-sdk/blob/main/docs/ReadRequest.md)
+
+- [ReadResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadResponse.md)
+
+- [RelationMetadata](https://github.com/openfga/java-sdk/blob/main/docs/RelationMetadata.md)
+
+- [RelationReference](https://github.com/openfga/java-sdk/blob/main/docs/RelationReference.md)
+
+- [Status](https://github.com/openfga/java-sdk/blob/main/docs/Status.md)
+
+- [Store](https://github.com/openfga/java-sdk/blob/main/docs/Store.md)
+
+- [Tuple](https://github.com/openfga/java-sdk/blob/main/docs/Tuple.md)
+
+- [TupleChange](https://github.com/openfga/java-sdk/blob/main/docs/TupleChange.md)
+
+- [TupleKey](https://github.com/openfga/java-sdk/blob/main/docs/TupleKey.md)
+
+- [TupleKeys](https://github.com/openfga/java-sdk/blob/main/docs/TupleKeys.md)
+
+- [TupleOperation](https://github.com/openfga/java-sdk/blob/main/docs/TupleOperation.md)
+
+- [TupleToUserset](https://github.com/openfga/java-sdk/blob/main/docs/TupleToUserset.md)
+
+- [TypeDefinition](https://github.com/openfga/java-sdk/blob/main/docs/TypeDefinition.md)
+
+- [Users](https://github.com/openfga/java-sdk/blob/main/docs/Users.md)
+
+- [Userset](https://github.com/openfga/java-sdk/blob/main/docs/Userset.md)
+
+- [UsersetTree](https://github.com/openfga/java-sdk/blob/main/docs/UsersetTree.md)
+
+- [UsersetTreeDifference](https://github.com/openfga/java-sdk/blob/main/docs/UsersetTreeDifference.md)
+
+- [UsersetTreeTupleToUserset](https://github.com/openfga/java-sdk/blob/main/docs/UsersetTreeTupleToUserset.md)
+
+- [Usersets](https://github.com/openfga/java-sdk/blob/main/docs/Usersets.md)
+
+- [ValidationErrorMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/ValidationErrorMessageResponse.md)
+
+- [WriteAssertionsRequest](https://github.com/openfga/java-sdk/blob/main/docs/WriteAssertionsRequest.md)
+
+- [WriteAuthorizationModelRequest](https://github.com/openfga/java-sdk/blob/main/docs/WriteAuthorizationModelRequest.md)
+
+- [WriteAuthorizationModelResponse](https://github.com/openfga/java-sdk/blob/main/docs/WriteAuthorizationModelResponse.md)
+
+- [WriteRequest](https://github.com/openfga/java-sdk/blob/main/docs/WriteRequest.md)
+
 
 
 ## Contributing
