@@ -480,26 +480,15 @@ public class OpenFgaApi {
             throw new ApiException(400, "Missing the required parameter 'storeId' when calling deleteStore");
         }
 
-        // verify the Configuration is valid
-        configuration.assertValid();
+        String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+        HttpRequest.Builder requestBuilder = ApiClient.requestBuilder("DELETE", path, configuration);
 
-        String localVarPath = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
         if (memberVarInterceptor != null) {
-            memberVarInterceptor.accept(localVarRequestBuilder);
+            memberVarInterceptor.accept(requestBuilder);
         }
-        return localVarRequestBuilder;
+
+        return requestBuilder;
     }
 
     /**

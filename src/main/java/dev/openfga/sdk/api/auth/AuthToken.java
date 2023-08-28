@@ -14,13 +14,17 @@ public class AuthToken {
     private final Random random = new Random();
     private Instant expiresAt;
 
-    private String AccessToken;
+    private String accessToken;
 
     public boolean isValid() {
-        return !isNullOrWhitespace(AccessToken)
+        return !isNullOrWhitespace(accessToken)
                 && (expiresAt == null
                         || expiresAt.isBefore(Instant.now()
                                 .plusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
                                 .plusSeconds(random.nextLong() % TOKEN_EXPIRY_JITTER_IN_SEC)));
+    }
+
+    public String getAccessToken() {
+        return accessToken;
     }
 }

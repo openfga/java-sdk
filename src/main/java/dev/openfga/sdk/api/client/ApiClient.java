@@ -19,11 +19,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -95,6 +98,41 @@ public class ApiClient {
             return ((OffsetDateTime) value).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         }
         return value.toString();
+    }
+
+    public static HttpRequest.Builder requestBuilder(String method, String path, Configuration configuration)
+            throws FgaInvalidParameterException {
+        return requestBuilder(method, path, HttpRequest.BodyPublishers.noBody(), configuration);
+    }
+
+    public static HttpRequest.Builder requestBuilder(
+            String method, String path, byte[] body, Configuration configuration) throws FgaInvalidParameterException {
+        HttpRequest.Builder builder =
+                requestBuilder(method, path, HttpRequest.BodyPublishers.ofByteArray(body), configuration);
+        builder.header("content-type", "application/json");
+        return builder;
+    }
+
+    private static HttpRequest.Builder requestBuilder(
+            String method, String path, HttpRequest.BodyPublisher bodyPublisher, Configuration configuration)
+            throws FgaInvalidParameterException {
+        // verify the Configuration is valid
+        configuration.assertValid();
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder();
+
+        builder.uri(URI.create(configuration.getApiUrl() + path));
+
+        builder.header("accept", "application/json");
+
+        builder.method(method, HttpRequest.BodyPublishers.noBody());
+
+        Duration readTimeout = configuration.getReadTimeout();
+        if (readTimeout != null) {
+            builder.timeout(readTimeout);
+        }
+
+        return builder;
     }
 
     /**
