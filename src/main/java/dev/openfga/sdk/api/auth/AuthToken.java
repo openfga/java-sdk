@@ -5,7 +5,7 @@ import static dev.openfga.util.StringUtil.isNullOrWhitespace;
 import java.time.Instant;
 import java.util.Random;
 
-class AuthToken {
+public class AuthToken {
     // TODO: Check where these comes from
     private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = 300;
     private static final int TOKEN_EXPIRY_JITTER_IN_SEC =

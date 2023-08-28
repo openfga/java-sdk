@@ -14,6 +14,7 @@ package dev.openfga.sdk.api.client;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.openfga.sdk.api.auth.ClientCredentials;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.Arrays;
 import java.util.List;

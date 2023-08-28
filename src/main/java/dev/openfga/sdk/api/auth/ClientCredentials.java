@@ -10,12 +10,15 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.auth;
 
 import static dev.openfga.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 
+/**
+ *
+ */
 public class ClientCredentials {
     private String clientId;
     private String clientSecret;

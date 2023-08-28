@@ -5,7 +5,7 @@ package dev.openfga.sdk.api.auth;
  * <p>
  * {@see "https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow"}
  */
-class AccessTokenResponse {
+public class AccessTokenResponse {
     /// <summary>
     /// Time period after which the token will expire (in ms)
     /// </summary>

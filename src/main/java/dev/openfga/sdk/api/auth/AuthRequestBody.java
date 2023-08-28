@@ -4,7 +4,7 @@ package dev.openfga.sdk.api.auth;
  * Authentication request.
  */
 // TODO: Jackson-ify
-class AuthRequestBody {
+public class AuthRequestBody {
     private String audience;
     private String clientId;
     private String clientSecret;
