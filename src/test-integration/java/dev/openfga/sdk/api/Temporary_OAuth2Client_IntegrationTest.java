@@ -18,13 +18,21 @@ public class Temporary_OAuth2Client_IntegrationTest {
 
     @Test
     public void auth() throws Exception {
+        System.setProperty("jdk.httpclient.HttpClient.log", "all");
+
         ClientCredentials config = new ClientCredentials()
                 .apiAudience(FGA_API_AUDIENCE)
                 .apiTokenIssuer(FGA_API_TOKEN_ISSUER)
                 .clientId(FGA_CLIENT_ID)
                 .clientSecret(FGA_CLIENT_SECRET);
 
-        OAuth2Client authClient = new OAuth2Client(config, HttpClient.newBuilder(), JsonMapper.builder().build());
+        var client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .version(HttpClient.Version.HTTP_2)
+                .build();
+
+        OAuth2Client authClient =
+                new OAuth2Client(config, client, JsonMapper.builder().build());
         authClient.getAccessTokenAsync().get();
     }
 }

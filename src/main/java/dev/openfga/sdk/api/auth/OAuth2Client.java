@@ -10,21 +10,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 public class OAuth2Client {
-    private HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
-    private ObjectMapper mapper;
-    private AuthToken authToken = new AuthToken();
-    private AuthRequestBody authRequest;
-    private String apiTokenIssuer;
+    private final HttpClient httpClient;
+    private final ObjectMapper mapper;
+    private final AuthToken authToken = new AuthToken();
+    private final AuthRequestBody authRequest;
+    private final String apiTokenIssuer;
 
     /**
      * Initializes a new instance of the <see cref="OAuth2Client" /> class
      *
      * @param credentialsConfig Configuration for the credentials
-     * @param httpClientBuilder
+     * @param httpClient
      * <exception cref="NullReferenceException"></exception>
      */
-    public OAuth2Client(
-            ClientCredentials credentialsConfig, HttpClient.Builder httpClientBuilder, ObjectMapper mapper) {
+    public OAuth2Client(ClientCredentials credentialsConfig, HttpClient httpClient, ObjectMapper mapper) {
         // TODO: Move to somewhere else. Do I need to make a builder?
         //        if (isNullOrWhitespace(credentialsConfig.getClientId())) {
         //            throw new FgaInvalidParameterException("OAuth2Client", "config.ClientId");
@@ -34,11 +33,12 @@ public class OAuth2Client {
         //            throw new FgaInvalidParameterException("OAuth2Client", "config.ClientSecret");
         //        }
 
-        this.httpClientBuilder = httpClientBuilder;
+        this.httpClient = httpClient;
         this.mapper = mapper;
         this.apiTokenIssuer = credentialsConfig.getApiTokenIssuer();
         this.authRequest = new AuthRequestBody();
-        this.authRequest.setClientId(credentialsConfig.getClientId());;
+        this.authRequest.setClientId(credentialsConfig.getClientId());
+        ;
         this.authRequest.setClientSecret(credentialsConfig.getClientSecret());
         this.authRequest.setAudience(credentialsConfig.getApiAudience());
         this.authRequest.setGrantType("client_credentials");
@@ -50,22 +50,25 @@ public class OAuth2Client {
     /// <exception cref="NullReferenceException"></exception>
     /// <exception cref="Exception"></exception>
     private CompletableFuture<Void> exchangeTokenAsync() throws Exception {
-        HttpClient client = httpClientBuilder.build();
-
         String body = mapper.writeValueAsString(authRequest);
-        System.out.println(body);
+        System.out.printf("!!!DEBUG!!! request body: %s\n", body);
+        System.out.flush();
+
+        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         Configuration config = new Configuration().apiUrl("https://" + apiTokenIssuer);
 
-        HttpRequest request =
-                ApiClient.requestBuilder("POST", "/oauth/token", body.getBytes(StandardCharsets.UTF_8), config).build();
+        HttpRequest request = ApiClient.requestBuilder("POST", "/oauth/token", bodyBytes, config)
+                .build();
 
-        HttpResponse<String> thing =
-                client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).get();
+        HttpResponse<String> response = httpClient
+                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .get();
 
-        System.out.println(thing.body());
+        System.out.printf("!!!DEBUG!!! response body: %s\n", response.body());
+        System.out.flush();
 
-        return CompletableFuture.supplyAsync(() -> null);
+        return CompletableFuture.completedFuture(null);
     }
 
     /// <summary>
@@ -78,6 +81,8 @@ public class OAuth2Client {
             exchangeTokenAsync().get();
         }
 
-        return CompletableFuture.supplyAsync(authToken::getAccessToken);
+        String accessToken = authToken.getAccessToken();
+
+        return CompletableFuture.completedFuture(accessToken);
     }
 }
