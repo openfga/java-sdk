@@ -19,11 +19,14 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.*;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.*;
-import dev.openfga.sdk.errors.*;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import dev.openfga.sdk.errors.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

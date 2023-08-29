@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
 import static dev.openfga.util.StringUtil.isNullOrWhitespace;
 
@@ -33,6 +33,8 @@ public class Configuration implements BaseConfiguration {
     private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.0.1";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
+
+    // TODO: Add Credentials, which should wrap CredentialsMethod and ClientCredentials
 
     private String apiUrl;
     private String userAgent;

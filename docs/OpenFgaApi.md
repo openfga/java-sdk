@@ -50,8 +50,8 @@ The Check API queries to check if the user has a certain relationship with an ob
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -121,9 +121,9 @@ The Check API queries to check if the user has a certain relationship with an ob
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -203,8 +203,8 @@ Create a unique OpenFGA store which will be used to store authorization models a
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -272,9 +272,9 @@ Create a unique OpenFGA store which will be used to store authorization models a
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -352,8 +352,8 @@ Delete an OpenFGA store. This does not delete the data associated with the store
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -420,9 +420,9 @@ Delete an OpenFGA store. This does not delete the data associated with the store
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -499,8 +499,8 @@ The Expand API will return all users and usersets that have certain relationship
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -570,9 +570,9 @@ The Expand API will return all users and usersets that have certain relationship
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -652,8 +652,8 @@ Returns an OpenFGA store by its identifier
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -721,9 +721,9 @@ Returns an OpenFGA store by its identifier
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -801,8 +801,8 @@ The ListObjects API returns a list of all the objects of the given type that the
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -872,9 +872,9 @@ The ListObjects API returns a list of all the objects of the given type that the
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -954,8 +954,8 @@ Returns a paginated list of OpenFGA stores and a continuation token to get addit
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1025,9 +1025,9 @@ Returns a paginated list of OpenFGA stores and a continuation token to get addit
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1107,8 +1107,8 @@ The Read API will return the tuples for a certain store that match a query filte
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1178,9 +1178,9 @@ The Read API will return the tuples for a certain store that match a query filte
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1260,8 +1260,8 @@ The ReadAssertions API will return, for a given authorization model id, all the 
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1331,9 +1331,9 @@ The ReadAssertions API will return, for a given authorization model id, all the 
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1413,8 +1413,8 @@ The ReadAuthorizationModel API returns an authorization model by its identifier.
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1484,9 +1484,9 @@ The ReadAuthorizationModel API returns an authorization model by its identifier.
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1566,8 +1566,8 @@ The ReadAuthorizationModels API will return all the authorization models for a c
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1639,9 +1639,9 @@ The ReadAuthorizationModels API will return all the authorization models for a c
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1723,8 +1723,8 @@ The ReadChanges API will return a paginated list of tuple changes (additions and
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1798,9 +1798,9 @@ The ReadChanges API will return a paginated list of tuple changes (additions and
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1884,8 +1884,8 @@ The Write API will update the tuples for a certain store. Tuples and type defini
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1955,9 +1955,9 @@ The Write API will update the tuples for a certain store. Tuples and type defini
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2037,8 +2037,8 @@ The WriteAssertions API will upsert new assertions for an authorization model id
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2109,9 +2109,9 @@ The WriteAssertions API will upsert new assertions for an authorization model id
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2192,8 +2192,8 @@ The WriteAuthorizationModel API will add a new authorization model to a store. E
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2263,9 +2263,9 @@ The WriteAuthorizationModel API will add a new authorization model to a store. E
 ```java
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;

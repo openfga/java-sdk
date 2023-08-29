@@ -8,12 +8,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * Authentication request.
  */
 @JsonPropertyOrder({
-    AuthRequestBody.JSON_PROPERTY_CLIENT_ID,
-    AuthRequestBody.JSON_PROPERTY_CLIENT_SECRET,
-    AuthRequestBody.JSON_PROPERTY_AUDIENCE,
-    AuthRequestBody.JSON_PROPERTY_GRANT_TYPE
+    CredentialsFlowRequest.JSON_PROPERTY_CLIENT_ID,
+    CredentialsFlowRequest.JSON_PROPERTY_CLIENT_SECRET,
+    CredentialsFlowRequest.JSON_PROPERTY_AUDIENCE,
+    CredentialsFlowRequest.JSON_PROPERTY_GRANT_TYPE
 })
-public class AuthRequestBody {
+class CredentialsFlowRequest {
     public static final String JSON_PROPERTY_CLIENT_ID = "client_id";
     private String clientId;
 
@@ -27,9 +27,8 @@ public class AuthRequestBody {
     private String grantType;
 
     @JsonCreator
-    public AuthRequestBody() {}
+    public CredentialsFlowRequest() {}
 
-    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CLIENT_ID)
     public String getClientId() {
         return clientId;
@@ -40,7 +39,6 @@ public class AuthRequestBody {
         this.clientId = clientId;
     }
 
-    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CLIENT_SECRET)
     public String getClientSecret() {
         return clientSecret;
@@ -51,7 +49,6 @@ public class AuthRequestBody {
         this.clientSecret = clientSecret;
     }
 
-    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_AUDIENCE)
     public String getAudience() {
         return audience;
@@ -62,7 +59,6 @@ public class AuthRequestBody {
         this.audience = audience;
     }
 
-    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_GRANT_TYPE)
     public String getGrantType() {
         return grantType;

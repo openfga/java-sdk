@@ -43,13 +43,15 @@ ext {
 }
 
 dependencies {
-    implementation "com.google.code.findbugs:jsr305:3.0.2"
+    implementation "com.google.code.findbugs:jsr305:3.0.2" // TODO: What is this?
+    implementation "org.openapitools:jackson-databind-nullable:0.2.1" // TODO: What does this do?
+
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
-    implementation "org.openapitools:jackson-databind-nullable:0.2.1"
-    implementation "jakarta.annotation:jakarta.annotation-api:$jakarta_annotation_version"
+
+    implementation "jakarta.annotation:jakarta.annotation-api:$jakarta_annotation_version" // TODO: Remove me
 }
 
 testing {

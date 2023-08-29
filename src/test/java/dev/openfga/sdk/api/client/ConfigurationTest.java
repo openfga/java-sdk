@@ -2,6 +2,8 @@ package dev.openfga.sdk.api.client;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.ConfigurationOverride;
 import dev.openfga.sdk.errors.*;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;

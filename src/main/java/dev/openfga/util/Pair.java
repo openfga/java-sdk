@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.util;
 
 @javax.annotation.Generated(
         value = "org.openapitools.codegen.languages.JavaClientCodegen",

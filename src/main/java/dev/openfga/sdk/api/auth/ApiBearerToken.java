@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.auth;
 
 public class ApiBearerToken {
     private String token;

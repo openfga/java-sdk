@@ -15,11 +15,11 @@ package dev.openfga.sdk.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
-import dev.openfga.sdk.api.client.ConfigurationOverride;
-import dev.openfga.sdk.api.client.Pair;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.ConfigurationOverride;
+import dev.openfga.util.Pair;
 import dev.openfga.sdk.api.model.CheckRequest;
 import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
@@ -64,6 +64,9 @@ public class OpenFgaApi {
     private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+
+    // TODO: Add OAuth2Client
+    // TODO: In every request, get access token, (Assuming plain access token, or OAuth2 CredentialsMethod)
 
     public OpenFgaApi(ApiClient apiClient, Configuration configuration) {
         memberVarHttpClient = apiClient.getHttpClient();

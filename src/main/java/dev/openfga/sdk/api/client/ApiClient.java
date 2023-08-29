@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.InputStream;
 import java.net.URI;
@@ -35,6 +36,8 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import dev.openfga.util.Pair;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
 /**
@@ -125,7 +128,7 @@ public class ApiClient {
 
         builder.header("accept", "application/json");
 
-        builder.method(method, HttpRequest.BodyPublishers.noBody());
+        builder.method(method, bodyPublisher);
 
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
