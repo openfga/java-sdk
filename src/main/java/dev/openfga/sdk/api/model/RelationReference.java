@@ -28,9 +28,6 @@ import java.util.StringJoiner;
     RelationReference.JSON_PROPERTY_RELATION,
     RelationReference.JSON_PROPERTY_WILDCARD
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class RelationReference {
     public static final String JSON_PROPERTY_TYPE = "type";
     private String type;

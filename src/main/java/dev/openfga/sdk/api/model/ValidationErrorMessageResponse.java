@@ -27,9 +27,6 @@ import java.util.StringJoiner;
     ValidationErrorMessageResponse.JSON_PROPERTY_CODE,
     ValidationErrorMessageResponse.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ValidationErrorMessageResponse {
     public static final String JSON_PROPERTY_CODE = "code";
     private ErrorCode code = ErrorCode.NO_ERROR;

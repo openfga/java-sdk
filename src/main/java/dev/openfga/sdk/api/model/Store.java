@@ -31,9 +31,6 @@ import java.util.StringJoiner;
     Store.JSON_PROPERTY_UPDATED_AT,
     Store.JSON_PROPERTY_DELETED_AT
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Store {
     public static final String JSON_PROPERTY_ID = "id";
     private String id;

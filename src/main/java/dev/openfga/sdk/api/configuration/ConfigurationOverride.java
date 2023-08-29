@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;

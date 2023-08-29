@@ -1,5 +1,7 @@
 **/ServerConfiguration.java
 **/ServerVariable.java
+**/JSON.java
+**/client/Configuration.java
 src/main/AndroidManifest.xml
 build.sbt
 pom.xml

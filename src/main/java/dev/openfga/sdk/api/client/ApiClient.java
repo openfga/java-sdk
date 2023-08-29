@@ -47,9 +47,6 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
  * <p>The setter methods of this class return the current object to facilitate
  * a fluent style of configuration.</p>
  */
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ApiClient {
 
     private HttpClient.Builder builder;

@@ -28,9 +28,6 @@ import java.util.StringJoiner;
  * Any
  */
 @JsonPropertyOrder({Any.JSON_PROPERTY_AT_TYPE})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Any extends HashMap<String, Object> {
     public static final String JSON_PROPERTY_AT_TYPE = "@type";
     private String atType;

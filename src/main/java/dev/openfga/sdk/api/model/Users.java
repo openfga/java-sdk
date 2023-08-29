@@ -26,9 +26,6 @@ import java.util.StringJoiner;
  * Users
  */
 @JsonPropertyOrder({Users.JSON_PROPERTY_USERS})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Users {
     public static final String JSON_PROPERTY_USERS = "users";
     private List<String> users = new ArrayList<>();

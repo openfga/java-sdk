@@ -30,9 +30,6 @@ import java.util.StringJoiner;
     Node.JSON_PROPERTY_UNION,
     Node.JSON_PROPERTY_INTERSECTION
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Node {
     public static final String JSON_PROPERTY_NAME = "name";
     private String name;

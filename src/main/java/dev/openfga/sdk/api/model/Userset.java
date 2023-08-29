@@ -31,9 +31,6 @@ import java.util.StringJoiner;
     Userset.JSON_PROPERTY_INTERSECTION,
     Userset.JSON_PROPERTY_DIFFERENCE
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Userset {
     public static final String JSON_PROPERTY_THIS = "this";
     private Object _this;

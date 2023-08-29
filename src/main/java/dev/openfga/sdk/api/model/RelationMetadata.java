@@ -24,9 +24,6 @@ import java.util.StringJoiner;
  * RelationMetadata
  */
 @JsonPropertyOrder({RelationMetadata.JSON_PROPERTY_DIRECTLY_RELATED_USER_TYPES})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class RelationMetadata {
     public static final String JSON_PROPERTY_DIRECTLY_RELATED_USER_TYPES = "directly_related_user_types";
     private List<RelationReference> directlyRelatedUserTypes = new ArrayList<>();
