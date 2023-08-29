@@ -14,9 +14,6 @@ package dev.openfga.sdk.api.client;
 
 import java.net.http.HttpHeaders;
 
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ApiException extends Exception {
     private int code = 0;
     private HttpHeaders responseHeaders = null;

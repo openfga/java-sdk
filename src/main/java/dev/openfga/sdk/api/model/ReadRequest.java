@@ -28,9 +28,6 @@ import java.util.StringJoiner;
     ReadRequest.JSON_PROPERTY_PAGE_SIZE,
     ReadRequest.JSON_PROPERTY_CONTINUATION_TOKEN
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ReadRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
     private TupleKey tupleKey;

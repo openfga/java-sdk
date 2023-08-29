@@ -29,9 +29,6 @@ import java.util.StringJoiner;
     TupleChange.JSON_PROPERTY_OPERATION,
     TupleChange.JSON_PROPERTY_TIMESTAMP
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class TupleChange {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
     private TupleKey tupleKey;

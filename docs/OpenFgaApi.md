@@ -51,7 +51,7 @@ The Check API queries to check if the user has a certain relationship with an ob
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -123,7 +123,7 @@ The Check API queries to check if the user has a certain relationship with an ob
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -204,7 +204,7 @@ Create a unique OpenFGA store which will be used to store authorization models a
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -274,7 +274,7 @@ Create a unique OpenFGA store which will be used to store authorization models a
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -353,7 +353,7 @@ Delete an OpenFGA store. This does not delete the data associated with the store
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -422,7 +422,7 @@ Delete an OpenFGA store. This does not delete the data associated with the store
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -500,7 +500,7 @@ The Expand API will return all users and usersets that have certain relationship
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -572,7 +572,7 @@ The Expand API will return all users and usersets that have certain relationship
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -653,7 +653,7 @@ Returns an OpenFGA store by its identifier
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -723,7 +723,7 @@ Returns an OpenFGA store by its identifier
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -802,7 +802,7 @@ The ListObjects API returns a list of all the objects of the given type that the
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -874,7 +874,7 @@ The ListObjects API returns a list of all the objects of the given type that the
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -955,7 +955,7 @@ Returns a paginated list of OpenFGA stores and a continuation token to get addit
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1027,7 +1027,7 @@ Returns a paginated list of OpenFGA stores and a continuation token to get addit
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1100,7 +1100,7 @@ No authorization required
 
 Get tuples from the store that matches a query, without following userset rewrite rules
 
-The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;). 
+The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query. ### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;). 
 
 ### Example
 
@@ -1108,7 +1108,7 @@ The Read API will return the tuples for a certain store that match a query filte
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1171,7 +1171,7 @@ No authorization required
 
 Get tuples from the store that matches a query, without following userset rewrite rules
 
-The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query.### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;). 
+The Read API will return the tuples for a certain store that match a query filter specified in the body of the request. It is different from the &#x60;/stores/{store_id}/expand&#x60; API in that it only returns relationship tuples that are stored in the system and satisfy the query.  In the body: 1. &#x60;tuple_key&#x60; is optional. If not specified, it will return all tuples in the store. 2. &#x60;tuple_key.object&#x60; is mandatory if &#x60;tuple_key&#x60; is specified. It can be a full object (e.g., &#x60;type:object_id&#x60;) or type only (e.g., &#x60;type:&#x60;). 3. &#x60;tuple_key.user&#x60; is mandatory if tuple_key is specified in the case the &#x60;tuple_key.object&#x60; is a type only. ## Examples ### Query for all objects in a type definition To query for all objects that &#x60;user:bob&#x60; has &#x60;reader&#x60; relationship in the &#x60;document&#x60; type definition, call read API with body of &#x60;&#x60;&#x60;json {  \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;user:bob\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:\&quot;   } } &#x60;&#x60;&#x60; The API will return tuples and a continuation token, something like &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;user:bob&#x60; has a &#x60;reader&#x60; relationship with 1 document &#x60;document:2021-budget&#x60;. Note that this API, unlike the List Objects API, does not evaluate the tuples in the store. The continuation token will be empty if there are no more tuples to query. ### Query for all stored relationship tuples that have a particular relation and object To query for all users that have &#x60;reader&#x60; relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;).  Note that, even if the model said that all &#x60;writers&#x60; are also &#x60;readers&#x60;, the API will not return writers such as &#x60;user:anne&#x60; because it only returns tuples and does not evaluate them. ### Query for all users with all relationships for a particular document To query for all users that have any relationship with &#x60;document:2021-budget&#x60;, call read API with body of  &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {       \&quot;object\&quot;: \&quot;document:2021-budget\&quot;    } } &#x60;&#x60;&#x60; The API will return something like  &#x60;&#x60;&#x60;json {   \&quot;tuples\&quot;: [     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-05T13:42:12.356Z\&quot;     },     {       \&quot;key\&quot;: {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       \&quot;timestamp\&quot;: \&quot;2021-10-06T15:32:11.128Z\&quot;     }   ],   \&quot;continuation_token\&quot;: \&quot;eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ&#x3D;&#x3D;\&quot; } &#x60;&#x60;&#x60; This means that &#x60;document:2021-budget&#x60; has 1 &#x60;reader&#x60; (&#x60;user:bob&#x60;) and 1 &#x60;writer&#x60; (&#x60;user:anne&#x60;). 
 
 ### Example
 
@@ -1180,7 +1180,7 @@ The Read API will return the tuples for a certain store that match a query filte
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1261,7 +1261,7 @@ The ReadAssertions API will return, for a given authorization model id, all the 
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1333,7 +1333,7 @@ The ReadAssertions API will return, for a given authorization model id, all the 
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1414,7 +1414,7 @@ The ReadAuthorizationModel API returns an authorization model by its identifier.
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1486,7 +1486,7 @@ The ReadAuthorizationModel API returns an authorization model by its identifier.
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1567,7 +1567,7 @@ The ReadAuthorizationModels API will return all the authorization models for a c
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1641,7 +1641,7 @@ The ReadAuthorizationModels API will return all the authorization models for a c
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1724,7 +1724,7 @@ The ReadChanges API will return a paginated list of tuple changes (additions and
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1800,7 +1800,7 @@ The ReadChanges API will return a paginated list of tuple changes (additions and
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1885,7 +1885,7 @@ The Write API will update the tuples for a certain store. Tuples and type defini
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -1957,7 +1957,7 @@ The Write API will update the tuples for a certain store. Tuples and type defini
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2038,7 +2038,7 @@ The WriteAssertions API will upsert new assertions for an authorization model id
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2111,7 +2111,7 @@ The WriteAssertions API will upsert new assertions for an authorization model id
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2193,7 +2193,7 @@ The WriteAuthorizationModel API will add a new authorization model to a store. E
 // Import classes:
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;
@@ -2265,7 +2265,7 @@ The WriteAuthorizationModel API will add a new authorization model to a store. E
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiException;
 import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Configuration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.client.models.*;
 import dev.openfga.sdk.api.OpenFgaApi;
 import java.util.concurrent.CompletableFuture;

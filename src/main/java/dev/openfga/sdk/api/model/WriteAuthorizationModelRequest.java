@@ -29,9 +29,6 @@ import java.util.StringJoiner;
     WriteAuthorizationModelRequest.JSON_PROPERTY_TYPE_DEFINITIONS,
     WriteAuthorizationModelRequest.JSON_PROPERTY_SCHEMA_VERSION
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class WriteAuthorizationModelRequest {
     public static final String JSON_PROPERTY_TYPE_DEFINITIONS = "type_definitions";
     private List<TypeDefinition> typeDefinitions = new ArrayList<>();

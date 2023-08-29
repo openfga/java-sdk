@@ -12,9 +12,6 @@
 
 package dev.openfga.sdk.api.client;
 
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Pair {
     private String name = "";
     private String value = "";

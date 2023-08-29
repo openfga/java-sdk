@@ -30,9 +30,6 @@ import java.util.StringJoiner;
     AuthorizationModel.JSON_PROPERTY_SCHEMA_VERSION,
     AuthorizationModel.JSON_PROPERTY_TYPE_DEFINITIONS
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class AuthorizationModel {
     public static final String JSON_PROPERTY_ID = "id";
     private String id;

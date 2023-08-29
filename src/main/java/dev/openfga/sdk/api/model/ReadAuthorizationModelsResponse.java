@@ -29,9 +29,6 @@ import java.util.StringJoiner;
     ReadAuthorizationModelsResponse.JSON_PROPERTY_AUTHORIZATION_MODELS,
     ReadAuthorizationModelsResponse.JSON_PROPERTY_CONTINUATION_TOKEN
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ReadAuthorizationModelsResponse {
     public static final String JSON_PROPERTY_AUTHORIZATION_MODELS = "authorization_models";
     private List<AuthorizationModel> authorizationModels = new ArrayList<>();

@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
 import static dev.openfga.util.StringUtil.isNullOrWhitespace;
 

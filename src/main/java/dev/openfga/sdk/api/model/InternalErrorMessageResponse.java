@@ -25,9 +25,6 @@ import java.util.StringJoiner;
  */
 @JsonPropertyOrder({InternalErrorMessageResponse.JSON_PROPERTY_CODE, InternalErrorMessageResponse.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class InternalErrorMessageResponse {
     public static final String JSON_PROPERTY_CODE = "code";
     private InternalErrorCode code = InternalErrorCode.NO_INTERNAL_ERROR;

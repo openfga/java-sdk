@@ -27,9 +27,6 @@ import java.util.StringJoiner;
     PathUnknownErrorMessageResponse.JSON_PROPERTY_CODE,
     PathUnknownErrorMessageResponse.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class PathUnknownErrorMessageResponse {
     public static final String JSON_PROPERTY_CODE = "code";
     private NotFoundErrorCode code = NotFoundErrorCode.NO_NOT_FOUND_ERROR;

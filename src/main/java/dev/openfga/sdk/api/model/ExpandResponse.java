@@ -22,9 +22,6 @@ import java.util.StringJoiner;
  * ExpandResponse
  */
 @JsonPropertyOrder({ExpandResponse.JSON_PROPERTY_TREE})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ExpandResponse {
     public static final String JSON_PROPERTY_TREE = "tree";
     private UsersetTree tree;

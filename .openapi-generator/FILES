@@ -79,15 +79,13 @@ src/main/java/dev/openfga/sdk/api/client/ApiBearerToken.java
 src/main/java/dev/openfga/sdk/api/client/ApiClient.java
 src/main/java/dev/openfga/sdk/api/client/ApiException.java
 src/main/java/dev/openfga/sdk/api/client/ApiResponse.java
-src/main/java/dev/openfga/sdk/api/client/BaseConfiguration.java
 src/main/java/dev/openfga/sdk/api/client/ClientCredentials.java
-src/main/java/dev/openfga/sdk/api/client/Configuration.java
-src/main/java/dev/openfga/sdk/api/client/Configuration.java
-src/main/java/dev/openfga/sdk/api/client/ConfigurationOverride.java
 src/main/java/dev/openfga/sdk/api/client/CredentialsMethod.java
-src/main/java/dev/openfga/sdk/api/client/JSON.java
 src/main/java/dev/openfga/sdk/api/client/Pair.java
 src/main/java/dev/openfga/sdk/api/client/RFC3339DateFormat.java
+src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
+src/main/java/dev/openfga/sdk/api/configuration/Configuration.java
+src/main/java/dev/openfga/sdk/api/configuration/ConfigurationOverride.java
 src/main/java/dev/openfga/sdk/api/model/AbstractOpenApiSchema.java
 src/main/java/dev/openfga/sdk/api/model/Any.java
 src/main/java/dev/openfga/sdk/api/model/Assertion.java
@@ -149,7 +147,7 @@ src/test-integration/java/dev/openfga/sdk/api/OpenFgaApiIntegrationTest.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/client/ClientCredentialsTest.java
-src/test/java/dev/openfga/sdk/api/client/ConfigurationTest.java
+src/test/java/dev/openfga/sdk/api/configuration/ConfigurationTest.java
 src/test/java/dev/openfga/sdk/api/model/AnyTest.java
 src/test/java/dev/openfga/sdk/api/model/AssertionTest.java
 src/test/java/dev/openfga/sdk/api/model/AuthorizationModelTest.java
