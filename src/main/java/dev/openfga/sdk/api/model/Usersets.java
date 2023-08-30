@@ -24,9 +24,6 @@ import java.util.StringJoiner;
  * Usersets
  */
 @JsonPropertyOrder({Usersets.JSON_PROPERTY_CHILD})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Usersets {
     public static final String JSON_PROPERTY_CHILD = "child";
     private List<Userset> child = new ArrayList<>();

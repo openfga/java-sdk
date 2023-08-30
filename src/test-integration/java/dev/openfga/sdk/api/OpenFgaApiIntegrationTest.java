@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.*;
+import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -284,7 +285,7 @@ public class OpenFgaApiIntegrationTest {
                 .assertions(List.of(new Assertion().tupleKey(DEFAULT_TUPLE_KEY).expectation(true)));
 
         // When
-        api.writeAssertions(storeId, authModelId, writeRequest);
+        api.writeAssertions(storeId, authModelId, writeRequest).get();
         ReadAssertionsResponse response =
                 api.readAssertions(storeId, authModelId).get();
 

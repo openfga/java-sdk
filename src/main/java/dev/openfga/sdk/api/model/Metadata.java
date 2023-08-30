@@ -24,9 +24,6 @@ import java.util.StringJoiner;
  * Metadata
  */
 @JsonPropertyOrder({Metadata.JSON_PROPERTY_RELATIONS})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Metadata {
     public static final String JSON_PROPERTY_RELATIONS = "relations";
     private Map<String, RelationMetadata> relations = new HashMap<>();

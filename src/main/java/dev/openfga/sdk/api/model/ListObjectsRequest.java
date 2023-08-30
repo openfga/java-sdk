@@ -30,9 +30,6 @@ import java.util.StringJoiner;
     ListObjectsRequest.JSON_PROPERTY_USER,
     ListObjectsRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ListObjectsRequest {
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
     private String authorizationModelId;

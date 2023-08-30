@@ -22,9 +22,6 @@ import java.util.StringJoiner;
  * UsersetTreeDifference
  */
 @JsonPropertyOrder({UsersetTreeDifference.JSON_PROPERTY_BASE, UsersetTreeDifference.JSON_PROPERTY_SUBTRACT})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class UsersetTreeDifference {
     public static final String JSON_PROPERTY_BASE = "base";
     private Node base;

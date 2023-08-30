@@ -30,9 +30,6 @@ import java.util.StringJoiner;
     CheckRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
     CheckRequest.JSON_PROPERTY_TRACE
 })
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class CheckRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
     private TupleKey tupleKey;

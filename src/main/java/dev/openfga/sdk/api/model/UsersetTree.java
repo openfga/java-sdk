@@ -22,9 +22,6 @@ import java.util.StringJoiner;
  * A UsersetTree contains the result of an Expansion.
  */
 @JsonPropertyOrder({UsersetTree.JSON_PROPERTY_ROOT})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class UsersetTree {
     public static final String JSON_PROPERTY_ROOT = "root";
     private Node root;

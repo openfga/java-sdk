@@ -24,9 +24,6 @@ import java.util.StringJoiner;
  * CheckResponse
  */
 @JsonPropertyOrder({CheckResponse.JSON_PROPERTY_ALLOWED, CheckResponse.JSON_PROPERTY_RESOLUTION})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class CheckResponse {
     public static final String JSON_PROPERTY_ALLOWED = "allowed";
     private Boolean allowed;

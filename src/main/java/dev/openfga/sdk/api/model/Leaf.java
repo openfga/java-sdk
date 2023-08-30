@@ -22,9 +22,6 @@ import java.util.StringJoiner;
  * A leaf node contains either - a set of users (which may be individual users, or usersets   referencing other relations) - a computed node, which is the result of a computed userset   value in the authorization model - a tupleToUserset nodes, containing the result of expanding   a tupleToUserset value in a authorization model.
  */
 @JsonPropertyOrder({Leaf.JSON_PROPERTY_USERS, Leaf.JSON_PROPERTY_COMPUTED, Leaf.JSON_PROPERTY_TUPLE_TO_USERSET})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class Leaf {
     public static final String JSON_PROPERTY_USERS = "users";
     private Users users;

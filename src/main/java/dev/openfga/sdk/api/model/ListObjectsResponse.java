@@ -26,9 +26,6 @@ import java.util.StringJoiner;
  * ListObjectsResponse
  */
 @JsonPropertyOrder({ListObjectsResponse.JSON_PROPERTY_OBJECTS})
-@javax.annotation.Generated(
-        value = "org.openapitools.codegen.languages.JavaClientCodegen",
-        date = "2023-08-28T14:41:07.855252Z[Etc/UTC]")
 public class ListObjectsResponse {
     public static final String JSON_PROPERTY_OBJECTS = "objects";
     private List<String> objects = new ArrayList<>();
