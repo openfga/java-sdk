@@ -117,3 +117,7 @@ tasks.register('fmt') {
 tasks.register('test-integration') {
     dependsOn testing.suites.integration
 }
+
+tasks.named('check').configure {
+    dependsOn 'spotlessCheck'
+}

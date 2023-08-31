@@ -25,12 +25,14 @@ import java.time.Duration;
  */
 public class ConfigurationOverride implements BaseConfiguration {
     private String apiUrl;
+    private Credentials credentials;
     private String userAgent;
     private Duration readTimeout;
     private Duration connectTimeout;
 
     public ConfigurationOverride() {
         this.apiUrl = null;
+        this.credentials = null;
         this.userAgent = null;
         this.readTimeout = null;
         this.connectTimeout = null;
@@ -55,6 +57,26 @@ public class ConfigurationOverride implements BaseConfiguration {
     @Override
     public String getApiUrl() {
         return apiUrl;
+    }
+
+    /**
+     * Set the credentials.
+     *
+     * @param credentials The credentials.
+     * @return This object.
+     */
+    public ConfigurationOverride credentials(Credentials credentials) {
+        this.credentials = credentials;
+        return this;
+    }
+
+    /**
+     * Get the configured credentials.
+     *
+     * @return The credentials.
+     */
+    public Credentials getCredentials() {
+        return credentials;
     }
 
     /**

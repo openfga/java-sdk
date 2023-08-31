@@ -10,9 +10,9 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
-import static dev.openfga.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 
