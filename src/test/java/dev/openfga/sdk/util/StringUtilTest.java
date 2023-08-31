@@ -10,9 +10,9 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.util;
+package dev.openfga.sdk.util;
 
-import static dev.openfga.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;

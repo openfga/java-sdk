@@ -14,12 +14,9 @@ package dev.openfga.sdk.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiException;
-import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.Pair;
-import dev.openfga.sdk.api.configuration.Configuration;
-import dev.openfga.sdk.api.configuration.ConfigurationOverride;
+import dev.openfga.sdk.api.auth.*;
+import dev.openfga.sdk.api.client.*;
+import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.CheckRequest;
 import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
@@ -40,7 +37,8 @@ import dev.openfga.sdk.api.model.WriteAssertionsRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelResponse;
 import dev.openfga.sdk.api.model.WriteRequest;
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.errors.*;
+import dev.openfga.sdk.util.Pair;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -58,29 +56,26 @@ public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
     private final Configuration configuration;
+    private final OAuth2Client oAuth2Client;
     private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-    public OpenFgaApi(ApiClient apiClient, Configuration configuration) {
+    // TODO: In every request, get access token, (Assuming plain access token, or OAuth2 CredentialsMethod)
+
+    public OpenFgaApi(ApiClient apiClient, Configuration configuration) throws FgaInvalidParameterException {
         memberVarHttpClient = apiClient.getHttpClient();
         memberVarObjectMapper = apiClient.getObjectMapper();
         this.configuration = configuration;
         memberVarInterceptor = apiClient.getRequestInterceptor();
         memberVarResponseInterceptor = apiClient.getResponseInterceptor();
         memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
-    }
 
-    private ApiException getApiException(String operationId, HttpResponse<String> response) {
-        String message = formatExceptionMessage(operationId, response.statusCode(), response.body());
-        return new ApiException(response.statusCode(), message, response.headers(), response.body());
-    }
-
-    private String formatExceptionMessage(String operationId, int statusCode, String body) {
-        if (body == null || body.isEmpty()) {
-            body = "[no body]";
+        if (configuration.getCredentials().getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
+            this.oAuth2Client = new OAuth2Client(configuration, apiClient.getHttpClient(), apiClient.getObjectMapper());
+        } else {
+            this.oAuth2Client = null;
         }
-        return operationId + " call failed with: " + statusCode + " - " + body;
     }
 
     /**
@@ -119,7 +114,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("check", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("check", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -177,7 +172,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("check", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("check", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -219,6 +214,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -270,7 +270,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("createStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("createStore", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -325,7 +325,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("createStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("createStore", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -363,6 +363,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -412,7 +417,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("deleteStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("deleteStore", localVarResponse));
                         }
                         return CompletableFuture.completedFuture(null);
                     });
@@ -458,7 +463,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("deleteStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("deleteStore", localVarResponse));
                         }
                         return CompletableFuture.completedFuture(new ApiResponse<Void>(
                                 localVarResponse.statusCode(),
@@ -487,6 +492,11 @@ public class OpenFgaApi {
         localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
@@ -535,7 +545,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("expand", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("expand", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -593,7 +603,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("expand", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("expand", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -636,6 +646,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -686,7 +701,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("getStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("getStore", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -741,7 +756,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("getStore", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("getStore", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -778,6 +793,11 @@ public class OpenFgaApi {
         localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
@@ -827,7 +847,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("listObjects", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("listObjects", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -885,7 +905,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("listObjects", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("listObjects", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -929,6 +949,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -984,7 +1009,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("listStores", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("listStores", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1043,7 +1068,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("listStores", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("listStores", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1096,6 +1121,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Accept", "application/json");
 
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
@@ -1143,7 +1173,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("read", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("read", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1201,7 +1231,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("read", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("read", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1243,6 +1273,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -1298,7 +1333,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("readAssertions", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("readAssertions", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1358,7 +1393,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("readAssertions", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("readAssertions", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1403,6 +1438,11 @@ public class OpenFgaApi {
         localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
@@ -1453,7 +1493,7 @@ public class OpenFgaApi {
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("readAuthorizationModel", localVarResponse));
+                                    new ApiException("readAuthorizationModel", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1513,7 +1553,7 @@ public class OpenFgaApi {
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("readAuthorizationModel", localVarResponse));
+                                    new ApiException("readAuthorizationModel", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1557,6 +1597,11 @@ public class OpenFgaApi {
         localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
 
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
@@ -1612,7 +1657,7 @@ public class OpenFgaApi {
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("readAuthorizationModels", localVarResponse));
+                                    new ApiException("readAuthorizationModels", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1677,7 +1722,7 @@ public class OpenFgaApi {
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("readAuthorizationModels", localVarResponse));
+                                    new ApiException("readAuthorizationModels", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1736,6 +1781,11 @@ public class OpenFgaApi {
         }
 
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
@@ -1796,7 +1846,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("readChanges", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("readChanges", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1865,7 +1915,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("readChanges", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("readChanges", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -1925,6 +1975,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Accept", "application/json");
 
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
@@ -1972,7 +2027,7 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("write", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("write", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -2030,7 +2085,7 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("write", localVarResponse));
+                            return CompletableFuture.failedFuture(new ApiException("write", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -2072,6 +2127,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -2133,7 +2193,8 @@ public class OpenFgaApi {
                     .sendAsync(localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofString())
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("writeAssertions", localVarResponse));
+                            return CompletableFuture.failedFuture(
+                                    new ApiException("writeAssertions", localVarResponse));
                         }
                         return CompletableFuture.completedFuture(null);
                     });
@@ -2190,7 +2251,8 @@ public class OpenFgaApi {
                             memberVarAsyncResponseInterceptor.accept(localVarResponse);
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
-                            return CompletableFuture.failedFuture(getApiException("writeAssertions", localVarResponse));
+                            return CompletableFuture.failedFuture(
+                                    new ApiException("writeAssertions", localVarResponse));
                         }
                         return CompletableFuture.completedFuture(new ApiResponse<Void>(
                                 localVarResponse.statusCode(),
@@ -2232,6 +2294,11 @@ public class OpenFgaApi {
 
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
 
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
@@ -2288,7 +2355,7 @@ public class OpenFgaApi {
                     .thenComposeAsync(localVarResponse -> {
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("writeAuthorizationModel", localVarResponse));
+                                    new ApiException("writeAuthorizationModel", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -2349,7 +2416,7 @@ public class OpenFgaApi {
                         }
                         if (localVarResponse.statusCode() / 100 != 2) {
                             return CompletableFuture.failedFuture(
-                                    getApiException("writeAuthorizationModel", localVarResponse));
+                                    new ApiException("writeAuthorizationModel", localVarResponse));
                         }
                         try {
                             String responseBody = localVarResponse.body();
@@ -2396,6 +2463,11 @@ public class OpenFgaApi {
         localVarRequestBuilder.header("Content-Type", "application/json");
         localVarRequestBuilder.header("Accept", "application/json");
 
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
         try {
             byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
             localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
@@ -2410,5 +2482,30 @@ public class OpenFgaApi {
             memberVarInterceptor.accept(localVarRequestBuilder);
         }
         return localVarRequestBuilder;
+    }
+
+    /**
+     * Get an access token. Expects that configuration is valid (meaning it can
+     * pass {@link Configuration#assertValid()}) and expects that if the
+     * CredentialsMethod is CLIENT_CREDENTIALS that a valid {@link OAuth2Client}
+     * has been initialized. Otherwise, it will throw an IllegalStateException.
+     * @throws IllegalStateException when the configuration is invalid
+     */
+    private String getAccessToken(Configuration configuration) throws ApiException {
+        CredentialsMethod credentialsMethod = configuration.getCredentials().getCredentialsMethod();
+
+        if (credentialsMethod == CredentialsMethod.API_TOKEN) {
+            return configuration.getCredentials().getApiToken().getToken();
+        }
+
+        if (credentialsMethod == CredentialsMethod.CLIENT_CREDENTIALS) {
+            try {
+                return oAuth2Client.getAccessToken().get();
+            } catch (Exception e) {
+                throw new ApiException(e);
+            }
+        }
+
+        throw new IllegalStateException("Configuration is invalid.");
     }
 }
