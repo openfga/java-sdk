@@ -1,3 +1,5 @@
+Testing EasyCLA
+
 # Java SDK for OpenFGA
 
 [![Release](https://img.shields.io/github/v/release/openfga/java-sdk?sort=semver&color=green)](https://github.com/openfga/java-sdk/releases)
