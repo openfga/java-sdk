@@ -49,12 +49,13 @@ public class OpenFgaApiTest {
     private HttpClientMock mockHttpClient;
 
     @BeforeEach
-    public void beforeEachTest() {
+    public void beforeEachTest() throws Exception {
         mockHttpClient = new HttpClientMock();
 
         mockConfiguration = mock(Configuration.class);
         when(mockConfiguration.getApiUrl()).thenReturn("https://localhost");
         when(mockConfiguration.getReadTimeout()).thenReturn(Duration.ofMillis(250));
+        when(mockConfiguration.getCredentials()).thenReturn(new Credentials());
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getObjectMapper()).thenReturn(mapper);

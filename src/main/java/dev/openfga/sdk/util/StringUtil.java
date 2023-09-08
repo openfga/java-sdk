@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.util;
+package dev.openfga.sdk.util;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

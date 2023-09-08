@@ -10,9 +10,10 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.errors;
 
 import java.net.http.HttpHeaders;
+import java.net.http.HttpResponse;
 
 public class ApiException extends Exception {
     private int code = 0;
@@ -60,6 +61,14 @@ public class ApiException extends Exception {
         this.responseBody = responseBody;
     }
 
+    public ApiException(String operationId, HttpResponse<String> response) {
+        this(
+                response.statusCode(),
+                formatExceptionMessage(operationId, response.statusCode(), response.body()),
+                response.headers(),
+                response.body());
+    }
+
     /**
      * Get the HTTP status code.
      *
@@ -85,5 +94,12 @@ public class ApiException extends Exception {
      */
     public String getResponseBody() {
         return responseBody;
+    }
+
+    private static String formatExceptionMessage(String operationId, int statusCode, String body) {
+        if (body == null || body.isEmpty()) {
+            body = "[no body]";
+        }
+        return operationId + " call failed with: " + statusCode + " - " + body;
     }
 }

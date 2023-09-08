@@ -12,7 +12,7 @@
 
 package dev.openfga.sdk.api.configuration;
 
-import static dev.openfga.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.MalformedURLException;
@@ -35,6 +35,7 @@ public class Configuration implements BaseConfiguration {
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
     private String apiUrl;
+    private Credentials credentials;
     private String userAgent;
     private Duration readTimeout;
     private Duration connectTimeout;
@@ -48,6 +49,14 @@ public class Configuration implements BaseConfiguration {
 
     public Configuration(String apiUrl) {
         this.apiUrl = apiUrl;
+        this.userAgent = DEFAULT_USER_AGENT;
+        this.readTimeout = DEFAULT_READ_TIMEOUT;
+        this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+    }
+
+    public Configuration(String apiUrl, Credentials credentials) {
+        this.apiUrl = apiUrl;
+        this.credentials = credentials;
         this.userAgent = DEFAULT_USER_AGENT;
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
@@ -77,6 +86,10 @@ public class Configuration implements BaseConfiguration {
                 throw new FgaInvalidParameterException("hostname", "Configuration");
             }
         }
+
+        if (credentials != null) {
+            credentials.assertValid();
+        }
     }
 
     /**
@@ -90,6 +103,9 @@ public class Configuration implements BaseConfiguration {
 
         String overrideApiUrl = configurationOverride.getApiUrl();
         result.apiUrl(overrideApiUrl != null ? overrideApiUrl : apiUrl);
+
+        Credentials overrideCredentials = configurationOverride.getCredentials();
+        result.credentials(overrideCredentials != null ? overrideCredentials : credentials);
 
         String overrideUserAgent = configurationOverride.getUserAgent();
         result.userAgent(overrideUserAgent != null ? overrideUserAgent : userAgent);
@@ -147,6 +163,30 @@ public class Configuration implements BaseConfiguration {
     @Override
     public String getUserAgent() {
         return userAgent;
+    }
+
+    /**
+     * Set the credentials.
+     *
+     * @param credentials The credentials.
+     * @return This object.
+     */
+    public Configuration credentials(Credentials credentials) {
+        this.credentials = credentials;
+        return this;
+    }
+
+    /**
+     * Get the credentials.
+     *
+     * @return The credentials.
+     */
+    public Credentials getCredentials() {
+        if (this.credentials == null) {
+            return new Credentials();
+        }
+
+        return credentials;
     }
 
     /**

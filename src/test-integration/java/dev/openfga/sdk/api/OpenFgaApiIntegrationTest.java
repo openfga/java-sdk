@@ -37,7 +37,7 @@ public class OpenFgaApiIntegrationTest {
     private OpenFgaApi api;
 
     @BeforeEach
-    public void initializeApi() {
+    public void initializeApi() throws Exception {
         Configuration apiConfig = new Configuration("http://localhost:8080");
         ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), mapper);
         api = new OpenFgaApi(apiClient, apiConfig);
@@ -285,7 +285,7 @@ public class OpenFgaApiIntegrationTest {
                 .assertions(List.of(new Assertion().tupleKey(DEFAULT_TUPLE_KEY).expectation(true)));
 
         // When
-        api.writeAssertions(storeId, authModelId, writeRequest);
+        api.writeAssertions(storeId, authModelId, writeRequest).get();
         ReadAssertionsResponse response =
                 api.readAssertions(storeId, authModelId).get();
 
