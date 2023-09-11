@@ -1,26 +1,26 @@
 plugins {
     id 'java'
+
+    // Quality
     id 'jvm-test-suite'
-    id 'maven-publish'
+    id 'com.diffplug.spotless' version '6.20.0'
+
+    // IDE
     id 'idea'
     id 'eclipse'
-    id 'com.diffplug.spotless' version '6.20.0'
+
+    // Publishing
+    id 'maven-publish'
+    id 'signing'
 }
 
-group = 'dev.openfga'
+apply from: 'publish.gradle'
+
+group = 'dev.openfga.sdk'
 version = '0.0.1'
 
 repositories {
     mavenCentral()
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId = 'openfga-sdk'
-            from components.java
-        }
-    }
 }
 
 java {
@@ -116,4 +116,8 @@ tasks.register('fmt') {
 
 tasks.register('test-integration') {
     dependsOn testing.suites.integration
+}
+
+tasks.named('check').configure {
+    dependsOn 'spotlessCheck'
 }
