@@ -73,6 +73,7 @@ gradle/wrapper/gradle-wrapper.jar
 gradle/wrapper/gradle-wrapper.properties
 gradlew
 gradlew.bat
+publish.gradle
 settings.gradle
 src/main/java/dev/openfga/sdk/api/OpenFgaApi.java
 src/main/java/dev/openfga/sdk/api/auth/AccessToken.java

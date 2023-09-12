@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    name: Build OpenFGA
+  test:
+    name: Test and Build OpenFGA
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,6 +21,51 @@ jobs:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
         cache: gradle
-    - name: Build with Gradle
+    # By Gradle conventions, "build" requires "check" to pass. "check" is an umbrella task that
+    # runs tests and lints. See the project's build.gradle for configurations.
+    - name: Test and Build with Gradle
       run: |
         ./gradlew build
+
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test]
+
+    steps:
+    - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.2
+
+    - name: Set up JDK
+      uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
+      with:
+        java-version: 11
+        distribution: 'temurin'
+
+    - name: Validate Gradle wrapper
+      uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1.1.0
+
+    - name: Publish package
+      uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
+      with:
+        arguments: publish
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: publish
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: Roang-zero1/github-create-release-action@5cf058ddffa6fa04e5cda07c98570c757dc4a0e1
+        with:
+          version_regex: ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
