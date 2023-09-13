@@ -50,5 +50,8 @@ publishing {
 }
 
 signing {
+    def signingKey = System.getenv('ORG_GRADLE_PROJECT_SIGNINGKEY')
+    def signingPassword = System.getenv('ORG_GRADLE_PROJECT_SIGNINGPASSWORD')
+    useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.maven
 }
