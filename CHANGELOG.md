@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.0.2
+
+### [0.0.2](https://github.com/openfga/java-sdk/compare/v0.0.1...v0.0.2) (2023-09-15)
+
+The Maven Group ID was updated to `dev.openfga`.
+
 ## v0.0.1
 
 ### [0.0.1](https://github.com/openfga/java-sdk/releases/tag/v0.0.1) (2023-09-14)
