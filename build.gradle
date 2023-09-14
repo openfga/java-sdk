@@ -16,7 +16,7 @@ plugins {
 
 apply from: 'publish.gradle'
 
-group = 'dev.openfga.sdk'
+group = 'dev.openfga'
 version = '0.0.1'
 
 repositories {
