@@ -47,21 +47,6 @@ public class Configuration implements BaseConfiguration {
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
     }
 
-    public Configuration(String apiUrl) {
-        this.apiUrl = apiUrl;
-        this.userAgent = DEFAULT_USER_AGENT;
-        this.readTimeout = DEFAULT_READ_TIMEOUT;
-        this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-    }
-
-    public Configuration(String apiUrl, Credentials credentials) {
-        this.apiUrl = apiUrl;
-        this.credentials = credentials;
-        this.userAgent = DEFAULT_USER_AGENT;
-        this.readTimeout = DEFAULT_READ_TIMEOUT;
-        this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-    }
-
     /**
      * Assert that the configuration is valid.
      */

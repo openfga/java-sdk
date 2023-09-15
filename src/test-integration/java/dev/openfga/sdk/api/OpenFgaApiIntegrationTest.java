@@ -38,7 +38,7 @@ public class OpenFgaApiIntegrationTest {
 
     @BeforeEach
     public void initializeApi() throws Exception {
-        Configuration apiConfig = new Configuration("http://localhost:8080");
+        Configuration apiConfig = new Configuration().apiUrl("http://localhost:8080");
         ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), mapper);
         api = new OpenFgaApi(apiClient, apiConfig);
     }
