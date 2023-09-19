@@ -32,7 +32,7 @@ publishing {
     repositories {
         maven {
             name = 'SonatypeOSSRH' // AKA: "Maven Central"
-            url = 'https://s01.oss.sonatype.org/service/local/'
+            url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
             credentials {
                 username = System.getenv('MAVEN_USERNAME')
                 password = System.getenv('MAVEN_PASSWORD')
