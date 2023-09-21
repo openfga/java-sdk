@@ -52,31 +52,34 @@ public class OpenFgaClient {
     /**
      * ListStores - Get a paginated list of stores.
      */
-    public CompletableFuture<ListStoresResponse> listStores() throws FgaInvalidParameterException, ApiException {
-        return api.listStores(null, null);
+    public CompletableFuture<ListStoresResponse> listStores() throws FgaInvalidParameterException {
+        configuration.assertValid();
+        return call(() -> api.listStores(null, null));
     }
 
     public CompletableFuture<ListStoresResponse> listStores(ListStoresOptions options)
-            throws FgaInvalidParameterException, ApiException {
-        return api.listStores(options.getPageSize(), options.getContinuationToken());
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
+        return call(() -> api.listStores(options.getPageSize(), options.getContinuationToken()));
     }
 
     /**
      * CreateStore - Initialize a store
      */
     public CompletableFuture<CreateStoreResponse> createStore(CreateStoreRequest request)
-            throws FgaInvalidParameterException, ApiException {
-        return api.createStore(request);
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
+        return call(() -> api.createStore(request));
     }
 
     /**
      * GetStore - Get information about the current store.
-     *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<GetStoreResponse> getStore() throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<GetStoreResponse> getStore() throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.getStore(storeId);
+        return call(() -> api.getStore(storeId));
     }
 
     /**
@@ -84,9 +87,10 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<Void> deleteStore() throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<Void> deleteStore() throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.deleteStore(storeId);
+        return call(() -> api.deleteStore(storeId));
     }
 
     /* **********************
@@ -98,10 +102,11 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadAuthorizationModelsResponse> ReadAuthorizationModels(
-            ReadAuthorizationModelsOptions options) throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
+            ReadAuthorizationModelsOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.readAuthorizationModels(storeId, options.getPageSize(), options.getContinuationToken());
+        return call(() -> api.readAuthorizationModels(storeId, options.getPageSize(), options.getContinuationToken()));
     }
 
     /**
@@ -110,9 +115,10 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<WriteAuthorizationModelResponse> writeAuthorizationModel(
-            WriteAuthorizationModelRequest request) throws FgaInvalidParameterException, ApiException {
+            WriteAuthorizationModelRequest request) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.writeAuthorizationModel(storeId, request);
+        return call(() -> api.writeAuthorizationModel(storeId, request));
     }
 
     /**
@@ -121,10 +127,11 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID are null, empty, or whitespace
      */
     public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel()
-            throws FgaInvalidParameterException, ApiException {
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
         String authorizationModelId = configuration.getAuthorizationModelIdChecked();
-        return api.readAuthorizationModel(storeId, authorizationModelId);
+        return call(() -> api.readAuthorizationModel(storeId, authorizationModelId));
     }
 
     /**
@@ -133,10 +140,12 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ReadAuthorizationModelResponse> readLatestAuthorizationModel()
-            throws FgaInvalidParameterException, ApiException {
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.readAuthorizationModels(storeId, 1, null).thenApply(response -> new ReadAuthorizationModelResponse()
-                .authorizationModel(response.getAuthorizationModels().get(0)));
+        return call(() -> api.readAuthorizationModels(storeId, 1, null))
+                .thenApply(response -> new ReadAuthorizationModelResponse()
+                        .authorizationModel(response.getAuthorizationModels().get(0)));
     }
 
     /* *********************
@@ -149,9 +158,11 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ReadChangesResponse> ReadChanges(ReadChangesOptions options)
-            throws FgaInvalidParameterException, ApiException {
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.readChanges(storeId, options.getType(), options.getPageSize(), options.getContinuationToken());
+        return call(() ->
+                api.readChanges(storeId, options.getType(), options.getPageSize(), options.getContinuationToken()));
     }
 
     /**
@@ -159,9 +170,10 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadResponse> read(ReadRequest body) throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<ReadResponse> read(ReadRequest body) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.read(storeId, body);
+        return call(() -> api.read(storeId, body));
     }
 
     /**
@@ -169,9 +181,10 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<Object> write(WriteRequest request) throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<Object> write(WriteRequest request) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.write(storeId, request);
+        return call(() -> api.write(storeId, request));
     }
 
     /**
@@ -179,15 +192,17 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<Object> writeTuples(TupleKeys tupleKeys)
-            throws FgaInvalidParameterException, ApiException {
-        var request = new WriteRequest().writes(tupleKeys);
+    public CompletableFuture<Object> writeTuples(TupleKeys tupleKeys) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
+
+        var request = new WriteRequest().writes(tupleKeys);
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
         }
-        return api.write(storeId, request);
+
+        return call(() -> api.write(storeId, request));
     }
 
     /**
@@ -195,15 +210,17 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<Object> deleteTuples(TupleKeys tupleKeys)
-            throws FgaInvalidParameterException, ApiException {
-        var request = new WriteRequest().deletes(tupleKeys);
+    public CompletableFuture<Object> deleteTuples(TupleKeys tupleKeys) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
+
+        var request = new WriteRequest().deletes(tupleKeys);
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
         }
-        return api.write(storeId, request);
+
+        return call(() -> api.write(storeId, request));
     }
 
     /* **********************
@@ -215,14 +232,16 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<CheckResponse> check(CheckRequest request)
-            throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<CheckResponse> check(CheckRequest request) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.check(storeId, request);
+        return call(() -> api.check(storeId, request));
     }
 
-    /*
+    /**
      * BatchCheck - Run a set of checks (evaluates)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     // TODO
 
@@ -231,10 +250,10 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ExpandResponse> expand(ExpandRequest request)
-            throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<ExpandResponse> expand(ExpandRequest request) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.expand(storeId, request);
+        return call(() -> api.expand(storeId, request));
     }
 
     /**
@@ -243,9 +262,10 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ListObjectsResponse> listObjects(ListObjectsRequest request)
-            throws FgaInvalidParameterException, ApiException {
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return api.listObjects(storeId, request);
+        return call(() -> api.listObjects(storeId, request));
     }
 
     /*
@@ -262,11 +282,11 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadAssertionsResponse> readAssertions()
-            throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<ReadAssertionsResponse> readAssertions() throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
         String authorizationModelId = configuration.getAuthorizationModelIdChecked();
-        return api.readAssertions(storeId, authorizationModelId);
+        return call(() -> api.readAssertions(storeId, authorizationModelId));
     }
 
     /**
@@ -274,10 +294,29 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID is null, empty, or whitespace
      */
-    public CompletableFuture<Void> writeAssertions(WriteAssertionsRequest request)
-            throws FgaInvalidParameterException, ApiException {
+    public CompletableFuture<Void> writeAssertions(WriteAssertionsRequest request) throws FgaInvalidParameterException {
+        configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
         String authorizationModelId = configuration.getAuthorizationModelIdChecked();
-        return api.writeAssertions(storeId, authorizationModelId, request);
+        return call(() -> api.writeAssertions(storeId, authorizationModelId, request));
+    }
+
+    /**
+     * A {@link FunctionalInterface} for calling a low-level API from {@link OpenFgaApi}. It wraps exceptions
+     * encountered with {@link CompletableFuture#failedFuture(Throwable)}
+     *
+     * @param <R> The type of API response
+     */
+    @FunctionalInterface
+    private interface CheckedInvocation<R> {
+        CompletableFuture<R> call() throws FgaInvalidParameterException, ApiException;
+    }
+
+    private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
+        try {
+            return action.call();
+        } catch (FgaInvalidParameterException | ApiException exception) {
+            return CompletableFuture.failedFuture(exception);
+        }
     }
 }

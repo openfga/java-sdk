@@ -154,6 +154,7 @@ src/main/java/dev/openfga/sdk/errors/FgaInvalidParameterException.java
 src/main/java/dev/openfga/sdk/util/Pair.java
 src/main/java/dev/openfga/sdk/util/StringUtil.java
 src/test-integration/java/dev/openfga/sdk/api/OpenFgaApiIntegrationTest.java
+src/test-integration/java/package-info.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/auth/OAuth2ClientTest.java
