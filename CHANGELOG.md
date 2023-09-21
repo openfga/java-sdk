@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.0.3
+## v0.0.3, v0.0.4
 
-### [0.0.3](https://github.com/openfga/java-sdk/compare/v0.0.2...v0.0.3) (2023-09-19)
+### [0.0.4](https://github.com/openfga/java-sdk/compare/v0.0.2...v0.0.4) (2023-09-21)
 
 - fix: publishing to maven central
 
