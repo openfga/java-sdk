@@ -1578,4 +1578,58 @@ public class OpenFgaClientTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
     }
+
+    /**
+     * Miscellaneous client behavior tests.
+     */
+    @Test
+    public void setStoreId() throws Exception {
+        // Given
+        String alternateStoreId = "A_UNIQUE_ID";
+        fga.setStoreId(alternateStoreId);
+        String getUrl = String.format("https://localhost/stores/%s", alternateStoreId);
+        String responseBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", alternateStoreId, DEFAULT_STORE_NAME);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+
+        // When
+        GetStoreResponse response = fga.getStore().get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertEquals(alternateStoreId, response.getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getName());
+        assertEquals(
+                alternateStoreId,
+                clientConfiguration.getStoreId(),
+                "OpenFgaClient.setStoreId(String) is expected to persist its Store ID in its ClientConfiguration."
+                        + "If this behavior ever changes, it could be a subtle breaking change.");
+    }
+
+    @Test
+    public void setAuthorizationModelId() throws Exception {
+        // Given
+        String alternateAuthorizationModelId = "A_UNIQUE_ID";
+        fga.setAuthorizationModelId(alternateAuthorizationModelId);
+        String getUrl = String.format(
+                "https://localhost/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, alternateAuthorizationModelId);
+        String getResponse = String.format(
+                "{\"authorization_model\":{\"id\":\"%s\",\"schema_version\":\"%s\"}}",
+                alternateAuthorizationModelId, DEFAULT_SCHEMA_VERSION);
+        mockHttpClient.onGet(getUrl).doReturn(200, getResponse);
+
+        // When
+        ReadAuthorizationModelResponse response = fga.readAuthorizationModel().get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getAuthorizationModel());
+        assertEquals(
+                alternateAuthorizationModelId, response.getAuthorizationModel().getId());
+        assertEquals(DEFAULT_SCHEMA_VERSION, response.getAuthorizationModel().getSchemaVersion());
+        assertEquals(
+                alternateAuthorizationModelId,
+                clientConfiguration.getAuthorizationModelId(),
+                "OpenFgaClient.setAuthorizationModelId(String) is expected to persist its Authorization Model ID in its ClientConfiguration."
+                        + "If this behavior ever changes, it could be a subtle breaking change.");
+    }
 }
