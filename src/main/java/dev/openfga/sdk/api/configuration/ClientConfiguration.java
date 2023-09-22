@@ -15,6 +15,7 @@ package dev.openfga.sdk.api.configuration;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import java.time.Duration;
 
 public class ClientConfiguration extends Configuration {
     private String storeId;
@@ -32,7 +33,7 @@ public class ClientConfiguration extends Configuration {
      * @param storeId The URL.
      * @return This object.
      */
-    public Configuration storeId(String storeId) {
+    public ClientConfiguration storeId(String storeId) {
         this.storeId = storeId;
         return this;
     }
@@ -65,7 +66,7 @@ public class ClientConfiguration extends Configuration {
      * @param authorizationModelId The URL.
      * @return This object.
      */
-    public Configuration authorizationModelId(String authorizationModelId) {
+    public ClientConfiguration authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
         return this;
     }
@@ -90,5 +91,43 @@ public class ClientConfiguration extends Configuration {
             throw new FgaInvalidParameterException("authorizationModelId", "ClientConfiguration");
         }
         return authorizationModelId;
+    }
+
+    /* Overrides beyond this point required for typing. */
+
+    @Override
+    public ClientConfiguration override(ConfigurationOverride configurationOverride) {
+        super.override(configurationOverride);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration apiUrl(String apiUrl) {
+        super.apiUrl(apiUrl);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration credentials(Credentials credentials) {
+        super.credentials(credentials);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration userAgent(String userAgent) {
+        super.userAgent(userAgent);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration readTimeout(Duration readTimeout) {
+        super.readTimeout(readTimeout);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration connectTimeout(Duration connectTimeout) {
+        super.connectTimeout(connectTimeout);
+        return this;
     }
 }
