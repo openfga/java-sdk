@@ -2,6 +2,7 @@ plugins {
     id 'java'
 
     // Quality
+    id 'jacoco'
     id 'jvm-test-suite'
     id 'com.diffplug.spotless' version '6.20.0'
 
@@ -34,6 +35,16 @@ java {
 javadoc {
     // Ignore warnings.
     options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+test {
+    // JaCoCo coverage report is always generated after tests run.
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    // tests are required to run before generating a JaCoCo coverage report.
+    dependsOn test
 }
 
 ext {
