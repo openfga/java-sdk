@@ -63,6 +63,87 @@ public class OpenFgaClientTest {
         fga = new OpenFgaClient(mockApiClient, clientConfiguration);
     }
 
+    /* ******************
+     * Credential tests *
+     ********************/
+    @Test
+    public void createStore_withApiToken() throws Exception {
+        // Given
+        String apiToken = "some-static-token";
+        clientConfiguration.credentials(new Credentials(new ApiToken(apiToken)));
+        fga.setConfiguration(clientConfiguration);
+        String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
+        String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        mockHttpClient
+                .onPost("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .doReturn(201, requestBody);
+        CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
+
+        // When
+        CreateStoreResponse response = fga.createStore(request).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .called(1);
+        assertEquals(DEFAULT_STORE_ID, response.getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getName());
+    }
+
+    @Test
+    public void createStore_withClientCredentials() throws Exception {
+        // Given
+        String apiTokenIssuer = "oauth2.server";
+        String clientId = "some-client-id";
+        String clientSecret = "some-client-secret";
+        String apiToken = "some-generated-token";
+        String apiAudience = "some-audience";
+        clientConfiguration.credentials(new Credentials(new ClientCredentials()
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .apiTokenIssuer(apiTokenIssuer)
+                .apiAudience(apiAudience)));
+        fga.setConfiguration(clientConfiguration);
+
+        String expectedOAuth2Body = String.format(
+                "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"audience\":\"%s\",\"grant_type\":\"client_credentials\"}",
+                clientId, clientSecret, apiAudience);
+        String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
+        String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        mockHttpClient
+                .onPost(String.format("https://%s/oauth/token", apiTokenIssuer))
+                .withBody(is(expectedOAuth2Body))
+                .doReturn(200, String.format("{\"access_token\":\"%s\"}", apiToken));
+        mockHttpClient
+                .onPost("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .doReturn(201, requestBody);
+        CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
+
+        // When
+        CreateStoreResponse response = fga.createStore(request).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(String.format("https://%s/oauth/token", apiTokenIssuer))
+                .called(1);
+        mockHttpClient
+                .verify()
+                .post("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .called(1);
+        assertEquals(DEFAULT_STORE_ID, response.getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getName());
+    }
+
     /**
      * List all stores.
      */

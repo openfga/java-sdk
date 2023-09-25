@@ -21,14 +21,16 @@ import dev.openfga.sdk.errors.*;
 import java.util.concurrent.CompletableFuture;
 
 public class OpenFgaClient {
-    private final ClientConfiguration configuration;
-    private final OpenFgaApi api;
+    private ApiClient apiClient;
+    private ClientConfiguration configuration;
+    private OpenFgaApi api;
 
     private static final String CLIENT_BULK_REQUEST_ID_HEADER = "X-OpenFGA-Client-Bulk-Request-Id";
     private static final String CLIENT_METHOD_HEADER = "X-OpenFGA-Client-Method";
     private static final int DEFAULT_MAX_METHOD_PARALLEL_REQS = 10;
 
     public OpenFgaClient(ApiClient apiClient, ClientConfiguration configuration) throws FgaInvalidParameterException {
+        this.apiClient = apiClient;
         this.configuration = configuration;
         this.api = new OpenFgaApi(apiClient, configuration);
     }
@@ -43,6 +45,11 @@ public class OpenFgaClient {
 
     public void setAuthorizationModelId(String authorizationModelId) {
         configuration.authorizationModelId(authorizationModelId);
+    }
+
+    public void setConfiguration(ClientConfiguration configuration) throws FgaInvalidParameterException {
+        this.configuration = configuration;
+        this.api = new OpenFgaApi(apiClient, configuration);
     }
 
     /* ********
