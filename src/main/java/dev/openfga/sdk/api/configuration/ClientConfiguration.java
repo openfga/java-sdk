@@ -27,6 +27,12 @@ public class ClientConfiguration extends Configuration {
         }
     }
 
+    public void assertValidAuthorizationModelId() throws FgaInvalidParameterException {
+        if (isNullOrWhitespace(authorizationModelId)) {
+            throw new FgaInvalidParameterException("authorizationModelId", "ClientConfiguration");
+        }
+    }
+
     /**
      * Set the Store ID.
      *
@@ -54,9 +60,7 @@ public class ClientConfiguration extends Configuration {
      * @throws FgaInvalidParameterException when the Store ID is null, empty, or whitespace
      */
     public String getStoreIdChecked() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(storeId)) {
-            throw new FgaInvalidParameterException("storeId", "ClientConfiguration");
-        }
+        assertValidStoreId();
         return storeId;
     }
 
@@ -87,9 +91,7 @@ public class ClientConfiguration extends Configuration {
      * @throws FgaInvalidParameterException when the Authorization Model ID is null, empty, or whitespace
      */
     public String getAuthorizationModelIdChecked() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(authorizationModelId)) {
-            throw new FgaInvalidParameterException("authorizationModelId", "ClientConfiguration");
-        }
+        assertValidAuthorizationModelId();
         return authorizationModelId;
     }
 
