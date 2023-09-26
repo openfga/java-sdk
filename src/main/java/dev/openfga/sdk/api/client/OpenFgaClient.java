@@ -164,7 +164,7 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadChangesResponse> ReadChanges(ReadChangesOptions options)
+    public CompletableFuture<ReadChangesResponse> readChanges(ReadChangesOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
