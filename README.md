@@ -232,6 +232,15 @@ Read a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
 ```java
+var options = new ReadAuthorizationModelOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.readAuthorizationModel(options).get();
+
+// response.getAuthorizationModel().getId() = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.getAuthorizationModel().getSchemaVersion() = "1.1"
+// response.getAuthorizationModel().getTypeDefinitions() = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
 ```
 
 ##### Read the Latest Authorization Model
@@ -241,6 +250,11 @@ Reads the latest authorization model (note: this ignores the model id in configu
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
 ```java
+var response = fgaClient.readLatestAuthorizationModel().get();
+
+// response.AuthorizationModel.Id = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.AuthorizationModel.SchemaVersion = "1.1"
+// response.AuthorizationModel.TypeDefinitions = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
 ```
 
 #### Relationship Tuples
@@ -252,6 +266,18 @@ Reads the list of historical relationship tuple writes and deletes.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/ReadChanges)
 
 ```java
+var options = new ClientReadChangesOptions()
+    .type("document")
+    .pageSize(10)
+    .continuationToken("...");
+
+var response = fgaClient.readChanges(options).get();
+
+// response.getContinuationToken() = ...
+// response.getChanges() = [
+//   { tupleKey: { user, relation, object }, operation: TupleOperation.WRITE, timestamp: ... },
+//   { tupleKey: { user, relation, object }, operation: TupleOperation.DELETE, timestamp: ... }
+// ]
 ```
 
 ##### Read Relationship Tuples

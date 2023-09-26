@@ -142,6 +142,19 @@ public class OpenFgaClient {
     }
 
     /**
+     * ReadAuthorizationModel - Read the current authorization model
+     *
+     * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID are null, empty, or whitespace
+     */
+    public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(
+            ReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
+        String storeId = configuration.getStoreIdChecked();
+        String authorizationModelId = options.getAuthorizationModelIdChecked();
+        return call(() -> api.readAuthorizationModel(storeId, authorizationModelId));
+    }
+
+    /**
      * ReadLatestAuthorizationModel - Read the latest authorization model for the current store
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace

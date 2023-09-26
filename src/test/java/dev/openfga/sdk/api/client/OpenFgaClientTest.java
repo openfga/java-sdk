@@ -607,6 +607,40 @@ public class OpenFgaClientTest {
         assertEquals(DEFAULT_SCHEMA_VERSION, authModel.getSchemaVersion());
     }
 
+    @Test
+    public void readChanges() throws Exception {
+        // Given
+        String changeType = "repo";
+        String user = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
+        String relation = "viewer";
+        String object = "document:roadmap";
+        String continuationToken =
+                "eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ";
+
+        ReadChangesOptions options = new ReadChangesOptions().type(changeType);
+        String getUrl = String.format("https://localhost/stores/%s/changes?type=%s", DEFAULT_STORE_ID, changeType);
+        String responseBody = String.format(
+                "{\"changes\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"operation\":\"TUPLE_OPERATION_WRITE\"}],\"continuation_token\":\"%s\"}",
+                user, relation, object, continuationToken);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+
+        // When
+        ReadChangesResponse response = fga.readChanges(options).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertEquals(continuationToken, response.getContinuationToken());
+        assertNotNull(response.getChanges());
+        assertEquals(1, response.getChanges().size());
+        TupleChange change = response.getChanges().get(0);
+        assertEquals(TupleOperation.WRITE, change.getOperation());
+        TupleKey tupleKey = change.getTupleKey();
+        assertNotNull(tupleKey);
+        assertEquals(user, tupleKey.getUser());
+        assertEquals(relation, tupleKey.getRelation());
+        assertEquals(object, tupleKey.getObject());
+    }
+
     /**
      * Create a new authorization model.
      */
@@ -743,6 +777,30 @@ public class OpenFgaClientTest {
         mockHttpClient.verify().get(getUrl).called(1);
         assertNotNull(response.getAuthorizationModel());
         assertEquals(DEFAULT_AUTH_MODEL_ID, response.getAuthorizationModel().getId());
+        assertEquals(DEFAULT_SCHEMA_VERSION, response.getAuthorizationModel().getSchemaVersion());
+    }
+
+    @Test
+    public void readAuthorizationModelTest_withOptions() throws Exception {
+        // Given
+        String authorizationModelId = "alternateAuthorizationModelId";
+        ReadAuthorizationModelOptions options =
+                new ReadAuthorizationModelOptions().authorizationModelId(authorizationModelId);
+        String getUrl = String.format(
+                "https://localhost/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, authorizationModelId);
+        String getResponse = String.format(
+                "{\"authorization_model\":{\"id\":\"%s\",\"schema_version\":\"%s\"}}",
+                authorizationModelId, DEFAULT_SCHEMA_VERSION);
+        mockHttpClient.onGet(getUrl).doReturn(200, getResponse);
+
+        // When
+        ReadAuthorizationModelResponse response =
+                fga.readAuthorizationModel(options).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getAuthorizationModel());
+        assertEquals(authorizationModelId, response.getAuthorizationModel().getId());
         assertEquals(DEFAULT_SCHEMA_VERSION, response.getAuthorizationModel().getSchemaVersion());
     }
 
