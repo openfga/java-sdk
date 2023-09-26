@@ -557,6 +557,27 @@ public class OpenFgaClientTest {
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
     }
 
+    @Test
+    public void readLatestAuthorizationModelTest() throws Exception {
+        // Given
+        String getUrl = String.format("https://localhost/stores/%s/authorization-models?page_size=1", DEFAULT_STORE_ID);
+        String responseBody = String.format(
+                "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+
+        // When
+        ReadAuthorizationModelResponse response =
+                fga.readLatestAuthorizationModel().get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getAuthorizationModel());
+        AuthorizationModel authModel = response.getAuthorizationModel();
+        assertEquals(DEFAULT_AUTH_MODEL_ID, authModel.getId());
+        assertEquals(DEFAULT_SCHEMA_VERSION, authModel.getSchemaVersion());
+    }
+
     /**
      * Create a new authorization model.
      */
@@ -956,6 +977,48 @@ public class OpenFgaClientTest {
 
         // When
         fga.write(request);
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
+    public void writeTuplesTest() throws Exception {
+        // Given
+        String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        TupleKeys tuples = new TupleKeys()
+                .tupleKeys(List.of(new TupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
+
+        // When
+        fga.writeTuples(tuples);
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
+    public void deleteTuplesTest() throws Exception {
+        // Given
+        String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        TupleKeys tuples = new TupleKeys()
+                .tupleKeys(List.of(new TupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
+
+        // When
+        fga.deleteTuples(tuples);
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
