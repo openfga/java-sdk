@@ -106,6 +106,12 @@ Get a paginated list of stores.
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/ListStores)
 
 ```java
+var options = new ListStoresOptions()
+    .pageSize(10)
+    .continuationToken("...");
+var stores = fgaClient.listStores(options);
+
+// stores = [{ "id": "01FQH7V8BEG3GPQW93KTRFR8JB", "name": "FGA Demo Store", "created_at": "2022-01-01T00:00:00.000Z", "updated_at": "2022-01-01T00:00:00.000Z" }]
 ```
 
 ##### Create Store
@@ -291,6 +297,24 @@ Update the assertions for a particular authorization model.
 
 
 ### API Endpoints
+
+| Method | HTTP request | Description |
+| ------------- | ------------- | ------------- |
+| [**check**](docs/OpenFgaApi.md#check) | **POST** /stores/{store_id}/check | Check whether a user is authorized to access an object |
+| [**createStore**](docs/OpenFgaApi.md#createstore) | **POST** /stores | Create a store |
+| [**deleteStore**](docs/OpenFgaApi.md#deletestore) | **DELETE** /stores/{store_id} | Delete a store |
+| [**expand**](docs/OpenFgaApi.md#expand) | **POST** /stores/{store_id}/expand | Expand all relationships in userset tree format, and following userset rewrite rules.  Useful to reason about and debug a certain relationship |
+| [**getStore**](docs/OpenFgaApi.md#getstore) | **GET** /stores/{store_id} | Get a store |
+| [**listObjects**](docs/OpenFgaApi.md#listobjects) | **POST** /stores/{store_id}/list-objects | List all objects of the given type that the user has a relation with |
+| [**listStores**](docs/OpenFgaApi.md#liststores) | **GET** /stores | List all stores |
+| [**read**](docs/OpenFgaApi.md#read) | **POST** /stores/{store_id}/read | Get tuples from the store that matches a query, without following userset rewrite rules |
+| [**readAssertions**](docs/OpenFgaApi.md#readassertions) | **GET** /stores/{store_id}/assertions/{authorization_model_id} | Read assertions for an authorization model ID |
+| [**readAuthorizationModel**](docs/OpenFgaApi.md#readauthorizationmodel) | **GET** /stores/{store_id}/authorization-models/{id} | Return a particular version of an authorization model |
+| [**readAuthorizationModels**](docs/OpenFgaApi.md#readauthorizationmodels) | **GET** /stores/{store_id}/authorization-models | Return all the authorization models for a particular store |
+| [**readChanges**](docs/OpenFgaApi.md#readchanges) | **GET** /stores/{store_id}/changes | Return a list of all the tuple changes |
+| [**write**](docs/OpenFgaApi.md#write) | **POST** /stores/{store_id}/write | Add or delete tuples from the store |
+| [**writeAssertions**](docs/OpenFgaApi.md#writeassertions) | **PUT** /stores/{store_id}/assertions/{authorization_model_id} | Upsert assertions for an authorization model ID |
+| [**writeAuthorizationModel**](docs/OpenFgaApi.md#writeauthorizationmodel) | **POST** /stores/{store_id}/authorization-models | Create a new authorization model |
 
 
 

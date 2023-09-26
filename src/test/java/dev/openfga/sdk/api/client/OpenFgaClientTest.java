@@ -171,6 +171,29 @@ public class OpenFgaClientTest {
         assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
     }
 
+    @Test
+    public void listStoresTest_withOptions() throws Exception {
+        // Given
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        int pageSize = 10;
+        String continuationToken = "continuationToken";
+        String getUrl = String.format(
+                "https://localhost/stores?page_size=%d&continuation_token=%s", pageSize, continuationToken);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+        ListStoresOptions options = new ListStoresOptions().pageSize(pageSize).continuationToken(continuationToken);
+
+        // When
+        ListStoresResponse response = fga.listStores(options).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getStores());
+        assertEquals(1, response.getStores().size());
+        assertEquals(DEFAULT_STORE_ID, response.getStores().get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
+    }
+
     /**
      * Create a store.
      */
