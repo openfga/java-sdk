@@ -127,21 +127,27 @@ public class OpenFgaClientTest {
         CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
 
         // When
-        CreateStoreResponse response = fga.createStore(request).get();
+        // We call two times to ensure the token is cached after the first request.
+        CreateStoreResponse response1 = fga.createStore(request).get();
+        CreateStoreResponse response2 = fga.createStore(request).get();
 
         // Then
+        // OAuth2 server should be called 1 time.
         mockHttpClient
                 .verify()
                 .post(String.format("https://%s/oauth/token", apiTokenIssuer))
                 .called(1);
+        // OpenFGA server should be called 2 times.
         mockHttpClient
                 .verify()
                 .post("https://localhost/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
-                .called(1);
-        assertEquals(DEFAULT_STORE_ID, response.getId());
-        assertEquals(DEFAULT_STORE_NAME, response.getName());
+                .called(2);
+        assertEquals(DEFAULT_STORE_ID, response1.getId());
+        assertEquals(DEFAULT_STORE_NAME, response1.getName());
+        assertEquals(DEFAULT_STORE_ID, response2.getId());
+        assertEquals(DEFAULT_STORE_NAME, response2.getName());
     }
 
     /**
