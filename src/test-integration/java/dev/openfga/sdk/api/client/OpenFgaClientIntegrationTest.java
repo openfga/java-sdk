@@ -192,8 +192,8 @@ public class OpenFgaClientIntegrationTest {
         fga.setAuthorizationModelId(authModelId);
 
         WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(List.of(DEFAULT_TUPLE_KEY)));
-        ReadRequest readRequest =
-                new ReadRequest().tupleKey(new TupleKey().user(DEFAULT_USER)._object(DEFAULT_DOC));
+        ClientReadRequest readRequest =
+                new ClientReadRequest().user(DEFAULT_USER)._object(DEFAULT_DOC);
 
         // When
         fga.write(writeRequest).get();

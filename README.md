@@ -287,6 +287,32 @@ Reads the relationship tuples stored in the database. It does not evaluate nor e
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/Read)
 
 ```java
+// Find if a relationship tuple stating that a certain user is a viewer of a certain document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    ._object("document:roadmap");
+
+// Find all relationship tuples where a certain user has a relationship as any relation to a certain document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    ._object("document:roadmap");
+
+// Find all relationship tuples where a certain user is a viewer of any document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    ._object("document:");
+
+// Find all relationship tuples where any user has a relationship as any relation with a particular document
+
+var request = new ClientReadRequest()
+    ._object("document:roadmap");
+
+var response = fgaClient.read(request).get();
+
+// In all the above situations, the response will be of the form:
+// response = { Tuples: [{ Key: { User, Relation, Object }, Timestamp }, ...]}
 ```
 
 ##### Write (Create and Delete) Relationship Tuples

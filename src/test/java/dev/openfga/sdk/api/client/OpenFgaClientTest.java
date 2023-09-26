@@ -911,11 +911,10 @@ public class OpenFgaClientTest {
                 "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, responseBody);
-        ReadRequest request = new ReadRequest()
-                .tupleKey(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER));
+        ClientReadRequest request = new ClientReadRequest()
+                .user(DEFAULT_USER)
+                .relation(DEFAULT_RELATION)
+                ._object(DEFAULT_OBJECT);
 
         // When
         ReadResponse response = fga.read(request).get();
@@ -937,23 +936,12 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.read(new ReadRequest())
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.read(new ClientReadRequest())
                 .get());
 
         // Then
         assertEquals(
                 "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
-    }
-
-    @Test
-    public void read_bodyRequired() {
-        // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.read(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling read", exception.getMessage());
     }
 
     @Test
@@ -965,8 +953,9 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.read(new ReadRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.read(new ClientReadRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -986,8 +975,9 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.read(new ReadRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.read(new ClientReadRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1006,8 +996,9 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.read(new ReadRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.read(new ClientReadRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);

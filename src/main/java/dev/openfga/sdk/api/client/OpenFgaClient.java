@@ -190,9 +190,18 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadResponse> read(ReadRequest body) throws FgaInvalidParameterException {
+    public CompletableFuture<ReadResponse> read(ClientReadRequest request) throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
+
+        TupleKey tupleKey = new TupleKey();
+
+        if (request != null) {
+            tupleKey.user(request.getUser()).relation(request.getRelation())._object(request.getObject());
+        }
+
+        ReadRequest body = new ReadRequest().tupleKey(tupleKey);
+
         return call(() -> api.read(storeId, body));
     }
 
