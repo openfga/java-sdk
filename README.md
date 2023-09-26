@@ -121,6 +121,17 @@ Initialize a store.
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/CreateStore)
 
 ```java
+var request = new CreateStoreRequest().name("FGA Demo");
+var store = fgaClient.createStore(request).get();
+
+// store.getId() = "01FQH7V8BEG3GPQW93KTRFR8JB"
+
+// store the store.getId() in database
+
+// update the storeId of the client instance
+fgaClient.setStoreId(store.getId());
+
+// continue calling the API normally
 ```
 
 ##### Get Store
@@ -132,6 +143,9 @@ Get information about the current store.
 > Requires a client initialized with a storeId
 
 ```java
+var store = fgaClient.getStore().get();
+
+// store = { "id": "01FQH7V8BEG3GPQW93KTRFR8JB", "name": "FGA Demo Store", "created_at": "2022-01-01T00:00:00.000Z", "updated_at": "2022-01-01T00:00:00.000Z" }
 ```
 
 ##### Delete Store
@@ -143,6 +157,7 @@ Delete a store.
 > Requires a client initialized with a storeId
 
 ```java
+var store = await fgaClient.deleteStore().get();
 ```
 
 #### Authorization Models
@@ -154,6 +169,14 @@ Read all authorization models in the store.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModels)
 
 ```java
+var options = new ReadAuthorizationModelsOptions()
+    .pageSize(10)
+    .continuationToken("...");
+var response = fgaClient.readAuthorizationModels(options).get();
+
+// response.getAuthorizationModels() = [
+// { id: "01GXSA8YR785C4FYS3C0RTG7B1", schemaVersion: "1.1", typeDefinitions: [...] },
+// { id: "01GXSBM5PVYHCJNRNKXMB4QZTW", schemaVersion: "1.1", typeDefinitions: [...] }];
 ```
 
 ##### Write Authorization Model
@@ -169,6 +192,37 @@ Create a new authorization model.
 > You can use the OpenFGA [CLI](https://github.com/openfga/cli) or [Syntax Transformer](https://github.com/openfga/syntax-transformer) to convert between the OpenFGA DSL and the JSON authorization model.
 
 ```java
+
+var request = new WriteAuthorizationModelRequest()
+    .schemaVersion("1.1")
+    .typeDefinitions(List.of(
+        new TypeDefinition().type("user").relations(Map.of()),
+        new TypeDefinition()
+            .type("document")
+            .relations(Map.of(
+                "writer", new Userset(),
+                "viewer", new Userset().union(new Usersets()
+                    .child(List.of(
+                        new Userset(),
+                        new Userset().computedUserset(new ObjectRelation().relation("writer"))
+                    ))
+                )
+            ))
+            .metadata(new Metadata()
+                .relations(Map.of(
+                    "writer", new RelationMetadata().directlyRelatedUserTypes(
+                        List.of(new RelationReference().type("user"))
+                    ),
+                    "viewer", new RelationMetadata().directlyRelatedUserTypes(
+                        List.of(new RelationReference().type("user"))
+                    )
+                ))
+            )
+    ));
+
+var response = fgaClient.writeAuthorizationModel(request).get();
+
+// response.AuthorizationModelId = "01GXSA8YR785C4FYS3C0RTG7B1"
 ```
 
 #### Read a Single Authorization Model
