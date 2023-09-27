@@ -266,8 +266,15 @@ public class OpenFgaClient {
         WriteRequest body = new WriteRequest();
 
         if (request != null) {
-            body.writes(ClientTupleKey.asTupleKeys(request.getWrites()));
-            body.deletes(ClientTupleKey.asTupleKeys(request.getDeletes()));
+            TupleKeys writes = ClientTupleKey.asTupleKeys(request.getWrites());
+            if (!writes.getTupleKeys().isEmpty()) {
+                body.writes(writes);
+            }
+
+            TupleKeys deletes = ClientTupleKey.asTupleKeys(request.getDeletes());
+            if (!deletes.getTupleKeys().isEmpty()) {
+                body.deletes(deletes);
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
