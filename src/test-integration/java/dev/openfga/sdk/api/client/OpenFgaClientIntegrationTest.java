@@ -293,7 +293,7 @@ public class OpenFgaClientIntegrationTest {
         List<ClientAssertion> assertions = List.of(DEFAULT_ASSERTION);
 
         // When
-        fga.writeAssertions(writeRequest).get();
+        fga.writeAssertions(assertions).get();
         ReadAssertionsResponse response = fga.readAssertions().get();
 
         // Then
