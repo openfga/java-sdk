@@ -217,8 +217,8 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
         ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
-        CheckRequest checkRequest = new CheckRequest()
-                .tupleKey(new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC));
+        ClientCheckRequest checkRequest =
+                new ClientCheckRequest().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
 
         // When
         fga.write(writeRequest).get();
@@ -238,8 +238,8 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
         ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
-        ExpandRequest expandRequest =
-                new ExpandRequest().tupleKey(new TupleKey()._object(DEFAULT_DOC).relation("reader"));
+        ClientExpandRequest expandRequest =
+                new ClientExpandRequest()._object(DEFAULT_DOC).relation("reader");
 
         // When
         fga.write(writeRequest).get();

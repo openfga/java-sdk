@@ -309,14 +309,16 @@ var request = new ClientReadRequest()
     ._object("document:roadmap");
 
 // Read all stored relationship tuples
-var request = new ClientReadRequest()
+var request = new ClientReadRequest();
+
+var options = new ClientReadOptions()
     .pageSize(10)
     .continuationToken("...");
 
-var response = fgaClient.read(request).get();
+var response = fgaClient.read(request, options).get();
 
 // In all the above situations, the response will be of the form:
-// response = { Tuples: [{ Key: { User, Relation, Object }, Timestamp }, ...]}
+// response = { tuples: [{ key: { user, relation, object }, timestamp }, ...]}
 ```
 
 ##### Write (Create and Delete) Relationship Tuples
@@ -374,6 +376,16 @@ Check if a user has a particular relation with an object.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Check)
 
 ```java
+var request = new ClientCheckRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("writer")
+    ._object("document:roadmap");
+var options = new ClientCheckOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.check(request, options).get();
+// response.Allowed = true
 ```
 
 ##### Batch Check
@@ -382,6 +394,7 @@ Run a set of [checks](#check). Batch Check will return `allowed: false` if it en
 If 429s or 5xxs are encountered, the underlying check will retry up to 15 times before giving up.
 
 ```java
+// Coming soon
 ```
 
 ##### Expand

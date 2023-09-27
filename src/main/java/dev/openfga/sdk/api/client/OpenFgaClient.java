@@ -305,10 +305,37 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<CheckResponse> check(CheckRequest request) throws FgaInvalidParameterException {
+    public CompletableFuture<CheckResponse> check(ClientCheckRequest request) throws FgaInvalidParameterException {
+        return check(request, null);
+    }
+
+    /**
+     * Check - Check if a user has a particular relation with an object (evaluates)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<CheckResponse> check(ClientCheckRequest request, ClientCheckOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return call(() -> api.check(storeId, request));
+
+        CheckRequest body = new CheckRequest();
+
+        if (request != null) {
+            body.tupleKey(new TupleKey()
+                    .user(request.getUser())
+                    .relation(request.getRelation())
+                    ._object(request.getObject()));
+        }
+
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            body.authorizationModelId(options.getAuthorizationModelId());
+        } else {
+            String authorizationModelId = configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        }
+
+        return call(() -> api.check(storeId, body));
     }
 
     /**
@@ -323,10 +350,37 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ExpandResponse> expand(ExpandRequest request) throws FgaInvalidParameterException {
+    public CompletableFuture<ExpandResponse> expand(ClientExpandRequest request) throws FgaInvalidParameterException {
+        return expand(request, null);
+    }
+
+    /**
+     * Expand - Expands the relationships in userset tree format (evaluates)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<ExpandResponse> expand(ClientExpandRequest request, ClientExpandOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return call(() -> api.expand(storeId, request));
+
+        ExpandRequest body = new ExpandRequest();
+
+        if (request != null) {
+            body.tupleKey(new TupleKey()
+                    .user(request.getUser())
+                    .relation(request.getRelation())
+                    ._object(request.getObject()));
+        }
+
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            body.authorizationModelId(options.getAuthorizationModelId());
+        } else {
+            String authorizationModelId = configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        }
+
+        return call(() -> api.expand(storeId, body));
     }
 
     /**

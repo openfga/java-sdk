@@ -82,13 +82,17 @@ src/main/java/dev/openfga/sdk/api/auth/CredentialsFlowResponse.java
 src/main/java/dev/openfga/sdk/api/auth/OAuth2Client.java
 src/main/java/dev/openfga/sdk/api/client/ApiClient.java
 src/main/java/dev/openfga/sdk/api/client/ApiResponse.java
+src/main/java/dev/openfga/sdk/api/client/ClientCheckRequest.java
+src/main/java/dev/openfga/sdk/api/client/ClientExpandRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientReadRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientWriteRequest.java
 src/main/java/dev/openfga/sdk/api/client/OpenFgaClient.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientCheckOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientConfiguration.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientCredentials.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientExpandOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientReadOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientWriteOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/Configuration.java

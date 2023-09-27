@@ -1184,19 +1184,17 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[]},\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
-        CheckRequest request = new CheckRequest()
-                .tupleKey(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER))
-                .contextualTuples(new ContextualTupleKeys())
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+        ClientCheckRequest request = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientCheckOptions options = new ClientCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        CheckResponse response = fga.check(request).get();
+        CheckResponse response = fga.check(request, options).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
@@ -1209,23 +1207,12 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.check(new CheckRequest())
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.check(new ClientCheckRequest())
                 .get());
 
         // Then
         assertEquals(
                 "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
-    }
-
-    @Test
-    public void check_bodyRequired() {
-        // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.check(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling check", exception.getMessage());
     }
 
     @Test
@@ -1237,8 +1224,9 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.check(new CheckRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.check(new ClientCheckRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1258,8 +1246,9 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.check(new CheckRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.check(new ClientCheckRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1278,8 +1267,9 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.check(new CheckRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.check(new ClientCheckRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1304,15 +1294,14 @@ public class OpenFgaClientTest {
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
                 DEFAULT_USER);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, responseBody);
-        ExpandRequest request = new ExpandRequest()
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .tupleKey(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER));
+        ClientExpandRequest request = new ClientExpandRequest()
+                .user(DEFAULT_USER)
+                .relation(DEFAULT_RELATION)
+                ._object(DEFAULT_OBJECT);
+        ClientExpandOptions options = new ClientExpandOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        ExpandResponse response = fga.expand(request).get();
+        ExpandResponse response = fga.expand(request, options).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -1336,23 +1325,12 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.expand(new ExpandRequest())
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.expand(new ClientExpandRequest())
                 .get());
 
         // Then
         assertEquals(
                 "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
-    }
-
-    @Test
-    public void expand_bodyRequired() {
-        // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.expand(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling expand", exception.getMessage());
     }
 
     @Test
@@ -1364,8 +1342,9 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.expand(new ExpandRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.expand(new ClientExpandRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1385,8 +1364,9 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.expand(new ExpandRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.expand(new ClientExpandRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1405,8 +1385,9 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.expand(new ExpandRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.expand(new ClientExpandRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
