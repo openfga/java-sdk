@@ -12,28 +12,27 @@
 
 package dev.openfga.sdk.api.client;
 
-import dev.openfga.sdk.api.model.TupleKey;
 import java.util.List;
 
 public class ClientWriteRequest {
-    private List<TupleKey> writes;
-    private List<TupleKey> deletes;
+    private List<ClientTupleKey> writes;
+    private List<ClientTupleKey> deletes;
 
-    public ClientWriteRequest writes(List<TupleKey> writes) {
+    public ClientWriteRequest writes(List<ClientTupleKey> writes) {
         this.writes = writes;
         return this;
     }
 
-    public List<TupleKey> getWrites() {
+    public List<ClientTupleKey> getWrites() {
         return writes;
     }
 
-    public ClientWriteRequest deletes(List<TupleKey> deletes) {
+    public ClientWriteRequest deletes(List<ClientTupleKey> deletes) {
         this.deletes = deletes;
         return this;
     }
 
-    public List<TupleKey> getDeletes() {
+    public List<ClientTupleKey> getDeletes() {
         return deletes;
     }
 }

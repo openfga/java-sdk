@@ -29,9 +29,14 @@ public class OpenFgaClientIntegrationTest {
             "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    public static final TupleKey DEFAULT_TUPLE_KEY =
-            new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
-    public static final List<TupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    public static final ClientTupleKey DEFAULT_TUPLE_KEY =
+            new ClientTupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
+    public static final List<ClientTupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    public static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()
+            .user(DEFAULT_USER)
+            .relation("reader")
+            ._object(DEFAULT_DOC)
+            .expectation(true);
 
     private OpenFgaClient fga;
 
@@ -262,8 +267,10 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
         ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
-        ListObjectsRequest listObjectsRequest =
-                new ListObjectsRequest().user(DEFAULT_USER).relation("reader").type("document");
+        ClientListObjectsRequest listObjectsRequest = new ClientListObjectsRequest()
+                .user(DEFAULT_USER)
+                .relation("reader")
+                .type("document");
 
         // When
         fga.write(writeRequest).get();
@@ -283,8 +290,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        WriteAssertionsRequest writeRequest = new WriteAssertionsRequest()
-                .assertions(List.of(new Assertion().tupleKey(DEFAULT_TUPLE_KEY).expectation(true)));
+        List<ClientAssertion> assertions = List.of(DEFAULT_ASSERTION);
 
         // When
         fga.writeAssertions(writeRequest).get();

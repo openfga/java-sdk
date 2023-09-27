@@ -1016,11 +1016,11 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":{\"tuple_keys\":[]},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(new TupleKey()
+                .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)));
@@ -1040,11 +1040,11 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[]},\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .deletes(List.of(new TupleKey()
+                .deletes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)));
@@ -1064,11 +1064,10 @@ public class OpenFgaClientTest {
                 "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        TupleKeys tuples = new TupleKeys()
-                .tupleKeys(List.of(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER)));
+        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER));
 
         // When
         fga.writeTuples(tuples);
@@ -1085,11 +1084,10 @@ public class OpenFgaClientTest {
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        TupleKeys tuples = new TupleKeys()
-                .tupleKeys(List.of(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER)));
+        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER));
 
         // When
         fga.deleteTuples(tuples);
@@ -1405,16 +1403,14 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://localhost/stores/%s/list-objects", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null}",
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":{\"tuple_keys\":[]}}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(is(expectedBody))
                 .doReturn(200, String.format("{\"objects\":[\"%s\"]}", DEFAULT_OBJECT));
-        ListObjectsRequest request = new ListObjectsRequest()
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+        ClientListObjectsRequest request =
+                new ClientListObjectsRequest().relation(DEFAULT_RELATION).user(DEFAULT_USER);
 
         // When
         ListObjectsResponse response = fga.listObjects(request).get();
@@ -1430,23 +1426,13 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.listObjects(new ListObjectsRequest())
-                .get());
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.listObjects(new ClientListObjectsRequest())
+                        .get());
 
         // Then
         assertEquals(
                 "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
-    }
-
-    @Test
-    public void listObjects_bodyRequired() {
-        // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.listObjects(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling listObjects", exception.getMessage());
     }
 
     @Test
@@ -1459,7 +1445,7 @@ public class OpenFgaClientTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listObjects(new ListObjectsRequest())
+                assertThrows(ExecutionException.class, () -> fga.listObjects(new ClientListObjectsRequest())
                         .get());
 
         // Then
@@ -1481,7 +1467,7 @@ public class OpenFgaClientTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listObjects(new ListObjectsRequest())
+                assertThrows(ExecutionException.class, () -> fga.listObjects(new ClientListObjectsRequest())
                         .get());
 
         // Then
@@ -1502,7 +1488,7 @@ public class OpenFgaClientTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listObjects(new ListObjectsRequest())
+                assertThrows(ExecutionException.class, () -> fga.listObjects(new ClientListObjectsRequest())
                         .get());
 
         // Then
@@ -1646,16 +1632,14 @@ public class OpenFgaClientTest {
                 "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        WriteAssertionsRequest request = new WriteAssertionsRequest()
-                .assertions(List.of(new Assertion()
-                        .tupleKey(new TupleKey()
-                                ._object(DEFAULT_OBJECT)
-                                .relation(DEFAULT_RELATION)
-                                .user(DEFAULT_USER))
-                        .expectation(true)));
+        List<ClientAssertion> assertions = List.of(new ClientAssertion()
+                .user(DEFAULT_USER)
+                .relation(DEFAULT_RELATION)
+                ._object(DEFAULT_OBJECT)
+                .expectation(true));
 
         // When
-        fga.writeAssertions(request).get();
+        fga.writeAssertions(assertions).get();
 
         // Then
         mockHttpClient.verify().put(putUrl).withBody(is(expectedBody)).called(1);
@@ -1667,9 +1651,8 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception =
-                assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(new WriteAssertionsRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(List.of())
+                .get());
 
         // Then
         assertEquals(
@@ -1682,25 +1665,13 @@ public class OpenFgaClientTest {
         clientConfiguration.authorizationModelId(null);
 
         // When
-        var exception =
-                assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(new WriteAssertionsRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(List.of())
+                .get());
 
         // Then
         assertEquals(
                 "Required parameter authorizationModelId was invalid when calling ClientConfiguration.",
                 exception.getMessage());
-    }
-
-    @Test
-    public void writeAssertions_bodyRequired() {
-        // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.writeAssertions(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling writeAssertions", exception.getMessage());
     }
 
     @Test
@@ -1713,9 +1684,8 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.writeAssertions(new WriteAssertionsRequest())
-                        .get());
+        ExecutionException execException = assertThrows(
+                ExecutionException.class, () -> fga.writeAssertions(List.of()).get());
 
         // Then
         mockHttpClient.verify().put(putUrl).called(1);
@@ -1736,9 +1706,8 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.writeAssertions(new WriteAssertionsRequest())
-                        .get());
+        ExecutionException execException = assertThrows(
+                ExecutionException.class, () -> fga.writeAssertions(List.of()).get());
 
         // Then
         mockHttpClient.verify().put(putUrl).called(1);
@@ -1758,9 +1727,8 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.writeAssertions(new WriteAssertionsRequest())
-                        .get());
+        ExecutionException execException = assertThrows(
+                ExecutionException.class, () -> fga.writeAssertions(List.of()).get());
 
         // Then
         mockHttpClient.verify().put(putUrl).called(1);

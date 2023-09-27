@@ -404,6 +404,16 @@ Expands the relationships in userset tree format.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Expand)
 
 ```java
+var request = new ClientExpandRequest()
+    .relation("viewer")
+    ._object("document:roadmap");
+var options = new ClientCheckOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.expand(request, options).get();
+
+// response.Tree.Root = {"name":"document:roadmap#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
 ```
 
 ##### List Objects
@@ -413,6 +423,23 @@ List the objects of a particular type a user has access to.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/ListObjects)
 
 ```java
+var request = new ClientListObjectsRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    .type("document")
+    .contextualTuples(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:budget")
+    ));
+var options = new ClientListObjectsOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.listObjects(request, options).get();
+
+// response.Objects = ["document:roadmap"]
 ```
 
 ##### List Relations
@@ -420,6 +447,7 @@ List the objects of a particular type a user has access to.
 List the relations a user has on an object.
 
 ```java
+// Coming soon.
 ```
 
 #### Assertions
@@ -431,6 +459,7 @@ Read assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Read%20Assertions)
 
 ```java
+var response = fgaClient.readAssertions().get();
 ```
 
 ##### Write Assertions
@@ -440,6 +469,14 @@ Update the assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Write%20Assertions)
 
 ```java
+var assertions = List.of(
+    new ClientAssertion()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("viewer")
+        ._object("document:roadmap")
+        .expectation(true)
+);
+fgaClient.writeAssertions(assertions).get();
 ```
 
 
