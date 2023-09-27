@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.5
+
+### [0.0.5](https://github.com/openfga/java-sdk/compare/v0.0.4...v0.0.5) (2023-09-27)
+
+- feat: introduced higher level OpenFgaClient class
+- docs: updated the README with usage instructions
+
 ## v0.0.3, v0.0.4
 
 ### [0.0.4](https://github.com/openfga/java-sdk/compare/v0.0.2...v0.0.4) (2023-09-21)

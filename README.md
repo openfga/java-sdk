@@ -74,13 +74,13 @@ It can be used with the following:
 * Gradle (Groovy)
 
 ```groovy
-implementation 'dev.openfga:openfga-sdk:0.0.4'
+implementation 'dev.openfga:openfga-sdk:0.0.5'
 ```
 
 * Gradle (Kotlin)
 
 ```kotlin
-implementation("dev.openfga:openfga-sdk:0.0.4")
+implementation("dev.openfga:openfga-sdk:0.0.5")
 ```
 
 * Apache Maven
@@ -89,26 +89,26 @@ implementation("dev.openfga:openfga-sdk:0.0.4")
 <dependency>
     <groupId>dev.openfga</groupId>
     <artifactId>openfga-sdk</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
 * Ivy
 
 ```xml
-<dependency org="dev.openfga" name="openfga-sdk" rev="0.0.4"/>
+<dependency org="dev.openfga" name="openfga-sdk" rev="0.0.5"/>
 ```
 
 * SBT
 
 ```scala
-libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.4"
+libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.5"
 ```
 
 * Leiningen
 
 ```edn
-[dev.openfga/openfga-sdk "0.0.4"]
+[dev.openfga/openfga-sdk "0.0.5"]
 ```
 
 
