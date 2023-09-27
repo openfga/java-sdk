@@ -305,9 +305,13 @@ var request = new ClientReadRequest()
     ._object("document:");
 
 // Find all relationship tuples where any user has a relationship as any relation with a particular document
-
 var request = new ClientReadRequest()
     ._object("document:roadmap");
+
+// Read all stored relationship tuples
+var request = new ClientReadRequest()
+    .pageSize(10)
+    .continuationToken("...");
 
 var response = fgaClient.read(request).get();
 
@@ -326,6 +330,29 @@ Create and/or delete relationship tuples to update the system state.
 By default, write runs in a transaction mode where any invalid operation (deleting a non-existing tuple, creating an existing tuple, one of the tuples was invalid) or a server error will fail the entire operation.
 
 ```java
+var request = new ClientWriteRequest()
+    .writes(List.of(
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:roadmap"),
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:budget")
+    ))
+    .deletes(List.of(
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:roadmap")
+    ));
+
+// You can rely on the model id set in the configuration or override it for this specific request
+var options = new ClientWriteOptions()
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.write(request, options).get();
 ```
 
 Convenience `WriteTuples` and `DeleteTuples` methods are also available.
@@ -335,6 +362,7 @@ Convenience `WriteTuples` and `DeleteTuples` methods are also available.
 The SDK will split the writes into separate requests and send them sequentially to avoid violating rate limits.
 
 ```java
+// Coming soon
 ```
 
 #### Relationship Queries

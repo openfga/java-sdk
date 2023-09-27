@@ -1019,13 +1019,11 @@ public class OpenFgaClientTest {
                 "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        WriteRequest request = new WriteRequest()
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .writes(new TupleKeys()
-                        .tupleKeys(List.of(new TupleKey()
-                                ._object(DEFAULT_OBJECT)
-                                .relation(DEFAULT_RELATION)
-                                .user(DEFAULT_USER))));
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new TupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         fga.write(request);
@@ -1045,13 +1043,11 @@ public class OpenFgaClientTest {
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        WriteRequest request = new WriteRequest()
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .deletes(new TupleKeys()
-                        .tupleKeys(List.of(new TupleKey()
-                                ._object(DEFAULT_OBJECT)
-                                .relation(DEFAULT_RELATION)
-                                .user(DEFAULT_USER))));
+        ClientWriteRequest request = new ClientWriteRequest()
+                .deletes(List.of(new TupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         fga.write(request);
@@ -1108,23 +1104,12 @@ public class OpenFgaClientTest {
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.write(new WriteRequest())
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.write(new ClientWriteRequest())
                 .get());
 
         // Then
         assertEquals(
                 "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
-    }
-
-    @Test
-    public void write_bodyRequired() {
-        // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(null).get());
-
-        // Then
-        ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling write", exception.getMessage());
     }
 
     @Test
@@ -1136,8 +1121,9 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.write(new WriteRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1157,8 +1143,9 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.write(new WriteRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1177,8 +1164,9 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.write(new WriteRequest()).get());
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
+                        .get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);

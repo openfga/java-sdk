@@ -10,13 +10,13 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
-public class ReadAuthorizationModelsOptions {
+public class ListStoresOptions {
     private Integer pageSize;
     private String continuationToken;
 
-    public ReadAuthorizationModelsOptions pageSize(Integer pageSize) {
+    public ListStoresOptions pageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -25,7 +25,7 @@ public class ReadAuthorizationModelsOptions {
         return pageSize;
     }
 
-    public ReadAuthorizationModelsOptions continuationToken(String continuationToken) {
+    public ListStoresOptions continuationToken(String continuationToken) {
         this.continuationToken = continuationToken;
         return this;
     }

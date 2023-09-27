@@ -191,7 +191,7 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
 
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(List.of(DEFAULT_TUPLE_KEY)));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ClientReadRequest readRequest =
                 new ClientReadRequest().user(DEFAULT_USER)._object(DEFAULT_DOC);
 
@@ -216,7 +216,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         CheckRequest checkRequest = new CheckRequest()
                 .tupleKey(new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC));
 
@@ -237,7 +237,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ExpandRequest expandRequest =
                 new ExpandRequest().tupleKey(new TupleKey()._object(DEFAULT_DOC).relation("reader"));
 
@@ -261,7 +261,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ListObjectsRequest listObjectsRequest =
                 new ListObjectsRequest().user(DEFAULT_USER).relation("reader").type("document");
 

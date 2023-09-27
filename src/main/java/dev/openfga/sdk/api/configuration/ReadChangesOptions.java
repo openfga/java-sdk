@@ -10,13 +10,23 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.configuration;
 
-public class ListStoresOptions {
+public class ReadChangesOptions {
+    private String type;
     private Integer pageSize;
     private String continuationToken;
 
-    public ListStoresOptions pageSize(Integer pageSize) {
+    public ReadChangesOptions type(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public ReadChangesOptions pageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -25,7 +35,7 @@ public class ListStoresOptions {
         return pageSize;
     }
 
-    public ListStoresOptions continuationToken(String continuationToken) {
+    public ReadChangesOptions continuationToken(String continuationToken) {
         this.continuationToken = continuationToken;
         return this;
     }

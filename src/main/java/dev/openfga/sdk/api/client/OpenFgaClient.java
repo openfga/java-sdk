@@ -191,16 +191,31 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ReadResponse> read(ClientReadRequest request) throws FgaInvalidParameterException {
+        return read(request, null);
+    }
+
+    /**
+     * Read - Read tuples previously written to the store (does not evaluate)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<ReadResponse> read(ClientReadRequest request, ClientReadOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
+        ReadRequest body = new ReadRequest();
         TupleKey tupleKey = new TupleKey();
 
         if (request != null) {
             tupleKey.user(request.getUser()).relation(request.getRelation())._object(request.getObject());
         }
 
-        ReadRequest body = new ReadRequest().tupleKey(tupleKey);
+        if (options != null) {
+            body.pageSize(options.getPageSize()).continuationToken(options.getContinuationToken());
+        }
+
+        body.tupleKey(tupleKey);
 
         return call(() -> api.read(storeId, body));
     }
@@ -210,10 +225,39 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<Object> write(WriteRequest request) throws FgaInvalidParameterException {
+    public CompletableFuture<Object> write(ClientWriteRequest request) throws FgaInvalidParameterException {
+        return write(request, null);
+    }
+
+    /**
+     * Write - Create or delete relationship tuples
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Object> write(ClientWriteRequest request, ClientWriteOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        return call(() -> api.write(storeId, request));
+
+        WriteRequest body = new WriteRequest();
+
+        if (request != null) {
+            if (request.getWrites() != null) {
+                body.writes(new TupleKeys().tupleKeys(request.getWrites()));
+            }
+            if (request.getDeletes() != null) {
+                body.deletes(new TupleKeys().tupleKeys(request.getDeletes()));
+            }
+        }
+
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            body.authorizationModelId(options.getAuthorizationModelId());
+        } else {
+            String authorizationModelId = configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        }
+
+        return call(() -> api.write(storeId, body));
     }
 
     /**
