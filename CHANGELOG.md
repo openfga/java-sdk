@@ -4,8 +4,9 @@
 
 ### [0.0.5](https://github.com/openfga/java-sdk/compare/v0.0.4...v0.0.5) (2023-09-27)
 
-- feat: introduced higher level OpenFgaClient class
-- docs: updated the README with usage instructions
+- feat(client): add `OpenFgaClient` wrapping `OpenFgaApi` and exposing a simplified interface.
+  See [docs](https://github.com/openfga/java-sdk?tab=readme-ov-file#initializing-the-api-client)
+- chore(docs): update the README with installation and usage instructions.
 
 ## v0.0.3, v0.0.4
 
