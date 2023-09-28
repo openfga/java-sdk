@@ -270,7 +270,7 @@ Delete a store.
 > Requires a client initialized with a storeId
 
 ```java
-var store = await fgaClient.deleteStore().get();
+var store = fgaClient.deleteStore().get();
 ```
 
 #### Authorization Models
@@ -335,7 +335,7 @@ var request = new WriteAuthorizationModelRequest()
 
 var response = fgaClient.writeAuthorizationModel(request).get();
 
-// response.AuthorizationModelId = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.getAuthorizationModelId() = "01GXSA8YR785C4FYS3C0RTG7B1"
 ```
 
 #### Read a Single Authorization Model
@@ -365,9 +365,9 @@ Reads the latest authorization model (note: this ignores the model id in configu
 ```java
 var response = fgaClient.readLatestAuthorizationModel().get();
 
-// response.AuthorizationModel.Id = "01GXSA8YR785C4FYS3C0RTG7B1"
-// response.AuthorizationModel.SchemaVersion = "1.1"
-// response.AuthorizationModel.TypeDefinitions = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
+// response.getAuthorizationModel().getId() = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.getAuthorizationModel().SchemaVersion() = "1.1"
+// response.getAuthorizationModel().TypeDefinitions() = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
 ```
 
 #### Relationship Tuples
@@ -498,7 +498,7 @@ var options = new ClientCheckOptions()
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
 var response = fgaClient.check(request, options).get();
-// response.Allowed = true
+// response.getAllowed() = true
 ```
 
 ##### Batch Check
@@ -526,7 +526,7 @@ var options = new ClientCheckOptions()
 
 var response = fgaClient.expand(request, options).get();
 
-// response.Tree.Root = {"name":"document:roadmap#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
+// response.getTree().getRoot() = {"name":"document:roadmap#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
 ```
 
 ##### List Objects
@@ -552,7 +552,7 @@ var options = new ClientListObjectsOptions()
 
 var response = fgaClient.listObjects(request, options).get();
 
-// response.Objects = ["document:roadmap"]
+// response.getObjects() = ["document:roadmap"]
 ```
 
 ##### List Relations
