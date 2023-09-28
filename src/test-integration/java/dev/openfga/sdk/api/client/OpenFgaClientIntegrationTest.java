@@ -10,13 +10,12 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api;
+package dev.openfga.sdk.api.client;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.net.http.HttpClient;
@@ -24,23 +23,28 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class OpenFgaApiIntegrationTest {
+public class OpenFgaClientIntegrationTest {
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private static final String DEFAULT_AUTH_MODEL =
             "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    public static final TupleKey DEFAULT_TUPLE_KEY =
-            new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
-    public static final List<TupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    public static final ClientTupleKey DEFAULT_TUPLE_KEY =
+            new ClientTupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
+    public static final List<ClientTupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    public static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()
+            .user(DEFAULT_USER)
+            .relation("reader")
+            ._object(DEFAULT_DOC)
+            .expectation(true);
 
-    private OpenFgaApi api;
+    private OpenFgaClient fga;
 
     @BeforeEach
     public void initializeApi() throws Exception {
-        Configuration apiConfig = new Configuration().apiUrl("http://localhost:8080");
+        ClientConfiguration apiConfig = new ClientConfiguration().apiUrl("http://localhost:8080");
         ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), mapper);
-        api = new OpenFgaApi(apiClient, apiConfig);
+        fga = new OpenFgaClient(apiClient, apiConfig);
     }
 
     @Test
@@ -50,10 +54,10 @@ public class OpenFgaApiIntegrationTest {
         CreateStoreRequest createStoreRequest = new CreateStoreRequest().name(storeName);
 
         // When
-        CreateStoreResponse response = api.createStore(createStoreRequest).get();
+        CreateStoreResponse response = fga.createStore(createStoreRequest).get();
 
         // Then
-        assertEquals("OpenFgaApiIntegrationTest.createStore", response.getName());
+        assertEquals("OpenFgaClientIntegrationTest.createStore", response.getName());
     }
 
     @Test
@@ -61,12 +65,14 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
 
         // When
-        api.deleteStore(storeId).get();
+        fga.deleteStore().get();
 
         // Then
-        ListStoresResponse response = api.listStores(100, null).get();
+        ListStoresResponse response = fga.listStores().get();
+        assertNotNull(response.getStores());
         boolean itWasDeleted = response.getStores().stream().map(Store::getId).noneMatch(storeId::equals);
         assertTrue(itWasDeleted, String.format("No stores should remain with the id %s.", storeId));
     }
@@ -76,9 +82,10 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
 
         // When
-        GetStoreResponse response = api.getStore(storeId).get();
+        GetStoreResponse response = fga.getStore().get();
 
         // Then
         assertEquals(storeName, response.getName());
@@ -97,10 +104,11 @@ public class OpenFgaApiIntegrationTest {
         }
 
         // When
-        ListStoresResponse response = api.listStores(100, null).get();
+        ListStoresResponse response = fga.listStores().get();
 
         // Then
         for (String store : stores) {
+            assertNotNull(response.getStores());
             boolean exists = response.getStores().stream().map(Store::getName).anyMatch(store::equals);
             assertTrue(exists, String.format("Store %s should be in listStores response", store));
         }
@@ -111,15 +119,17 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
 
         // When
-        ReadAuthorizationModelResponse response =
-                api.readAuthorizationModel(storeId, authModelId).get();
+        ReadAuthorizationModelResponse response = fga.readAuthorizationModel().get();
 
         // Then
         AuthorizationModel authModel = response.getAuthorizationModel();
-        assertEquals(authModelId, authModel.getId());
+        assertNotNull(authModel);
+        assertEquals(authModelId, response.getAuthorizationModel().getId());
         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
         assertEquals(
                 "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]}}}}]",
@@ -131,15 +141,19 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+        var options = new ReadAuthorizationModelsOptions();
 
         // When
         ReadAuthorizationModelsResponse response =
-                api.readAuthorizationModels(storeId, 100, null).get();
+                fga.readAuthorizationModels(options).get();
 
         // Then
+        assertNotNull(response.getAuthorizationModels());
         response.getAuthorizationModels().stream()
-                .filter(authModel -> authModel.getId().equals(authModelId))
+                .filter(authModel -> authModelId.equals(authModel.getId()))
                 .forEach(authModel -> {
                     assertEquals(authModelId, authModel.getId());
                     try {
@@ -159,12 +173,13 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
         WriteAuthorizationModelRequest request =
                 mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
 
         // When
         WriteAuthorizationModelResponse response =
-                api.writeAuthorizationModel(storeId, request).get();
+                fga.writeAuthorizationModel(request).get();
 
         // Then
         assertNotNull(response);
@@ -177,17 +192,22 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
-        String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(List.of(DEFAULT_TUPLE_KEY)));
-        ReadRequest readRequest =
-                new ReadRequest().tupleKey(new TupleKey().user(DEFAULT_USER)._object(DEFAULT_DOC));
+        fga.setStoreId(storeId);
+        String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientReadRequest readRequest =
+                new ClientReadRequest().user(DEFAULT_USER)._object(DEFAULT_DOC);
 
         // When
-        api.write(storeId, writeRequest).get();
-        ReadResponse response = api.read(storeId, readRequest).get();
+        fga.write(writeRequest).get();
+        ReadResponse response = fga.read(readRequest).get();
 
         // Then
+        assertNotNull(response.getTuples());
         TupleKey key = response.getTuples().get(0).getKey();
+        assertNotNull(key);
         assertEquals(DEFAULT_USER, key.getUser());
         assertEquals("reader", key.getRelation());
         assertEquals(DEFAULT_DOC, key.getObject());
@@ -198,16 +218,19 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
-        String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
-        CheckRequest checkRequest = new CheckRequest()
-                .tupleKey(new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC));
+        fga.setStoreId(storeId);
+        String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientCheckRequest checkRequest =
+                new ClientCheckRequest().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
 
         // When
-        api.write(storeId, writeRequest).get();
-        CheckResponse response = api.check(storeId, checkRequest).get();
+        fga.write(writeRequest).get();
+        CheckResponse response = fga.check(checkRequest).get();
 
         // Then
+        assertNotNull(response.getAllowed());
         assertTrue(response.getAllowed());
     }
 
@@ -216,14 +239,16 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
-        String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
-        ExpandRequest expandRequest =
-                new ExpandRequest().tupleKey(new TupleKey()._object(DEFAULT_DOC).relation("reader"));
+        fga.setStoreId(storeId);
+        String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientExpandRequest expandRequest =
+                new ClientExpandRequest()._object(DEFAULT_DOC).relation("reader");
 
         // When
-        api.write(storeId, writeRequest).get();
-        ExpandResponse response = api.expand(storeId, expandRequest).get();
+        fga.write(writeRequest).get();
+        ExpandResponse response = fga.expand(expandRequest).get();
 
         // Then
         assertNotNull(response.getTree());
@@ -238,41 +263,23 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
-        String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
-        ListObjectsRequest listObjectsRequest =
-                new ListObjectsRequest().user(DEFAULT_USER).relation("reader").type("document");
+        fga.setStoreId(storeId);
+        String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientListObjectsRequest listObjectsRequest = new ClientListObjectsRequest()
+                .user(DEFAULT_USER)
+                .relation("reader")
+                .type("document");
 
         // When
-        api.write(storeId, writeRequest).get();
-        ListObjectsResponse response =
-                api.listObjects(storeId, listObjectsRequest).get();
+        fga.write(writeRequest).get();
+        ListObjectsResponse response = fga.listObjects(listObjectsRequest).get();
 
         // Then
+        assertNotNull(response.getObjects());
         assertEquals(1, response.getObjects().size());
         assertEquals(DEFAULT_DOC, response.getObjects().get(0));
-    }
-
-    @Test
-    public void write_and_readChanges() throws Exception {
-        // Given
-        String storeName = thisTestName();
-        String storeId = createStore(storeName);
-        String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
-
-        // When
-        api.write(storeId, writeRequest).get();
-        ReadChangesResponse response =
-                api.readChanges(storeId, null, null, null).get();
-
-        // Then
-        assertEquals(1, response.getChanges().size());
-        String firstTupleKeyJson =
-                mapper.writeValueAsString(response.getChanges().get(0).getTupleKey());
-        assertEquals(
-                "{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"}",
-                firstTupleKeyJson);
     }
 
     @Test
@@ -280,14 +287,14 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
-        WriteAssertionsRequest writeRequest = new WriteAssertionsRequest()
-                .assertions(List.of(new Assertion().tupleKey(DEFAULT_TUPLE_KEY).expectation(true)));
+        fga.setAuthorizationModelId(authModelId);
+        List<ClientAssertion> assertions = List.of(DEFAULT_ASSERTION);
 
         // When
-        api.writeAssertions(storeId, authModelId, writeRequest).get();
-        ReadAssertionsResponse response =
-                api.readAssertions(storeId, authModelId).get();
+        fga.writeAssertions(assertions).get();
+        ReadAssertionsResponse response = fga.readAssertions().get();
 
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
@@ -303,7 +310,7 @@ public class OpenFgaApiIntegrationTest {
      */
     private String createStore(String storeName) throws Exception {
         CreateStoreResponse response =
-                api.createStore(new CreateStoreRequest().name(storeName)).get();
+                fga.createStore(new CreateStoreRequest().name(storeName)).get();
         return response.getId();
     }
 
@@ -313,10 +320,11 @@ public class OpenFgaApiIntegrationTest {
      * @return The created Authorization Model ID
      */
     private String writeAuthModel(String storeId) throws Exception {
+        fga.setStoreId(storeId);
         WriteAuthorizationModelRequest request =
                 mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
         WriteAuthorizationModelResponse response =
-                api.writeAuthorizationModel(storeId, request).get();
+                fga.writeAuthorizationModel(request).get();
         return response.getAuthorizationModelId();
     }
 
@@ -325,7 +333,7 @@ public class OpenFgaApiIntegrationTest {
         // Tracing the stack gives an array of:
         // 0: getStackTrace(), 1: getThisFunctionName(), 2: <The calling function>, 3: ...
         StackTraceElement callingFn = Thread.currentThread().getStackTrace()[2];
-        String callingClass = callingFn.getClassName().replace("dev.openfga.sdk.api.", "");
+        String callingClass = callingFn.getClassName().replace("dev.openfga.sdk.api.client.", "");
 
         return String.format("%s.%s", callingClass, callingFn.getMethodName());
     }

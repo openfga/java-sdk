@@ -1,5 +1,7 @@
 # Java SDK for OpenFGA
 
+[![Maven Central](https://img.shields.io/maven-central/v/dev.openfga/openfga-sdk.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.openfga%22%20AND%20a:%22openfga-sdk%22)
+[![Javadoc](https://javadoc.io/badge2/dev.openfga/openfga-sdk/javadoc.svg)](https://javadoc.io/doc/dev.openfga/openfga-sdk)
 [![Release](https://img.shields.io/github/v/release/openfga/java-sdk?sort=semver&color=green)](https://github.com/openfga/java-sdk/releases)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fopenfga%2Fjava-sdk.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fopenfga%2Fjava-sdk?ref=badge_shield)
@@ -65,6 +67,49 @@ OpenFGA is designed to make it easy for application builders to model their perm
 
 ## Installation
 
+The OpenFGA Java SDK is available on [Maven Central](https://central.sonatype.com/).
+
+It can be used with the following:
+
+* Gradle (Groovy)
+
+```groovy
+implementation 'dev.openfga:openfga-sdk:0.0.5'
+```
+
+* Gradle (Kotlin)
+
+```kotlin
+implementation("dev.openfga:openfga-sdk:0.0.5")
+```
+
+* Apache Maven
+
+```xml
+<dependency>
+    <groupId>dev.openfga</groupId>
+    <artifactId>openfga-sdk</artifactId>
+    <version>0.0.5</version>
+</dependency>
+```
+
+* Ivy
+
+```xml
+<dependency org="dev.openfga" name="openfga-sdk" rev="0.0.5"/>
+```
+
+* SBT
+
+```scala
+libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.5"
+```
+
+* Leiningen
+
+```edn
+[dev.openfga/openfga-sdk "0.0.5"]
+```
 
 
 ## Getting Started
@@ -75,17 +120,85 @@ OpenFGA is designed to make it easy for application builders to model their perm
 
 #### No Credentials
 
-```cjava
+```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import java.net.http.HttpClient;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var clientConfig = new ClientConfiguration()
+                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
+        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
+
+        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var response = fgaClient.readAuthorizationModels().get();
+    }
+}
 ```
 
 #### API Token
 
 ```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ApiToken;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.Credentials;
+import java.net.http.HttpClient;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var clientConfig = new ClientConfiguration()
+                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .credentials(new Credentials(
+                    new ApiToken(System.getenv("OPENFGA_API_TOKEN")) // will be passed as the "Authorization: Bearer ${ApiToken}" request header
+                ));
+        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
+
+        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var response = fgaClient.readAuthorizationModels().get();
+    }
+}
 ```
 
 #### Client Credentials
 
 ```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.Credentials;
+import java.net.http.HttpClient;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var clientConfig = new ClientConfiguration()
+                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .credentials(new Credentials(
+                    new ClientCredentials()
+                            .apiTokenIssuer(System.getenv("OPENFGA_API_TOKEN_ISSUER"))
+                            .apiAudience(System.getenv("OPENFGA_API_AUDIENCE"))
+                            .clientId(System.getenv("OPENFGA_CLIENT_ID"))
+                            .clientSecret(System.getenv("OPENFGA_CLIENT_SECRET"))
+                ));
+        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
+
+        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var response = fgaClient.readAuthorizationModels().get();
+    }
+}
 ```
 
 
@@ -106,6 +219,12 @@ Get a paginated list of stores.
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/ListStores)
 
 ```java
+var options = new ListStoresOptions()
+    .pageSize(10)
+    .continuationToken("...");
+var stores = fgaClient.listStores(options);
+
+// stores = [{ "id": "01FQH7V8BEG3GPQW93KTRFR8JB", "name": "FGA Demo Store", "created_at": "2022-01-01T00:00:00.000Z", "updated_at": "2022-01-01T00:00:00.000Z" }]
 ```
 
 ##### Create Store
@@ -115,6 +234,17 @@ Initialize a store.
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/CreateStore)
 
 ```java
+var request = new CreateStoreRequest().name("FGA Demo");
+var store = fgaClient.createStore(request).get();
+
+// store.getId() = "01FQH7V8BEG3GPQW93KTRFR8JB"
+
+// store the store.getId() in database
+
+// update the storeId of the client instance
+fgaClient.setStoreId(store.getId());
+
+// continue calling the API normally
 ```
 
 ##### Get Store
@@ -126,6 +256,9 @@ Get information about the current store.
 > Requires a client initialized with a storeId
 
 ```java
+var store = fgaClient.getStore().get();
+
+// store = { "id": "01FQH7V8BEG3GPQW93KTRFR8JB", "name": "FGA Demo Store", "created_at": "2022-01-01T00:00:00.000Z", "updated_at": "2022-01-01T00:00:00.000Z" }
 ```
 
 ##### Delete Store
@@ -137,6 +270,7 @@ Delete a store.
 > Requires a client initialized with a storeId
 
 ```java
+var store = fgaClient.deleteStore().get();
 ```
 
 #### Authorization Models
@@ -148,6 +282,14 @@ Read all authorization models in the store.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModels)
 
 ```java
+var options = new ReadAuthorizationModelsOptions()
+    .pageSize(10)
+    .continuationToken("...");
+var response = fgaClient.readAuthorizationModels(options).get();
+
+// response.getAuthorizationModels() = [
+// { id: "01GXSA8YR785C4FYS3C0RTG7B1", schemaVersion: "1.1", typeDefinitions: [...] },
+// { id: "01GXSBM5PVYHCJNRNKXMB4QZTW", schemaVersion: "1.1", typeDefinitions: [...] }];
 ```
 
 ##### Write Authorization Model
@@ -163,6 +305,37 @@ Create a new authorization model.
 > You can use the OpenFGA [CLI](https://github.com/openfga/cli) or [Syntax Transformer](https://github.com/openfga/syntax-transformer) to convert between the OpenFGA DSL and the JSON authorization model.
 
 ```java
+
+var request = new WriteAuthorizationModelRequest()
+    .schemaVersion("1.1")
+    .typeDefinitions(List.of(
+        new TypeDefinition().type("user").relations(Map.of()),
+        new TypeDefinition()
+            .type("document")
+            .relations(Map.of(
+                "writer", new Userset(),
+                "viewer", new Userset().union(new Usersets()
+                    .child(List.of(
+                        new Userset(),
+                        new Userset().computedUserset(new ObjectRelation().relation("writer"))
+                    ))
+                )
+            ))
+            .metadata(new Metadata()
+                .relations(Map.of(
+                    "writer", new RelationMetadata().directlyRelatedUserTypes(
+                        List.of(new RelationReference().type("user"))
+                    ),
+                    "viewer", new RelationMetadata().directlyRelatedUserTypes(
+                        List.of(new RelationReference().type("user"))
+                    )
+                ))
+            )
+    ));
+
+var response = fgaClient.writeAuthorizationModel(request).get();
+
+// response.getAuthorizationModelId() = "01GXSA8YR785C4FYS3C0RTG7B1"
 ```
 
 #### Read a Single Authorization Model
@@ -172,6 +345,15 @@ Read a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
 ```java
+var options = new ReadAuthorizationModelOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.readAuthorizationModel(options).get();
+
+// response.getAuthorizationModel().getId() = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.getAuthorizationModel().getSchemaVersion() = "1.1"
+// response.getAuthorizationModel().getTypeDefinitions() = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
 ```
 
 ##### Read the Latest Authorization Model
@@ -181,6 +363,11 @@ Reads the latest authorization model (note: this ignores the model id in configu
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
 ```java
+var response = fgaClient.readLatestAuthorizationModel().get();
+
+// response.getAuthorizationModel().getId() = "01GXSA8YR785C4FYS3C0RTG7B1"
+// response.getAuthorizationModel().SchemaVersion() = "1.1"
+// response.getAuthorizationModel().TypeDefinitions() = [{ "type": "document", "relations": { ... } }, { "type": "user", "relations": { ... }}]
 ```
 
 #### Relationship Tuples
@@ -192,6 +379,18 @@ Reads the list of historical relationship tuple writes and deletes.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/ReadChanges)
 
 ```java
+var options = new ClientReadChangesOptions()
+    .type("document")
+    .pageSize(10)
+    .continuationToken("...");
+
+var response = fgaClient.readChanges(options).get();
+
+// response.getContinuationToken() = ...
+// response.getChanges() = [
+//   { tupleKey: { user, relation, object }, operation: TupleOperation.WRITE, timestamp: ... },
+//   { tupleKey: { user, relation, object }, operation: TupleOperation.DELETE, timestamp: ... }
+// ]
 ```
 
 ##### Read Relationship Tuples
@@ -201,6 +400,38 @@ Reads the relationship tuples stored in the database. It does not evaluate nor e
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/Read)
 
 ```java
+// Find if a relationship tuple stating that a certain user is a viewer of a certain document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    ._object("document:roadmap");
+
+// Find all relationship tuples where a certain user has a relationship as any relation to a certain document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    ._object("document:roadmap");
+
+// Find all relationship tuples where a certain user is a viewer of any document
+var request = new ClientReadRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    ._object("document:");
+
+// Find all relationship tuples where any user has a relationship as any relation with a particular document
+var request = new ClientReadRequest()
+    ._object("document:roadmap");
+
+// Read all stored relationship tuples
+var request = new ClientReadRequest();
+
+var options = new ClientReadOptions()
+    .pageSize(10)
+    .continuationToken("...");
+
+var response = fgaClient.read(request, options).get();
+
+// In all the above situations, the response will be of the form:
+// response = { tuples: [{ key: { user, relation, object }, timestamp }, ...]}
 ```
 
 ##### Write (Create and Delete) Relationship Tuples
@@ -214,6 +445,29 @@ Create and/or delete relationship tuples to update the system state.
 By default, write runs in a transaction mode where any invalid operation (deleting a non-existing tuple, creating an existing tuple, one of the tuples was invalid) or a server error will fail the entire operation.
 
 ```java
+var request = new ClientWriteRequest()
+    .writes(List.of(
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:roadmap"),
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:budget")
+    ))
+    .deletes(List.of(
+        new TupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:roadmap")
+    ));
+
+// You can rely on the model id set in the configuration or override it for this specific request
+var options = new ClientWriteOptions()
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.write(request, options).get();
 ```
 
 Convenience `WriteTuples` and `DeleteTuples` methods are also available.
@@ -223,6 +477,7 @@ Convenience `WriteTuples` and `DeleteTuples` methods are also available.
 The SDK will split the writes into separate requests and send them sequentially to avoid violating rate limits.
 
 ```java
+// Coming soon
 ```
 
 #### Relationship Queries
@@ -234,6 +489,16 @@ Check if a user has a particular relation with an object.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Check)
 
 ```java
+var request = new ClientCheckRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("writer")
+    ._object("document:roadmap");
+var options = new ClientCheckOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.check(request, options).get();
+// response.getAllowed() = true
 ```
 
 ##### Batch Check
@@ -242,6 +507,7 @@ Run a set of [checks](#check). Batch Check will return `allowed: false` if it en
 If 429s or 5xxs are encountered, the underlying check will retry up to 15 times before giving up.
 
 ```java
+// Coming soon
 ```
 
 ##### Expand
@@ -251,6 +517,16 @@ Expands the relationships in userset tree format.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Expand)
 
 ```java
+var request = new ClientExpandRequest()
+    .relation("viewer")
+    ._object("document:roadmap");
+var options = new ClientCheckOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.expand(request, options).get();
+
+// response.getTree().getRoot() = {"name":"document:roadmap#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
 ```
 
 ##### List Objects
@@ -260,6 +536,23 @@ List the objects of a particular type a user has access to.
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/ListObjects)
 
 ```java
+var request = new ClientListObjectsRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    .relation("viewer")
+    .type("document")
+    .contextualTuples(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:budget")
+    ));
+var options = new ClientListObjectsOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+
+var response = fgaClient.listObjects(request, options).get();
+
+// response.getObjects() = ["document:roadmap"]
 ```
 
 ##### List Relations
@@ -267,6 +560,7 @@ List the objects of a particular type a user has access to.
 List the relations a user has on an object.
 
 ```java
+// Coming soon.
 ```
 
 #### Assertions
@@ -278,6 +572,7 @@ Read assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Read%20Assertions)
 
 ```java
+var response = fgaClient.readAssertions().get();
 ```
 
 ##### Write Assertions
@@ -287,10 +582,36 @@ Update the assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Write%20Assertions)
 
 ```java
+var assertions = List.of(
+    new ClientAssertion()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("viewer")
+        ._object("document:roadmap")
+        .expectation(true)
+);
+fgaClient.writeAssertions(assertions).get();
 ```
 
 
 ### API Endpoints
+
+| Method | HTTP request | Description |
+| ------------- | ------------- | ------------- |
+| [**check**](docs/OpenFgaApi.md#check) | **POST** /stores/{store_id}/check | Check whether a user is authorized to access an object |
+| [**createStore**](docs/OpenFgaApi.md#createstore) | **POST** /stores | Create a store |
+| [**deleteStore**](docs/OpenFgaApi.md#deletestore) | **DELETE** /stores/{store_id} | Delete a store |
+| [**expand**](docs/OpenFgaApi.md#expand) | **POST** /stores/{store_id}/expand | Expand all relationships in userset tree format, and following userset rewrite rules.  Useful to reason about and debug a certain relationship |
+| [**getStore**](docs/OpenFgaApi.md#getstore) | **GET** /stores/{store_id} | Get a store |
+| [**listObjects**](docs/OpenFgaApi.md#listobjects) | **POST** /stores/{store_id}/list-objects | List all objects of the given type that the user has a relation with |
+| [**listStores**](docs/OpenFgaApi.md#liststores) | **GET** /stores | List all stores |
+| [**read**](docs/OpenFgaApi.md#read) | **POST** /stores/{store_id}/read | Get tuples from the store that matches a query, without following userset rewrite rules |
+| [**readAssertions**](docs/OpenFgaApi.md#readassertions) | **GET** /stores/{store_id}/assertions/{authorization_model_id} | Read assertions for an authorization model ID |
+| [**readAuthorizationModel**](docs/OpenFgaApi.md#readauthorizationmodel) | **GET** /stores/{store_id}/authorization-models/{id} | Return a particular version of an authorization model |
+| [**readAuthorizationModels**](docs/OpenFgaApi.md#readauthorizationmodels) | **GET** /stores/{store_id}/authorization-models | Return all the authorization models for a particular store |
+| [**readChanges**](docs/OpenFgaApi.md#readchanges) | **GET** /stores/{store_id}/changes | Return a list of all the tuple changes |
+| [**write**](docs/OpenFgaApi.md#write) | **POST** /stores/{store_id}/write | Add or delete tuples from the store |
+| [**writeAssertions**](docs/OpenFgaApi.md#writeassertions) | **PUT** /stores/{store_id}/assertions/{authorization_model_id} | Upsert assertions for an authorization model ID |
+| [**writeAuthorizationModel**](docs/OpenFgaApi.md#writeauthorizationmodel) | **POST** /stores/{store_id}/authorization-models | Create a new authorization model |
 
 
 

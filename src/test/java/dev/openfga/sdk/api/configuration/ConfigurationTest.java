@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 class ConfigurationTest {
     private static final String DEFAULT_API_URL = "http://localhost:8080";
-    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.0.4";
+    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.0.5";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
@@ -28,7 +28,7 @@ class ConfigurationTest {
     void apiUrl_nullDefaults() throws FgaInvalidParameterException {
         // Given
         String apiUrl = null;
-        var config = new Configuration(apiUrl);
+        var config = new Configuration().apiUrl(apiUrl);
 
         // When
         config.assertValid();
@@ -41,7 +41,7 @@ class ConfigurationTest {
     void apiUrl_emptyStringDefaults() throws FgaInvalidParameterException {
         // Given
         String apiUrl = "";
-        var config = new Configuration(apiUrl);
+        var config = new Configuration().apiUrl(apiUrl);
 
         // When
         config.assertValid();
@@ -54,7 +54,7 @@ class ConfigurationTest {
     void apiUrl_whitespaceStringDefaults() throws FgaInvalidParameterException {
         // Given
         String apiUrl = " \t\r\n";
-        var config = new Configuration(apiUrl);
+        var config = new Configuration().apiUrl(apiUrl);
 
         // When
         config.assertValid();
@@ -70,7 +70,7 @@ class ConfigurationTest {
 
         // When
         FgaInvalidParameterException e = assertThrows(FgaInvalidParameterException.class, () -> {
-            var config = new Configuration(apiUrl);
+            var config = new Configuration().apiUrl(apiUrl);
             config.assertValid();
         });
 
@@ -85,7 +85,7 @@ class ConfigurationTest {
 
         // When
         FgaInvalidParameterException e = assertThrows(FgaInvalidParameterException.class, () -> {
-            var config = new Configuration(apiUrl);
+            var config = new Configuration().apiUrl(apiUrl);
             config.assertValid();
         });
 
@@ -100,7 +100,7 @@ class ConfigurationTest {
 
         // When
         FgaInvalidParameterException e = assertThrows(FgaInvalidParameterException.class, () -> {
-            var config = new Configuration(apiUrl);
+            var config = new Configuration().apiUrl(apiUrl);
             config.assertValid();
         });
 
@@ -115,7 +115,7 @@ class ConfigurationTest {
 
         // When
         FgaInvalidParameterException e = assertThrows(FgaInvalidParameterException.class, () -> {
-            var config = new Configuration(apiUrl);
+            var config = new Configuration().apiUrl(apiUrl);
             config.assertValid();
         });
 

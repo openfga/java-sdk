@@ -52,6 +52,11 @@ import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+/**
+ * A low-level API representation of an OpenFGA server.
+ * <p>
+ * Most code should favor the simpler and higher-level {@link OpenFgaClient} when calling an OpenFGA server.
+ */
 public class OpenFgaApi {
     private final HttpClient memberVarHttpClient;
     private final ObjectMapper memberVarObjectMapper;
@@ -60,8 +65,6 @@ public class OpenFgaApi {
     private final Consumer<HttpRequest.Builder> memberVarInterceptor;
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
-
-    // TODO: In every request, get access token, (Assuming plain access token, or OAuth2 CredentialsMethod)
 
     public OpenFgaApi(ApiClient apiClient, Configuration configuration) throws FgaInvalidParameterException {
         memberVarHttpClient = apiClient.getHttpClient();

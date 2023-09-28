@@ -22,20 +22,21 @@ class OAuth2ClientTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private HttpClientMock mockHttpClient;
 
-    private Credentials credentials;
     private OAuth2Client oAuth2;
 
     @BeforeEach
     public void setup() throws FgaInvalidParameterException {
         mockHttpClient = new HttpClientMock();
 
-        credentials = new Credentials(new ClientCredentials()
+        var credentials = new Credentials(new ClientCredentials()
                 .clientId(CLIENT_ID)
                 .clientSecret(CLIENT_SECRET)
                 .apiAudience(AUDIENCE)
                 .apiTokenIssuer(API_TOKEN_ISSUER));
 
-        oAuth2 = new OAuth2Client(new Configuration("", credentials), mockHttpClient, mapper);
+        var configuration = new Configuration().apiUrl("").credentials(credentials);
+
+        oAuth2 = new OAuth2Client(configuration, mockHttpClient, mapper);
     }
 
     @Test

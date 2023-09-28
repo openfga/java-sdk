@@ -27,10 +27,10 @@ import java.time.Duration;
  * Configurations for an api client.
  */
 public class Configuration implements BaseConfiguration {
-    public static final String VERSION = "0.0.4";
+    public static final String VERSION = "0.0.5";
 
     private static final String DEFAULT_API_URL = "http://localhost:8080";
-    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.0.4";
+    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.0.5";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
@@ -42,21 +42,6 @@ public class Configuration implements BaseConfiguration {
 
     public Configuration() {
         this.apiUrl = DEFAULT_API_URL;
-        this.userAgent = DEFAULT_USER_AGENT;
-        this.readTimeout = DEFAULT_READ_TIMEOUT;
-        this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-    }
-
-    public Configuration(String apiUrl) {
-        this.apiUrl = apiUrl;
-        this.userAgent = DEFAULT_USER_AGENT;
-        this.readTimeout = DEFAULT_READ_TIMEOUT;
-        this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-    }
-
-    public Configuration(String apiUrl, Credentials credentials) {
-        this.apiUrl = apiUrl;
-        this.credentials = credentials;
         this.userAgent = DEFAULT_USER_AGENT;
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
