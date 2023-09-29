@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
-import java.net.http.HttpClient;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,7 @@ public class OpenFgaApiIntegrationTest {
     @BeforeEach
     public void initializeApi() throws Exception {
         Configuration apiConfig = new Configuration().apiUrl("http://localhost:8080");
-        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), mapper);
-        api = new OpenFgaApi(apiClient, apiConfig);
+        api = new OpenFgaApi(apiConfig);
     }
 
     @Test

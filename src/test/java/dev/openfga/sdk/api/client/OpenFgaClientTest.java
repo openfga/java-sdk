@@ -60,7 +60,7 @@ public class OpenFgaClientTest {
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
 
-        fga = new OpenFgaClient(mockApiClient, clientConfiguration);
+        fga = new OpenFgaClient(clientConfiguration, mockApiClient);
     }
 
     /* ******************
@@ -181,7 +181,8 @@ public class OpenFgaClientTest {
         String getUrl = String.format(
                 "https://localhost/stores?page_size=%d&continuation_token=%s", pageSize, continuationToken);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
-        ListStoresOptions options = new ListStoresOptions().pageSize(pageSize).continuationToken(continuationToken);
+        ClientListStoresOptions options =
+                new ClientListStoresOptions().pageSize(pageSize).continuationToken(continuationToken);
 
         // When
         ListStoresResponse response = fga.listStores(options).get();
@@ -485,7 +486,7 @@ public class OpenFgaClientTest {
     public void readAuthorizationModelsTest() throws Exception {
         // Given
         String getUrl = String.format("https://localhost/stores/%s/authorization-models", DEFAULT_STORE_ID);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
         String responseBody = String.format(
                 "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
@@ -508,7 +509,7 @@ public class OpenFgaClientTest {
     public void readAuthorizationModels_storeIdRequired() {
         // Given
         clientConfiguration.storeId(null);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
 
         // When
         var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.readAuthorizationModels(options)
@@ -523,7 +524,7 @@ public class OpenFgaClientTest {
     public void readAuthorizationModels_400() {
         // Given
         String getUrl = String.format("https://localhost/stores/%s/authorization-models", DEFAULT_STORE_ID);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -546,7 +547,7 @@ public class OpenFgaClientTest {
     public void readAuthorizationModels_404() {
         // Given
         String getUrl = String.format("https://localhost/stores/%s/authorization-models", DEFAULT_STORE_ID);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -568,7 +569,7 @@ public class OpenFgaClientTest {
     public void readAuthorizationModels_500() throws Exception {
         // Given
         String getUrl = String.format("https://localhost/stores/%s/authorization-models", DEFAULT_STORE_ID);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -617,7 +618,7 @@ public class OpenFgaClientTest {
         String continuationToken =
                 "eyJwayI6IkxBVEVTVF9OU0NPTkZJR19hdXRoMHN0b3JlIiwic2siOiIxem1qbXF3MWZLZExTcUoyN01MdTdqTjh0cWgifQ";
 
-        ReadChangesOptions options = new ReadChangesOptions().type(changeType);
+        ClientReadChangesOptions options = new ClientReadChangesOptions().type(changeType);
         String getUrl = String.format("https://localhost/stores/%s/changes?type=%s", DEFAULT_STORE_ID, changeType);
         String responseBody = String.format(
                 "{\"changes\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"operation\":\"TUPLE_OPERATION_WRITE\"}],\"continuation_token\":\"%s\"}",
@@ -784,8 +785,8 @@ public class OpenFgaClientTest {
     public void readAuthorizationModelTest_withOptions() throws Exception {
         // Given
         String authorizationModelId = "alternateAuthorizationModelId";
-        ReadAuthorizationModelOptions options =
-                new ReadAuthorizationModelOptions().authorizationModelId(authorizationModelId);
+        ClientReadAuthorizationModelOptions options =
+                new ClientReadAuthorizationModelOptions().authorizationModelId(authorizationModelId);
         String getUrl = String.format(
                 "https://localhost/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, authorizationModelId);
         String getResponse = String.format(

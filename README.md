@@ -74,13 +74,13 @@ It can be used with the following:
 * Gradle (Groovy)
 
 ```groovy
-implementation 'dev.openfga:openfga-sdk:0.0.5'
+implementation 'dev.openfga:openfga-sdk:0.1.0'
 ```
 
 * Gradle (Kotlin)
 
 ```kotlin
-implementation("dev.openfga:openfga-sdk:0.0.5")
+implementation("dev.openfga:openfga-sdk:0.1.0")
 ```
 
 * Apache Maven
@@ -89,26 +89,26 @@ implementation("dev.openfga:openfga-sdk:0.0.5")
 <dependency>
     <groupId>dev.openfga</groupId>
     <artifactId>openfga-sdk</artifactId>
-    <version>0.0.5</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
 * Ivy
 
 ```xml
-<dependency org="dev.openfga" name="openfga-sdk" rev="0.0.5"/>
+<dependency org="dev.openfga" name="openfga-sdk" rev="0.1.0"/>
 ```
 
 * SBT
 
 ```scala
-libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.5"
+libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.1.0"
 ```
 
 * Leiningen
 
 ```edn
-[dev.openfga/openfga-sdk "0.0.5"]
+[dev.openfga/openfga-sdk "0.1.0"]
 ```
 
 
@@ -122,20 +122,18 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.5"
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }
@@ -145,7 +143,6 @@ public class Example {
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -154,16 +151,15 @@ import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ApiToken(System.getenv("OPENFGA_API_TOKEN")) // will be passed as the "Authorization: Bearer ${ApiToken}" request header
                 ));
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }
@@ -173,7 +169,6 @@ public class Example {
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -182,7 +177,7 @@ import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
@@ -193,9 +188,8 @@ public class Example {
                             .clientId(System.getenv("OPENFGA_CLIENT_ID"))
                             .clientSecret(System.getenv("OPENFGA_CLIENT_SECRET"))
                 ));
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }
@@ -219,7 +213,7 @@ Get a paginated list of stores.
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/ListStores)
 
 ```java
-var options = new ListStoresOptions()
+var options = new ClientListStoresOptions()
     .pageSize(10)
     .continuationToken("...");
 var stores = fgaClient.listStores(options);
@@ -282,7 +276,7 @@ Read all authorization models in the store.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModels)
 
 ```java
-var options = new ReadAuthorizationModelsOptions()
+var options = new ClientReadAuthorizationModelsOptions()
     .pageSize(10)
     .continuationToken("...");
 var response = fgaClient.readAuthorizationModels(options).get();
@@ -345,7 +339,7 @@ Read a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
 ```java
-var options = new ReadAuthorizationModelOptions()
+var options = new ClientReadAuthorizationModelOptions()
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
@@ -572,7 +566,9 @@ Read assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Read%20Assertions)
 
 ```java
-var response = fgaClient.readAssertions().get();
+var options = new ClientReadAssertionsOptions()
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+var response = fgaClient.readAssertions(options).get();
 ```
 
 ##### Write Assertions
@@ -582,6 +578,8 @@ Update the assertions for a particular authorization model.
 [API Documentation](https://openfga.dev/api/service#/Assertions/Write%20Assertions)
 
 ```java
+var options = new ClientWriteAssertionsOptions()
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 var assertions = List.of(
     new ClientAssertion()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
@@ -589,7 +587,7 @@ var assertions = List.of(
         ._object("document:roadmap")
         .expectation(true)
 );
-fgaClient.writeAssertions(assertions).get();
+fgaClient.writeAssertions(assertions, options).get();
 ```
 
 
