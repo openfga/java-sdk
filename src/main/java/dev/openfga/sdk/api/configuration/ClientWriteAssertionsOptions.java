@@ -16,16 +16,20 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 
-public class ReadAuthorizationModelOptions {
+public class ClientWriteAssertionsOptions {
     private String authorizationModelId;
 
+    public boolean hasValidAuthorizationModelId() throws FgaInvalidParameterException {
+        return !isNullOrWhitespace(authorizationModelId);
+    }
+
     public void assertValidAuthorizationModelId() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(authorizationModelId)) {
+        if (!hasValidAuthorizationModelId()) {
             throw new FgaInvalidParameterException("authorizationModelId", "ClientConfiguration");
         }
     }
 
-    public ReadAuthorizationModelOptions authorizationModelId(String authorizationModelId) {
+    public ClientWriteAssertionsOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
         return this;
     }

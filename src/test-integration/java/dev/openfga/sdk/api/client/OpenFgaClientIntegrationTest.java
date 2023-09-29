@@ -142,7 +142,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        var options = new ReadAuthorizationModelsOptions();
+        var options = new ClientReadAuthorizationModelsOptions();
 
         // When
         ReadAuthorizationModelsResponse response =

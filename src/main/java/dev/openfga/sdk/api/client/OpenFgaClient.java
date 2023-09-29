@@ -69,7 +69,7 @@ public class OpenFgaClient {
         return call(() -> api.listStores(null, null));
     }
 
-    public CompletableFuture<ListStoresResponse> listStores(ListStoresOptions options)
+    public CompletableFuture<ListStoresResponse> listStores(ClientListStoresOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
         return call(() -> api.listStores(options.getPageSize(), options.getContinuationToken()));
@@ -125,7 +125,7 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ReadAuthorizationModelsResponse> readAuthorizationModels(
-            ReadAuthorizationModelsOptions options) throws FgaInvalidParameterException {
+            ClientReadAuthorizationModelsOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
@@ -175,7 +175,7 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID are null, empty, or whitespace
      */
     public CompletableFuture<ReadAuthorizationModelResponse> readAuthorizationModel(
-            ReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
+            ClientReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
         String authorizationModelId = options.getAuthorizationModelIdChecked();
@@ -205,7 +205,7 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ReadChangesResponse> readChanges(ReadChangesOptions options)
+    public CompletableFuture<ReadChangesResponse> readChanges(ClientReadChangesOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
@@ -468,10 +468,26 @@ public class OpenFgaClient {
      * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID is null, empty, or whitespace
      */
     public CompletableFuture<ReadAssertionsResponse> readAssertions() throws FgaInvalidParameterException {
-        // TODO: Add version of this function that accepts ClientReadAssertionsOptions
+        return readAssertions(null);
+    }
+
+    /**
+     * ReadAssertions - Read assertions for a particular authorization model
+     *
+     * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID is null, empty, or whitespace
+     */
+    public CompletableFuture<ReadAssertionsResponse> readAssertions(ClientReadAssertionsOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        String authorizationModelId = configuration.getAuthorizationModelIdChecked();
+
+        String authorizationModelId;
+        if (options != null && options.hasValidAuthorizationModelId()) {
+            authorizationModelId = options.getAuthorizationModelId();
+        } else {
+            authorizationModelId = configuration.getAuthorizationModelIdChecked();
+        }
+
         return call(() -> api.readAssertions(storeId, authorizationModelId));
     }
 
@@ -482,10 +498,26 @@ public class OpenFgaClient {
      */
     public CompletableFuture<Void> writeAssertions(List<ClientAssertion> assertions)
             throws FgaInvalidParameterException {
-        // TODO: Add version of this function that accepts ClientWriteAssertionsOptions
+        return writeAssertions(assertions, null);
+    }
+
+    /**
+     * WriteAssertions - Updates assertions for a particular authorization model
+     *
+     * @throws FgaInvalidParameterException When either the Store ID or Authorization Model ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Void> writeAssertions(
+            List<ClientAssertion> assertions, ClientWriteAssertionsOptions options)
+            throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        String authorizationModelId = configuration.getAuthorizationModelIdChecked();
+
+        String authorizationModelId;
+        if (options != null && options.hasValidAuthorizationModelId()) {
+            authorizationModelId = options.getAuthorizationModelId();
+        } else {
+            authorizationModelId = configuration.getAuthorizationModelIdChecked();
+        }
 
         WriteAssertionsRequest body = new WriteAssertionsRequest().assertions(ClientAssertion.asAssertions(assertions));
 

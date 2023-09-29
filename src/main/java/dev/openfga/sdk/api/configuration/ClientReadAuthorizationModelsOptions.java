@@ -12,21 +12,11 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ReadChangesOptions {
-    private String type;
+public class ClientReadAuthorizationModelsOptions {
     private Integer pageSize;
     private String continuationToken;
 
-    public ReadChangesOptions type(String type) {
-        this.type = type;
-        return this;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public ReadChangesOptions pageSize(Integer pageSize) {
+    public ClientReadAuthorizationModelsOptions pageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -35,7 +25,7 @@ public class ReadChangesOptions {
         return pageSize;
     }
 
-    public ReadChangesOptions continuationToken(String continuationToken) {
+    public ClientReadAuthorizationModelsOptions continuationToken(String continuationToken) {
         this.continuationToken = continuationToken;
         return this;
     }
