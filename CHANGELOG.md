@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.0
+
+### [0.1.0](https://github.com/openfga/java-sdk/compare/v0.0.5...v0.1.0) (2023-09-27)
+
+- [BREAKING] refactor(client): simplify OpenFgaClient and OpenFgaApi constructors to not require
+  an ApiClient. This is a breaking change as it changed the ordering of parameters in constructors.
+- [BREAKING] refactor(client): all options classes for OpenFgaClient are now consistently prefixed
+  with "Client"
+- chore(client): add ClientReadAssertionsOptions and ClientWriteAssertionsOptions for their
+  respective Client APIs.
+
 ## v0.0.5
 
 ### [0.0.5](https://github.com/openfga/java-sdk/compare/v0.0.4...v0.0.5) (2023-09-27)
