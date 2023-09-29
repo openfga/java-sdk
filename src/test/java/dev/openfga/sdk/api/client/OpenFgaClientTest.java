@@ -60,7 +60,7 @@ public class OpenFgaClientTest {
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
 
-        fga = new OpenFgaClient(mockApiClient, clientConfiguration);
+        fga = new OpenFgaClient(clientConfiguration, mockApiClient);
     }
 
     /* ******************

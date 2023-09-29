@@ -122,20 +122,18 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.0.5"
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }
@@ -145,7 +143,6 @@ public class Example {
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -154,16 +151,15 @@ import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ApiToken(System.getenv("OPENFGA_API_TOKEN")) // will be passed as the "Authorization: Bearer ${ApiToken}" request header
                 ));
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }
@@ -173,7 +169,6 @@ public class Example {
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -182,7 +177,7 @@ import java.net.http.HttpClient;
 
 public class Example {
     public static void main(String[] args) throws Exception {
-        var clientConfig = new ClientConfiguration()
+        var config = new ClientConfiguration()
                 .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
                 .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
@@ -193,9 +188,8 @@ public class Example {
                             .clientId(System.getenv("OPENFGA_CLIENT_ID"))
                             .clientSecret(System.getenv("OPENFGA_CLIENT_SECRET"))
                 ));
-        var apiClient = new ApiClient(HttpClient.newBuilder(), new ObjectMapper());
 
-        var fgaClient = new OpenFgaClient(apiClient, clientConfig);
+        var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
     }
 }

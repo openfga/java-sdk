@@ -66,7 +66,11 @@ public class OpenFgaApi {
     private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
     private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-    public OpenFgaApi(ApiClient apiClient, Configuration configuration) throws FgaInvalidParameterException {
+    public OpenFgaApi(Configuration configuration) throws FgaInvalidParameterException {
+        this(configuration, new ApiClient());
+    }
+
+    public OpenFgaApi(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         memberVarHttpClient = apiClient.getHttpClient();
         memberVarObjectMapper = apiClient.getObjectMapper();
         this.configuration = configuration;

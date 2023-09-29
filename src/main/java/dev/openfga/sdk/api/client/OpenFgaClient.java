@@ -30,10 +30,14 @@ public class OpenFgaClient {
     private static final String CLIENT_METHOD_HEADER = "X-OpenFGA-Client-Method";
     private static final int DEFAULT_MAX_METHOD_PARALLEL_REQS = 10;
 
-    public OpenFgaClient(ApiClient apiClient, ClientConfiguration configuration) throws FgaInvalidParameterException {
+    public OpenFgaClient(ClientConfiguration configuration) throws FgaInvalidParameterException {
+        this(configuration, new ApiClient());
+    }
+
+    public OpenFgaClient(ClientConfiguration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         this.apiClient = apiClient;
         this.configuration = configuration;
-        this.api = new OpenFgaApi(apiClient, configuration);
+        this.api = new OpenFgaApi(configuration, apiClient);
     }
 
     /* ***********
@@ -50,7 +54,7 @@ public class OpenFgaClient {
 
     public void setConfiguration(ClientConfiguration configuration) throws FgaInvalidParameterException {
         this.configuration = configuration;
-        this.api = new OpenFgaApi(apiClient, configuration);
+        this.api = new OpenFgaApi(configuration, apiClient);
     }
 
     /* ********
