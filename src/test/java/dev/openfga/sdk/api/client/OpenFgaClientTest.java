@@ -21,6 +21,7 @@ import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,26 +40,36 @@ public class OpenFgaClientTest {
     private static final String DEFAULT_TYPE = "document";
     private static final String DEFAULT_OBJECT = "document:budget";
     private static final String DEFAULT_SCHEMA_VERSION = "1.1";
-    public static final String EMPTY_RESPONSE_BODY = "{}";
+    private static final String EMPTY_RESPONSE_BODY = "{}";
+    private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(100);
 
     private OpenFgaClient fga;
     private ClientConfiguration clientConfiguration;
     private HttpClientMock mockHttpClient;
+    private HttpClient.Builder mockHttpClientBuilder;
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
         mockHttpClient = new HttpClientMock();
+
+        mockHttpClientBuilder = mock(HttpClient.Builder.class);
+        when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
+        when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
         clientConfiguration = new ClientConfiguration()
                 .storeId(DEFAULT_STORE_ID)
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
                 .apiUrl("https://localhost")
                 .credentials(new Credentials())
-                .readTimeout(Duration.ofMillis(250));
+                .readTimeout(Duration.ofMillis(250))
+                .maxRetries(DEFAULT_MAX_RETRIES)
+                .minimumRetryDelay(DEFAULT_RETRY_DELAY);
 
         ApiClient mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);
     }
@@ -287,7 +298,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post("https://localhost/stores").called(1);
+        mockHttpClient.verify().post("https://localhost/stores").called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -381,7 +392,7 @@ public class OpenFgaClientTest {
                 assertThrows(ExecutionException.class, () -> fga.getStore().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1);
+        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -472,7 +483,7 @@ public class OpenFgaClientTest {
                 assertThrows(ExecutionException.class, () -> fga.deleteStore().get());
 
         // Then
-        mockHttpClient.verify().delete(deleteUrl).called(1);
+        mockHttpClient.verify().delete(deleteUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -580,7 +591,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1);
+        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -751,7 +762,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -891,7 +902,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.readAuthorizationModel().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1);
+        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1002,7 +1013,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1168,7 +1179,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1271,7 +1282,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1389,7 +1400,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1493,7 +1504,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1);
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1614,7 +1625,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.readAssertions().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1);
+        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(
@@ -1732,7 +1743,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.writeAssertions(List.of()).get());
 
         // Then
-        mockHttpClient.verify().put(putUrl).called(1);
+        mockHttpClient.verify().put(putUrl).called(1 + DEFAULT_MAX_RETRIES);
         ApiException exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(500, exception.getCode());
         assertEquals(

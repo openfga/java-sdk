@@ -29,6 +29,8 @@ public class ConfigurationOverride implements BaseConfiguration {
     private String userAgent;
     private Duration readTimeout;
     private Duration connectTimeout;
+    private Integer maxRetries;
+    private Duration minimumRetryDelay;
 
     public ConfigurationOverride() {
         this.apiUrl = null;
@@ -156,5 +158,25 @@ public class ConfigurationOverride implements BaseConfiguration {
     @Override
     public Duration getConnectTimeout() {
         return connectTimeout;
+    }
+
+    public ConfigurationOverride maxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+        return this;
+    }
+
+    @Override
+    public Integer getMaxRetries() {
+        return maxRetries;
+    }
+
+    public ConfigurationOverride minimumRetryDelay(Duration minimumRetryDelay) {
+        this.minimumRetryDelay = minimumRetryDelay;
+        return this;
+    }
+
+    @Override
+    public Duration getMinimumRetryDelay() {
+        return minimumRetryDelay;
     }
 }

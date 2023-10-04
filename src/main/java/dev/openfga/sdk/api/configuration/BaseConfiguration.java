@@ -22,4 +22,8 @@ public interface BaseConfiguration {
     Duration getReadTimeout();
 
     Duration getConnectTimeout();
+
+    Integer getMaxRetries();
+
+    Duration getMinimumRetryDelay();
 }

@@ -2,9 +2,12 @@ package dev.openfga.sdk.api.auth;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
+import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +39,11 @@ class OAuth2ClientTest {
 
         var configuration = new Configuration().apiUrl("").credentials(credentials);
 
-        oAuth2 = new OAuth2Client(configuration, mockHttpClient, mapper);
+        var apiClient = mock(ApiClient.class);
+        when(apiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(apiClient.getObjectMapper()).thenReturn(mapper);
+
+        oAuth2 = new OAuth2Client(configuration, apiClient);
     }
 
     @Test

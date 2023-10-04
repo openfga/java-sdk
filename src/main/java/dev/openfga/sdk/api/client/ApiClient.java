@@ -267,6 +267,17 @@ public class ApiClient {
     }
 
     /**
+     * Get the current {@link HttpClient.Builder}.
+     *
+     * <p>The returned object is immutable and thread-safe.</p>
+     *
+     * @return The HTTP client.
+     */
+    public HttpClient.Builder getHttpClientBuilder() {
+        return builder;
+    }
+
+    /**
      * Set a custom {@link ObjectMapper} to serialize and deserialize the request
      * and response bodies.
      *
