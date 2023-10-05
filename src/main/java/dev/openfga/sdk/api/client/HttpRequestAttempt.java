@@ -102,5 +102,10 @@ public class HttpRequestAttempt<T> {
             case HttpURLConnection.HTTP_INTERNAL_ERROR:
                 throw new FgaApiInternalError(name, previousError, status, response.headers(), body);
         }
+
+        // FGA and OAuth2 servers are only expected to return HTTP 2xx responses.
+        if (status < 200 || 300 <= status) {
+            throw new ApiException(name, previousError, status, response.headers(), body);
+        }
     }
 }
