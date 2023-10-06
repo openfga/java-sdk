@@ -12,23 +12,19 @@
 
 package dev.openfga.sdk.api.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.HttpRequestAttempt;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 public class OAuth2Client {
-    private final HttpClient httpClient;
+    private final ApiClient apiClient;
     private final Credentials credentials;
-    private final ObjectMapper mapper;
     private final AccessToken token = new AccessToken();
     private final CredentialsFlowRequest authRequest;
     private final String apiTokenIssuer;
@@ -37,14 +33,11 @@ public class OAuth2Client {
      * Initializes a new instance of the {@link OAuth2Client} class
      *
      * @param configuration Configuration, including credentials, that can be used to retrieve an access tokens
-     * @param httpClient Http client
      */
-    public OAuth2Client(Configuration configuration, HttpClient httpClient, ObjectMapper mapper)
-            throws FgaInvalidParameterException {
+    public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         this.credentials = configuration.getCredentials();
 
-        this.httpClient = httpClient;
-        this.mapper = mapper;
+        this.apiClient = apiClient;
         this.apiTokenIssuer = credentials.getClientCredentials().getApiTokenIssuer();
         this.authRequest = new CredentialsFlowRequest();
         this.authRequest.setClientId(credentials.getClientCredentials().getClientId());
@@ -78,27 +71,15 @@ public class OAuth2Client {
     private CompletableFuture<CredentialsFlowResponse> exchangeToken()
             throws ApiException, FgaInvalidParameterException {
         try {
-            byte[] body = mapper.writeValueAsBytes(authRequest);
+            byte[] body = apiClient.getObjectMapper().writeValueAsBytes(authRequest);
 
             Configuration config = new Configuration().apiUrl("https://" + apiTokenIssuer);
 
             HttpRequest request = ApiClient.requestBuilder("POST", "/oauth/token", body, config)
                     .build();
 
-            return httpClient
-                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenCompose(httpResponse -> {
-                        if (httpResponse.statusCode() != HttpURLConnection.HTTP_OK) {
-                            return CompletableFuture.failedFuture(new ApiException("exchangeToken", httpResponse));
-                        }
-                        try {
-                            CredentialsFlowResponse response =
-                                    mapper.readValue(httpResponse.body(), CredentialsFlowResponse.class);
-                            return CompletableFuture.completedFuture(response);
-                        } catch (Exception e) {
-                            return CompletableFuture.failedFuture(e);
-                        }
-                    });
+            return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config)
+                    .attemptHttpRequest();
         } catch (IOException e) {
             throw new ApiException(e);
         }

@@ -90,6 +90,7 @@ src/main/java/dev/openfga/sdk/api/client/ClientListRelationsRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientReadRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientTupleKey.java
 src/main/java/dev/openfga/sdk/api/client/ClientWriteRequest.java
+src/main/java/dev/openfga/sdk/api/client/HttpRequestAttempt.java
 src/main/java/dev/openfga/sdk/api/client/OpenFgaClient.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
@@ -166,6 +167,11 @@ src/main/java/dev/openfga/sdk/api/model/WriteAuthorizationModelRequest.java
 src/main/java/dev/openfga/sdk/api/model/WriteAuthorizationModelResponse.java
 src/main/java/dev/openfga/sdk/api/model/WriteRequest.java
 src/main/java/dev/openfga/sdk/errors/ApiException.java
+src/main/java/dev/openfga/sdk/errors/FgaApiAuthenticationError.java
+src/main/java/dev/openfga/sdk/errors/FgaApiInternalError.java
+src/main/java/dev/openfga/sdk/errors/FgaApiNotFoundError.java
+src/main/java/dev/openfga/sdk/errors/FgaApiRateLimitExceededError.java
+src/main/java/dev/openfga/sdk/errors/FgaApiValidationError.java
 src/main/java/dev/openfga/sdk/errors/FgaInvalidParameterException.java
 src/main/java/dev/openfga/sdk/util/Pair.java
 src/main/java/dev/openfga/sdk/util/StringUtil.java

@@ -132,4 +132,16 @@ public class ClientConfiguration extends Configuration {
         super.connectTimeout(connectTimeout);
         return this;
     }
+
+    @Override
+    public ClientConfiguration maxRetries(int maxRetries) {
+        super.maxRetries(maxRetries);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration minimumRetryDelay(Duration minimumRetryDelay) {
+        super.minimumRetryDelay(minimumRetryDelay);
+        return this;
+    }
 }
