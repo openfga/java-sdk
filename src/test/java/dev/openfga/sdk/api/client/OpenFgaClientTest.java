@@ -172,7 +172,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet("https://localhost/stores").doReturn(200, responseBody);
 
         // When
-        ListStoresResponse response = fga.listStores().get();
+        ClientListStoresResponse response = fga.listStores().get();
 
         // Then
         mockHttpClient.verify().get("https://localhost/stores").called(1);
@@ -196,7 +196,7 @@ public class OpenFgaClientTest {
                 new ClientListStoresOptions().pageSize(pageSize).continuationToken(continuationToken);
 
         // When
-        ListStoresResponse response = fga.listStores(options).get();
+        ClientListStoresResponse response = fga.listStores(options).get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -221,7 +221,7 @@ public class OpenFgaClientTest {
         CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
 
         // When
-        CreateStoreResponse response = fga.createStore(request).get();
+        ClientCreateStoreResponse response = fga.createStore(request).get();
 
         // Then
         mockHttpClient
@@ -316,7 +316,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        GetStoreResponse response = fga.getStore().get();
+        ClientGetStoreResponse response = fga.getStore().get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -409,10 +409,11 @@ public class OpenFgaClientTest {
         mockHttpClient.onDelete(deleteUrl).doReturn(204, EMPTY_RESPONSE_BODY);
 
         // When
-        fga.deleteStore().get();
+        ClientDeleteStoreResponse response = fga.deleteStore().get();
 
         // Then
         mockHttpClient.verify().delete(deleteUrl).called(1);
+        assertEquals(204, response.getStatusCode());
     }
 
     @Test
@@ -504,7 +505,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        ReadAuthorizationModelsResponse response =
+        ClientReadAuthorizationModelsResponse response =
                 fga.readAuthorizationModels(options).get();
 
         // Then
@@ -608,7 +609,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        ReadAuthorizationModelResponse response =
+        ClientReadAuthorizationModelResponse response =
                 fga.readLatestAuthorizationModel().get();
 
         // Then
@@ -637,7 +638,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        ReadChangesResponse response = fga.readChanges(options).get();
+        ClientReadChangesResponse response = fga.readChanges(options).get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -669,7 +670,7 @@ public class OpenFgaClientTest {
                 .typeDefinitions(List.of(new TypeDefinition().type(DEFAULT_TYPE)));
 
         // When
-        WriteAuthorizationModelResponse response =
+        ClientWriteAuthorizationModelResponse response =
                 fga.writeAuthorizationModel(request).get();
 
         // Then
@@ -783,7 +784,8 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, getResponse);
 
         // When
-        ReadAuthorizationModelResponse response = fga.readAuthorizationModel().get();
+        ClientReadAuthorizationModelResponse response =
+                fga.readAuthorizationModel().get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -806,7 +808,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, getResponse);
 
         // When
-        ReadAuthorizationModelResponse response =
+        ClientReadAuthorizationModelResponse response =
                 fga.readAuthorizationModel(options).get();
 
         // Then
@@ -929,7 +931,7 @@ public class OpenFgaClientTest {
                 ._object(DEFAULT_OBJECT);
 
         // When
-        ReadResponse response = fga.read(request).get();
+        ClientReadResponse response = fga.read(request).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
@@ -1038,10 +1040,11 @@ public class OpenFgaClientTest {
                         .user(DEFAULT_USER)));
 
         // When
-        fga.write(request);
+        ClientWriteResponse response = fga.write(request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
     }
 
     /**
@@ -1082,10 +1085,11 @@ public class OpenFgaClientTest {
                 .user(DEFAULT_USER));
 
         // When
-        fga.writeTuples(tuples);
+        ClientWriteResponse response = fga.writeTuples(tuples).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
@@ -1102,10 +1106,11 @@ public class OpenFgaClientTest {
                 .user(DEFAULT_USER));
 
         // When
-        fga.deleteTuples(tuples);
+        ClientWriteResponse response = fga.deleteTuples(tuples).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
@@ -1204,7 +1209,7 @@ public class OpenFgaClientTest {
         ClientCheckOptions options = new ClientCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        CheckResponse response = fga.check(request, options).get();
+        ClientCheckResponse response = fga.check(request, options).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
@@ -1311,7 +1316,7 @@ public class OpenFgaClientTest {
         ClientExpandOptions options = new ClientExpandOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        ExpandResponse response = fga.expand(request, options).get();
+        ClientExpandResponse response = fga.expand(request, options).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -1425,7 +1430,7 @@ public class OpenFgaClientTest {
                 new ClientListObjectsRequest().relation(DEFAULT_RELATION).user(DEFAULT_USER);
 
         // When
-        ListObjectsResponse response = fga.listObjects(request).get();
+        ClientListObjectsResponse response = fga.listObjects(request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -1525,7 +1530,7 @@ public class OpenFgaClientTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        ReadAssertionsResponse response = fga.readAssertions().get();
+        ClientReadAssertionsResponse response = fga.readAssertions().get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -1651,10 +1656,11 @@ public class OpenFgaClientTest {
                 .expectation(true));
 
         // When
-        fga.writeAssertions(assertions).get();
+        ClientWriteAssertionsResponse response = fga.writeAssertions(assertions).get();
 
         // Then
         mockHttpClient.verify().put(putUrl).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test

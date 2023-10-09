@@ -32,12 +32,13 @@ public class HttpRequestAttempt<T> {
         this.clazz = clazz;
     }
 
-    public CompletableFuture<T> attemptHttpRequest() throws ApiException {
+    public CompletableFuture<ApiResponse<T>> attemptHttpRequest() throws ApiException {
         int retryNumber = 0;
         return attemptHttpRequest(apiClient.getHttpClient(), retryNumber, null);
     }
 
-    private CompletableFuture<T> attemptHttpRequest(HttpClient httpClient, int retryNumber, Throwable previousError) {
+    private CompletableFuture<ApiResponse<T>> attemptHttpRequest(
+            HttpClient httpClient, int retryNumber, Throwable previousError) {
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenCompose(response -> {
@@ -53,7 +54,9 @@ public class HttpRequestAttempt<T> {
                         return CompletableFuture.failedFuture(e);
                     }
 
-                    return deserializeResponse(response);
+                    return deserializeResponse(response)
+                            .thenApply(modeledResponse -> new ApiResponse<>(
+                                    response.statusCode(), response.headers().map(), response.body(), modeledResponse));
                 });
     }
 

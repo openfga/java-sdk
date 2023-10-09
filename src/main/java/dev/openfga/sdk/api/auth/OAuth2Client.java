@@ -12,8 +12,7 @@
 
 package dev.openfga.sdk.api.auth;
 
-import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.HttpRequestAttempt;
+import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
@@ -79,7 +78,8 @@ public class OAuth2Client {
                     .build();
 
             return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config)
-                    .attemptHttpRequest();
+                    .attemptHttpRequest()
+                    .thenApply(ApiResponse::getData);
         } catch (IOException e) {
             throw new ApiException(e);
         }
