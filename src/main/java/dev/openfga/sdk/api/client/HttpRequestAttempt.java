@@ -2,25 +2,25 @@ package dev.openfga.sdk.api.client;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
-import dev.openfga.sdk.api.configuration.BaseConfiguration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.*;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 public class HttpRequestAttempt<T> {
     private final ApiClient apiClient;
-    private final BaseConfiguration configuration;
+    private final Configuration configuration;
     private final Class<T> clazz;
     private final String name;
     private final HttpRequest request;
 
     public HttpRequestAttempt(
-            HttpRequest request, String name, Class<T> clazz, ApiClient apiClient, BaseConfiguration configuration)
+            HttpRequest request, String name, Class<T> clazz, ApiClient apiClient, Configuration configuration)
             throws FgaInvalidParameterException {
         if (configuration.getMaxRetries() == null) {
             throw new FgaInvalidParameterException("maxRetries", "Configuration");
@@ -42,16 +42,18 @@ public class HttpRequestAttempt<T> {
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenCompose(response -> {
-                    try {
-                        checkStatus(name, response, previousError);
-                    } catch (FgaApiRateLimitExceededError | FgaApiInternalError retryableError) {
-                        if (retryNumber < configuration.getMaxRetries()) {
+                    Optional<FgaError> fgaError =
+                            FgaError.getError(name, request, configuration, response, previousError);
+
+                    if (fgaError.isPresent()) {
+                        FgaError error = fgaError.get();
+                        if (HttpStatusCode.isRetryable(error.getStatusCode())
+                                && retryNumber < configuration.getMaxRetries()) {
+
                             HttpClient delayingClient = getDelayedHttpClient();
-                            return attemptHttpRequest(delayingClient, retryNumber + 1, retryableError);
+                            return attemptHttpRequest(delayingClient, retryNumber + 1, error);
                         }
-                        return CompletableFuture.failedFuture(retryableError);
-                    } catch (ApiException e) {
-                        return CompletableFuture.failedFuture(e);
+                        return CompletableFuture.failedFuture(error);
                     }
 
                     return deserializeResponse(response)
@@ -80,35 +82,5 @@ public class HttpRequestAttempt<T> {
                 .getHttpClientBuilder()
                 .executor(CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
                 .build();
-    }
-
-    private static void checkStatus(String name, HttpResponse<String> response, Throwable previousError)
-            throws ApiException {
-        int status = response.statusCode();
-        String body = response.body();
-
-        switch (status) {
-            case HttpURLConnection.HTTP_BAD_REQUEST:
-            case 422: // HTTP 422 Unprocessable Entity
-                throw new FgaApiValidationError(name, previousError, status, response.headers(), body);
-
-            case HttpURLConnection.HTTP_UNAUTHORIZED:
-            case HttpURLConnection.HTTP_FORBIDDEN:
-                throw new FgaApiAuthenticationError(name, previousError, status, response.headers(), body);
-
-            case HttpURLConnection.HTTP_NOT_FOUND:
-                throw new FgaApiNotFoundError(name, previousError, status, response.headers(), body);
-
-            case 429: // HTTP 429 Too Many Requests
-                throw new FgaApiRateLimitExceededError(name, previousError, status, response.headers(), body);
-
-            case HttpURLConnection.HTTP_INTERNAL_ERROR:
-                throw new FgaApiInternalError(name, previousError, status, response.headers(), body);
-        }
-
-        // FGA and OAuth2 servers are only expected to return HTTP 2xx responses.
-        if (status < 200 || 300 <= status) {
-            throw new ApiException(name, previousError, status, response.headers(), body);
-        }
     }
 }

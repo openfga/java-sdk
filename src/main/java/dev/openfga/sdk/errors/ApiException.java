@@ -16,9 +16,10 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
 
 public class ApiException extends Exception {
-    private int code = 0;
+
+    private int statusCode = 0;
     private HttpHeaders responseHeaders = null;
-    private String responseBody = null;
+    private String responseData = null;
 
     public ApiException() {}
 
@@ -31,34 +32,34 @@ public class ApiException extends Exception {
     }
 
     public ApiException(
-            String message, Throwable throwable, int code, HttpHeaders responseHeaders, String responseBody) {
+            String message, Throwable throwable, int statusCode, HttpHeaders responseHeaders, String responseBody) {
         super(message, throwable);
-        this.code = code;
+        this.statusCode = statusCode;
         this.responseHeaders = responseHeaders;
-        this.responseBody = responseBody;
+        this.responseData = responseBody;
     }
 
-    public ApiException(String message, int code, HttpHeaders responseHeaders, String responseBody) {
-        this(message, (Throwable) null, code, responseHeaders, responseBody);
+    public ApiException(String message, int statusCode, HttpHeaders responseHeaders, String responseBody) {
+        this(message, (Throwable) null, statusCode, responseHeaders, responseBody);
     }
 
-    public ApiException(String message, Throwable throwable, int code, HttpHeaders responseHeaders) {
-        this(message, throwable, code, responseHeaders, null);
+    public ApiException(String message, Throwable throwable, int statusCode, HttpHeaders responseHeaders) {
+        this(message, throwable, statusCode, responseHeaders, null);
     }
 
-    public ApiException(int code, HttpHeaders responseHeaders, String responseBody) {
-        this((String) null, (Throwable) null, code, responseHeaders, responseBody);
+    public ApiException(int statusCode, HttpHeaders responseHeaders, String responseBody) {
+        this((String) null, (Throwable) null, statusCode, responseHeaders, responseBody);
     }
 
-    public ApiException(int code, String message) {
+    public ApiException(int statusCode, String message) {
         super(message);
-        this.code = code;
+        this.statusCode = statusCode;
     }
 
-    public ApiException(int code, String message, HttpHeaders responseHeaders, String responseBody) {
-        this(code, message);
+    public ApiException(int statusCode, String message, HttpHeaders responseHeaders, String responseBody) {
+        this(statusCode, message);
         this.responseHeaders = responseHeaders;
-        this.responseBody = responseBody;
+        this.responseData = responseBody;
     }
 
     public ApiException(String operationId, HttpResponse<String> response) {
@@ -74,8 +75,8 @@ public class ApiException extends Exception {
      *
      * @return HTTP status code
      */
-    public int getCode() {
-        return code;
+    public int getStatusCode() {
+        return statusCode;
     }
 
     /**
@@ -92,8 +93,8 @@ public class ApiException extends Exception {
      *
      * @return Response body in the form of string
      */
-    public String getResponseBody() {
-        return responseBody;
+    public String getResponseData() {
+        return responseData;
     }
 
     private static String formatExceptionMessage(String operationId, int statusCode, String body) {

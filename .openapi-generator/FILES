@@ -187,7 +187,9 @@ src/main/java/dev/openfga/sdk/errors/FgaApiInternalError.java
 src/main/java/dev/openfga/sdk/errors/FgaApiNotFoundError.java
 src/main/java/dev/openfga/sdk/errors/FgaApiRateLimitExceededError.java
 src/main/java/dev/openfga/sdk/errors/FgaApiValidationError.java
+src/main/java/dev/openfga/sdk/errors/FgaError.java
 src/main/java/dev/openfga/sdk/errors/FgaInvalidParameterException.java
+src/main/java/dev/openfga/sdk/errors/HttpStatusCode.java
 src/main/java/dev/openfga/sdk/util/Pair.java
 src/main/java/dev/openfga/sdk/util/StringUtil.java
 src/test-integration/java/dev/openfga/sdk/api/OpenFgaApiIntegrationTest.java
