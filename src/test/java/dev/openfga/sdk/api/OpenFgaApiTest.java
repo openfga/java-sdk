@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * API tests for OpenFgaApi
+ * API tests for OpenFgaApi.
  */
 public class OpenFgaApiTest {
     private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
@@ -88,15 +88,16 @@ public class OpenFgaApiTest {
         String continuationToken = null; // Input is optional
 
         // When
-        ListStoresResponse response =
-                fga.listStores(pageSize, continuationToken).get();
+        var response = fga.listStores(pageSize, continuationToken).get();
 
         // Then
         mockHttpClient.verify().get("https://localhost/stores").called(1);
-        assertNotNull(response.getStores());
-        assertEquals(1, response.getStores().size());
-        assertEquals(DEFAULT_STORE_ID, response.getStores().get(0).getId());
-        assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getStores());
+        var stores = response.getData().getStores();
+        assertEquals(1, stores.size());
+        assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, stores.get(0).getName());
     }
 
     @Test
@@ -116,10 +117,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get("https://localhost/stores").called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -139,9 +140,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get("https://localhost/stores").called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -161,9 +162,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get("https://localhost/stores").called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -181,7 +182,7 @@ public class OpenFgaApiTest {
         CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
 
         // When
-        CreateStoreResponse response = fga.createStore(request).get();
+        var response = fga.createStore(request).get();
 
         // Then
         mockHttpClient
@@ -189,8 +190,9 @@ public class OpenFgaApiTest {
                 .post("https://localhost/stores")
                 .withBody(is(expectedBody))
                 .called(1);
-        assertEquals(DEFAULT_STORE_ID, response.getId());
-        assertEquals(DEFAULT_STORE_NAME, response.getName());
+        assertNotNull(response.getData());
+        assertEquals(DEFAULT_STORE_ID, response.getData().getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getData().getName());
     }
 
     @Test
@@ -219,10 +221,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post("https://localhost/stores").called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -240,9 +242,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post("https://localhost/stores").called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -260,9 +262,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post("https://localhost/stores").called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -276,12 +278,13 @@ public class OpenFgaApiTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        GetStoreResponse response = fga.getStore(DEFAULT_STORE_ID).get();
+        var response = fga.getStore(DEFAULT_STORE_ID).get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
-        assertEquals(DEFAULT_STORE_ID, response.getId());
-        assertEquals(DEFAULT_STORE_NAME, response.getName());
+        assertNotNull(response.getData());
+        assertEquals(DEFAULT_STORE_ID, response.getData().getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getData().getName());
     }
 
     @Test
@@ -310,10 +313,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -331,9 +334,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -351,9 +354,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -399,10 +402,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().delete(deleteUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -421,9 +424,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().delete(deleteUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -442,9 +445,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().delete(deleteUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -462,15 +465,15 @@ public class OpenFgaApiTest {
         String continuationToken = null; // Input is optional
 
         // When
-        ReadAuthorizationModelsResponse response = fga.readAuthorizationModels(
-                        DEFAULT_STORE_ID, pageSize, continuationToken)
+        var response = fga.readAuthorizationModels(DEFAULT_STORE_ID, pageSize, continuationToken)
                 .get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
-        assertNotNull(response.getAuthorizationModels());
-        assertEquals(1, response.getAuthorizationModels().size());
-        AuthorizationModel authModel = response.getAuthorizationModels().get(0);
+        assertNotNull(response.getData().getAuthorizationModels());
+        assertNotNull(response.getData().getAuthorizationModels());
+        assertEquals(1, response.getData().getAuthorizationModels().size());
+        var authModel = response.getData().getAuthorizationModels().get(0);
         assertEquals(DEFAULT_AUTH_MODEL_ID, authModel.getId());
         assertEquals(DEFAULT_SCHEMA_VERSION, authModel.getSchemaVersion());
     }
@@ -507,10 +510,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -531,9 +534,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -554,9 +557,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -575,12 +578,12 @@ public class OpenFgaApiTest {
                 .typeDefinitions(List.of(new TypeDefinition().type(DEFAULT_TYPE)));
 
         // When
-        WriteAuthorizationModelResponse response =
-                fga.writeAuthorizationModel(DEFAULT_STORE_ID, request).get();
+        var response = fga.writeAuthorizationModel(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
-        assertEquals(DEFAULT_AUTH_MODEL_ID, response.getAuthorizationModelId());
+        assertNotNull(response.getData());
+        assertEquals(DEFAULT_AUTH_MODEL_ID, response.getData().getAuthorizationModelId());
     }
 
     @Test
@@ -626,10 +629,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -648,9 +651,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -669,9 +672,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -688,14 +691,16 @@ public class OpenFgaApiTest {
         mockHttpClient.onGet(getUrl).doReturn(200, getResponse);
 
         // When
-        ReadAuthorizationModelResponse response = fga.readAuthorizationModel(DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID)
+        var response = fga.readAuthorizationModel(DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID)
                 .get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
-        assertNotNull(response.getAuthorizationModel());
-        assertEquals(DEFAULT_AUTH_MODEL_ID, response.getAuthorizationModel().getId());
-        assertEquals(DEFAULT_SCHEMA_VERSION, response.getAuthorizationModel().getSchemaVersion());
+        assertNotNull(response.getData());
+        var authModel = response.getData().getAuthorizationModel();
+        assertNotNull(authModel);
+        assertEquals(DEFAULT_AUTH_MODEL_ID, authModel.getId());
+        assertEquals(DEFAULT_SCHEMA_VERSION, authModel.getSchemaVersion());
     }
 
     @Test
@@ -740,10 +745,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -763,9 +768,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -785,9 +790,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -806,14 +811,15 @@ public class OpenFgaApiTest {
         String continuationToken = null; // Input is optional
 
         // When
-        ReadChangesResponse response = fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
+        var response = fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
                 .get();
 
         // Then
         mockHttpClient.verify().get(getPath).called(1);
-        assertNotNull(response.getChanges());
-        assertEquals(1, response.getChanges().size());
-        TupleChange change = response.getChanges().get(0);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getChanges());
+        assertEquals(1, response.getData().getChanges().size());
+        TupleChange change = response.getData().getChanges().get(0);
         assertNotNull(change.getTupleKey());
         assertEquals(DEFAULT_OBJECT, change.getTupleKey().getObject());
         assertEquals(DEFAULT_RELATION, change.getTupleKey().getRelation());
@@ -851,10 +857,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -876,9 +882,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -900,9 +906,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -926,13 +932,14 @@ public class OpenFgaApiTest {
                         .user(DEFAULT_USER));
 
         // When
-        ReadResponse response = fga.read(DEFAULT_STORE_ID, request).get();
+        var response = fga.read(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
-        assertNotNull(response.getTuples());
-        assertEquals(1, response.getTuples().size());
-        TupleKey key = response.getTuples().get(0).getKey();
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getTuples());
+        assertEquals(1, response.getData().getTuples().size());
+        var key = response.getData().getTuples().get(0).getKey();
         assertNotNull(key);
         assertEquals(DEFAULT_USER, key.getUser());
         assertEquals(DEFAULT_RELATION, key.getRelation());
@@ -978,10 +985,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1000,9 +1007,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1021,9 +1028,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1118,10 +1125,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1140,9 +1147,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1161,9 +1168,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1186,13 +1193,14 @@ public class OpenFgaApiTest {
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        CheckResponse response = fga.check(DEFAULT_STORE_ID, request).get();
+        var response = fga.check(DEFAULT_STORE_ID, request).get();
 
         // Then
         verify(mockConfiguration).getApiUrl();
         verify(mockConfiguration).getReadTimeout();
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
-        assertEquals(Boolean.TRUE, response.getAllowed());
+        assertNotNull(response.getData());
+        assertEquals(Boolean.TRUE, response.getData().getAllowed());
     }
 
     @Test
@@ -1235,10 +1243,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1257,9 +1265,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1278,9 +1286,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1305,17 +1313,21 @@ public class OpenFgaApiTest {
                         .user(DEFAULT_USER));
 
         // When
-        ExpandResponse response = fga.expand(DEFAULT_STORE_ID, request).get();
+        var response = fga.expand(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
-        assertNotNull(response.getTree());
-        assertNotNull(response.getTree().getRoot());
-        assertNotNull(response.getTree().getRoot().getUnion());
-        assertNotNull(response.getTree().getRoot().getUnion().getNodes());
-        assertEquals(1, response.getTree().getRoot().getUnion().getNodes().size());
-        assertNotNull(response.getTree().getRoot().getUnion().getNodes().get(0));
-        Node node = response.getTree().getRoot().getUnion().getNodes().get(0);
+        assertNotNull(response.getData());
+
+        var tree = response.getData().getTree();
+        assertNotNull(tree);
+        assertNotNull(tree.getRoot());
+        assertNotNull(tree.getRoot().getUnion());
+        assertNotNull(tree.getRoot().getUnion().getNodes());
+        assertEquals(1, tree.getRoot().getUnion().getNodes().size());
+        assertNotNull(tree.getRoot().getUnion().getNodes().get(0));
+
+        var node = tree.getRoot().getUnion().getNodes().get(0);
         assertNotNull(node.getLeaf());
         assertNotNull(node.getLeaf().getUsers());
         assertNotNull(node.getLeaf().getUsers().getUsers());
@@ -1363,10 +1375,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1385,9 +1397,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1406,9 +1418,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1431,12 +1443,12 @@ public class OpenFgaApiTest {
                 .user(DEFAULT_USER);
 
         // When
-        ListObjectsResponse response =
-                fga.listObjects(DEFAULT_STORE_ID, request).get();
+        var response = fga.listObjects(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
-        assertEquals(List.of(DEFAULT_OBJECT), response.getObjects());
+        assertNotNull(response.getData());
+        assertEquals(List.of(DEFAULT_OBJECT), response.getData().getObjects());
     }
 
     @Test
@@ -1479,10 +1491,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1501,9 +1513,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1522,9 +1534,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1540,14 +1552,16 @@ public class OpenFgaApiTest {
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
-        ReadAssertionsResponse response =
+        var response =
                 fga.readAssertions(DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID).get();
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
-        assertNotNull(response.getAssertions());
-        assertEquals(1, response.getAssertions().size());
-        Assertion assertion = response.getAssertions().get(0);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getAssertions());
+        assertEquals(1, response.getData().getAssertions().size());
+
+        var assertion = response.getData().getAssertions().get(0);
         assertNotNull(assertion);
         assertTrue(assertion.getExpectation());
         assertEquals(DEFAULT_OBJECT, assertion.getTupleKey().getObject());
@@ -1597,10 +1611,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1619,9 +1633,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1640,9 +1654,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
@@ -1725,10 +1739,10 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().put(putUrl).called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getCode());
+        assertEquals(400, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
-                exception.getResponseBody());
+                exception.getResponseData());
     }
 
     @Test
@@ -1747,9 +1761,9 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().put(putUrl).called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
-        assertEquals(404, exception.getCode());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseBody());
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
     }
 
     @Test
@@ -1768,8 +1782,8 @@ public class OpenFgaApiTest {
         // Then
         mockHttpClient.verify().put(putUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
-        assertEquals(500, exception.getCode());
+        assertEquals(500, exception.getStatusCode());
         assertEquals(
-                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseBody());
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 }

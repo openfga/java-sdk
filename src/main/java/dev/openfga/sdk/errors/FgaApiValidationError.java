@@ -2,13 +2,13 @@ package dev.openfga.sdk.errors;
 
 import java.net.http.HttpHeaders;
 
-public class FgaApiValidationError extends ApiException {
+public class FgaApiValidationError extends FgaError {
     public FgaApiValidationError(
-            String message, Throwable throwable, int code, HttpHeaders responseHeaders, String responseBody) {
-        super(message, code, responseHeaders, responseBody);
+            String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
+        super(message, cause, code, responseHeaders, responseBody);
     }
 
     public FgaApiValidationError(String message, int code, HttpHeaders responseHeaders, String responseBody) {
-        this(message, (Throwable) null, code, responseHeaders, responseBody);
+        super(message, code, responseHeaders, responseBody);
     }
 }

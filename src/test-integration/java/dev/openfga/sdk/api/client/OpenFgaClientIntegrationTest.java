@@ -246,14 +246,13 @@ public class OpenFgaClientIntegrationTest {
 
         // When
         fga.write(writeRequest).get();
-        ExpandResponse response = fga.expand(expandRequest).get();
+        ClientExpandResponse response = fga.expand(expandRequest).get();
 
         // Then
         assertNotNull(response.getTree());
-        String responseJson = mapper.writeValueAsString(response);
         assertEquals(
-                "{\"tree\":{\"root\":{\"name\":\"document:2021-budget#reader\",\"leaf\":{\"users\":{\"users\":[\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"]},\"computed\":null,\"tupleToUserset\":null},\"difference\":null,\"union\":null,\"intersection\":null}}}",
-                responseJson);
+                "{\"tree\":{\"root\":{\"name\":\"document:2021-budget#reader\",\"leaf\":{\"users\":{\"users\":[\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"]}}}}}",
+                response.getRawResponse());
     }
 
     @Test
