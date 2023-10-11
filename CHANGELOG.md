@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.0
+
+### [0.2.0](https://github.com/openfga/java-sdk/compare/v0.1.0...v0.2.0) (2023-10-11)
+
+- feat(client): automatic retries for errors have been implemented. HTTP 429 and HTTP 5XX error responses
+  will automatically be retried. (With the exception of the HTTP 501 "Not Implemented" status code.)
+- feat(client): new response error classes have been introduced to classify FGA error responses
+- feat(client): response types have been enriched with HTTP status/header/body response data
+- feat(client): response errors have been enriched with data from both the HTTP request and its repsonse 
+- [BREAKING] refactor(client): in the lower level OpenFgaApi class, api calls and api calls "...WithHttpInfo"
+  are collapsed into a single api call that always includes HTTP information.
+
 ## v0.1.0
 
 ### [0.1.0](https://github.com/openfga/java-sdk/compare/v0.0.5...v0.1.0) (2023-09-27)
