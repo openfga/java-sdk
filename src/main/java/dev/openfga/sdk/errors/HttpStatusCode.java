@@ -29,7 +29,7 @@ public class HttpStatusCode {
      * Returns true for an HTTP status code that could reasonably be retried.
      */
     public static boolean isRetryable(int statusCode) {
-        return statusCode == 429 || (isServerError(statusCode) && statusCode != NOT_IMPLEMENTED);
+        return statusCode == TOO_MANY_REQUESTS || (isServerError(statusCode) && statusCode != NOT_IMPLEMENTED);
     }
 
     private static boolean isBetween(int min, int n, int maxExclusive) {
