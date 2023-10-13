@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+### [0.2.1](https://github.com/openfga/java-sdk/compare/v0.2.0...v0.2.1) (2023-10-13)
+
+No changes, this patch release is just to test release automation.
+
 ## v0.2.0
 
 ### [0.2.0](https://github.com/openfga/java-sdk/compare/v0.1.0...v0.2.0) (2023-10-11)
