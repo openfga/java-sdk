@@ -78,6 +78,17 @@ testing {
                 // See also: https://github.com/PGSSoft/HttpClientMock/issues/3
                 implementation "com.pgs-soft:HttpClientMock:1.0.0"
             }
+
+            targets {
+                all {
+                    testTask.configure {
+                        testLogging {
+                            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                            showStandardStreams = true
+                        }
+                    }
+                }
+            }
         }
         integration(JvmTestSuite) {
             testType = TestSuiteType.INTEGRATION_TEST
@@ -92,6 +103,17 @@ testing {
             sources {
                 java {
                     srcDirs = ['src/test-integration/java']
+                }
+            }
+
+            targets {
+                all {
+                    testTask.configure {
+                        testLogging {
+                            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                            showStandardStreams = true
+                        }
+                    }
                 }
             }
         }

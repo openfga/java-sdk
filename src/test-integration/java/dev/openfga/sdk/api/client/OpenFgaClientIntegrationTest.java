@@ -250,9 +250,10 @@ public class OpenFgaClientIntegrationTest {
 
         // Then
         assertNotNull(response.getTree());
+        String normalizedResponse = response.getRawResponse().replaceAll("\\s", "");
         assertEquals(
                 "{\"tree\":{\"root\":{\"name\":\"document:2021-budget#reader\",\"leaf\":{\"users\":{\"users\":[\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"]}}}}}",
-                response.getRawResponse());
+                normalizedResponse);
     }
 
     @Test
