@@ -249,10 +249,17 @@ public class OpenFgaClientIntegrationTest {
         ClientExpandResponse response = fga.expand(expandRequest).get();
 
         // Then
+        assertNotNull(response);
         assertNotNull(response.getTree());
-        assertEquals(
-                "{\"tree\":{\"root\":{\"name\":\"document:2021-budget#reader\",\"leaf\":{\"users\":{\"users\":[\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"]}}}}}",
-                response.getRawResponse());
+        assertNotNull(response.getTree().getRoot());
+        var root = response.getTree().getRoot();
+        assertEquals(DEFAULT_DOC + "#reader", root.getName());
+        assertNotNull(root.getLeaf());
+        assertNotNull(root.getLeaf().getUsers());
+        assertNotNull(root.getLeaf().getUsers().getUsers());
+        var users = root.getLeaf().getUsers().getUsers();
+        assertEquals(1, users.size());
+        assertEquals(DEFAULT_USER, users.get(0));
     }
 
     @Test
