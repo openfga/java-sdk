@@ -945,6 +945,21 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void read_emptyRequestSendsNoTupleKey() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/read", DEFAULT_STORE_ID);
+        String expectedBody = "{\"tuple_key\":null,\"page_size\":null,\"continuation_token\":null}";
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientReadRequest request = new ClientReadRequest();
+
+        // When
+        ClientReadResponse response = fga.read(request).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
     public void read_storeIdRequired() {
         // Given
         clientConfiguration.storeId(null);
@@ -1303,16 +1318,14 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":null},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
                 DEFAULT_USER);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, responseBody);
-        ClientExpandRequest request = new ClientExpandRequest()
-                .user(DEFAULT_USER)
-                .relation(DEFAULT_RELATION)
-                ._object(DEFAULT_OBJECT);
+        ClientExpandRequest request =
+                new ClientExpandRequest().relation(DEFAULT_RELATION)._object(DEFAULT_OBJECT);
         ClientExpandOptions options = new ClientExpandOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When

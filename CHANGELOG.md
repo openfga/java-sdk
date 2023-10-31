@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.2
+
+### [0.2.2](https://github.com/openfga/java-sdk/compare/v0.2.1...v0.2.2) (2023-10-31)
+
+- fix(client): an empty read request will no longer send an empty tuple
+- fix(client): an unused "user" field, and related methods, was removed from ClientExpandRequest
+
 ## v0.2.1
 
 ### [0.2.1](https://github.com/openfga/java-sdk/compare/v0.2.0...v0.2.1) (2023-10-13)

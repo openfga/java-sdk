@@ -238,17 +238,17 @@ public class OpenFgaClient {
         String storeId = configuration.getStoreIdChecked();
 
         ReadRequest body = new ReadRequest();
-        TupleKey tupleKey = new TupleKey();
 
-        if (request != null) {
+        if (request != null
+                && (request.getUser() != null || request.getRelation() != null || request.getObject() != null)) {
+            TupleKey tupleKey = new TupleKey();
             tupleKey.user(request.getUser()).relation(request.getRelation())._object(request.getObject());
+            body.tupleKey(tupleKey);
         }
 
         if (options != null) {
             body.pageSize(options.getPageSize()).continuationToken(options.getContinuationToken());
         }
-
-        body.tupleKey(tupleKey);
 
         return call(() -> api.read(storeId, body)).thenApply(ClientReadResponse::new);
     }
@@ -408,10 +408,7 @@ public class OpenFgaClient {
         ExpandRequest body = new ExpandRequest();
 
         if (request != null) {
-            body.tupleKey(new TupleKey()
-                    .user(request.getUser())
-                    .relation(request.getRelation())
-                    ._object(request.getObject()));
+            body.tupleKey(new TupleKey().relation(request.getRelation())._object(request.getObject()));
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
