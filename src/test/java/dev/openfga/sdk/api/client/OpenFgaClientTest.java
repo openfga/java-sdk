@@ -945,6 +945,21 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void read_emptyRequestSendsNoTupleKey() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/read", DEFAULT_STORE_ID);
+        String expectedBody = "{\"tuple_key\":null,\"page_size\":null,\"continuation_token\":null}";
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientReadRequest request = new ClientReadRequest();
+
+        // When
+        ClientReadResponse response = fga.read(request).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
     public void read_storeIdRequired() {
         // Given
         clientConfiguration.storeId(null);
