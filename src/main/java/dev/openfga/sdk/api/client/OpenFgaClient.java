@@ -408,10 +408,7 @@ public class OpenFgaClient {
         ExpandRequest body = new ExpandRequest();
 
         if (request != null) {
-            body.tupleKey(new TupleKey()
-                    .user(request.getUser())
-                    .relation(request.getRelation())
-                    ._object(request.getObject()));
+            body.tupleKey(new TupleKey().relation(request.getRelation())._object(request.getObject()));
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {

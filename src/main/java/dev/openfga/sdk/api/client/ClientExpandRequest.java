@@ -13,7 +13,6 @@
 package dev.openfga.sdk.api.client;
 
 public class ClientExpandRequest {
-    private String user;
     private String relation;
     private String _object;
 
@@ -41,18 +40,5 @@ public class ClientExpandRequest {
      **/
     public String getRelation() {
         return relation;
-    }
-
-    public ClientExpandRequest user(String user) {
-        this.user = user;
-        return this;
-    }
-
-    /**
-     * Get user
-     * @return user
-     **/
-    public String getUser() {
-        return user;
     }
 }
