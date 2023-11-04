@@ -18,8 +18,12 @@ import dev.openfga.sdk.api.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class OpenFgaClient {
     private final ApiClient apiClient;
@@ -383,7 +387,29 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    // TODO
+    public CompletableFuture<List<ClientCheckResponse>> batchCheck(
+            List<ClientCheckRequest> requests, ClientBatchCheckOptions options) {
+        int maxParallelRequests = options.getMaxParallelRequests() != null
+                ? options.getMaxParallelRequests()
+                : DEFAULT_MAX_METHOD_PARALLEL_REQS;
+        var executor = Executors.newWorkStealingPool(maxParallelRequests);
+
+        var responses = new ConcurrentLinkedQueue<ClientCheckResponse>();
+
+        final var clientCheckOptions = options.asClientCheckOptions();
+
+        Consumer<ClientCheckRequest> singleClientCheckRequest =
+                request -> call(() -> this.check(request, clientCheckOptions)).thenApply(responses::add);
+
+        requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
+
+        try {
+            executor.wait();
+            return CompletableFuture.completedFuture(new ArrayList<>(responses));
+        } catch (InterruptedException e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
 
     /**
      * Expand - Expands the relationships in userset tree format (evaluates)
