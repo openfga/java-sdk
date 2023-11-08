@@ -20,9 +20,7 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class OpenFgaClient {
@@ -387,26 +385,37 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<List<ClientCheckResponse>> batchCheck(
-            List<ClientCheckRequest> requests, ClientBatchCheckOptions options) {
+    public CompletableFuture<List<ClientBatchCheckResponse>> batchCheck(
+            List<ClientCheckRequest> requests, ClientBatchCheckOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
+        configuration.assertValidStoreId();
+
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
                 : DEFAULT_MAX_METHOD_PARALLEL_REQS;
         var executor = Executors.newWorkStealingPool(maxParallelRequests);
+        var latch = new CountDownLatch(requests.size());
 
-        var responses = new ConcurrentLinkedQueue<ClientCheckResponse>();
+        var responses = new ConcurrentLinkedQueue<ClientBatchCheckResponse>();
 
         final var clientCheckOptions = options.asClientCheckOptions();
 
         Consumer<ClientCheckRequest> singleClientCheckRequest =
-                request -> call(() -> this.check(request, clientCheckOptions)).thenApply(responses::add);
+                request -> call(() -> this.check(request, clientCheckOptions)).handle((response, exception) -> {
+                    try {
+                        responses.add(new ClientBatchCheckResponse(request, response, exception));
+                    } finally {
+                        latch.countDown();
+                    }
+                    return true;
+                });
 
         requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
 
         try {
-            executor.wait();
+            latch.await();
             return CompletableFuture.completedFuture(new ArrayList<>(responses));
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -573,7 +582,7 @@ public class OpenFgaClient {
     private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
         try {
             return action.call();
-        } catch (FgaInvalidParameterException | ApiException exception) {
+        } catch (Exception exception) {
             return CompletableFuture.failedFuture(exception);
         }
     }

@@ -25,6 +25,8 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -1307,6 +1309,57 @@ public class OpenFgaClientTest {
         assertEquals(500, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    /**
+     * Check whether a user is authorized to access an object.
+     */
+    @Test
+    public void batchCheck() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        ClientCheckRequest request = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        List<ClientBatchCheckResponse> response =
+                fga.batchCheck(List.of(request), options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertEquals(Boolean.TRUE, response.get(0).getAllowed());
+    }
+
+    @Test
+    public void batchCheck_twentyTimes() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        List<ClientCheckRequest> requests = IntStream.range(0, 20)
+                .mapToObj(ignored -> new ClientCheckRequest()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER))
+                .collect(Collectors.toList());
+        ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        List<ClientBatchCheckResponse> responses =
+                fga.batchCheck(requests, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(20);
+        responses.forEach(response -> assertEquals(Boolean.TRUE, response.getAllowed()));
     }
 
     /**
