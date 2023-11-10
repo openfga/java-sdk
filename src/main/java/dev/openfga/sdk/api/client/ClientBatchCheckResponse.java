@@ -13,13 +13,16 @@
 package dev.openfga.sdk.api.client;
 
 import dev.openfga.sdk.api.model.CheckResponse;
+import dev.openfga.sdk.errors.FgaError;
+
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public class ClientBatchCheckResponse extends CheckResponse {
     private final ClientCheckRequest request;
     private final Throwable throwable;
-    private final int statusCode;
+    private final Integer statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
 
@@ -28,11 +31,23 @@ public class ClientBatchCheckResponse extends CheckResponse {
         this.request = request;
         this.throwable = throwable;
 
-        this.statusCode = clientCheckResponse.getStatusCode();
-        this.headers = clientCheckResponse.getHeaders();
-        this.rawResponse = clientCheckResponse.getRawResponse();
-        this.setAllowed(clientCheckResponse.getAllowed());
-        this.setResolution(clientCheckResponse.getResolution());
+        if (clientCheckResponse != null) {
+            this.statusCode = clientCheckResponse.getStatusCode();
+            this.headers = clientCheckResponse.getHeaders();
+            this.rawResponse = clientCheckResponse.getRawResponse();
+            this.setAllowed(clientCheckResponse.getAllowed());
+            this.setResolution(clientCheckResponse.getResolution());
+        } else if (throwable instanceof FgaError) {
+            FgaError error = (FgaError) throwable;
+            this.statusCode = error.getStatusCode();
+            this.headers = error.getResponseHeaders().map();
+            this.rawResponse = error.getResponseData();
+        } else {
+            // Should be unreachable, but required for type completion
+            this.statusCode = null;
+            this.headers = null;
+            this.rawResponse = null;
+        }
     }
 
     public ClientCheckRequest getRequest() {
@@ -76,5 +91,10 @@ public class ClientBatchCheckResponse extends CheckResponse {
 
     public String getRawResponse() {
         return rawResponse;
+    }
+
+    public static BiFunction<ClientCheckResponse, Throwable, ClientBatchCheckResponse> asyncHandler(
+            ClientCheckRequest request) {
+        return (response, throwable) -> new ClientBatchCheckResponse(request, response, throwable);
     }
 }

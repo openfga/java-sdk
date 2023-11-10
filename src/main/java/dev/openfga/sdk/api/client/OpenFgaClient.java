@@ -393,7 +393,7 @@ public class OpenFgaClient {
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
                 : DEFAULT_MAX_METHOD_PARALLEL_REQS;
-        var executor = Executors.newWorkStealingPool(maxParallelRequests);
+        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
         var latch = new CountDownLatch(requests.size());
 
         var responses = new ConcurrentLinkedQueue<ClientBatchCheckResponse>();
@@ -401,18 +401,13 @@ public class OpenFgaClient {
         final var clientCheckOptions = options.asClientCheckOptions();
 
         Consumer<ClientCheckRequest> singleClientCheckRequest =
-                request -> call(() -> this.check(request, clientCheckOptions)).handle((response, exception) -> {
-                    try {
-                        responses.add(new ClientBatchCheckResponse(request, response, exception));
-                    } finally {
-                        latch.countDown();
-                    }
-                    return true;
-                });
-
-        requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
+                request -> call(() -> this.check(request, clientCheckOptions))
+                        .handleAsync(ClientBatchCheckResponse.asyncHandler(request))
+                        .thenAccept(responses::add)
+                        .thenRun(latch::countDown);
 
         try {
+            requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
             latch.await();
             return CompletableFuture.completedFuture(new ArrayList<>(responses));
         } catch (Exception e) {
@@ -582,6 +577,8 @@ public class OpenFgaClient {
     private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
         try {
             return action.call();
+        } catch (CompletionException completionException) {
+            return CompletableFuture.failedFuture(completionException.getCause());
         } catch (Exception exception) {
             return CompletableFuture.failedFuture(exception);
         }

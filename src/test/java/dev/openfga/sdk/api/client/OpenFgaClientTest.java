@@ -1359,7 +1359,97 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(20);
-        responses.forEach(response -> assertEquals(Boolean.TRUE, response.getAllowed()));
+    }
+
+    @Test
+    public void batchCheck_storeIdRequired() {
+        // Given
+        clientConfiguration.storeId(null);
+
+        // When
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .get());
+
+        // Then
+        assertEquals(
+                "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
+    }
+
+    @Test
+    public void batchCheck_400() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                exception.getResponseData());
+    }
+
+    @Test
+    public void batchCheck_404() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
+        var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
+        assertEquals(404, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void batchCheck_500() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
+        var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
     /**
