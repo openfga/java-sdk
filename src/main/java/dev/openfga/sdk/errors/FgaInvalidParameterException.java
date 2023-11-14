@@ -1,6 +1,10 @@
 package dev.openfga.sdk.errors;
 
 public class FgaInvalidParameterException extends Exception {
+    public FgaInvalidParameterException(String message) {
+        super(message);
+    }
+
     public FgaInvalidParameterException(String paramName, String functionName) {
         super(message(paramName, functionName));
     }

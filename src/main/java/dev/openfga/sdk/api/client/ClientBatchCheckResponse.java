@@ -14,7 +14,6 @@ package dev.openfga.sdk.api.client;
 
 import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.errors.FgaError;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;

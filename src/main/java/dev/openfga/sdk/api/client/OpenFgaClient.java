@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class OpenFgaClient {
     private final ApiClient apiClient;
@@ -491,9 +492,24 @@ public class OpenFgaClient {
     }
 
     /*
-     * ListRelations - List all the relations a user has with an object (evaluates)
+     * ListRelations - List allowed relations a user has with an object (evaluates)
      */
-    // TODO
+    public CompletableFuture<ClientListRelationsResponse> listRelations(
+            ClientListRelationsRequest request, ClientBatchCheckOptions options) throws FgaInvalidParameterException {
+        if (request.getRelations().isEmpty()) {
+            throw new FgaInvalidParameterException(
+                    "At least 1 relation to check has to be provided when calling ListRelations");
+        }
+
+        var batchCheckRequests = request.getRelations().stream()
+                .map(relation -> new ClientCheckRequest()
+                        .user(request.getUser())
+                        .relation(relation)
+                        ._object(request.getObject()))
+                .collect(Collectors.toList());
+
+        return batchCheck(batchCheckRequests, options).thenApply(ClientListRelationsResponse::fromBatchCheckResponses);
+    }
 
     /* ************
      * Assertions *
