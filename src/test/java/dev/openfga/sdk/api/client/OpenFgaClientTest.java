@@ -1671,6 +1671,204 @@ public class OpenFgaClientTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
+    /**
+     * Check whether a user is authorized to access an object.
+     */
+    @Test
+    public void listRelations() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of(DEFAULT_RELATION))
+                .user(DEFAULT_USER)
+                ._object(DEFAULT_OBJECT);
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertEquals(1, response.getRelations().size());
+        assertEquals(DEFAULT_RELATION, response.getRelations().get(0));
+    }
+
+    @Test
+    public void listRelations_deny() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, "owner", DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":false}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of("owner"))
+                ._object(DEFAULT_OBJECT)
+                .user(DEFAULT_USER);
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertTrue(response.getRelations().isEmpty());
+    }
+
+    @Test
+    public void listRelations_storeIdRequired() {
+        // Given
+        clientConfiguration.storeId(null);
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_nonNullRelationsRequired() {
+        // Given
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(null) // Should fail
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "At least 1 relation to check has to be provided when calling ListRelations", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_atLeastOneRelationRequired() {
+        // Given
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of()) // Should fail
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "At least 1 relation to check has to be provided when calling ListRelations", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_400() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                exception.getResponseData());
+    }
+
+    @Test
+    public void listRelations_404() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
+        assertEquals(404, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void listRelations_500() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1 + DEFAULT_MAX_RETRIES);
+        var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
 
     /**
      * Read assertions for an authorization model ID.

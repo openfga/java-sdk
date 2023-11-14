@@ -92,6 +92,10 @@ public class ClientBatchCheckResponse extends CheckResponse {
         return rawResponse;
     }
 
+    public String getRelation() {
+        return request == null ? null : request.getRelation();
+    }
+
     public static BiFunction<ClientCheckResponse, Throwable, ClientBatchCheckResponse> asyncHandler(
             ClientCheckRequest request) {
         return (response, throwable) -> new ClientBatchCheckResponse(request, response, throwable);

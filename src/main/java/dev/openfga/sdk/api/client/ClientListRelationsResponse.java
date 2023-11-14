@@ -14,10 +14,20 @@ public class ClientListRelationsResponse {
         return relations;
     }
 
-    public static ClientListRelationsResponse fromBatchCheckResponses(List<ClientBatchCheckResponse> responses) {
-        return new ClientListRelationsResponse(responses.stream()
+    public static ClientListRelationsResponse fromBatchCheckResponses(List<ClientBatchCheckResponse> responses)
+            throws Throwable {
+        // If any response ultimately failed (with retries) we throw the first exception encountered.
+        var failedResponse = responses.stream()
+                .filter(response -> response.getThrowable() != null)
+                .findFirst();
+        if (failedResponse.isPresent()) {
+            throw failedResponse.get().getThrowable();
+        }
+
+        var relations = responses.stream()
                 .filter(ClientBatchCheckResponse::getAllowed)
-                .map(batchCheckResponse -> batchCheckResponse.getRequest().getRelation())
-                .collect(Collectors.toList()));
+                .map(ClientBatchCheckResponse::getRelation)
+                .collect(Collectors.toList());
+        return new ClientListRelationsResponse(relations);
     }
 }

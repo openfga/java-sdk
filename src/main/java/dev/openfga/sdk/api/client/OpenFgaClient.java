@@ -495,8 +495,9 @@ public class OpenFgaClient {
      * ListRelations - List allowed relations a user has with an object (evaluates)
      */
     public CompletableFuture<ClientListRelationsResponse> listRelations(
-            ClientListRelationsRequest request, ClientBatchCheckOptions options) throws FgaInvalidParameterException {
-        if (request.getRelations().isEmpty()) {
+            ClientListRelationsRequest request, ClientListRelationsOptions options)
+            throws FgaInvalidParameterException {
+        if (request.getRelations() == null || request.getRelations().isEmpty()) {
             throw new FgaInvalidParameterException(
                     "At least 1 relation to check has to be provided when calling ListRelations");
         }
@@ -508,7 +509,8 @@ public class OpenFgaClient {
                         ._object(request.getObject()))
                 .collect(Collectors.toList());
 
-        return batchCheck(batchCheckRequests, options).thenApply(ClientListRelationsResponse::fromBatchCheckResponses);
+        return batchCheck(batchCheckRequests, options.asClientBatchCheckOptions())
+                .thenCompose(responses -> call(() -> ClientListRelationsResponse.fromBatchCheckResponses(responses)));
     }
 
     /* ************
@@ -586,17 +588,38 @@ public class OpenFgaClient {
      * @param <R> The type of API response
      */
     @FunctionalInterface
-    private interface CheckedInvocation<R> {
-        CompletableFuture<R> call() throws FgaInvalidParameterException, ApiException;
+    private interface CheckedAsyncInvocation<R> {
+        CompletableFuture<R> call() throws Throwable;
     }
 
-    private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
+    private <T> CompletableFuture<T> call(CheckedAsyncInvocation<T> action) {
         try {
             return action.call();
         } catch (CompletionException completionException) {
             return CompletableFuture.failedFuture(completionException.getCause());
-        } catch (Exception exception) {
-            return CompletableFuture.failedFuture(exception);
+        } catch (Throwable throwable) {
+            return CompletableFuture.failedFuture(throwable);
+        }
+    }
+
+    /**
+     * A {@link FunctionalInterface} for calling any function that could throw an exception.
+     * It wraps exceptions encountered with {@link CompletableFuture#failedFuture(Throwable)}
+     *
+     * @param <R> The return type
+     */
+    @FunctionalInterface
+    private interface CheckedInvocation<R> {
+        R call() throws Throwable;
+    }
+
+    private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
+        try {
+            return CompletableFuture.completedFuture(action.call());
+        } catch (CompletionException completionException) {
+            return CompletableFuture.failedFuture(completionException.getCause());
+        } catch (Throwable throwable) {
+            return CompletableFuture.failedFuture(throwable);
         }
     }
 }
