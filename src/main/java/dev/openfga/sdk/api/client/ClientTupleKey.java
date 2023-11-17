@@ -16,6 +16,7 @@ import dev.openfga.sdk.api.model.ContextualTupleKeys;
 import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.api.model.TupleKeys;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ClientTupleKey {
@@ -66,12 +67,12 @@ public class ClientTupleKey {
         return new TupleKey().user(user).relation(relation)._object(_object);
     }
 
-    public static TupleKeys asTupleKeys(List<ClientTupleKey> clientTupleKeys) {
+    public static Optional<TupleKeys> asTupleKeys(List<ClientTupleKey> clientTupleKeys) {
         if (clientTupleKeys == null || clientTupleKeys.size() == 0) {
-            return new TupleKeys();
+            return Optional.empty();
         }
 
-        return new TupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys));
+        return Optional.of(new TupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys)));
     }
 
     public static ContextualTupleKeys asContextualTupleKeys(List<ClientTupleKey> clientTupleKeys) {

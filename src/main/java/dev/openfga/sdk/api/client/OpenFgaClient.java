@@ -288,17 +288,8 @@ public class OpenFgaClient {
             String storeId, ClientWriteRequest request, ClientWriteOptions options) {
         WriteRequest body = new WriteRequest();
 
-        if (request != null) {
-            TupleKeys writes = ClientTupleKey.asTupleKeys(request.getWrites());
-            if (!writes.getTupleKeys().isEmpty()) {
-                body.writes(writes);
-            }
-
-            TupleKeys deletes = ClientTupleKey.asTupleKeys(request.getDeletes());
-            if (!deletes.getTupleKeys().isEmpty()) {
-                body.deletes(deletes);
-            }
-        }
+        ClientTupleKey.asTupleKeys(request.getWrites()).ifPresent(body::writes);
+        ClientTupleKey.asTupleKeys(request.getDeletes()).ifPresent(body::deletes);
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
             body.authorizationModelId(options.getAuthorizationModelId());
@@ -358,7 +349,9 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest().writes(ClientTupleKey.asTupleKeys(tupleKeys));
+        var request = new WriteRequest();
+        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::writes);
+
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
@@ -377,7 +370,9 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest().deletes(ClientTupleKey.asTupleKeys(tupleKeys));
+        var request = new WriteRequest();
+        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::deletes);
+
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
