@@ -14,6 +14,8 @@ package dev.openfga.sdk.api.configuration;
 
 public class ClientWriteOptions {
     private String authorizationModelId;
+    private Boolean enableTransactions;
+    private int transactionChunkSize;
 
     public ClientWriteOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
@@ -22,5 +24,23 @@ public class ClientWriteOptions {
 
     public String getAuthorizationModelId() {
         return authorizationModelId;
+    }
+
+    public ClientWriteOptions enableTransactions(boolean enableTransactions) {
+        this.enableTransactions = enableTransactions;
+        return this;
+    }
+
+    public boolean enableTransactions() {
+        return enableTransactions != null && enableTransactions;
+    }
+
+    public ClientWriteOptions transactionChunkSize(int transactionChunkSize) {
+        this.transactionChunkSize = transactionChunkSize;
+        return this;
+    }
+
+    public int getTransactionChunkSize() {
+        return transactionChunkSize >= 0 ? transactionChunkSize : 1;
     }
 }

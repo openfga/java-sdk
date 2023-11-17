@@ -18,6 +18,10 @@ public class ClientWriteRequest {
     private List<ClientTupleKey> writes;
     private List<ClientTupleKey> deletes;
 
+    public static ClientWriteRequest ofWrites(List<ClientTupleKey> writes) {
+        return new ClientWriteRequest().writes(writes);
+    }
+
     public ClientWriteRequest writes(List<ClientTupleKey> writes) {
         this.writes = writes;
         return this;
@@ -25,6 +29,10 @@ public class ClientWriteRequest {
 
     public List<ClientTupleKey> getWrites() {
         return writes;
+    }
+
+    public static ClientWriteRequest ofDeletes(List<ClientTupleKey> deletes) {
+        return new ClientWriteRequest().deletes(deletes);
     }
 
     public ClientWriteRequest deletes(List<ClientTupleKey> deletes) {

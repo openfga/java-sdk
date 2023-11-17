@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenFgaClient {
     private final ApiClient apiClient;
@@ -276,6 +277,15 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
+        if (options != null && options.enableTransactions()) {
+            return writeTransactions(storeId, request, options);
+        } else {
+            return writeOneTransaction(storeId, request, options);
+        }
+    }
+
+    private CompletableFuture<ClientWriteResponse> writeOneTransaction(
+            String storeId, ClientWriteRequest request, ClientWriteOptions options) {
         WriteRequest body = new WriteRequest();
 
         if (request != null) {
@@ -298,6 +308,44 @@ public class OpenFgaClient {
         }
 
         return call(() -> api.write(storeId, body)).thenApply(ClientWriteResponse::new);
+    }
+
+    private CompletableFuture<ClientWriteResponse> writeTransactions(
+            String storeId, ClientWriteRequest request, ClientWriteOptions options) {
+
+        int chunkSize = options.getTransactionChunkSize();
+
+        var writeTransactions =
+                chunksOf(chunkSize, request.getWrites()).stream().map(ClientWriteRequest::ofWrites);
+        var deleteTransactions =
+                chunksOf(chunkSize, request.getDeletes()).stream().map(ClientWriteRequest::ofDeletes);
+
+        var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
+        var futureResponse = this.writeOneTransaction(storeId, transactions.get(0), options);
+
+        for (int i = 1; i < transactions.size(); i++) {
+            final int index = i; // Must be final in this scope for closure.
+
+            // The resulting completable future of this chain will result in either:
+            // 1. The first exception thrown in a failed completion. Other thenApply() will not be evaluated.
+            // 2. The final successful ClientWriteResponse.
+            futureResponse.thenApply(_response -> this.writeOneTransaction(storeId, transactions.get(index), options));
+        }
+
+        return futureResponse;
+    }
+
+    private <T> List<List<T>> chunksOf(int chunkSize, List<T> list) {
+        int nChunks = list.size() / chunkSize;
+
+        int finalEndExclusive = list.size();
+        List<List<T>> chunks = new ArrayList<>();
+
+        for (int i = 0; i < nChunks; i++) {
+            List<T> chunk = list.subList(i * chunkSize, Math.min((i + 1) * chunkSize, finalEndExclusive));
+            chunks.add(chunk);
+        }
+        return chunks;
     }
 
     /**
