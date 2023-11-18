@@ -327,7 +327,7 @@ public class OpenFgaClient {
     }
 
     private <T> List<List<T>> chunksOf(int chunkSize, List<T> list) {
-        int nChunks = list.size() / chunkSize;
+        int nChunks = (int) Math.ceil(list.size() / (double) chunkSize);
 
         int finalEndExclusive = list.size();
         List<List<T>> chunks = new ArrayList<>();

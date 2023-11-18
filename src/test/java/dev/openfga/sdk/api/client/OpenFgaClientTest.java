@@ -49,13 +49,12 @@ public class OpenFgaClientTest {
     private OpenFgaClient fga;
     private ClientConfiguration clientConfiguration;
     private HttpClientMock mockHttpClient;
-    private HttpClient.Builder mockHttpClientBuilder;
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
         mockHttpClient = new HttpClientMock();
 
-        mockHttpClientBuilder = mock(HttpClient.Builder.class);
+        HttpClient.Builder mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
@@ -955,7 +954,7 @@ public class OpenFgaClientTest {
         ClientReadRequest request = new ClientReadRequest();
 
         // When
-        ClientReadResponse response = fga.read(request).get();
+        fga.read(request).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
@@ -1086,6 +1085,50 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
+    public void writeTest_transactions() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        String write2Body = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String write1Body = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String delete2Body = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String delete1Body = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(isOneOf(write2Body, write1Body, delete2Body, delete1Body))
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(tuple, tuple, tuple, tuple, tuple))
+                .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
+        ClientWriteOptions options =
+                new ClientWriteOptions().enableTransactions(true).transactionChunkSize(2);
+
+        // When
+        var response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(write2Body)).called(2);
+        mockHttpClient.verify().post(postPath).withBody(is(write1Body)).called(1);
+        mockHttpClient.verify().post(postPath).withBody(is(delete2Body)).called(2);
+        mockHttpClient.verify().post(postPath).withBody(is(delete1Body)).called(1);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
@@ -1354,8 +1397,7 @@ public class OpenFgaClientTest {
         ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        List<ClientBatchCheckResponse> responses =
-                fga.batchCheck(requests, options).get();
+        fga.batchCheck(requests, options).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(20);
