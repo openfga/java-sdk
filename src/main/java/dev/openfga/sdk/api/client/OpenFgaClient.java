@@ -277,15 +277,16 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        if (options != null && options.enableTransactions()) {
+        if (options != null && !options.disableTransactions()) {
             return writeTransactions(storeId, request, options);
-        } else {
-            return writeOneTransaction(storeId, request, options);
         }
+
+        return writeNonTransaction(storeId, request, options);
     }
 
-    private CompletableFuture<ClientWriteResponse> writeOneTransaction(
+    private CompletableFuture<ClientWriteResponse> writeNonTransaction(
             String storeId, ClientWriteRequest request, ClientWriteOptions options) {
+
         WriteRequest body = new WriteRequest();
 
         ClientTupleKey.asTupleKeys(request.getWrites()).ifPresent(body::writes);
@@ -306,37 +307,41 @@ public class OpenFgaClient {
 
         int chunkSize = options.getTransactionChunkSize();
 
-        var writeTransactions =
-                chunksOf(chunkSize, request.getWrites()).stream().map(ClientWriteRequest::ofWrites);
-        var deleteTransactions =
-                chunksOf(chunkSize, request.getDeletes()).stream().map(ClientWriteRequest::ofDeletes);
+        var writeTransactions = chunksOf(chunkSize, request.getWrites()).map(ClientWriteRequest::ofWrites);
+        var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
 
         var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
-        var futureResponse = this.writeOneTransaction(storeId, transactions.get(0), options);
+        var futureResponse = this.writeNonTransaction(storeId, transactions.get(0), options);
 
         for (int i = 1; i < transactions.size(); i++) {
             final int index = i; // Must be final in this scope for closure.
 
             // The resulting completable future of this chain will result in either:
-            // 1. The first exception thrown in a failed completion. Other thenApply() will not be evaluated.
+            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
             // 2. The final successful ClientWriteResponse.
-            futureResponse.thenApply(_response -> this.writeOneTransaction(storeId, transactions.get(index), options));
+            futureResponse = futureResponse.thenCompose(
+                    _response -> this.writeNonTransaction(storeId, transactions.get(index), options));
         }
 
         return futureResponse;
     }
 
-    private <T> List<List<T>> chunksOf(int chunkSize, List<T> list) {
+    private <T> Stream<List<T>> chunksOf(int chunkSize, List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return Stream.empty();
+        }
+
         int nChunks = (int) Math.ceil(list.size() / (double) chunkSize);
 
         int finalEndExclusive = list.size();
-        List<List<T>> chunks = new ArrayList<>();
+        Stream.Builder<List<T>> chunks = Stream.builder();
 
         for (int i = 0; i < nChunks; i++) {
             List<T> chunk = list.subList(i * chunkSize, Math.min((i + 1) * chunkSize, finalEndExclusive));
             chunks.add(chunk);
         }
-        return chunks;
+
+        return chunks.build();
     }
 
     /**

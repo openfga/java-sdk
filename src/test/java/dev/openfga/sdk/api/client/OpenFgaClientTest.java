@@ -25,8 +25,10 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,8 +55,9 @@ public class OpenFgaClientTest {
     @BeforeEach
     public void beforeEachTest() throws Exception {
         mockHttpClient = new HttpClientMock();
+        // mockHttpClient.debugOn(); // Uncomment when debugging HTTP requests.
 
-        HttpClient.Builder mockHttpClientBuilder = mock(HttpClient.Builder.class);
+        var mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
@@ -67,7 +70,7 @@ public class OpenFgaClientTest {
                 .maxRetries(DEFAULT_MAX_RETRIES)
                 .minimumRetryDelay(DEFAULT_RETRY_DELAY);
 
-        ApiClient mockApiClient = mock(ApiClient.class);
+        var mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
@@ -1118,7 +1121,7 @@ public class OpenFgaClientTest {
                 .writes(List.of(tuple, tuple, tuple, tuple, tuple))
                 .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
         ClientWriteOptions options =
-                new ClientWriteOptions().enableTransactions(true).transactionChunkSize(2);
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(2);
 
         // When
         var response = fga.write(request, options).get();
@@ -1129,6 +1132,58 @@ public class OpenFgaClientTest {
         mockHttpClient.verify().post(postPath).withBody(is(delete2Body)).called(2);
         mockHttpClient.verify().post(postPath).withBody(is(delete1Body)).called(1);
         assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_transactionsWithFailure() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String firstUser = "user:first";
+        String failedUser = "user:SECOND";
+        String skippedUser = "user:third";
+        Function<String, String> writeBody = user -> String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, user, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(skippedUser)))
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(writeBody.apply(failedUser)))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(Stream.of(firstUser, failedUser, skippedUser)
+                        .map(user -> new ClientTupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(user))
+                        .collect(Collectors.toList()));
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.write(request, options).get());
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(firstUser)))
+                .called(1);
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(failedUser)))
+                .called(1);
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(skippedUser)))
+                .called(0);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
     }
 
     @Test
@@ -1713,6 +1768,7 @@ public class OpenFgaClientTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
+
     /**
      * Check whether a user is authorized to access an object.
      */
