@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.3
+
+### [0.2.3](https://github.com/openfga/java-sdk/compare/v0.2.2...v0.2.3) (2023-11-21)
+
+- feat(client): implement batchCheck, listRelations, and non-transaction write
+- fix(client): adds missing "contextual tuples" field to check request
+
 ## v0.2.2
 
 ### [0.2.2](https://github.com/openfga/java-sdk/compare/v0.2.1...v0.2.2) (2023-10-31)
