@@ -417,6 +417,11 @@ public class OpenFgaClient {
                     .user(request.getUser())
                     .relation(request.getRelation())
                     ._object(request.getObject()));
+
+            var contextualTuples = request.getContextualTuples();
+            if (contextualTuples != null && !contextualTuples.isEmpty()) {
+                body.contextualTuples(ClientTupleKey.asContextualTupleKeys(contextualTuples));
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {

@@ -12,11 +12,13 @@
 
 package dev.openfga.sdk.api.client;
 
+import java.util.List;
+
 public class ClientCheckRequest {
     private String user;
     private String relation;
     private String _object;
-    // TODO: Add "contextual tuples"
+    private List<ClientTupleKey> contextualTuples;
 
     public ClientCheckRequest _object(String _object) {
         this._object = _object;
@@ -55,5 +57,14 @@ public class ClientCheckRequest {
      **/
     public String getUser() {
         return user;
+    }
+
+    public ClientCheckRequest contextualTuples(List<ClientTupleKey> contextualTuples) {
+        this.contextualTuples = contextualTuples;
+        return this;
+    }
+
+    public List<ClientTupleKey> getContextualTuples() {
+        return contextualTuples;
     }
 }
