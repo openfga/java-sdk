@@ -471,7 +471,30 @@ Convenience `WriteTuples` and `DeleteTuples` methods are also available.
 The SDK will split the writes into separate requests and send them sequentially to avoid violating rate limits.
 
 ```java
-// Coming soon
+var request = new ClientWriteRequest()
+    .writes(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:roadmap"),
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:budget")
+    ))
+    .deletes(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:roadmap")
+    ));
+var options = new ClientWriteOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
+    .disableTransactions(true)
+    .transactionChunkSize(5); // Maximum number of requests to be sent in a transaction in a particular chunk
+
+var response = fgaClient.write(request, options).get();
 ```
 
 #### Relationship Queries
@@ -501,7 +524,85 @@ Run a set of [checks](#check). Batch Check will return `allowed: false` if it en
 If 429s or 5xxs are encountered, the underlying check will retry up to 15 times before giving up.
 
 ```java
-// Coming soon
+var request = List.of(
+    new ClientCheckRequest()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("viewer")
+        ._object("document:roadmap")
+        .contextualTuples(List.of(
+            new ClientTupleKey()
+                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("editor")
+                ._object("document:roadmap")
+        )),
+    new ClientCheckRequest()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("admin")
+        ._object("document:roadmap"),
+        .contextualTuples(List.of(
+            new ClientTupleKey()
+                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("editor")
+                ._object("document:roadmap")
+        )),
+    new ClientCheckRequest()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("creator")
+        ._object("document:roadmap"),
+    new ClientCheckRequest()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("deleter")
+        ._object("document:roadmap")
+);
+var options = new ClientBatchCheckOptions()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
+    .maxParallelRequests(5); // Max number of requests to issue in parallel, defaults to 10
+
+var response = fgaClient.batchCheck(request, options).get();
+
+/*
+response.getResponses() = [{
+  allowed: false,
+  request: {
+    user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+    relation: "viewer",
+    _object: "document:roadmap",
+    contextualTuples: [{
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "editor",
+      _object: "document:roadmap"
+    }]
+  }
+}, {
+  allowed: false,
+  request: {
+    user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+    relation: "admin",
+    _object: "document:roadmap",
+    contextualTuples: [{
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "editor",
+      _object: "document:roadmap"
+    }]
+  }
+}, {
+  allowed: false,
+  request: {
+    user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+    relation: "creator",
+    _object: "document:roadmap",
+  },
+  error: <FgaError ...>
+}, {
+  allowed: true,
+  request: {
+    user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+    relation: "deleter",
+    _object: "document:roadmap",
+  }},
+]
+*/
 ```
 
 ##### Expand
@@ -554,7 +655,26 @@ var response = fgaClient.listObjects(request, options).get();
 List the relations a user has on an object.
 
 ```java
-// Coming soon.
+var request = new ClientListRelationsRequest()
+    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+    ._object("document:roadmap")
+    .relations(List.of("can_view", "can_edit", "can_delete", "can_rename"))
+    .contextualTuples(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("editor")
+            ._object("document:roadmap")
+        )
+    );
+var options = new ClientListRelationsOptions()
+    // When unspecified, defaults to 10
+    .maxParallelRequests()
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+var response = fgaClient.listRelations(request, options).get();
+
+// response.getRelations() = ["can_view", "can_edit"]
 ```
 
 #### Assertions

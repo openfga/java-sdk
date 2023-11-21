@@ -16,6 +16,7 @@ public class ClientCheckRequest {
     private String user;
     private String relation;
     private String _object;
+    // TODO: Add "contextual tuples"
 
     public ClientCheckRequest _object(String _object) {
         this._object = _object;
