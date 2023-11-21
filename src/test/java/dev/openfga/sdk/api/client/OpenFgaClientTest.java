@@ -1249,11 +1249,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1271,11 +1275,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1292,11 +1300,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);

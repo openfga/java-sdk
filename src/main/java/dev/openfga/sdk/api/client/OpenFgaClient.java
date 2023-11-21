@@ -277,11 +277,11 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        if (options != null && !options.disableTransactions()) {
-            return writeTransactions(storeId, request, options);
+        if (options != null && options.disableTransactions()) {
+            return writeNonTransaction(storeId, request, options);
         }
 
-        return writeNonTransaction(storeId, request, options);
+        return writeTransactions(storeId, request, options);
     }
 
     private CompletableFuture<ClientWriteResponse> writeNonTransaction(
@@ -305,7 +305,7 @@ public class OpenFgaClient {
     private CompletableFuture<ClientWriteResponse> writeTransactions(
             String storeId, ClientWriteRequest request, ClientWriteOptions options) {
 
-        int chunkSize = options.getTransactionChunkSize();
+        int chunkSize = options == null ? DEFAULT_MAX_METHOD_PARALLEL_REQS : options.getTransactionChunkSize();
 
         var writeTransactions = chunksOf(chunkSize, request.getWrites()).map(ClientWriteRequest::ofWrites);
         var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
