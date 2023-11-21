@@ -1314,13 +1314,19 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},"
+                        + "\"contextual_tuples\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"owner\",\"user\":\"%s\"}]},"
+                        + "\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_OBJECT, DEFAULT_USER);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+                .user(DEFAULT_USER)
+                .contextualTuples(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation("owner")
+                        .user(DEFAULT_USER)));
         ClientCheckOptions options = new ClientCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
