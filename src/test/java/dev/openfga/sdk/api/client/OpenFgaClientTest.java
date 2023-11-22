@@ -25,6 +25,10 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,13 +51,13 @@ public class OpenFgaClientTest {
     private OpenFgaClient fga;
     private ClientConfiguration clientConfiguration;
     private HttpClientMock mockHttpClient;
-    private HttpClient.Builder mockHttpClientBuilder;
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
         mockHttpClient = new HttpClientMock();
+        // mockHttpClient.debugOn(); // Uncomment when debugging HTTP requests.
 
-        mockHttpClientBuilder = mock(HttpClient.Builder.class);
+        var mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
@@ -66,7 +70,7 @@ public class OpenFgaClientTest {
                 .maxRetries(DEFAULT_MAX_RETRIES)
                 .minimumRetryDelay(DEFAULT_RETRY_DELAY);
 
-        ApiClient mockApiClient = mock(ApiClient.class);
+        var mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
@@ -953,7 +957,7 @@ public class OpenFgaClientTest {
         ClientReadRequest request = new ClientReadRequest();
 
         // When
-        ClientReadResponse response = fga.read(request).get();
+        fga.read(request).get();
 
         // Then
         mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
@@ -1087,6 +1091,167 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void writeTest_transactions() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        String write2Body = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String write1Body = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String delete2Body = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        String delete1Body = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(isOneOf(write2Body, write1Body, delete2Body, delete1Body))
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(tuple, tuple, tuple, tuple, tuple))
+                .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(2);
+
+        // When
+        var response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(write2Body)).called(2);
+        mockHttpClient.verify().post(postPath).withBody(is(write1Body)).called(1);
+        mockHttpClient.verify().post(postPath).withBody(is(delete2Body)).called(2);
+        mockHttpClient.verify().post(postPath).withBody(is(delete1Body)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_transactionsWithFailure() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String firstUser = "user:first";
+        String failedUser = "user:SECOND";
+        String skippedUser = "user:third";
+        Function<String, String> writeBody = user -> String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, user, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(skippedUser)))
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(writeBody.apply(failedUser)))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(Stream.of(firstUser, failedUser, skippedUser)
+                        .map(user -> new ClientTupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(user))
+                        .collect(Collectors.toList()));
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.write(request, options).get());
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(firstUser)))
+                .called(1);
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(failedUser)))
+                .called(1);
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withBody(is(writeBody.apply(skippedUser)))
+                .called(0);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_nonTransaction() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientWriteRequest request =
+                new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
+
+        // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+
+        // When
+        var response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_nonTransactionsWithFailure() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientWriteRequest request =
+                new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
+
+        // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.write(request, options).get());
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+    }
+
+    @Test
     public void writeTuplesTest() throws Exception {
         // Given
         String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
@@ -1149,11 +1314,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1171,11 +1340,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1);
@@ -1192,11 +1365,15 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(new ClientWriteRequest())
-                        .get());
+                assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
@@ -1214,13 +1391,19 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},"
+                        + "\"contextual_tuples\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"owner\",\"user\":\"%s\"}]},"
+                        + "\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_OBJECT, DEFAULT_USER);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+                .user(DEFAULT_USER)
+                .contextualTuples(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation("owner")
+                        .user(DEFAULT_USER)));
         ClientCheckOptions options = new ClientCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
@@ -1303,6 +1486,146 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    /**
+     * Check whether a user is authorized to access an object.
+     */
+    @Test
+    public void batchCheck() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        ClientCheckRequest request = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        List<ClientBatchCheckResponse> response =
+                fga.batchCheck(List.of(request), options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertEquals(Boolean.TRUE, response.get(0).getAllowed());
+    }
+
+    @Test
+    public void batchCheck_twentyTimes() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        List<ClientCheckRequest> requests = IntStream.range(0, 20)
+                .mapToObj(ignored -> new ClientCheckRequest()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER))
+                .collect(Collectors.toList());
+        ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        fga.batchCheck(requests, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(20);
+    }
+
+    @Test
+    public void batchCheck_storeIdRequired() {
+        // Given
+        clientConfiguration.storeId(null);
+
+        // When
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .get());
+
+        // Then
+        assertEquals(
+                "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
+    }
+
+    @Test
+    public void batchCheck_400() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                exception.getResponseData());
+    }
+
+    @Test
+    public void batchCheck_404() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
+        var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
+        assertEquals(404, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void batchCheck_500() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+
+        // When
+        List<ClientBatchCheckResponse> response = fga.batchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+                .join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1523,6 +1846,205 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    /**
+     * Check whether a user is authorized to access an object.
+     */
+    @Test
+    public void listRelations() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of(DEFAULT_RELATION))
+                .user(DEFAULT_USER)
+                ._object(DEFAULT_OBJECT);
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertEquals(1, response.getRelations().size());
+        assertEquals(DEFAULT_RELATION, response.getRelations().get(0));
+    }
+
+    @Test
+    public void listRelations_deny() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, "owner", DEFAULT_USER);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":false}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of("owner"))
+                ._object(DEFAULT_OBJECT)
+                .user(DEFAULT_USER);
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertTrue(response.getRelations().isEmpty());
+    }
+
+    @Test
+    public void listRelations_storeIdRequired() {
+        // Given
+        clientConfiguration.storeId(null);
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_nonNullRelationsRequired() {
+        // Given
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(null) // Should fail
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "At least 1 relation to check has to be provided when calling ListRelations", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_atLeastOneRelationRequired() {
+        // Given
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of()) // Should fail
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        assertEquals(
+                "At least 1 relation to check has to be provided when calling ListRelations", exception.getMessage());
+    }
+
+    @Test
+    public void listRelations_400() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                exception.getResponseData());
+    }
+
+    @Test
+    public void listRelations_404() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
+        assertEquals(404, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void listRelations_500() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .user(DEFAULT_USER)
+                .relations(List.of(DEFAULT_RELATION))
+                ._object(DEFAULT_OBJECT);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.listRelations(request, new ClientListRelationsOptions())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(

@@ -18,8 +18,12 @@ import dev.openfga.sdk.api.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenFgaClient {
     private final ApiClient apiClient;
@@ -273,19 +277,20 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
+        if (options != null && options.disableTransactions()) {
+            return writeNonTransaction(storeId, request, options);
+        }
+
+        return writeTransactions(storeId, request, options);
+    }
+
+    private CompletableFuture<ClientWriteResponse> writeNonTransaction(
+            String storeId, ClientWriteRequest request, ClientWriteOptions options) {
+
         WriteRequest body = new WriteRequest();
 
-        if (request != null) {
-            TupleKeys writes = ClientTupleKey.asTupleKeys(request.getWrites());
-            if (!writes.getTupleKeys().isEmpty()) {
-                body.writes(writes);
-            }
-
-            TupleKeys deletes = ClientTupleKey.asTupleKeys(request.getDeletes());
-            if (!deletes.getTupleKeys().isEmpty()) {
-                body.deletes(deletes);
-            }
-        }
+        ClientTupleKey.asTupleKeys(request.getWrites()).ifPresent(body::writes);
+        ClientTupleKey.asTupleKeys(request.getDeletes()).ifPresent(body::deletes);
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
             body.authorizationModelId(options.getAuthorizationModelId());
@@ -295,6 +300,48 @@ public class OpenFgaClient {
         }
 
         return call(() -> api.write(storeId, body)).thenApply(ClientWriteResponse::new);
+    }
+
+    private CompletableFuture<ClientWriteResponse> writeTransactions(
+            String storeId, ClientWriteRequest request, ClientWriteOptions options) {
+
+        int chunkSize = options == null ? DEFAULT_MAX_METHOD_PARALLEL_REQS : options.getTransactionChunkSize();
+
+        var writeTransactions = chunksOf(chunkSize, request.getWrites()).map(ClientWriteRequest::ofWrites);
+        var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
+
+        var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
+        var futureResponse = this.writeNonTransaction(storeId, transactions.get(0), options);
+
+        for (int i = 1; i < transactions.size(); i++) {
+            final int index = i; // Must be final in this scope for closure.
+
+            // The resulting completable future of this chain will result in either:
+            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
+            // 2. The final successful ClientWriteResponse.
+            futureResponse = futureResponse.thenCompose(
+                    _response -> this.writeNonTransaction(storeId, transactions.get(index), options));
+        }
+
+        return futureResponse;
+    }
+
+    private <T> Stream<List<T>> chunksOf(int chunkSize, List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return Stream.empty();
+        }
+
+        int nChunks = (int) Math.ceil(list.size() / (double) chunkSize);
+
+        int finalEndExclusive = list.size();
+        Stream.Builder<List<T>> chunks = Stream.builder();
+
+        for (int i = 0; i < nChunks; i++) {
+            List<T> chunk = list.subList(i * chunkSize, Math.min((i + 1) * chunkSize, finalEndExclusive));
+            chunks.add(chunk);
+        }
+
+        return chunks.build();
     }
 
     /**
@@ -307,7 +354,9 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest().writes(ClientTupleKey.asTupleKeys(tupleKeys));
+        var request = new WriteRequest();
+        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::writes);
+
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
@@ -326,7 +375,9 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest().deletes(ClientTupleKey.asTupleKeys(tupleKeys));
+        var request = new WriteRequest();
+        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::deletes);
+
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
             request.authorizationModelId(authorizationModelId);
@@ -366,6 +417,11 @@ public class OpenFgaClient {
                     .user(request.getUser())
                     .relation(request.getRelation())
                     ._object(request.getObject()));
+
+            var contextualTuples = request.getContextualTuples();
+            if (contextualTuples != null && !contextualTuples.isEmpty()) {
+                body.contextualTuples(ClientTupleKey.asContextualTupleKeys(contextualTuples));
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
@@ -383,7 +439,35 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    // TODO
+    public CompletableFuture<List<ClientBatchCheckResponse>> batchCheck(
+            List<ClientCheckRequest> requests, ClientBatchCheckOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
+        configuration.assertValidStoreId();
+
+        int maxParallelRequests = options.getMaxParallelRequests() != null
+                ? options.getMaxParallelRequests()
+                : DEFAULT_MAX_METHOD_PARALLEL_REQS;
+        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
+        var latch = new CountDownLatch(requests.size());
+
+        var responses = new ConcurrentLinkedQueue<ClientBatchCheckResponse>();
+
+        final var clientCheckOptions = options.asClientCheckOptions();
+
+        Consumer<ClientCheckRequest> singleClientCheckRequest =
+                request -> call(() -> this.check(request, clientCheckOptions))
+                        .handleAsync(ClientBatchCheckResponse.asyncHandler(request))
+                        .thenAccept(responses::add)
+                        .thenRun(latch::countDown);
+
+        try {
+            requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
+            latch.await();
+            return CompletableFuture.completedFuture(new ArrayList<>(responses));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
 
     /**
      * Expand - Expands the relationships in userset tree format (evaluates)
@@ -461,9 +545,26 @@ public class OpenFgaClient {
     }
 
     /*
-     * ListRelations - List all the relations a user has with an object (evaluates)
+     * ListRelations - List allowed relations a user has with an object (evaluates)
      */
-    // TODO
+    public CompletableFuture<ClientListRelationsResponse> listRelations(
+            ClientListRelationsRequest request, ClientListRelationsOptions options)
+            throws FgaInvalidParameterException {
+        if (request.getRelations() == null || request.getRelations().isEmpty()) {
+            throw new FgaInvalidParameterException(
+                    "At least 1 relation to check has to be provided when calling ListRelations");
+        }
+
+        var batchCheckRequests = request.getRelations().stream()
+                .map(relation -> new ClientCheckRequest()
+                        .user(request.getUser())
+                        .relation(relation)
+                        ._object(request.getObject()))
+                .collect(Collectors.toList());
+
+        return batchCheck(batchCheckRequests, options.asClientBatchCheckOptions())
+                .thenCompose(responses -> call(() -> ClientListRelationsResponse.fromBatchCheckResponses(responses)));
+    }
 
     /* ************
      * Assertions *
@@ -540,15 +641,38 @@ public class OpenFgaClient {
      * @param <R> The type of API response
      */
     @FunctionalInterface
+    private interface CheckedAsyncInvocation<R> {
+        CompletableFuture<R> call() throws Throwable;
+    }
+
+    private <T> CompletableFuture<T> call(CheckedAsyncInvocation<T> action) {
+        try {
+            return action.call();
+        } catch (CompletionException completionException) {
+            return CompletableFuture.failedFuture(completionException.getCause());
+        } catch (Throwable throwable) {
+            return CompletableFuture.failedFuture(throwable);
+        }
+    }
+
+    /**
+     * A {@link FunctionalInterface} for calling any function that could throw an exception.
+     * It wraps exceptions encountered with {@link CompletableFuture#failedFuture(Throwable)}
+     *
+     * @param <R> The return type
+     */
+    @FunctionalInterface
     private interface CheckedInvocation<R> {
-        CompletableFuture<R> call() throws FgaInvalidParameterException, ApiException;
+        R call() throws Throwable;
     }
 
     private <T> CompletableFuture<T> call(CheckedInvocation<T> action) {
         try {
-            return action.call();
-        } catch (FgaInvalidParameterException | ApiException exception) {
-            return CompletableFuture.failedFuture(exception);
+            return CompletableFuture.completedFuture(action.call());
+        } catch (CompletionException completionException) {
+            return CompletableFuture.failedFuture(completionException.getCause());
+        } catch (Throwable throwable) {
+            return CompletableFuture.failedFuture(throwable);
         }
     }
 }

@@ -83,6 +83,7 @@ src/main/java/dev/openfga/sdk/api/auth/OAuth2Client.java
 src/main/java/dev/openfga/sdk/api/client/ApiClient.java
 src/main/java/dev/openfga/sdk/api/client/ApiResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientAssertion.java
+src/main/java/dev/openfga/sdk/api/client/ClientBatchCheckResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientCheckRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientCheckResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientCreateStoreResponse.java
@@ -93,6 +94,7 @@ src/main/java/dev/openfga/sdk/api/client/ClientGetStoreResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientListObjectsRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientListObjectsResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientListRelationsRequest.java
+src/main/java/dev/openfga/sdk/api/client/ClientListRelationsResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientListStoresResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientReadAssertionsResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientReadAuthorizationModelResponse.java
@@ -109,11 +111,13 @@ src/main/java/dev/openfga/sdk/api/client/HttpRequestAttempt.java
 src/main/java/dev/openfga/sdk/api/client/OpenFgaClient.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientBatchCheckOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientCheckOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientConfiguration.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientCredentials.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientExpandOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientListObjectsOptions.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientListRelationsOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientListStoresOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientReadAssertionsOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientReadAuthorizationModelOptions.java
