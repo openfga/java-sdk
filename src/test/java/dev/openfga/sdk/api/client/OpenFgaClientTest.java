@@ -1187,6 +1187,71 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void writeTest_nonTransaction() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientWriteRequest request =
+                new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
+
+        // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+
+        // When
+        var response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_nonTransactionsWithFailure() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String tupleBody = String.format(
+                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+        ClientTupleKey tuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientWriteRequest request =
+                new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
+
+        // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
+        ClientWriteOptions options =
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+
+        // When
+        var execException = assertThrows(
+                ExecutionException.class, () -> fga.write(request, options).get());
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+    }
+
+    @Test
     public void writeTuplesTest() throws Exception {
         // Given
         String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
