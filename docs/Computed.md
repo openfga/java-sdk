@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**userset** | **String** |  |  [optional] |
+|**userset** | **String** |  |  |
 
 
 

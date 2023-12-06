@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,10 +29,11 @@ public class OpenFgaClientIntegrationTest {
             "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    public static final ClientTupleKey DEFAULT_TUPLE_KEY =
+    private static final ClientTupleKey DEFAULT_TUPLE_KEY =
             new ClientTupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
-    public static final List<ClientTupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
-    public static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()
+    private static final ClientRelationshipCondition DEFAULT_CONDITION =
+            new ClientRelationshipCondition().name("condition").context(Map.of("some", "context"));
+    private static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()
             .user(DEFAULT_USER)
             .relation("reader")
             ._object(DEFAULT_DOC)
@@ -41,6 +43,8 @@ public class OpenFgaClientIntegrationTest {
 
     @BeforeEach
     public void initializeApi() throws Exception {
+        System.setProperty("HttpRequestAttempt.debug-logging", "enable");
+
         ClientConfiguration apiConfig = new ClientConfiguration().apiUrl("http://localhost:8080");
         fga = new OpenFgaClient(apiConfig);
     }
@@ -130,7 +134,7 @@ public class OpenFgaClientIntegrationTest {
         assertEquals(authModelId, response.getAuthorizationModel().getId());
         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
         assertEquals(
-                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]}}}}]",
+                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
                 typeDefsJson);
     }
 
@@ -158,7 +162,7 @@ public class OpenFgaClientIntegrationTest {
                         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
 
                         assertEquals(
-                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]}}}}]",
+                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
                                 typeDefsJson);
                     } catch (JsonProcessingException ex) {
                         assertNull(ex);
@@ -194,7 +198,8 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
 
-        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientWriteRequest writeRequest =
+                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
         ClientReadRequest readRequest =
                 new ClientReadRequest().user(DEFAULT_USER)._object(DEFAULT_DOC);
 
@@ -219,7 +224,8 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientWriteRequest writeRequest =
+                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
         ClientCheckRequest checkRequest =
                 new ClientCheckRequest().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
 
@@ -240,7 +246,8 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientWriteRequest writeRequest =
+                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
         ClientExpandRequest expandRequest =
                 new ClientExpandRequest()._object(DEFAULT_DOC).relation("reader");
 
@@ -270,7 +277,8 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientWriteRequest writeRequest =
+                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
         ClientListObjectsRequest listObjectsRequest = new ClientListObjectsRequest()
                 .user(DEFAULT_USER)
                 .relation("reader")
@@ -303,7 +311,7 @@ public class OpenFgaClientIntegrationTest {
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
         assertEquals(
-                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true}]",
+                "[{\"tuple_key\":{\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\",\"relation\":\"reader\",\"object\":\"document:2021-budget\"},\"expectation\":true}]",
                 responseJson);
     }
 

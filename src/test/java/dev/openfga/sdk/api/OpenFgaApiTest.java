@@ -24,7 +24,9 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +56,10 @@ public class OpenFgaApiTest {
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
+        System.setProperty("HttpRequestAttempt.debug-logging", "enable");
+
         mockHttpClient = new HttpClientMock();
+        mockHttpClient.debugOn();
 
         mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
@@ -570,7 +575,7 @@ public class OpenFgaApiTest {
         // Given
         String postUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/authorization-models";
         String expectedBody =
-                "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\"}";
+                "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\",\"conditions\":{}}";
         String responseBody = String.format("{\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(201, responseBody);
         WriteAuthorizationModelRequest request = new WriteAuthorizationModelRequest()
@@ -803,8 +808,8 @@ public class OpenFgaApiTest {
         // Given
         String getPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/changes";
         String responseBody = String.format(
-                "{\"changes\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}}]}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"changes\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onGet(getPath).doReturn(200, responseBody);
         String type = null; // Input is optional
         Integer pageSize = null; // Input is optional
@@ -919,14 +924,14 @@ public class OpenFgaApiTest {
         // Given
         String postUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/read";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String responseBody = String.format(
                 "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, responseBody);
         ReadRequest request = new ReadRequest()
-                .tupleKey(new TupleKey()
+                .tupleKey(new ReadRequestTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER));
@@ -944,6 +949,59 @@ public class OpenFgaApiTest {
         assertEquals(DEFAULT_USER, key.getUser());
         assertEquals(DEFAULT_RELATION, key.getRelation());
         assertEquals(DEFAULT_OBJECT, key.getObject());
+    }
+
+    @Test
+    public void read_complexContext() throws Exception {
+        // Given
+        String postUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/read";
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+        String responseBody = String.format(
+                "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\","
+                        + "\"condition\":{\"context\":{"
+                        + "  \"num\":1,"
+                        + "  \"str\":\"banana\","
+                        + "  \"list\":[1, \"banana\", [], {}],"
+                        + "  \"obj\":{"
+                        + "    \"num\":1,"
+                        + "    \"str\":\"banana\","
+                        + "    \"list\":[],"
+                        + "    \"obj\": {}"
+                        + "  }"
+                        + "}}}}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, responseBody);
+        ReadRequest request = new ReadRequest()
+                .tupleKey(new ReadRequestTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER));
+
+        // When
+        var response = fga.read(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getTuples());
+        assertEquals(1, response.getData().getTuples().size());
+        var key = response.getData().getTuples().get(0).getKey();
+        assertNotNull(key);
+        assertEquals(DEFAULT_USER, key.getUser());
+        assertEquals(DEFAULT_RELATION, key.getRelation());
+        assertEquals(DEFAULT_OBJECT, key.getObject());
+
+        // The below is subject to change.
+        assertNotNull(key.getCondition());
+        var context = key.getCondition().getContext();
+        assertNotNull(context);
+        var contextMap = assertInstanceOf(Map.class, context);
+        assertEquals(1, contextMap.get("num"));
+        assertEquals("banana", contextMap.get("str"));
+        assertEquals(List.of(1, "banana", List.of(), Map.of()), contextMap.get("list"));
+        assertEquals(Map.of("num", 1, "str", "banana", "list", List.of(), "obj", Map.of()), contextMap.get("obj"));
     }
 
     @Test
@@ -1041,19 +1099,19 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteRequest request = new WriteRequest()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .writes(new TupleKeys()
+                .writes(new WriteRequestWrites()
                         .tupleKeys(List.of(new TupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
                                 .user(DEFAULT_USER))));
 
         // When
-        fga.write(DEFAULT_STORE_ID, request);
+        fga.write(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -1067,19 +1125,112 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteRequest request = new WriteRequest()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .deletes(new TupleKeys()
-                        .tupleKeys(List.of(new TupleKey()
+                .deletes(new WriteRequestDeletes()
+                        .tupleKeys(List.of(new TupleKeyWithoutCondition()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
                                 .user(DEFAULT_USER))));
 
         // When
-        fga.write(DEFAULT_STORE_ID, request);
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
+    public void writeWithContext_map() throws Exception {
+        // Given
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"banana\",\"list\":[],\"obj\":{}}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        var context = new LinkedHashMap<>();
+        context.put("num", 1);
+        context.put("str", "banana");
+        context.put("list", List.of());
+        context.put("obj", new LinkedHashMap<>());
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .writes(new WriteRequestWrites()
+                        .tupleKeys(List.of(new TupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)
+                                .condition(new RelationshipCondition()
+                                        .name("conditionName")
+                                        .context(context)))));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    @Test
+    public void writeWithContext_modeledObj() throws Exception {
+        // Given
+
+        String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"apple\",\"list\":[2,\"banana\",[],{\"num\":3,\"str\":\"cupcake\",\"list\":null,\"obj\":null}],\"obj\":{\"num\":4,\"str\":\"dolphin\",\"list\":null,\"obj\":null}}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+
+        class TestObj {
+            int num;
+            String str;
+            List<Object> list;
+            Object obj;
+
+            public int getNum() {
+                return num;
+            }
+
+            public String getStr() {
+                return str;
+            }
+
+            public List<Object> getList() {
+                return list;
+            }
+
+            public Object getObj() {
+                return obj;
+            }
+        }
+        var obj = new TestObj();
+        obj.num = 1;
+        obj.str = "apple";
+        var objInList = new TestObj();
+        obj.list = List.of(2, "banana", List.of(), objInList);
+        objInList.num = 3;
+        objInList.str = "cupcake";
+        var objInObj = new TestObj();
+        obj.obj = objInObj;
+        objInObj.num = 4;
+        objInObj.str = "dolphin";
+
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .writes(new WriteRequestWrites()
+                        .tupleKeys(List.of(new TupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)
+                                .condition(new RelationshipCondition()
+                                        .name("conditionName")
+                                        .context(obj)))));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -1181,11 +1332,11 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/check";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[]},\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[]},\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         CheckRequest request = new CheckRequest()
-                .tupleKey(new TupleKey()
+                .tupleKey(new CheckRequestTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER))
@@ -1299,18 +1450,15 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
                 DEFAULT_USER);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, responseBody);
         ExpandRequest request = new ExpandRequest()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .tupleKey(new TupleKey()
-                        ._object(DEFAULT_OBJECT)
-                        .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER));
+                .tupleKey(new ExpandRequestTupleKey()._object(DEFAULT_OBJECT).relation(DEFAULT_RELATION));
 
         // When
         var response = fga.expand(DEFAULT_STORE_ID, request).get();
@@ -1431,7 +1579,7 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/list-objects";
         String expectedBody = String.format(
-                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null}",
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient
                 .onPost(postPath)
@@ -1547,8 +1695,8 @@ public class OpenFgaApiTest {
         // Given
         String getUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/assertions/01G5JAVJ41T49E9TT3SKVS7X1J";
         String responseBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
@@ -1667,12 +1815,12 @@ public class OpenFgaApiTest {
         // Given
         String putUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/assertions/01G5JAVJ41T49E9TT3SKVS7X1J";
         String expectedBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteAssertionsRequest request = new WriteAssertionsRequest()
                 .assertions(List.of(new Assertion()
-                        .tupleKey(new TupleKey()
+                        .tupleKey(new CheckRequestTupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
                                 .user(DEFAULT_USER))

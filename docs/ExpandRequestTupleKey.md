@@ -1,13 +1,14 @@
 
 
-# TupleKeys
+# ExpandRequestTupleKey
 
 
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleKeys** | [**List&lt;TupleKey&gt;**](TupleKey.md) |  |  |
+|**relation** | **String** |  |  |
+|**_object** | **String** |  |  |
 
 
 

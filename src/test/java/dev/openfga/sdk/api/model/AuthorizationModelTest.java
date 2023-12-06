@@ -51,4 +51,12 @@ public class AuthorizationModelTest {
     public void typeDefinitionsTest() {
         // TODO: test typeDefinitions
     }
+
+    /**
+     * Test the property 'conditions'
+     */
+    @Test
+    public void conditionsTest() {
+        // TODO: test conditions
+    }
 }

@@ -59,4 +59,12 @@ public class CheckRequestTest {
     public void traceTest() {
         // TODO: test trace
     }
+
+    /**
+     * Test the property 'context'
+     */
+    @Test
+    public void contextTest() {
+        // TODO: test context
+    }
 }

@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**nodes** | [**List&lt;Node&gt;**](Node.md) |  |  [optional] |
+|**nodes** | [**List&lt;Node&gt;**](Node.md) |  |  |
 
 
 

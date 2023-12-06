@@ -67,4 +67,12 @@ public class ListObjectsRequestTest {
     public void contextualTuplesTest() {
         // TODO: test contextualTuples
     }
+
+    /**
+     * Test the property 'context'
+     */
+    @Test
+    public void contextTest() {
+        // TODO: test context
+    }
 }

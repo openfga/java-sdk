@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**authorizationModelId** | **String** |  |  [optional] |
+|**authorizationModelId** | **String** |  |  |
 |**assertions** | [**List&lt;Assertion&gt;**](Assertion.md) |  |  [optional] |
 
 

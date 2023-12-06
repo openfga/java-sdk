@@ -49,15 +49,15 @@ public class Users {
      * Get users
      * @return users
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_USERS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<String> getUsers() {
         return users;
     }
 
     @JsonProperty(JSON_PROPERTY_USERS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setUsers(List<String> users) {
         this.users = users;
     }

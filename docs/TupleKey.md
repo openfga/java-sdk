@@ -7,9 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**_object** | **String** |  |  [optional] |
-|**relation** | **String** |  |  [optional] |
-|**user** | **String** |  |  [optional] |
+|**user** | **String** |  |  |
+|**relation** | **String** |  |  |
+|**_object** | **String** |  |  |
+|**condition** | [**RelationshipCondition**](RelationshipCondition.md) |  |  [optional] |
 
 
 

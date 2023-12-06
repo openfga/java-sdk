@@ -52,15 +52,15 @@ public class ReadChangesResponse {
      * Get changes
      * @return changes
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CHANGES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<TupleChange> getChanges() {
         return changes;
     }
 
     @JsonProperty(JSON_PROPERTY_CHANGES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setChanges(List<TupleChange> changes) {
         this.changes = changes;
     }

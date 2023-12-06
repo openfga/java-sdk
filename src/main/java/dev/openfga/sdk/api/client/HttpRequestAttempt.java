@@ -5,9 +5,12 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.*;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -18,6 +21,9 @@ public class HttpRequestAttempt<T> {
     private final Class<T> clazz;
     private final String name;
     private final HttpRequest request;
+
+    // Intended for only testing the OpenFGA SDK itself.
+    private final boolean enableDebugLogging = "enable".equals(System.getProperty("HttpRequestAttempt.debug-logging"));
 
     public HttpRequestAttempt(
             HttpRequest request, String name, Class<T> clazz, ApiClient apiClient, Configuration configuration)
@@ -33,6 +39,11 @@ public class HttpRequestAttempt<T> {
     }
 
     public CompletableFuture<ApiResponse<T>> attemptHttpRequest() throws ApiException {
+        if (enableDebugLogging) {
+            request.bodyPublisher()
+                    .ifPresent(requestBodyPublisher ->
+                            requestBodyPublisher.subscribe(new BodyLogger(System.err, "request")));
+        }
         int retryNumber = 0;
         return attemptHttpRequest(apiClient.getHttpClient(), retryNumber, null);
     }
@@ -82,5 +93,38 @@ public class HttpRequestAttempt<T> {
                 .getHttpClientBuilder()
                 .executor(CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
                 .build();
+    }
+
+    private static class BodyLogger implements Flow.Subscriber<ByteBuffer> {
+        private final PrintStream out;
+        private final String target;
+
+        BodyLogger(PrintStream out, String target) {
+            this.out = out;
+            this.target = target;
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            out.printf("[%s] subscribed: %s\n", this.getClass().getName(), subscription);
+            subscription.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(ByteBuffer item) {
+            out.printf(
+                    "[%s] %s: %s\n",
+                    this.getClass().getName(), target, new String(item.array(), StandardCharsets.UTF_8));
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            out.printf("[%s] error: %s\n", this.getClass().getName(), throwable);
+        }
+
+        @Override
+        public void onComplete() {
+            out.flush();
+        }
     }
 }

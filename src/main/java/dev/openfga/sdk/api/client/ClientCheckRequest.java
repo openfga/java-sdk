@@ -12,13 +12,18 @@
 
 package dev.openfga.sdk.api.client;
 
+import dev.openfga.sdk.api.model.CheckRequestTupleKey;
 import java.util.List;
 
 public class ClientCheckRequest {
     private String user;
     private String relation;
     private String _object;
-    private List<ClientTupleKey> contextualTuples;
+    private List<ClientTupleKeyWithCondition> contextualTuples;
+
+    public CheckRequestTupleKey asCheckRequestTupleKey() {
+        return new CheckRequestTupleKey().user(user).relation(relation)._object(_object);
+    }
 
     public ClientCheckRequest _object(String _object) {
         this._object = _object;
@@ -59,12 +64,12 @@ public class ClientCheckRequest {
         return user;
     }
 
-    public ClientCheckRequest contextualTuples(List<ClientTupleKey> contextualTuples) {
+    public ClientCheckRequest contextualTuples(List<ClientTupleKeyWithCondition> contextualTuples) {
         this.contextualTuples = contextualTuples;
         return this;
     }
 
-    public List<ClientTupleKey> getContextualTuples() {
+    public List<ClientTupleKeyWithCondition> getContextualTuples() {
         return contextualTuples;
     }
 }

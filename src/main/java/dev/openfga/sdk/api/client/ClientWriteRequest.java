@@ -15,19 +15,19 @@ package dev.openfga.sdk.api.client;
 import java.util.List;
 
 public class ClientWriteRequest {
-    private List<ClientTupleKey> writes;
+    private List<ClientTupleKeyWithCondition> writes;
     private List<ClientTupleKey> deletes;
 
-    public static ClientWriteRequest ofWrites(List<ClientTupleKey> writes) {
+    public static ClientWriteRequest ofWrites(List<ClientTupleKeyWithCondition> writes) {
         return new ClientWriteRequest().writes(writes);
     }
 
-    public ClientWriteRequest writes(List<ClientTupleKey> writes) {
+    public ClientWriteRequest writes(List<ClientTupleKeyWithCondition> writes) {
         this.writes = writes;
         return this;
     }
 
-    public List<ClientTupleKey> getWrites() {
+    public List<ClientTupleKeyWithCondition> getWrites() {
         return writes;
     }
 

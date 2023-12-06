@@ -29,7 +29,10 @@ class OAuth2ClientTest {
 
     @BeforeEach
     public void setup() throws FgaInvalidParameterException {
+        System.setProperty("HttpRequestAttempt.debug-logging", "enable");
+
         mockHttpClient = new HttpClientMock();
+        mockHttpClient.debugOn();
 
         var credentials = new Credentials(new ClientCredentials()
                 .clientId(CLIENT_ID)

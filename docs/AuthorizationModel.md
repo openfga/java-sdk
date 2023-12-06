@@ -7,9 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**id** | **String** |  |  [optional] |
+|**id** | **String** |  |  |
 |**schemaVersion** | **String** |  |  |
-|**typeDefinitions** | [**List&lt;TypeDefinition&gt;**](TypeDefinition.md) |  |  [optional] |
+|**typeDefinitions** | [**List&lt;TypeDefinition&gt;**](TypeDefinition.md) |  |  |
+|**conditions** | [**Map&lt;String, Condition&gt;**](Condition.md) |  |  [optional] |
 
 
 

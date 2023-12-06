@@ -26,7 +26,8 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({
     RelationReference.JSON_PROPERTY_TYPE,
     RelationReference.JSON_PROPERTY_RELATION,
-    RelationReference.JSON_PROPERTY_WILDCARD
+    RelationReference.JSON_PROPERTY_WILDCARD,
+    RelationReference.JSON_PROPERTY_CONDITION
 })
 public class RelationReference {
     public static final String JSON_PROPERTY_TYPE = "type";
@@ -37,6 +38,9 @@ public class RelationReference {
 
     public static final String JSON_PROPERTY_WILDCARD = "wildcard";
     private Object wildcard;
+
+    public static final String JSON_PROPERTY_CONDITION = "condition";
+    private String condition;
 
     public RelationReference() {}
 
@@ -106,6 +110,28 @@ public class RelationReference {
         this.wildcard = wildcard;
     }
 
+    public RelationReference condition(String condition) {
+        this.condition = condition;
+        return this;
+    }
+
+    /**
+     * The name of a condition that is enforced over the allowed relation.
+     * @return condition
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONDITION)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public String getCondition() {
+        return condition;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONDITION)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
     /**
      * Return true if this RelationReference object is equal to o.
      */
@@ -120,12 +146,13 @@ public class RelationReference {
         RelationReference relationReference = (RelationReference) o;
         return Objects.equals(this.type, relationReference.type)
                 && Objects.equals(this.relation, relationReference.relation)
-                && Objects.equals(this.wildcard, relationReference.wildcard);
+                && Objects.equals(this.wildcard, relationReference.wildcard)
+                && Objects.equals(this.condition, relationReference.condition);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, relation, wildcard);
+        return Objects.hash(type, relation, wildcard, condition);
     }
 
     @Override
@@ -135,6 +162,7 @@ public class RelationReference {
         sb.append("    type: ").append(toIndentedString(type)).append("\n");
         sb.append("    relation: ").append(toIndentedString(relation)).append("\n");
         sb.append("    wildcard: ").append(toIndentedString(wildcard)).append("\n");
+        sb.append("    condition: ").append(toIndentedString(condition)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -209,6 +237,16 @@ public class RelationReference {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getWildcard()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `condition` to the URL query string
+        if (getCondition() != null) {
+            joiner.add(String.format(
+                    "%scondition%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getCondition()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

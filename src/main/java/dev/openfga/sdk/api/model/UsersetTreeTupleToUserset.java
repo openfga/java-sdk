@@ -44,15 +44,15 @@ public class UsersetTreeTupleToUserset {
      * Get tupleset
      * @return tupleset
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLESET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getTupleset() {
         return tupleset;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLESET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setTupleset(String tupleset) {
         this.tupleset = tupleset;
     }
@@ -74,15 +74,15 @@ public class UsersetTreeTupleToUserset {
      * Get computed
      * @return computed
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_COMPUTED)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<Computed> getComputed() {
         return computed;
     }
 
     @JsonProperty(JSON_PROPERTY_COMPUTED)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setComputed(List<Computed> computed) {
         this.computed = computed;
     }

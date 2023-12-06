@@ -51,4 +51,12 @@ public class RelationReferenceTest {
     public void wildcardTest() {
         // TODO: test wildcard
     }
+
+    /**
+     * Test the property 'condition'
+     */
+    @Test
+    public void conditionTest() {
+        // TODO: test condition
+    }
 }

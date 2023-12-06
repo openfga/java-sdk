@@ -37,6 +37,8 @@ public class OpenFgaApiIntegrationTest {
 
     @BeforeEach
     public void initializeApi() throws Exception {
+        System.setProperty("HttpRequestAttempt.debug-logging", "enable");
+
         Configuration apiConfig = new Configuration().apiUrl("http://localhost:8080");
         api = new OpenFgaApi(apiConfig);
     }
@@ -120,7 +122,7 @@ public class OpenFgaApiIntegrationTest {
         assertEquals(authModelId, authModel.getId());
         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
         assertEquals(
-                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]}}}}]",
+                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
                 typeDefsJson);
     }
 
@@ -144,7 +146,7 @@ public class OpenFgaApiIntegrationTest {
                         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
 
                         assertEquals(
-                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null}]}}}}]",
+                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
                                 typeDefsJson);
                     } catch (JsonProcessingException ex) {
                         assertNull(ex);
@@ -176,9 +178,10 @@ public class OpenFgaApiIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(List.of(DEFAULT_TUPLE_KEY)));
-        ReadRequest readRequest =
-                new ReadRequest().tupleKey(new TupleKey().user(DEFAULT_USER)._object(DEFAULT_DOC));
+        WriteRequest writeRequest =
+                new WriteRequest().writes(new WriteRequestWrites().tupleKeys(List.of(DEFAULT_TUPLE_KEY)));
+        ReadRequest readRequest = new ReadRequest()
+                .tupleKey(new ReadRequestTupleKey().user(DEFAULT_USER)._object(DEFAULT_DOC));
 
         // When
         api.write(storeId, writeRequest).get();
@@ -197,9 +200,12 @@ public class OpenFgaApiIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        WriteRequest writeRequest = new WriteRequest().writes(new WriteRequestWrites().tupleKeys(DEFAULT_TUPLE_KEYS));
         CheckRequest checkRequest = new CheckRequest()
-                .tupleKey(new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC));
+                .tupleKey(new CheckRequestTupleKey()
+                        .user(DEFAULT_USER)
+                        .relation("reader")
+                        ._object(DEFAULT_DOC));
 
         // When
         api.write(storeId, writeRequest).get();
@@ -215,9 +221,9 @@ public class OpenFgaApiIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
-        ExpandRequest expandRequest =
-                new ExpandRequest().tupleKey(new TupleKey()._object(DEFAULT_DOC).relation("reader"));
+        WriteRequest writeRequest = new WriteRequest().writes(new WriteRequestWrites().tupleKeys(DEFAULT_TUPLE_KEYS));
+        ExpandRequest expandRequest = new ExpandRequest()
+                .tupleKey(new ExpandRequestTupleKey()._object(DEFAULT_DOC).relation("reader"));
 
         // When
         api.write(storeId, writeRequest).get();
@@ -237,7 +243,7 @@ public class OpenFgaApiIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        WriteRequest writeRequest = new WriteRequest().writes(new WriteRequestWrites().tupleKeys(DEFAULT_TUPLE_KEYS));
         ListObjectsRequest listObjectsRequest =
                 new ListObjectsRequest().user(DEFAULT_USER).relation("reader").type("document");
 
@@ -257,7 +263,7 @@ public class OpenFgaApiIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         String _authModelId = writeAuthModel(storeId);
-        WriteRequest writeRequest = new WriteRequest().writes(new TupleKeys().tupleKeys(DEFAULT_TUPLE_KEYS));
+        WriteRequest writeRequest = new WriteRequest().writes(new WriteRequestWrites().tupleKeys(DEFAULT_TUPLE_KEYS));
 
         // When
         api.write(storeId, writeRequest).get();
@@ -269,7 +275,7 @@ public class OpenFgaApiIntegrationTest {
         String firstTupleKeyJson =
                 mapper.writeValueAsString(response.getChanges().get(0).getTupleKey());
         assertEquals(
-                "{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"}",
+                "{\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\",\"relation\":\"reader\",\"object\":\"document:2021-budget\",\"condition\":null}",
                 firstTupleKeyJson);
     }
 
@@ -280,7 +286,12 @@ public class OpenFgaApiIntegrationTest {
         String storeId = createStore(storeName);
         String authModelId = writeAuthModel(storeId);
         WriteAssertionsRequest writeRequest = new WriteAssertionsRequest()
-                .assertions(List.of(new Assertion().tupleKey(DEFAULT_TUPLE_KEY).expectation(true)));
+                .assertions(List.of(new Assertion()
+                        .tupleKey(new CheckRequestTupleKey()
+                                .user(DEFAULT_USER)
+                                .relation("reader")
+                                ._object(DEFAULT_DOC))
+                        .expectation(true)));
 
         // When
         api.writeAssertions(storeId, authModelId, writeRequest).get();
@@ -290,7 +301,7 @@ public class OpenFgaApiIntegrationTest {
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
         assertEquals(
-                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true}]",
+                "[{\"tuple_key\":{\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\",\"relation\":\"reader\",\"object\":\"document:2021-budget\"},\"expectation\":true}]",
                 responseJson);
     }
 

@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleset** | **String** |  |  [optional] |
-|**computed** | [**List&lt;Computed&gt;**](Computed.md) |  |  [optional] |
+|**tupleset** | **String** |  |  |
+|**computed** | [**List&lt;Computed&gt;**](Computed.md) |  |  |
 
 
 

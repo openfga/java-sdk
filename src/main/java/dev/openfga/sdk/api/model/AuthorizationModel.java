@@ -18,7 +18,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -28,7 +30,8 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({
     AuthorizationModel.JSON_PROPERTY_ID,
     AuthorizationModel.JSON_PROPERTY_SCHEMA_VERSION,
-    AuthorizationModel.JSON_PROPERTY_TYPE_DEFINITIONS
+    AuthorizationModel.JSON_PROPERTY_TYPE_DEFINITIONS,
+    AuthorizationModel.JSON_PROPERTY_CONDITIONS
 })
 public class AuthorizationModel {
     public static final String JSON_PROPERTY_ID = "id";
@@ -39,6 +42,9 @@ public class AuthorizationModel {
 
     public static final String JSON_PROPERTY_TYPE_DEFINITIONS = "type_definitions";
     private List<TypeDefinition> typeDefinitions = new ArrayList<>();
+
+    public static final String JSON_PROPERTY_CONDITIONS = "conditions";
+    private Map<String, Condition> conditions = new HashMap<>();
 
     public AuthorizationModel() {}
 
@@ -51,15 +57,15 @@ public class AuthorizationModel {
      * Get id
      * @return id
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_ID)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getId() {
         return id;
     }
 
     @JsonProperty(JSON_PROPERTY_ID)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setId(String id) {
         this.id = id;
     }
@@ -103,17 +109,47 @@ public class AuthorizationModel {
      * Get typeDefinitions
      * @return typeDefinitions
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TYPE_DEFINITIONS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<TypeDefinition> getTypeDefinitions() {
         return typeDefinitions;
     }
 
     @JsonProperty(JSON_PROPERTY_TYPE_DEFINITIONS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setTypeDefinitions(List<TypeDefinition> typeDefinitions) {
         this.typeDefinitions = typeDefinitions;
+    }
+
+    public AuthorizationModel conditions(Map<String, Condition> conditions) {
+        this.conditions = conditions;
+        return this;
+    }
+
+    public AuthorizationModel putConditionsItem(String key, Condition conditionsItem) {
+        if (this.conditions == null) {
+            this.conditions = new HashMap<>();
+        }
+        this.conditions.put(key, conditionsItem);
+        return this;
+    }
+
+    /**
+     * Get conditions
+     * @return conditions
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONDITIONS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public Map<String, Condition> getConditions() {
+        return conditions;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONDITIONS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConditions(Map<String, Condition> conditions) {
+        this.conditions = conditions;
     }
 
     /**
@@ -130,12 +166,13 @@ public class AuthorizationModel {
         AuthorizationModel authorizationModel = (AuthorizationModel) o;
         return Objects.equals(this.id, authorizationModel.id)
                 && Objects.equals(this.schemaVersion, authorizationModel.schemaVersion)
-                && Objects.equals(this.typeDefinitions, authorizationModel.typeDefinitions);
+                && Objects.equals(this.typeDefinitions, authorizationModel.typeDefinitions)
+                && Objects.equals(this.conditions, authorizationModel.conditions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, schemaVersion, typeDefinitions);
+        return Objects.hash(id, schemaVersion, typeDefinitions, conditions);
     }
 
     @Override
@@ -147,6 +184,7 @@ public class AuthorizationModel {
         sb.append("    typeDefinitions: ")
                 .append(toIndentedString(typeDefinitions))
                 .append("\n");
+        sb.append("    conditions: ").append(toIndentedString(conditions)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -227,6 +265,23 @@ public class AuthorizationModel {
                                     "".equals(suffix)
                                             ? ""
                                             : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+                }
+            }
+        }
+
+        // add `conditions` to the URL query string
+        if (getConditions() != null) {
+            for (String _key : getConditions().keySet()) {
+                if (getConditions().get(_key) != null) {
+                    joiner.add(getConditions()
+                            .get(_key)
+                            .toUrlQueryString(String.format(
+                                    "%sconditions%s%s",
+                                    prefix,
+                                    suffix,
+                                    "".equals(suffix)
+                                            ? ""
+                                            : String.format("%s%d%s", containerPrefix, _key, containerSuffix))));
                 }
             }
         }

@@ -26,14 +26,14 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({ExpandRequest.JSON_PROPERTY_TUPLE_KEY, ExpandRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID})
 public class ExpandRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private TupleKey tupleKey;
+    private ExpandRequestTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
     private String authorizationModelId;
 
     public ExpandRequest() {}
 
-    public ExpandRequest tupleKey(TupleKey tupleKey) {
+    public ExpandRequest tupleKey(ExpandRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
         return this;
     }
@@ -45,13 +45,13 @@ public class ExpandRequest {
     @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public TupleKey getTupleKey() {
+    public ExpandRequestTupleKey getTupleKey() {
         return tupleKey;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setTupleKey(TupleKey tupleKey) {
+    public void setTupleKey(ExpandRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
     }
 

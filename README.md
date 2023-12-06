@@ -129,9 +129,9 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
-                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
-                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
 
         var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
@@ -152,11 +152,11 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
-                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
-                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
-                    new ApiToken(System.getenv("OPENFGA_API_TOKEN")) // will be passed as the "Authorization: Bearer ${ApiToken}" request header
+                    new ApiToken(System.getenv("FGA_API_TOKEN")) // will be passed as the "Authorization: Bearer ${ApiToken}" request header
                 ));
 
         var fgaClient = new OpenFgaClient(config);
@@ -178,15 +178,15 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("OPENFGA_API_URL")) // If not specified, will default to "https://localhost:8080"
-                .storeId(System.getenv("OPENFGA_STORE_ID")) // Not required when calling createStore() or listStores()
-                .authorizationModelId(System.getenv("OPENFGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ClientCredentials()
-                            .apiTokenIssuer(System.getenv("OPENFGA_API_TOKEN_ISSUER"))
-                            .apiAudience(System.getenv("OPENFGA_API_AUDIENCE"))
-                            .clientId(System.getenv("OPENFGA_CLIENT_ID"))
-                            .clientSecret(System.getenv("OPENFGA_CLIENT_SECRET"))
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
+                            .apiAudience(System.getenv("FGA_API_AUDIENCE"))
+                            .clientId(System.getenv("FGA_CLIENT_ID"))
+                            .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
                 ));
 
         var fgaClient = new OpenFgaClient(config);
@@ -744,9 +744,15 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [CheckRequest](https://github.com/openfga/java-sdk/blob/main/docs/CheckRequest.md)
 
+- [CheckRequestTupleKey](https://github.com/openfga/java-sdk/blob/main/docs/CheckRequestTupleKey.md)
+
 - [CheckResponse](https://github.com/openfga/java-sdk/blob/main/docs/CheckResponse.md)
 
 - [Computed](https://github.com/openfga/java-sdk/blob/main/docs/Computed.md)
+
+- [Condition](https://github.com/openfga/java-sdk/blob/main/docs/Condition.md)
+
+- [ConditionParamTypeRef](https://github.com/openfga/java-sdk/blob/main/docs/ConditionParamTypeRef.md)
 
 - [ContextualTupleKeys](https://github.com/openfga/java-sdk/blob/main/docs/ContextualTupleKeys.md)
 
@@ -759,6 +765,8 @@ fgaClient.writeAssertions(assertions, options).get();
 - [ErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/ErrorCode.md)
 
 - [ExpandRequest](https://github.com/openfga/java-sdk/blob/main/docs/ExpandRequest.md)
+
+- [ExpandRequestTupleKey](https://github.com/openfga/java-sdk/blob/main/docs/ExpandRequestTupleKey.md)
 
 - [ExpandResponse](https://github.com/openfga/java-sdk/blob/main/docs/ExpandResponse.md)
 
@@ -784,6 +792,8 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [NotFoundErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/NotFoundErrorCode.md)
 
+- [NullValue](https://github.com/openfga/java-sdk/blob/main/docs/NullValue.md)
+
 - [ObjectRelation](https://github.com/openfga/java-sdk/blob/main/docs/ObjectRelation.md)
 
 - [PathUnknownErrorMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/PathUnknownErrorMessageResponse.md)
@@ -798,11 +808,15 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [ReadRequest](https://github.com/openfga/java-sdk/blob/main/docs/ReadRequest.md)
 
+- [ReadRequestTupleKey](https://github.com/openfga/java-sdk/blob/main/docs/ReadRequestTupleKey.md)
+
 - [ReadResponse](https://github.com/openfga/java-sdk/blob/main/docs/ReadResponse.md)
 
 - [RelationMetadata](https://github.com/openfga/java-sdk/blob/main/docs/RelationMetadata.md)
 
 - [RelationReference](https://github.com/openfga/java-sdk/blob/main/docs/RelationReference.md)
+
+- [RelationshipCondition](https://github.com/openfga/java-sdk/blob/main/docs/RelationshipCondition.md)
 
 - [Status](https://github.com/openfga/java-sdk/blob/main/docs/Status.md)
 
@@ -814,13 +828,15 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [TupleKey](https://github.com/openfga/java-sdk/blob/main/docs/TupleKey.md)
 
-- [TupleKeys](https://github.com/openfga/java-sdk/blob/main/docs/TupleKeys.md)
+- [TupleKeyWithoutCondition](https://github.com/openfga/java-sdk/blob/main/docs/TupleKeyWithoutCondition.md)
 
 - [TupleOperation](https://github.com/openfga/java-sdk/blob/main/docs/TupleOperation.md)
 
 - [TupleToUserset](https://github.com/openfga/java-sdk/blob/main/docs/TupleToUserset.md)
 
 - [TypeDefinition](https://github.com/openfga/java-sdk/blob/main/docs/TypeDefinition.md)
+
+- [TypeName](https://github.com/openfga/java-sdk/blob/main/docs/TypeName.md)
 
 - [Users](https://github.com/openfga/java-sdk/blob/main/docs/Users.md)
 
@@ -843,6 +859,10 @@ fgaClient.writeAssertions(assertions, options).get();
 - [WriteAuthorizationModelResponse](https://github.com/openfga/java-sdk/blob/main/docs/WriteAuthorizationModelResponse.md)
 
 - [WriteRequest](https://github.com/openfga/java-sdk/blob/main/docs/WriteRequest.md)
+
+- [WriteRequestDeletes](https://github.com/openfga/java-sdk/blob/main/docs/WriteRequestDeletes.md)
+
+- [WriteRequestWrites](https://github.com/openfga/java-sdk/blob/main/docs/WriteRequestWrites.md)
 
 
 

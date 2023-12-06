@@ -21,21 +21,21 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * TupleKeys
+ * WriteRequestWrites
  */
-@JsonPropertyOrder({TupleKeys.JSON_PROPERTY_TUPLE_KEYS})
-public class TupleKeys {
+@JsonPropertyOrder({WriteRequestWrites.JSON_PROPERTY_TUPLE_KEYS})
+public class WriteRequestWrites {
     public static final String JSON_PROPERTY_TUPLE_KEYS = "tuple_keys";
     private List<TupleKey> tupleKeys = new ArrayList<>();
 
-    public TupleKeys() {}
+    public WriteRequestWrites() {}
 
-    public TupleKeys tupleKeys(List<TupleKey> tupleKeys) {
+    public WriteRequestWrites tupleKeys(List<TupleKey> tupleKeys) {
         this.tupleKeys = tupleKeys;
         return this;
     }
 
-    public TupleKeys addTupleKeysItem(TupleKey tupleKeysItem) {
+    public WriteRequestWrites addTupleKeysItem(TupleKey tupleKeysItem) {
         if (this.tupleKeys == null) {
             this.tupleKeys = new ArrayList<>();
         }
@@ -61,7 +61,7 @@ public class TupleKeys {
     }
 
     /**
-     * Return true if this TupleKeys object is equal to o.
+     * Return true if this WriteRequestWrites object is equal to o.
      */
     @Override
     public boolean equals(Object o) {
@@ -71,8 +71,8 @@ public class TupleKeys {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        TupleKeys tupleKeys = (TupleKeys) o;
-        return Objects.equals(this.tupleKeys, tupleKeys.tupleKeys);
+        WriteRequestWrites writeRequestWrites = (WriteRequestWrites) o;
+        return Objects.equals(this.tupleKeys, writeRequestWrites.tupleKeys);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class TupleKeys {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class TupleKeys {\n");
+        sb.append("class WriteRequestWrites {\n");
         sb.append("    tupleKeys: ").append(toIndentedString(tupleKeys)).append("\n");
         sb.append("}");
         return sb.toString();

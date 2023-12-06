@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**child** | [**List&lt;Userset&gt;**](Userset.md) |  |  [optional] |
+|**child** | [**List&lt;Userset&gt;**](Userset.md) |  |  |
 
 
 

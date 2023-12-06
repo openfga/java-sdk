@@ -30,17 +30,17 @@ import java.util.StringJoiner;
 })
 public class WriteRequest {
     public static final String JSON_PROPERTY_WRITES = "writes";
-    private TupleKeys writes;
+    private WriteRequestWrites writes;
 
     public static final String JSON_PROPERTY_DELETES = "deletes";
-    private TupleKeys deletes;
+    private WriteRequestDeletes deletes;
 
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
     private String authorizationModelId;
 
     public WriteRequest() {}
 
-    public WriteRequest writes(TupleKeys writes) {
+    public WriteRequest writes(WriteRequestWrites writes) {
         this.writes = writes;
         return this;
     }
@@ -52,17 +52,17 @@ public class WriteRequest {
     @javax.annotation.Nullable
     @JsonProperty(JSON_PROPERTY_WRITES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public TupleKeys getWrites() {
+    public WriteRequestWrites getWrites() {
         return writes;
     }
 
     @JsonProperty(JSON_PROPERTY_WRITES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setWrites(TupleKeys writes) {
+    public void setWrites(WriteRequestWrites writes) {
         this.writes = writes;
     }
 
-    public WriteRequest deletes(TupleKeys deletes) {
+    public WriteRequest deletes(WriteRequestDeletes deletes) {
         this.deletes = deletes;
         return this;
     }
@@ -74,13 +74,13 @@ public class WriteRequest {
     @javax.annotation.Nullable
     @JsonProperty(JSON_PROPERTY_DELETES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public TupleKeys getDeletes() {
+    public WriteRequestDeletes getDeletes() {
         return deletes;
     }
 
     @JsonProperty(JSON_PROPERTY_DELETES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setDeletes(TupleKeys deletes) {
+    public void setDeletes(WriteRequestDeletes deletes) {
         this.deletes = deletes;
     }
 

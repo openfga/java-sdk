@@ -40,15 +40,15 @@ public class TupleToUserset {
      * Get tupleset
      * @return tupleset
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLESET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public ObjectRelation getTupleset() {
         return tupleset;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLESET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setTupleset(ObjectRelation tupleset) {
         this.tupleset = tupleset;
     }
@@ -62,15 +62,15 @@ public class TupleToUserset {
      * Get computedUserset
      * @return computedUserset
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_COMPUTED_USERSET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public ObjectRelation getComputedUserset() {
         return computedUserset;
     }
 
     @JsonProperty(JSON_PROPERTY_COMPUTED_USERSET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setComputedUserset(ObjectRelation computedUserset) {
         this.computedUserset = computedUserset;
     }

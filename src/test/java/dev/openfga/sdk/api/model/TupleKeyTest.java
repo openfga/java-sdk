@@ -29,11 +29,11 @@ public class TupleKeyTest {
     }
 
     /**
-     * Test the property '_object'
+     * Test the property 'user'
      */
     @Test
-    public void _objectTest() {
-        // TODO: test _object
+    public void userTest() {
+        // TODO: test user
     }
 
     /**
@@ -45,10 +45,18 @@ public class TupleKeyTest {
     }
 
     /**
-     * Test the property 'user'
+     * Test the property '_object'
      */
     @Test
-    public void userTest() {
-        // TODO: test user
+    public void _objectTest() {
+        // TODO: test _object
+    }
+
+    /**
+     * Test the property 'condition'
+     */
+    @Test
+    public void conditionTest() {
+        // TODO: test condition
     }
 }

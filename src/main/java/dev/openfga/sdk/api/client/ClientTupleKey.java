@@ -12,17 +12,26 @@
 
 package dev.openfga.sdk.api.client;
 
-import dev.openfga.sdk.api.model.ContextualTupleKeys;
-import dev.openfga.sdk.api.model.TupleKey;
-import dev.openfga.sdk.api.model.TupleKeys;
-import java.util.List;
-import java.util.Optional;
+import dev.openfga.sdk.api.model.TupleKeyWithoutCondition;
+import dev.openfga.sdk.api.model.WriteRequestDeletes;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class ClientTupleKey {
     private String user;
     private String relation;
     private String _object;
+
+    public TupleKeyWithoutCondition asTupleKeyWithoutCondition() {
+        return new TupleKeyWithoutCondition().user(user).relation(relation)._object(_object);
+    }
+
+    public static WriteRequestDeletes asWriteRequestDeletes(Collection<ClientTupleKey> tupleKeys) {
+        return new WriteRequestDeletes()
+                .tupleKeys(tupleKeys.stream()
+                        .map(ClientTupleKey::asTupleKeyWithoutCondition)
+                        .collect(Collectors.toList()));
+    }
 
     public ClientTupleKey _object(String _object) {
         this._object = _object;
@@ -63,27 +72,17 @@ public class ClientTupleKey {
         return user;
     }
 
-    public TupleKey asTupleKey() {
-        return new TupleKey().user(user).relation(relation)._object(_object);
-    }
-
-    public static Optional<TupleKeys> asTupleKeys(List<ClientTupleKey> clientTupleKeys) {
-        if (clientTupleKeys == null || clientTupleKeys.size() == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new TupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys)));
-    }
-
-    public static ContextualTupleKeys asContextualTupleKeys(List<ClientTupleKey> clientTupleKeys) {
-        if (clientTupleKeys == null || clientTupleKeys.size() == 0) {
-            return new ContextualTupleKeys();
-        }
-
-        return new ContextualTupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys));
-    }
-
-    private static List<TupleKey> asListOfTupleKey(List<ClientTupleKey> clientTupleKeys) {
-        return clientTupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList());
+    /**
+     * Adds a condition to the tuple key.
+     * @param condition a {@link ClientRelationshipCondition}
+     * @return a new {@link  ClientTupleKeyWithCondition} with this {@link ClientTupleKey}'s
+     *         user, relation, and object, and the passed condition.
+     */
+    public ClientTupleKeyWithCondition condition(ClientRelationshipCondition condition) {
+        return new ClientTupleKeyWithCondition()
+                .user(user)
+                .relation(relation)
+                ._object(_object)
+                .condition(condition);
     }
 }
