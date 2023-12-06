@@ -29,8 +29,10 @@ public class OpenFgaClientIntegrationTest {
             "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    private static final ClientTupleKey DEFAULT_TUPLE_KEY =
-            new ClientTupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
+    private static final ClientTupleKeyWithoutCondition DEFAULT_TUPLE_KEY = new ClientTupleKeyWithoutCondition()
+            .user(DEFAULT_USER)
+            .relation("reader")
+            ._object(DEFAULT_DOC);
     private static final ClientRelationshipCondition DEFAULT_CONDITION =
             new ClientRelationshipCondition().name("condition").context(Map.of("some", "context"));
     private static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()

@@ -12,77 +12,61 @@
 
 package dev.openfga.sdk.api.client;
 
-import dev.openfga.sdk.api.model.TupleKeyWithoutCondition;
-import dev.openfga.sdk.api.model.WriteRequestDeletes;
+import dev.openfga.sdk.api.model.ContextualTupleKeys;
+import dev.openfga.sdk.api.model.TupleKey;
+import dev.openfga.sdk.api.model.WriteRequestWrites;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class ClientTupleKey {
-    private String user;
-    private String relation;
-    private String _object;
+public class ClientTupleKey extends ClientTupleKeyWithoutCondition {
+    private ClientRelationshipCondition condition;
 
-    public TupleKeyWithoutCondition asTupleKeyWithoutCondition() {
-        return new TupleKeyWithoutCondition().user(user).relation(relation)._object(_object);
-    }
-
-    public static WriteRequestDeletes asWriteRequestDeletes(Collection<ClientTupleKey> tupleKeys) {
-        return new WriteRequestDeletes()
-                .tupleKeys(tupleKeys.stream()
-                        .map(ClientTupleKey::asTupleKeyWithoutCondition)
-                        .collect(Collectors.toList()));
-    }
-
-    public ClientTupleKey _object(String _object) {
-        this._object = _object;
+    public ClientTupleKey condition(ClientRelationshipCondition condition) {
+        this.condition = condition;
         return this;
     }
 
-    /**
-     * Get _object
-     * @return _object
-     **/
-    public String getObject() {
-        return _object;
+    public ClientRelationshipCondition getCondition() {
+        return condition;
     }
 
-    public ClientTupleKey relation(String relation) {
-        this.relation = relation;
-        return this;
+    public TupleKey asTupleKey() {
+        var tupleKey = new TupleKey().user(getUser()).relation(getRelation())._object(getObject());
+
+        if (condition != null) {
+            tupleKey.condition(condition.asRelationshipCondition());
+        }
+
+        return tupleKey;
     }
 
-    /**
-     * Get relation
-     * @return relation
-     **/
-    public String getRelation() {
-        return relation;
+    public static ContextualTupleKeys asContextualTupleKeys(Collection<ClientTupleKey> tupleKeys) {
+        return new ContextualTupleKeys()
+                .tupleKeys(tupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList()));
     }
 
+    public static WriteRequestWrites asWriteRequestWrites(Collection<ClientTupleKey> tupleKeys) {
+        return new WriteRequestWrites()
+                .tupleKeys(tupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList()));
+    }
+
+    /* Overrides for correct typing */
+
+    @Override
     public ClientTupleKey user(String user) {
-        this.user = user;
+        super.user(user);
         return this;
     }
 
-    /**
-     * Get user
-     * @return user
-     **/
-    public String getUser() {
-        return user;
+    @Override
+    public ClientTupleKey relation(String relation) {
+        super.relation(relation);
+        return this;
     }
 
-    /**
-     * Adds a condition to the tuple key.
-     * @param condition a {@link ClientRelationshipCondition}
-     * @return a new {@link  ClientTupleKeyWithCondition} with this {@link ClientTupleKey}'s
-     *         user, relation, and object, and the passed condition.
-     */
-    public ClientTupleKeyWithCondition condition(ClientRelationshipCondition condition) {
-        return new ClientTupleKeyWithCondition()
-                .user(user)
-                .relation(relation)
-                ._object(_object)
-                .condition(condition);
+    @Override
+    public ClientTupleKey _object(String _object) {
+        super._object(_object);
+        return this;
     }
 }

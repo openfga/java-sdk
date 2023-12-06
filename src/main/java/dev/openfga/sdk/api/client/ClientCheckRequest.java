@@ -19,7 +19,7 @@ public class ClientCheckRequest {
     private String user;
     private String relation;
     private String _object;
-    private List<ClientTupleKeyWithCondition> contextualTuples;
+    private List<ClientTupleKey> contextualTuples;
 
     public CheckRequestTupleKey asCheckRequestTupleKey() {
         return new CheckRequestTupleKey().user(user).relation(relation)._object(_object);
@@ -64,12 +64,12 @@ public class ClientCheckRequest {
         return user;
     }
 
-    public ClientCheckRequest contextualTuples(List<ClientTupleKeyWithCondition> contextualTuples) {
+    public ClientCheckRequest contextualTuples(List<ClientTupleKey> contextualTuples) {
         this.contextualTuples = contextualTuples;
         return this;
     }
 
-    public List<ClientTupleKeyWithCondition> getContextualTuples() {
+    public List<ClientTupleKey> getContextualTuples() {
         return contextualTuples;
     }
 }

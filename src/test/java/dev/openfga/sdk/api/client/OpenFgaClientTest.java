@@ -1058,7 +1058,7 @@ public class OpenFgaClientTest {
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(new ClientTupleKeyWithCondition()
+                .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)));
@@ -1083,7 +1083,7 @@ public class OpenFgaClientTest {
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .deletes(List.of(new ClientTupleKey()
+                .deletes(List.of(new ClientTupleKeyWithoutCondition()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)));
@@ -1102,11 +1102,11 @@ public class OpenFgaClientTest {
         String writeTupleBody = String.format(
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
-        ClientTupleKey tuple = new ClientTupleKey()
+        ClientTupleKeyWithoutCondition tuple = new ClientTupleKeyWithoutCondition()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER);
-        ClientTupleKeyWithCondition writeTuple = tuple.condition(DEFAULT_CONDITION);
+        ClientTupleKey writeTuple = tuple.condition(DEFAULT_CONDITION);
         String write2Body = String.format(
                 "{\"writes\":{\"tuple_keys\":[%s,%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 writeTupleBody, writeTupleBody, DEFAULT_AUTH_MODEL_ID);
@@ -1163,7 +1163,7 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(Stream.of(firstUser, failedUser, skippedUser)
-                        .map(user -> new ClientTupleKeyWithCondition()
+                        .map(user -> new ClientTupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
                                 .user(user)
@@ -1216,7 +1216,7 @@ public class OpenFgaClientTest {
                 deleteTupleBody,
                 DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        var tuple = new ClientTupleKeyWithCondition()
+        var tuple = new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER)
@@ -1259,7 +1259,7 @@ public class OpenFgaClientTest {
                 .onPost(postPath)
                 .withBody(is(expectedBody))
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
-        var tuple = new ClientTupleKeyWithCondition()
+        var tuple = new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER)
@@ -1290,7 +1290,7 @@ public class OpenFgaClientTest {
                         + "\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        List<ClientTupleKeyWithCondition> tuples = List.of(new ClientTupleKeyWithCondition()
+        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER)
@@ -1312,7 +1312,7 @@ public class OpenFgaClientTest {
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
+        List<ClientTupleKeyWithoutCondition> tuples = List.of(new ClientTupleKeyWithoutCondition()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER));
@@ -1347,7 +1347,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(new ClientTupleKeyWithCondition()
+                .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)
@@ -1374,7 +1374,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(new ClientTupleKeyWithCondition()
+                .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)
@@ -1400,7 +1400,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(new ClientTupleKeyWithCondition()
+                .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)
@@ -1435,7 +1435,7 @@ public class OpenFgaClientTest {
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER)
-                .contextualTuples(List.of(new ClientTupleKeyWithCondition()
+                .contextualTuples(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation("owner")
                         .user(DEFAULT_USER)

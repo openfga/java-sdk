@@ -115,7 +115,7 @@ src/main/java/dev/openfga/sdk/api/client/ClientReadRequest.java
 src/main/java/dev/openfga/sdk/api/client/ClientReadResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientRelationshipCondition.java
 src/main/java/dev/openfga/sdk/api/client/ClientTupleKey.java
-src/main/java/dev/openfga/sdk/api/client/ClientTupleKeyWithCondition.java
+src/main/java/dev/openfga/sdk/api/client/ClientTupleKeyWithoutCondition.java
 src/main/java/dev/openfga/sdk/api/client/ClientWriteAssertionsResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientWriteAuthorizationModelResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientWriteRequest.java

@@ -483,7 +483,7 @@ var request = new ClientWriteRequest()
             ._object("document:budget")
     ))
     .deletes(List.of(
-        new ClientTupleKey()
+        new ClientTupleKeyWithoutCondition()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("writer")
             ._object("document:roadmap")
