@@ -18,30 +18,44 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class OpenFgaClientIntegrationTest {
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-    private static final String DEFAULT_AUTH_MODEL =
-            "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    private static final ClientTupleKeyWithoutCondition DEFAULT_TUPLE_KEY = new ClientTupleKeyWithoutCondition()
+    private static final ClientTupleKeyWithoutCondition DEFAULT_TUPLE_KEY_NO_CONDITION =
+            new ClientTupleKeyWithoutCondition()
+                    .user(DEFAULT_USER)
+                    .relation("reader")
+                    ._object(DEFAULT_DOC);
+    private static final ClientTupleKey DEFAULT_TUPLE_KEY = new ClientTupleKeyWithoutCondition()
             .user(DEFAULT_USER)
             .relation("reader")
-            ._object(DEFAULT_DOC);
-    private static final ClientRelationshipCondition DEFAULT_CONDITION =
-            new ClientRelationshipCondition().name("condition").context(Map.of("some", "context"));
+            ._object(DEFAULT_DOC)
+            .condition(null); // TODO: Add integ tests with conditions
     private static final ClientAssertion DEFAULT_ASSERTION = new ClientAssertion()
             .user(DEFAULT_USER)
             .relation("reader")
             ._object(DEFAULT_DOC)
             .expectation(true);
+    private String authModelJson;
 
     private OpenFgaClient fga;
+
+    @BeforeAll
+    public void loadAuthModelJson() throws IOException {
+        authModelJson = Files.readString(Paths.get("src", "test-integration", "resources", "auth-model.json"));
+    }
 
     @BeforeEach
     public void initializeApi() throws Exception {
@@ -136,7 +150,7 @@ public class OpenFgaClientIntegrationTest {
         assertEquals(authModelId, response.getAuthorizationModel().getId());
         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
         assertEquals(
-                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
+                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"conditional_reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"name_starts_with_a\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]}}}}]",
                 typeDefsJson);
     }
 
@@ -164,7 +178,7 @@ public class OpenFgaClientIntegrationTest {
                         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
 
                         assertEquals(
-                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
+                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"conditional_reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"name_starts_with_a\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]}}}}]",
                                 typeDefsJson);
                     } catch (JsonProcessingException ex) {
                         assertNull(ex);
@@ -178,8 +192,7 @@ public class OpenFgaClientIntegrationTest {
         String storeName = thisTestName();
         String storeId = createStore(storeName);
         fga.setStoreId(storeId);
-        WriteAuthorizationModelRequest request =
-                mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
+        WriteAuthorizationModelRequest request = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
 
         // When
         WriteAuthorizationModelResponse response =
@@ -200,8 +213,7 @@ public class OpenFgaClientIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
 
-        ClientWriteRequest writeRequest =
-                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ClientReadRequest readRequest =
                 new ClientReadRequest().user(DEFAULT_USER)._object(DEFAULT_DOC);
 
@@ -226,8 +238,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest =
-                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ClientCheckRequest checkRequest =
                 new ClientCheckRequest().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
 
@@ -248,8 +259,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest =
-                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ClientExpandRequest expandRequest =
                 new ClientExpandRequest()._object(DEFAULT_DOC).relation("reader");
 
@@ -279,8 +289,7 @@ public class OpenFgaClientIntegrationTest {
         fga.setStoreId(storeId);
         String authModelId = writeAuthModel(storeId);
         fga.setAuthorizationModelId(authModelId);
-        ClientWriteRequest writeRequest =
-                new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY.condition(DEFAULT_CONDITION)));
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
         ClientListObjectsRequest listObjectsRequest = new ClientListObjectsRequest()
                 .user(DEFAULT_USER)
                 .relation("reader")
@@ -335,10 +344,8 @@ public class OpenFgaClientIntegrationTest {
      */
     private String writeAuthModel(String storeId) throws Exception {
         fga.setStoreId(storeId);
-        WriteAuthorizationModelRequest request =
-                mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
-        WriteAuthorizationModelResponse response =
-                fga.writeAuthorizationModel(request).get();
+        var request = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
+        var response = fga.writeAuthorizationModel(request).get();
         return response.getAuthorizationModelId();
     }
 

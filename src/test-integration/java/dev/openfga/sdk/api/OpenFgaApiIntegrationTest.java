@@ -16,24 +16,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class OpenFgaApiIntegrationTest {
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-    private static final String DEFAULT_AUTH_MODEL =
-            "{\"schema_version\":\"1.1\",\"type_definitions\":[{\"type\":\"user\"},{\"type\":\"document\",\"relations\":{\"reader\":{\"this\":{}},\"writer\":{\"this\":{}},\"owner\":{\"this\":{}}},\"metadata\":{\"relations\":{\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\"}]}}}}]}";
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
-    public static final TupleKey DEFAULT_TUPLE_KEY =
+    private static final TupleKey DEFAULT_TUPLE_KEY =
             new TupleKey().user(DEFAULT_USER).relation("reader")._object(DEFAULT_DOC);
-    public static final List<TupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    private static final List<TupleKey> DEFAULT_TUPLE_KEYS = List.of(DEFAULT_TUPLE_KEY);
+    private String authModelJson;
 
     private OpenFgaApi api;
+
+    @BeforeAll
+    public void loadAuthModelJson() throws IOException {
+        authModelJson = Files.readString(Paths.get("src", "test-integration", "resources", "auth-model.json"));
+    }
 
     @BeforeEach
     public void initializeApi() throws Exception {
@@ -122,7 +132,7 @@ public class OpenFgaApiIntegrationTest {
         assertEquals(authModelId, authModel.getId());
         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
         assertEquals(
-                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
+                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"conditional_reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"name_starts_with_a\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]}}}}]",
                 typeDefsJson);
     }
 
@@ -146,7 +156,7 @@ public class OpenFgaApiIntegrationTest {
                         String typeDefsJson = mapper.writeValueAsString(authModel.getTypeDefinitions());
 
                         assertEquals(
-                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":null}]}}}}]",
+                                "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"conditional_reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"name_starts_with_a\"}]},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}]}}}}]",
                                 typeDefsJson);
                     } catch (JsonProcessingException ex) {
                         assertNull(ex);
@@ -159,8 +169,7 @@ public class OpenFgaApiIntegrationTest {
         // Given
         String storeName = thisTestName();
         String storeId = createStore(storeName);
-        WriteAuthorizationModelRequest request =
-                mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
+        WriteAuthorizationModelRequest request = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
 
         // When
         WriteAuthorizationModelResponse response =
@@ -322,10 +331,8 @@ public class OpenFgaApiIntegrationTest {
      * @return The created Authorization Model ID
      */
     private String writeAuthModel(String storeId) throws Exception {
-        WriteAuthorizationModelRequest request =
-                mapper.readValue(DEFAULT_AUTH_MODEL, WriteAuthorizationModelRequest.class);
-        WriteAuthorizationModelResponse response =
-                api.writeAuthorizationModel(storeId, request).get().getData();
+        var request = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
+        var response = api.writeAuthorizationModel(storeId, request).get().getData();
         return response.getAuthorizationModelId();
     }
 
