@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleKey** | [**TupleKey**](TupleKey.md) |  |  |
+|**tupleKey** | [**CheckRequestTupleKey**](CheckRequestTupleKey.md) |  |  |
 |**expectation** | **Boolean** |  |  |
 
 

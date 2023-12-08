@@ -30,7 +30,7 @@ import java.util.StringJoiner;
 })
 public class ReadRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private TupleKey tupleKey;
+    private ReadRequestTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_PAGE_SIZE = "page_size";
     private Integer pageSize;
@@ -40,7 +40,7 @@ public class ReadRequest {
 
     public ReadRequest() {}
 
-    public ReadRequest tupleKey(TupleKey tupleKey) {
+    public ReadRequest tupleKey(ReadRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
         return this;
     }
@@ -52,13 +52,13 @@ public class ReadRequest {
     @javax.annotation.Nullable
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public TupleKey getTupleKey() {
+    public ReadRequestTupleKey getTupleKey() {
         return tupleKey;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setTupleKey(TupleKey tupleKey) {
+    public void setTupleKey(ReadRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
     }
 

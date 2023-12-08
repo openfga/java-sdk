@@ -18,7 +18,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -27,7 +29,8 @@ import java.util.StringJoiner;
  */
 @JsonPropertyOrder({
     WriteAuthorizationModelRequest.JSON_PROPERTY_TYPE_DEFINITIONS,
-    WriteAuthorizationModelRequest.JSON_PROPERTY_SCHEMA_VERSION
+    WriteAuthorizationModelRequest.JSON_PROPERTY_SCHEMA_VERSION,
+    WriteAuthorizationModelRequest.JSON_PROPERTY_CONDITIONS
 })
 public class WriteAuthorizationModelRequest {
     public static final String JSON_PROPERTY_TYPE_DEFINITIONS = "type_definitions";
@@ -35,6 +38,9 @@ public class WriteAuthorizationModelRequest {
 
     public static final String JSON_PROPERTY_SCHEMA_VERSION = "schema_version";
     private String schemaVersion;
+
+    public static final String JSON_PROPERTY_CONDITIONS = "conditions";
+    private Map<String, Condition> conditions = new HashMap<>();
 
     public WriteAuthorizationModelRequest() {}
 
@@ -77,17 +83,47 @@ public class WriteAuthorizationModelRequest {
      * Get schemaVersion
      * @return schemaVersion
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_SCHEMA_VERSION)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getSchemaVersion() {
         return schemaVersion;
     }
 
     @JsonProperty(JSON_PROPERTY_SCHEMA_VERSION)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setSchemaVersion(String schemaVersion) {
         this.schemaVersion = schemaVersion;
+    }
+
+    public WriteAuthorizationModelRequest conditions(Map<String, Condition> conditions) {
+        this.conditions = conditions;
+        return this;
+    }
+
+    public WriteAuthorizationModelRequest putConditionsItem(String key, Condition conditionsItem) {
+        if (this.conditions == null) {
+            this.conditions = new HashMap<>();
+        }
+        this.conditions.put(key, conditionsItem);
+        return this;
+    }
+
+    /**
+     * Get conditions
+     * @return conditions
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONDITIONS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public Map<String, Condition> getConditions() {
+        return conditions;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONDITIONS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConditions(Map<String, Condition> conditions) {
+        this.conditions = conditions;
     }
 
     /**
@@ -103,12 +139,13 @@ public class WriteAuthorizationModelRequest {
         }
         WriteAuthorizationModelRequest writeAuthorizationModelRequest = (WriteAuthorizationModelRequest) o;
         return Objects.equals(this.typeDefinitions, writeAuthorizationModelRequest.typeDefinitions)
-                && Objects.equals(this.schemaVersion, writeAuthorizationModelRequest.schemaVersion);
+                && Objects.equals(this.schemaVersion, writeAuthorizationModelRequest.schemaVersion)
+                && Objects.equals(this.conditions, writeAuthorizationModelRequest.conditions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(typeDefinitions, schemaVersion);
+        return Objects.hash(typeDefinitions, schemaVersion, conditions);
     }
 
     @Override
@@ -119,6 +156,7 @@ public class WriteAuthorizationModelRequest {
                 .append(toIndentedString(typeDefinitions))
                 .append("\n");
         sb.append("    schemaVersion: ").append(toIndentedString(schemaVersion)).append("\n");
+        sb.append("    conditions: ").append(toIndentedString(conditions)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -191,6 +229,23 @@ public class WriteAuthorizationModelRequest {
                     suffix,
                     URLEncoder.encode(String.valueOf(getSchemaVersion()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
+        }
+
+        // add `conditions` to the URL query string
+        if (getConditions() != null) {
+            for (String _key : getConditions().keySet()) {
+                if (getConditions().get(_key) != null) {
+                    joiner.add(getConditions()
+                            .get(_key)
+                            .toUrlQueryString(String.format(
+                                    "%sconditions%s%s",
+                                    prefix,
+                                    suffix,
+                                    "".equals(suffix)
+                                            ? ""
+                                            : String.format("%s%d%s", containerPrefix, _key, containerSuffix))));
+                }
+            }
         }
 
         return joiner.toString();

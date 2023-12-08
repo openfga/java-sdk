@@ -28,11 +28,12 @@ import java.util.StringJoiner;
     CheckRequest.JSON_PROPERTY_TUPLE_KEY,
     CheckRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES,
     CheckRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
-    CheckRequest.JSON_PROPERTY_TRACE
+    CheckRequest.JSON_PROPERTY_TRACE,
+    CheckRequest.JSON_PROPERTY_CONTEXT
 })
 public class CheckRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private TupleKey tupleKey;
+    private CheckRequestTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_CONTEXTUAL_TUPLES = "contextual_tuples";
     private ContextualTupleKeys contextualTuples;
@@ -43,6 +44,9 @@ public class CheckRequest {
     public static final String JSON_PROPERTY_TRACE = "trace";
     private Boolean trace;
 
+    public static final String JSON_PROPERTY_CONTEXT = "context";
+    private Object context;
+
     public CheckRequest() {}
 
     @JsonCreator
@@ -51,7 +55,7 @@ public class CheckRequest {
         this.trace = trace;
     }
 
-    public CheckRequest tupleKey(TupleKey tupleKey) {
+    public CheckRequest tupleKey(CheckRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
         return this;
     }
@@ -63,13 +67,13 @@ public class CheckRequest {
     @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public TupleKey getTupleKey() {
+    public CheckRequestTupleKey getTupleKey() {
         return tupleKey;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setTupleKey(TupleKey tupleKey) {
+    public void setTupleKey(CheckRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
     }
 
@@ -128,6 +132,28 @@ public class CheckRequest {
         return trace;
     }
 
+    public CheckRequest context(Object context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
+     * Additional request context that will be used to evaluate any ABAC conditions encountered in the query evaluation.
+     * @return context
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONTEXT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public Object getContext() {
+        return context;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONTEXT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setContext(Object context) {
+        this.context = context;
+    }
+
     /**
      * Return true if this Check_request object is equal to o.
      */
@@ -143,12 +169,13 @@ public class CheckRequest {
         return Objects.equals(this.tupleKey, checkRequest.tupleKey)
                 && Objects.equals(this.contextualTuples, checkRequest.contextualTuples)
                 && Objects.equals(this.authorizationModelId, checkRequest.authorizationModelId)
-                && Objects.equals(this.trace, checkRequest.trace);
+                && Objects.equals(this.trace, checkRequest.trace)
+                && Objects.equals(this.context, checkRequest.context);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, contextualTuples, authorizationModelId, trace);
+        return Objects.hash(tupleKey, contextualTuples, authorizationModelId, trace, context);
     }
 
     @Override
@@ -163,6 +190,7 @@ public class CheckRequest {
                 .append(toIndentedString(authorizationModelId))
                 .append("\n");
         sb.append("    trace: ").append(toIndentedString(trace)).append("\n");
+        sb.append("    context: ").append(toIndentedString(context)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -237,6 +265,16 @@ public class CheckRequest {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getTrace()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `context` to the URL query string
+        if (getContext() != null) {
+            joiner.add(String.format(
+                    "%scontext%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getContext()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

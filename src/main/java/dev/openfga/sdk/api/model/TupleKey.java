@@ -23,39 +23,47 @@ import java.util.StringJoiner;
 /**
  * TupleKey
  */
-@JsonPropertyOrder({TupleKey.JSON_PROPERTY_OBJECT, TupleKey.JSON_PROPERTY_RELATION, TupleKey.JSON_PROPERTY_USER})
+@JsonPropertyOrder({
+    TupleKey.JSON_PROPERTY_USER,
+    TupleKey.JSON_PROPERTY_RELATION,
+    TupleKey.JSON_PROPERTY_OBJECT,
+    TupleKey.JSON_PROPERTY_CONDITION
+})
 public class TupleKey {
-    public static final String JSON_PROPERTY_OBJECT = "object";
-    private String _object;
+    public static final String JSON_PROPERTY_USER = "user";
+    private String user;
 
     public static final String JSON_PROPERTY_RELATION = "relation";
     private String relation;
 
-    public static final String JSON_PROPERTY_USER = "user";
-    private String user;
+    public static final String JSON_PROPERTY_OBJECT = "object";
+    private String _object;
+
+    public static final String JSON_PROPERTY_CONDITION = "condition";
+    private RelationshipCondition condition;
 
     public TupleKey() {}
 
-    public TupleKey _object(String _object) {
-        this._object = _object;
+    public TupleKey user(String user) {
+        this.user = user;
         return this;
     }
 
     /**
-     * Get _object
-     * @return _object
+     * Get user
+     * @return user
      **/
-    @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_OBJECT)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public String getObject() {
-        return _object;
+    @javax.annotation.Nonnull
+    @JsonProperty(JSON_PROPERTY_USER)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public String getUser() {
+        return user;
     }
 
-    @JsonProperty(JSON_PROPERTY_OBJECT)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setObject(String _object) {
-        this._object = _object;
+    @JsonProperty(JSON_PROPERTY_USER)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public TupleKey relation(String relation) {
@@ -67,39 +75,61 @@ public class TupleKey {
      * Get relation
      * @return relation
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_RELATION)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getRelation() {
         return relation;
     }
 
     @JsonProperty(JSON_PROPERTY_RELATION)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setRelation(String relation) {
         this.relation = relation;
     }
 
-    public TupleKey user(String user) {
-        this.user = user;
+    public TupleKey _object(String _object) {
+        this._object = _object;
         return this;
     }
 
     /**
-     * Get user
-     * @return user
+     * Get _object
+     * @return _object
      **/
-    @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_USER)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public String getUser() {
-        return user;
+    @javax.annotation.Nonnull
+    @JsonProperty(JSON_PROPERTY_OBJECT)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public String getObject() {
+        return _object;
     }
 
-    @JsonProperty(JSON_PROPERTY_USER)
+    @JsonProperty(JSON_PROPERTY_OBJECT)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public void setObject(String _object) {
+        this._object = _object;
+    }
+
+    public TupleKey condition(RelationshipCondition condition) {
+        this.condition = condition;
+        return this;
+    }
+
+    /**
+     * Get condition
+     * @return condition
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONDITION)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setUser(String user) {
-        this.user = user;
+    public RelationshipCondition getCondition() {
+        return condition;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONDITION)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setCondition(RelationshipCondition condition) {
+        this.condition = condition;
     }
 
     /**
@@ -114,23 +144,25 @@ public class TupleKey {
             return false;
         }
         TupleKey tupleKey = (TupleKey) o;
-        return Objects.equals(this._object, tupleKey._object)
+        return Objects.equals(this.user, tupleKey.user)
                 && Objects.equals(this.relation, tupleKey.relation)
-                && Objects.equals(this.user, tupleKey.user);
+                && Objects.equals(this._object, tupleKey._object)
+                && Objects.equals(this.condition, tupleKey.condition);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(_object, relation, user);
+        return Objects.hash(user, relation, _object, condition);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class TupleKey {\n");
-        sb.append("    _object: ").append(toIndentedString(_object)).append("\n");
-        sb.append("    relation: ").append(toIndentedString(relation)).append("\n");
         sb.append("    user: ").append(toIndentedString(user)).append("\n");
+        sb.append("    relation: ").append(toIndentedString(relation)).append("\n");
+        sb.append("    _object: ").append(toIndentedString(_object)).append("\n");
+        sb.append("    condition: ").append(toIndentedString(condition)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -178,13 +210,13 @@ public class TupleKey {
 
         StringJoiner joiner = new StringJoiner("&");
 
-        // add `object` to the URL query string
-        if (getObject() != null) {
+        // add `user` to the URL query string
+        if (getUser() != null) {
             joiner.add(String.format(
-                    "%sobject%s=%s",
+                    "%suser%s=%s",
                     prefix,
                     suffix,
-                    URLEncoder.encode(String.valueOf(getObject()), StandardCharsets.UTF_8)
+                    URLEncoder.encode(String.valueOf(getUser()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 
@@ -198,14 +230,19 @@ public class TupleKey {
                             .replaceAll("\\+", "%20")));
         }
 
-        // add `user` to the URL query string
-        if (getUser() != null) {
+        // add `object` to the URL query string
+        if (getObject() != null) {
             joiner.add(String.format(
-                    "%suser%s=%s",
+                    "%sobject%s=%s",
                     prefix,
                     suffix,
-                    URLEncoder.encode(String.valueOf(getUser()), StandardCharsets.UTF_8)
+                    URLEncoder.encode(String.valueOf(getObject()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
+        }
+
+        // add `condition` to the URL query string
+        if (getCondition() != null) {
+            joiner.add(getCondition().toUrlQueryString(prefix + "condition" + suffix));
         }
 
         return joiner.toString();

@@ -43,4 +43,12 @@ public class WriteAuthorizationModelRequestTest {
     public void schemaVersionTest() {
         // TODO: test schemaVersion
     }
+
+    /**
+     * Test the property 'conditions'
+     */
+    @Test
+    public void conditionsTest() {
+        // TODO: test conditions
+    }
 }

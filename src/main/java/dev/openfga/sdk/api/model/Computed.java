@@ -39,15 +39,15 @@ public class Computed {
      * Get userset
      * @return userset
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_USERSET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getUserset() {
         return userset;
     }
 
     @JsonProperty(JSON_PROPERTY_USERSET)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setUserset(String userset) {
         this.userset = userset;
     }

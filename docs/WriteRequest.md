@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**writes** | [**TupleKeys**](TupleKeys.md) |  |  [optional] |
-|**deletes** | [**TupleKeys**](TupleKeys.md) |  |  [optional] |
+|**writes** | [**WriteRequestWrites**](WriteRequestWrites.md) |  |  [optional] |
+|**deletes** | [**WriteRequestDeletes**](WriteRequestDeletes.md) |  |  [optional] |
 |**authorizationModelId** | **String** |  |  [optional] |
 
 

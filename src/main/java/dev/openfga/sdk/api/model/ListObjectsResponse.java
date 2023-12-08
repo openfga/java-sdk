@@ -49,15 +49,15 @@ public class ListObjectsResponse {
      * Get objects
      * @return objects
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_OBJECTS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<String> getObjects() {
         return objects;
     }
 
     @JsonProperty(JSON_PROPERTY_OBJECTS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setObjects(List<String> objects) {
         this.objects = objects;
     }

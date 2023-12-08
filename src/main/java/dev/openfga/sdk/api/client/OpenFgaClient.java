@@ -245,9 +245,10 @@ public class OpenFgaClient {
 
         if (request != null
                 && (request.getUser() != null || request.getRelation() != null || request.getObject() != null)) {
-            TupleKey tupleKey = new TupleKey();
-            tupleKey.user(request.getUser()).relation(request.getRelation())._object(request.getObject());
-            body.tupleKey(tupleKey);
+            body.tupleKey(new ReadRequestTupleKey()
+                    .user(request.getUser())
+                    .relation(request.getRelation())
+                    ._object(request.getObject()));
         }
 
         if (options != null) {
@@ -289,8 +290,15 @@ public class OpenFgaClient {
 
         WriteRequest body = new WriteRequest();
 
-        ClientTupleKey.asTupleKeys(request.getWrites()).ifPresent(body::writes);
-        ClientTupleKey.asTupleKeys(request.getDeletes()).ifPresent(body::deletes);
+        var writeTuples = request.getWrites();
+        if (writeTuples != null && !writeTuples.isEmpty()) {
+            body.writes(ClientTupleKey.asWriteRequestWrites(writeTuples));
+        }
+
+        var deleteTuples = request.getDeletes();
+        if (deleteTuples != null && !deleteTuples.isEmpty()) {
+            body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(deleteTuples));
+        }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
             body.authorizationModelId(options.getAuthorizationModelId());
@@ -354,15 +362,16 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest();
-        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::writes);
+        var body = new WriteRequest();
+
+        body.writes(ClientTupleKey.asWriteRequestWrites(tupleKeys));
 
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
-            request.authorizationModelId(authorizationModelId);
+            body.authorizationModelId(authorizationModelId);
         }
 
-        return call(() -> api.write(storeId, request)).thenApply(ClientWriteResponse::new);
+        return call(() -> api.write(storeId, body)).thenApply(ClientWriteResponse::new);
     }
 
     /**
@@ -370,20 +379,21 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<ClientWriteResponse> deleteTuples(List<ClientTupleKey> tupleKeys)
+    public CompletableFuture<ClientWriteResponse> deleteTuples(List<ClientTupleKeyWithoutCondition> tupleKeys)
             throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        var request = new WriteRequest();
-        ClientTupleKey.asTupleKeys(tupleKeys).ifPresent(request::deletes);
+        var body = new WriteRequest();
+
+        body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(tupleKeys));
 
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
-            request.authorizationModelId(authorizationModelId);
+            body.authorizationModelId(authorizationModelId);
         }
 
-        return call(() -> api.write(storeId, request)).thenApply(ClientWriteResponse::new);
+        return call(() -> api.write(storeId, body)).thenApply(ClientWriteResponse::new);
     }
 
     /* **********************
@@ -413,10 +423,7 @@ public class OpenFgaClient {
         CheckRequest body = new CheckRequest();
 
         if (request != null) {
-            body.tupleKey(new TupleKey()
-                    .user(request.getUser())
-                    .relation(request.getRelation())
-                    ._object(request.getObject()));
+            body.tupleKey(request.asCheckRequestTupleKey());
 
             var contextualTuples = request.getContextualTuples();
             if (contextualTuples != null && !contextualTuples.isEmpty()) {
@@ -492,7 +499,8 @@ public class OpenFgaClient {
         ExpandRequest body = new ExpandRequest();
 
         if (request != null) {
-            body.tupleKey(new TupleKey().relation(request.getRelation())._object(request.getObject()));
+            body.tupleKey(
+                    new ExpandRequestTupleKey().relation(request.getRelation())._object(request.getObject()));
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
@@ -528,10 +536,12 @@ public class OpenFgaClient {
         ListObjectsRequest body = new ListObjectsRequest();
 
         if (request != null) {
-            body.user(request.getUser())
-                    .relation(request.getRelation())
-                    .type(request.getType())
-                    .contextualTuples(ClientTupleKey.asContextualTupleKeys(request.getContextualTupleKeys()));
+            body.user(request.getUser()).relation(request.getRelation()).type(request.getType());
+            if (request.getContextualTupleKeys() != null) {
+                var contextualTuples = request.getContextualTupleKeys();
+                var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
+                body.contextualTuples(bodyContextualTuples);
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {

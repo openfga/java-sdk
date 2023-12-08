@@ -28,7 +28,8 @@ import java.util.StringJoiner;
     ListObjectsRequest.JSON_PROPERTY_TYPE,
     ListObjectsRequest.JSON_PROPERTY_RELATION,
     ListObjectsRequest.JSON_PROPERTY_USER,
-    ListObjectsRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES
+    ListObjectsRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES,
+    ListObjectsRequest.JSON_PROPERTY_CONTEXT
 })
 public class ListObjectsRequest {
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
@@ -45,6 +46,9 @@ public class ListObjectsRequest {
 
     public static final String JSON_PROPERTY_CONTEXTUAL_TUPLES = "contextual_tuples";
     private ContextualTupleKeys contextualTuples;
+
+    public static final String JSON_PROPERTY_CONTEXT = "context";
+    private Object context;
 
     public ListObjectsRequest() {}
 
@@ -158,6 +162,28 @@ public class ListObjectsRequest {
         this.contextualTuples = contextualTuples;
     }
 
+    public ListObjectsRequest context(Object context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
+     * Additional request context that will be used to evaluate any ABAC conditions encountered in the query evaluation.
+     * @return context
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONTEXT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public Object getContext() {
+        return context;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONTEXT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setContext(Object context) {
+        this.context = context;
+    }
+
     /**
      * Return true if this ListObjects_request object is equal to o.
      */
@@ -174,12 +200,13 @@ public class ListObjectsRequest {
                 && Objects.equals(this.type, listObjectsRequest.type)
                 && Objects.equals(this.relation, listObjectsRequest.relation)
                 && Objects.equals(this.user, listObjectsRequest.user)
-                && Objects.equals(this.contextualTuples, listObjectsRequest.contextualTuples);
+                && Objects.equals(this.contextualTuples, listObjectsRequest.contextualTuples)
+                && Objects.equals(this.context, listObjectsRequest.context);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(authorizationModelId, type, relation, user, contextualTuples);
+        return Objects.hash(authorizationModelId, type, relation, user, contextualTuples, context);
     }
 
     @Override
@@ -195,6 +222,7 @@ public class ListObjectsRequest {
         sb.append("    contextualTuples: ")
                 .append(toIndentedString(contextualTuples))
                 .append("\n");
+        sb.append("    context: ").append(toIndentedString(context)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -285,6 +313,16 @@ public class ListObjectsRequest {
         // add `contextual_tuples` to the URL query string
         if (getContextualTuples() != null) {
             joiner.add(getContextualTuples().toUrlQueryString(prefix + "contextual_tuples" + suffix));
+        }
+
+        // add `context` to the URL query string
+        if (getContext() != null) {
+            joiner.add(String.format(
+                    "%scontext%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getContext()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
         }
 
         return joiner.toString();

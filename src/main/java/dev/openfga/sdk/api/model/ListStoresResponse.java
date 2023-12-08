@@ -52,15 +52,15 @@ public class ListStoresResponse {
      * Get stores
      * @return stores
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_STORES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<Store> getStores() {
         return stores;
     }
 
     @JsonProperty(JSON_PROPERTY_STORES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setStores(List<Store> stores) {
         this.stores = stores;
     }
@@ -74,15 +74,15 @@ public class ListStoresResponse {
      * The continuation token will be empty if there are no more stores.
      * @return continuationToken
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getContinuationToken() {
         return continuationToken;
     }
 
     @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setContinuationToken(String continuationToken) {
         this.continuationToken = continuationToken;
     }

@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleKey** | [**TupleKey**](TupleKey.md) |  |  [optional] |
+|**tupleKey** | [**ReadRequestTupleKey**](ReadRequestTupleKey.md) |  |  [optional] |
 |**pageSize** | **Integer** |  |  [optional] |
 |**continuationToken** | **String** |  |  [optional] |
 

@@ -43,15 +43,15 @@ public class Tuple {
      * Get key
      * @return key
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_KEY)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public TupleKey getKey() {
         return key;
     }
 
     @JsonProperty(JSON_PROPERTY_KEY)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setKey(TupleKey key) {
         this.key = key;
     }
@@ -65,15 +65,15 @@ public class Tuple {
      * Get timestamp
      * @return timestamp
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TIMESTAMP)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public OffsetDateTime getTimestamp() {
         return timestamp;
     }
 
     @JsonProperty(JSON_PROPERTY_TIMESTAMP)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setTimestamp(OffsetDateTime timestamp) {
         this.timestamp = timestamp;
     }

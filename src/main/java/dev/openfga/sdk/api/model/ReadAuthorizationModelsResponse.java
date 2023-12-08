@@ -55,15 +55,15 @@ public class ReadAuthorizationModelsResponse {
      * Get authorizationModels
      * @return authorizationModels
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODELS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<AuthorizationModel> getAuthorizationModels() {
         return authorizationModels;
     }
 
     @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODELS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setAuthorizationModels(List<AuthorizationModel> authorizationModels) {
         this.authorizationModels = authorizationModels;
     }

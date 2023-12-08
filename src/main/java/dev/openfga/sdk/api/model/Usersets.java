@@ -47,15 +47,15 @@ public class Usersets {
      * Get child
      * @return child
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CHILD)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<Userset> getChild() {
         return child;
     }
 
     @JsonProperty(JSON_PROPERTY_CHILD)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setChild(List<Userset> child) {
         this.child = child;
     }

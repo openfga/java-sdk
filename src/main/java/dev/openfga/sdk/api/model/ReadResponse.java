@@ -52,15 +52,15 @@ public class ReadResponse {
      * Get tuples
      * @return tuples
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public List<Tuple> getTuples() {
         return tuples;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLES)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setTuples(List<Tuple> tuples) {
         this.tuples = tuples;
     }
@@ -74,15 +74,15 @@ public class ReadResponse {
      * The continuation token will be empty if there are no more tuples.
      * @return continuationToken
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getContinuationToken() {
         return continuationToken;
     }
 
     @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setContinuationToken(String continuationToken) {
         this.continuationToken = continuationToken;
     }

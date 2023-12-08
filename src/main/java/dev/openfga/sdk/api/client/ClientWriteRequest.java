@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ClientWriteRequest {
     private List<ClientTupleKey> writes;
-    private List<ClientTupleKey> deletes;
+    private List<ClientTupleKeyWithoutCondition> deletes;
 
     public static ClientWriteRequest ofWrites(List<ClientTupleKey> writes) {
         return new ClientWriteRequest().writes(writes);
@@ -31,16 +31,16 @@ public class ClientWriteRequest {
         return writes;
     }
 
-    public static ClientWriteRequest ofDeletes(List<ClientTupleKey> deletes) {
+    public static ClientWriteRequest ofDeletes(List<ClientTupleKeyWithoutCondition> deletes) {
         return new ClientWriteRequest().deletes(deletes);
     }
 
-    public ClientWriteRequest deletes(List<ClientTupleKey> deletes) {
+    public ClientWriteRequest deletes(List<ClientTupleKeyWithoutCondition> deletes) {
         this.deletes = deletes;
         return this;
     }
 
-    public List<ClientTupleKey> getDeletes() {
+    public List<ClientTupleKeyWithoutCondition> getDeletes() {
         return deletes;
     }
 }

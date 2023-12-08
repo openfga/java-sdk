@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**base** | [**Node**](Node.md) |  |  [optional] |
-|**subtract** | [**Node**](Node.md) |  |  [optional] |
+|**base** | [**Node**](Node.md) |  |  |
+|**subtract** | [**Node**](Node.md) |  |  |
 
 
 

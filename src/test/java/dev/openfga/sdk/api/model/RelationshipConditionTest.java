@@ -15,24 +15,32 @@ package dev.openfga.sdk.api.model;
 import org.junit.jupiter.api.Test;
 
 /**
- * Model tests for TupleKeys
+ * Model tests for RelationshipCondition
  */
-public class TupleKeysTest {
-    private final TupleKeys model = new TupleKeys();
+public class RelationshipConditionTest {
+    private final RelationshipCondition model = new RelationshipCondition();
 
     /**
-     * Model tests for TupleKeys
+     * Model tests for RelationshipCondition
      */
     @Test
-    public void testTupleKeys() {
-        // TODO: test TupleKeys
+    public void testRelationshipCondition() {
+        // TODO: test RelationshipCondition
     }
 
     /**
-     * Test the property 'tupleKeys'
+     * Test the property 'name'
      */
     @Test
-    public void tupleKeysTest() {
-        // TODO: test tupleKeys
+    public void nameTest() {
+        // TODO: test name
+    }
+
+    /**
+     * Test the property 'context'
+     */
+    @Test
+    public void contextTest() {
+        // TODO: test context
     }
 }

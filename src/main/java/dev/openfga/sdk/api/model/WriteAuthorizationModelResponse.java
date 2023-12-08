@@ -39,15 +39,15 @@ public class WriteAuthorizationModelResponse {
      * Get authorizationModelId
      * @return authorizationModelId
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODEL_ID)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public String getAuthorizationModelId() {
         return authorizationModelId;
     }
 
     @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODEL_ID)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setAuthorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
     }

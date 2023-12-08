@@ -14,76 +14,59 @@ package dev.openfga.sdk.api.client;
 
 import dev.openfga.sdk.api.model.ContextualTupleKeys;
 import dev.openfga.sdk.api.model.TupleKey;
-import dev.openfga.sdk.api.model.TupleKeys;
-import java.util.List;
-import java.util.Optional;
+import dev.openfga.sdk.api.model.WriteRequestWrites;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class ClientTupleKey {
-    private String user;
-    private String relation;
-    private String _object;
+public class ClientTupleKey extends ClientTupleKeyWithoutCondition {
+    private ClientRelationshipCondition condition;
 
-    public ClientTupleKey _object(String _object) {
-        this._object = _object;
+    public ClientTupleKey condition(ClientRelationshipCondition condition) {
+        this.condition = condition;
         return this;
     }
 
-    /**
-     * Get _object
-     * @return _object
-     **/
-    public String getObject() {
-        return _object;
-    }
-
-    public ClientTupleKey relation(String relation) {
-        this.relation = relation;
-        return this;
-    }
-
-    /**
-     * Get relation
-     * @return relation
-     **/
-    public String getRelation() {
-        return relation;
-    }
-
-    public ClientTupleKey user(String user) {
-        this.user = user;
-        return this;
-    }
-
-    /**
-     * Get user
-     * @return user
-     **/
-    public String getUser() {
-        return user;
+    public ClientRelationshipCondition getCondition() {
+        return condition;
     }
 
     public TupleKey asTupleKey() {
-        return new TupleKey().user(user).relation(relation)._object(_object);
-    }
+        var tupleKey = new TupleKey().user(getUser()).relation(getRelation())._object(getObject());
 
-    public static Optional<TupleKeys> asTupleKeys(List<ClientTupleKey> clientTupleKeys) {
-        if (clientTupleKeys == null || clientTupleKeys.size() == 0) {
-            return Optional.empty();
+        if (condition != null) {
+            tupleKey.condition(condition.asRelationshipCondition());
         }
 
-        return Optional.of(new TupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys)));
+        return tupleKey;
     }
 
-    public static ContextualTupleKeys asContextualTupleKeys(List<ClientTupleKey> clientTupleKeys) {
-        if (clientTupleKeys == null || clientTupleKeys.size() == 0) {
-            return new ContextualTupleKeys();
-        }
-
-        return new ContextualTupleKeys().tupleKeys(asListOfTupleKey(clientTupleKeys));
+    public static ContextualTupleKeys asContextualTupleKeys(Collection<ClientTupleKey> tupleKeys) {
+        return new ContextualTupleKeys()
+                .tupleKeys(tupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList()));
     }
 
-    private static List<TupleKey> asListOfTupleKey(List<ClientTupleKey> clientTupleKeys) {
-        return clientTupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList());
+    public static WriteRequestWrites asWriteRequestWrites(Collection<ClientTupleKey> tupleKeys) {
+        return new WriteRequestWrites()
+                .tupleKeys(tupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList()));
+    }
+
+    /* Overrides for correct typing */
+
+    @Override
+    public ClientTupleKey user(String user) {
+        super.user(user);
+        return this;
+    }
+
+    @Override
+    public ClientTupleKey relation(String relation) {
+        super.relation(relation);
+        return this;
+    }
+
+    @Override
+    public ClientTupleKey _object(String _object) {
+        super._object(_object);
+        return this;
     }
 }

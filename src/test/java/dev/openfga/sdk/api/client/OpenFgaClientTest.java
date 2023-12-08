@@ -24,6 +24,7 @@ import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ public class OpenFgaClientTest {
     private static final String DEFAULT_OBJECT = "document:budget";
     private static final String DEFAULT_SCHEMA_VERSION = "1.1";
     private static final String EMPTY_RESPONSE_BODY = "{}";
+    private static final ClientRelationshipCondition DEFAULT_CONDITION =
+            new ClientRelationshipCondition().name("condition").context(Map.of("some", "context"));
     private static final int DEFAULT_MAX_RETRIES = 3;
     private static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(100);
 
@@ -54,8 +57,10 @@ public class OpenFgaClientTest {
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
+        System.setProperty("HttpRequestAttempt.debug-logging", "enable");
+
         mockHttpClient = new HttpClientMock();
-        // mockHttpClient.debugOn(); // Uncomment when debugging HTTP requests.
+        mockHttpClient.debugOn();
 
         var mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
@@ -666,7 +671,7 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/authorization-models", DEFAULT_STORE_ID);
         String expectedBody =
-                "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\"}";
+                "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\",\"conditions\":{}}";
         String responseBody = String.format("{\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(201, responseBody);
         WriteAuthorizationModelRequest request = new WriteAuthorizationModelRequest()
@@ -923,8 +928,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/read", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String responseBody = String.format(
                 "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -1049,8 +1054,8 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(List.of(new ClientTupleKey()
@@ -1074,11 +1079,11 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .deletes(List.of(new ClientTupleKey()
+                .deletes(List.of(new ClientTupleKeyWithoutCondition()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER)));
@@ -1094,31 +1099,35 @@ public class OpenFgaClientTest {
     public void writeTest_transactions() throws Exception {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
-        String tupleBody = String.format(
-                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
-        ClientTupleKey tuple = new ClientTupleKey()
+        String writeTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+        ClientTupleKeyWithoutCondition tuple = new ClientTupleKeyWithoutCondition()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER);
+        ClientTupleKey writeTuple = tuple.condition(DEFAULT_CONDITION);
         String write2Body = String.format(
                 "{\"writes\":{\"tuple_keys\":[%s,%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+                writeTupleBody, writeTupleBody, DEFAULT_AUTH_MODEL_ID);
         String write1Body = String.format(
                 "{\"writes\":{\"tuple_keys\":[%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                tupleBody, DEFAULT_AUTH_MODEL_ID);
+                writeTupleBody, DEFAULT_AUTH_MODEL_ID);
+        String deleteTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String delete2Body = String.format(
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s,%s]},\"authorization_model_id\":\"%s\"}",
-                tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+                deleteTupleBody, deleteTupleBody, DEFAULT_AUTH_MODEL_ID);
         String delete1Body = String.format(
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s]},\"authorization_model_id\":\"%s\"}",
-                tupleBody, DEFAULT_AUTH_MODEL_ID);
+                deleteTupleBody, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(isOneOf(write2Body, write1Body, delete2Body, delete1Body))
                 .doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(List.of(tuple, tuple, tuple, tuple, tuple))
+                .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
                 .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
         ClientWriteOptions options =
                 new ClientWriteOptions().disableTransactions(false).transactionChunkSize(2);
@@ -1142,8 +1151,8 @@ public class OpenFgaClientTest {
         String failedUser = "user:SECOND";
         String skippedUser = "user:third";
         Function<String, String> writeBody = user -> String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, user, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                user, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(skippedUser)))
@@ -1157,7 +1166,8 @@ public class OpenFgaClientTest {
                         .map(user -> new ClientTupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
-                                .user(user))
+                                .user(user)
+                                .condition(DEFAULT_CONDITION))
                         .collect(Collectors.toList()));
         ClientWriteOptions options =
                 new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
@@ -1190,17 +1200,27 @@ public class OpenFgaClientTest {
     public void writeTest_nonTransaction() throws Exception {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
-        String tupleBody = String.format(
-                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String writeTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+        String deleteTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
-                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+                writeTupleBody,
+                writeTupleBody,
+                writeTupleBody,
+                deleteTupleBody,
+                deleteTupleBody,
+                deleteTupleBody,
+                DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        ClientTupleKey tuple = new ClientTupleKey()
+        var tuple = new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+                .user(DEFAULT_USER)
+                .condition(DEFAULT_CONDITION);
         ClientWriteRequest request =
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
@@ -1220,20 +1240,30 @@ public class OpenFgaClientTest {
     public void writeTest_nonTransactionsWithFailure() throws Exception {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
-        String tupleBody = String.format(
-                "{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+        String writeTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+        String deleteTupleBody = String.format(
+                "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
-                tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, tupleBody, DEFAULT_AUTH_MODEL_ID);
+                writeTupleBody,
+                writeTupleBody,
+                writeTupleBody,
+                deleteTupleBody,
+                deleteTupleBody,
+                deleteTupleBody,
+                DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(is(expectedBody))
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
-        ClientTupleKey tuple = new ClientTupleKey()
+        var tuple = new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+                .user(DEFAULT_USER)
+                .condition(DEFAULT_CONDITION);
         ClientWriteRequest request =
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
@@ -1256,13 +1286,15 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},"
+                        + "\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER));
+                .user(DEFAULT_USER)
+                .condition(DEFAULT_CONDITION));
 
         // When
         ClientWriteResponse response = fga.writeTuples(tuples).get();
@@ -1277,10 +1309,10 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_AUTH_MODEL_ID);
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
-        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
+        List<ClientTupleKeyWithoutCondition> tuples = List.of(new ClientTupleKeyWithoutCondition()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER));
@@ -1318,7 +1350,8 @@ public class OpenFgaClientTest {
                 .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER)));
+                        .user(DEFAULT_USER)
+                        .condition(DEFAULT_CONDITION)));
 
         // When
         ExecutionException execException =
@@ -1344,7 +1377,8 @@ public class OpenFgaClientTest {
                 .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER)));
+                        .user(DEFAULT_USER)
+                        .condition(DEFAULT_CONDITION)));
 
         // When
         ExecutionException execException =
@@ -1369,7 +1403,8 @@ public class OpenFgaClientTest {
                 .writes(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER)));
+                        .user(DEFAULT_USER)
+                        .condition(DEFAULT_CONDITION)));
 
         // When
         ExecutionException execException =
@@ -1391,10 +1426,10 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},"
-                        + "\"contextual_tuples\":{\"tuple_keys\":[{\"object\":\"%s\",\"relation\":\"owner\",\"user\":\"%s\"}]},"
-                        + "\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_OBJECT, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},"
+                        + "\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"owner\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},"
+                        + "\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_USER, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
@@ -1403,7 +1438,8 @@ public class OpenFgaClientTest {
                 .contextualTuples(List.of(new ClientTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation("owner")
-                        .user(DEFAULT_USER)));
+                        .user(DEFAULT_USER)
+                        .condition(DEFAULT_CONDITION)));
         ClientCheckOptions options = new ClientCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
@@ -1500,8 +1536,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
@@ -1523,8 +1559,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         List<ClientCheckRequest> requests = IntStream.range(0, 20)
                 .mapToObj(ignored -> new ClientCheckRequest()
@@ -1641,8 +1677,8 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":null},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_AUTH_MODEL_ID);
+                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
                 DEFAULT_USER);
@@ -1756,7 +1792,7 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://localhost/stores/%s/list-objects", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":{\"tuple_keys\":[]}}",
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient
                 .onPost(postPath)
@@ -1860,8 +1896,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of(DEFAULT_RELATION))
@@ -1887,8 +1923,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, "owner", DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, "owner", DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of("owner"))
@@ -1968,8 +2004,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
@@ -1998,8 +2034,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
@@ -2027,8 +2063,8 @@ public class OpenFgaClientTest {
         // Given
         String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
@@ -2060,8 +2096,8 @@ public class OpenFgaClientTest {
         String getUrl =
                 String.format("https://localhost/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
         // When
@@ -2181,8 +2217,8 @@ public class OpenFgaClientTest {
         String putUrl =
                 String.format("https://localhost/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String expectedBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         List<ClientAssertion> assertions = List.of(new ClientAssertion()
                 .user(DEFAULT_USER)

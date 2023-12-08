@@ -40,15 +40,15 @@ public class UsersetTreeDifference {
      * Get base
      * @return base
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_BASE)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public Node getBase() {
         return base;
     }
 
     @JsonProperty(JSON_PROPERTY_BASE)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setBase(Node base) {
         this.base = base;
     }
@@ -62,15 +62,15 @@ public class UsersetTreeDifference {
      * Get subtract
      * @return subtract
      **/
-    @javax.annotation.Nullable
+    @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_SUBTRACT)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public Node getSubtract() {
         return subtract;
     }
 
     @JsonProperty(JSON_PROPERTY_SUBTRACT)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     public void setSubtract(Node subtract) {
         this.subtract = subtract;
     }

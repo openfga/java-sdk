@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**key** | [**TupleKey**](TupleKey.md) |  |  [optional] |
-|**timestamp** | **OffsetDateTime** |  |  [optional] |
+|**key** | [**TupleKey**](TupleKey.md) |  |  |
+|**timestamp** | **OffsetDateTime** |  |  |
 
 
 
