@@ -1,14 +1,15 @@
 
 
-# Assertion
+# AssertionTupleKey
 
 
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleKey** | [**AssertionTupleKey**](AssertionTupleKey.md) |  |  |
-|**expectation** | **Boolean** |  |  |
+|**_object** | **String** |  |  |
+|**relation** | **String** |  |  |
+|**user** | **String** |  |  |
 
 
 

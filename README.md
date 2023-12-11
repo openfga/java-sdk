@@ -740,6 +740,8 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [Assertion](https://github.com/openfga/java-sdk/blob/main/docs/Assertion.md)
 
+- [AssertionTupleKey](https://github.com/openfga/java-sdk/blob/main/docs/AssertionTupleKey.md)
+
 - [AuthorizationModel](https://github.com/openfga/java-sdk/blob/main/docs/AuthorizationModel.md)
 
 - [CheckRequest](https://github.com/openfga/java-sdk/blob/main/docs/CheckRequest.md)

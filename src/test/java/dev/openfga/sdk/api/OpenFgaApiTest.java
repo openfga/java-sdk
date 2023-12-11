@@ -1815,12 +1815,12 @@ public class OpenFgaApiTest {
         // Given
         String putUrl = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/assertions/01G5JAVJ41T49E9TT3SKVS7X1J";
         String expectedBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteAssertionsRequest request = new WriteAssertionsRequest()
                 .assertions(List.of(new Assertion()
-                        .tupleKey(new CheckRequestTupleKey()
+                        .tupleKey(new AssertionTupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
                                 .user(DEFAULT_USER))
