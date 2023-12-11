@@ -26,14 +26,14 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({Assertion.JSON_PROPERTY_TUPLE_KEY, Assertion.JSON_PROPERTY_EXPECTATION})
 public class Assertion {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private CheckRequestTupleKey tupleKey;
+    private AssertionTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_EXPECTATION = "expectation";
     private Boolean expectation;
 
     public Assertion() {}
 
-    public Assertion tupleKey(CheckRequestTupleKey tupleKey) {
+    public Assertion tupleKey(AssertionTupleKey tupleKey) {
         this.tupleKey = tupleKey;
         return this;
     }
@@ -45,13 +45,13 @@ public class Assertion {
     @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public CheckRequestTupleKey getTupleKey() {
+    public AssertionTupleKey getTupleKey() {
         return tupleKey;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setTupleKey(CheckRequestTupleKey tupleKey) {
+    public void setTupleKey(AssertionTupleKey tupleKey) {
         this.tupleKey = tupleKey;
     }
 

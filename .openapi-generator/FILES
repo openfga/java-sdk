@@ -16,6 +16,7 @@ api/openapi.yaml
 build.gradle
 docs/Any.md
 docs/Assertion.md
+docs/AssertionTupleKey.md
 docs/AuthorizationModel.md
 docs/CheckRequest.md
 docs/CheckRequestTupleKey.md
@@ -146,6 +147,7 @@ src/main/java/dev/openfga/sdk/api/configuration/CredentialsMethod.java
 src/main/java/dev/openfga/sdk/api/model/AbstractOpenApiSchema.java
 src/main/java/dev/openfga/sdk/api/model/Any.java
 src/main/java/dev/openfga/sdk/api/model/Assertion.java
+src/main/java/dev/openfga/sdk/api/model/AssertionTupleKey.java
 src/main/java/dev/openfga/sdk/api/model/AuthorizationModel.java
 src/main/java/dev/openfga/sdk/api/model/CheckRequest.java
 src/main/java/dev/openfga/sdk/api/model/CheckRequestTupleKey.java
@@ -222,6 +224,7 @@ src/main/java/dev/openfga/sdk/util/StringUtil.java
 src/test-integration/java/dev/openfga/sdk/api/OpenFgaApiIntegrationTest.java
 src/test-integration/java/dev/openfga/sdk/api/client/OpenFgaClientIntegrationTest.java
 src/test-integration/java/package-info.java
+src/test-integration/resources/auth-model.json
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/auth/OAuth2ClientTest.java
@@ -230,6 +233,7 @@ src/test/java/dev/openfga/sdk/api/configuration/ClientCredentialsTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ConfigurationTest.java
 src/test/java/dev/openfga/sdk/api/model/AnyTest.java
 src/test/java/dev/openfga/sdk/api/model/AssertionTest.java
+src/test/java/dev/openfga/sdk/api/model/AssertionTupleKeyTest.java
 src/test/java/dev/openfga/sdk/api/model/AuthorizationModelTest.java
 src/test/java/dev/openfga/sdk/api/model/CheckRequestTest.java
 src/test/java/dev/openfga/sdk/api/model/CheckRequestTupleKeyTest.java

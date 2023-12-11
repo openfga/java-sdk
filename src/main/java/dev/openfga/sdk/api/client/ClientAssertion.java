@@ -13,7 +13,7 @@
 package dev.openfga.sdk.api.client;
 
 import dev.openfga.sdk.api.model.Assertion;
-import dev.openfga.sdk.api.model.CheckRequestTupleKey;
+import dev.openfga.sdk.api.model.AssertionTupleKey;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,7 +72,7 @@ public class ClientAssertion {
     }
 
     public Assertion asAssertion() {
-        var tupleKey = new CheckRequestTupleKey().user(user).relation(relation)._object(_object);
+        var tupleKey = new AssertionTupleKey().user(user).relation(relation)._object(_object);
         return new Assertion().tupleKey(tupleKey).expectation(expectation);
     }
 

@@ -2217,8 +2217,8 @@ public class OpenFgaClientTest {
         String putUrl =
                 String.format("https://localhost/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String expectedBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
-                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
+                DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         List<ClientAssertion> assertions = List.of(new ClientAssertion()
                 .user(DEFAULT_USER)

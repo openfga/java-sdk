@@ -296,7 +296,7 @@ public class OpenFgaApiIntegrationTest {
         String authModelId = writeAuthModel(storeId);
         WriteAssertionsRequest writeRequest = new WriteAssertionsRequest()
                 .assertions(List.of(new Assertion()
-                        .tupleKey(new CheckRequestTupleKey()
+                        .tupleKey(new AssertionTupleKey()
                                 .user(DEFAULT_USER)
                                 .relation("reader")
                                 ._object(DEFAULT_DOC))
@@ -310,7 +310,7 @@ public class OpenFgaApiIntegrationTest {
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
         assertEquals(
-                "[{\"tuple_key\":{\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\",\"relation\":\"reader\",\"object\":\"document:2021-budget\"},\"expectation\":true}]",
+                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true}]",
                 responseJson);
     }
 
