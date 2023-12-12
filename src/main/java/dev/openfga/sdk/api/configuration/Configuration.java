@@ -22,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * Configurations for an api client.
@@ -41,6 +42,7 @@ public class Configuration implements BaseConfiguration {
     private Duration connectTimeout;
     private int maxRetries;
     private Duration minimumRetryDelay;
+    private Map<String, String> additionalHeaders;
 
     public Configuration() {
         this.apiUrl = DEFAULT_API_URL;
@@ -108,6 +110,15 @@ public class Configuration implements BaseConfiguration {
 
         Duration overrideMinimumRetryDelay = configurationOverride.getMinimumRetryDelay();
         result.minimumRetryDelay(overrideMinimumRetryDelay != null ? overrideMinimumRetryDelay : minimumRetryDelay);
+
+        Map<String, String> overrideAdditionalHeaders = configurationOverride.getAdditionalHeaders();
+        if (overrideAdditionalHeaders != null) {
+            if (this.additionalHeaders == null) {
+                this.additionalHeaders = overrideAdditionalHeaders;
+            } else {
+                this.additionalHeaders.putAll(overrideAdditionalHeaders);
+            }
+        }
 
         return result;
     }
@@ -258,5 +269,14 @@ public class Configuration implements BaseConfiguration {
     @Override
     public Duration getMinimumRetryDelay() {
         return minimumRetryDelay;
+    }
+
+    public Configuration additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
     }
 }

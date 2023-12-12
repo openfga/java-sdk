@@ -12,10 +12,23 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientWriteOptions {
+import java.util.Map;
+
+public class ClientWriteOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private String authorizationModelId;
     private Boolean disableTransactions = false;
     private int transactionChunkSize;
+
+    public ClientWriteOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientWriteOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;

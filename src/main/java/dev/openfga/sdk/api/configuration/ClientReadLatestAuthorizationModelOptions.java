@@ -14,11 +14,10 @@ package dev.openfga.sdk.api.configuration;
 
 import java.util.Map;
 
-public class ClientCheckOptions implements AdditionalHeadersSupplier {
+public class ClientReadLatestAuthorizationModelOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
-    private String authorizationModelId;
 
-    public ClientCheckOptions additionalHeaders(Map<String, String> additionalHeaders) {
+    public ClientReadLatestAuthorizationModelOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
         return this;
     }
@@ -26,14 +25,5 @@ public class ClientCheckOptions implements AdditionalHeadersSupplier {
     @Override
     public Map<String, String> getAdditionalHeaders() {
         return this.additionalHeaders;
-    }
-
-    public ClientCheckOptions authorizationModelId(String authorizationModelId) {
-        this.authorizationModelId = authorizationModelId;
-        return this;
-    }
-
-    public String getAuthorizationModelId() {
-        return authorizationModelId;
     }
 }

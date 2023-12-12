@@ -319,6 +319,19 @@ public class ApiClient {
     }
 
     /**
+     * Add a custom request interceptor. This interceptor will be run after any
+     * other interceptor(s) already in place.
+     *
+     * <p>For details on request interceptors, see {@link ApiClient#setRequestInterceptor(Consumer)}</p>
+     *
+     * @param interceptor A function invoked before creating each request. A value
+     *                    of null resets the interceptor to a no-op.
+     */
+    public void addRequestInterceptor(Consumer<HttpRequest.Builder> interceptor) {
+        this.interceptor = this.interceptor != null ? this.interceptor.andThen(interceptor) : interceptor;
+    }
+
+    /**
      * Get the custom interceptor.
      *
      * @return The custom interceptor that was set, or null if there isn't any.

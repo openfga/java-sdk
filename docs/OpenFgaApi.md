@@ -106,6 +106,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## checkWithHttpInfo
@@ -187,6 +188,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -257,6 +259,7 @@ No authorization required
 | **201** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## createStoreWithHttpInfo
@@ -336,6 +339,7 @@ No authorization required
 | **201** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -405,6 +409,7 @@ No authorization required
 | **204** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## deleteStoreWithHttpInfo
@@ -483,6 +488,7 @@ No authorization required
 | **204** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -555,6 +561,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## expandWithHttpInfo
@@ -636,6 +643,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -706,6 +714,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## getStoreWithHttpInfo
@@ -785,6 +794,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -857,6 +867,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## listObjectsWithHttpInfo
@@ -938,6 +949,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1010,6 +1022,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## listStoresWithHttpInfo
@@ -1091,6 +1104,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1163,6 +1177,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readWithHttpInfo
@@ -1244,6 +1259,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1316,6 +1332,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAssertionsWithHttpInfo
@@ -1397,6 +1414,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1469,6 +1487,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAuthorizationModelWithHttpInfo
@@ -1550,6 +1569,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1624,6 +1644,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAuthorizationModelsWithHttpInfo
@@ -1707,6 +1728,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1783,6 +1805,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readChangesWithHttpInfo
@@ -1868,6 +1891,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1940,6 +1964,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeWithHttpInfo
@@ -2021,6 +2046,7 @@ No authorization required
 | **200** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -2094,6 +2120,7 @@ No authorization required
 | **204** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeAssertionsWithHttpInfo
@@ -2176,6 +2203,7 @@ No authorization required
 | **204** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -2248,6 +2276,7 @@ No authorization required
 | **201** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeAuthorizationModelWithHttpInfo
@@ -2329,5 +2358,6 @@ No authorization required
 | **201** | A successful response. |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 

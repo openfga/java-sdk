@@ -12,9 +12,22 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientReadAuthorizationModelsOptions {
+import java.util.Map;
+
+public class ClientReadAuthorizationModelsOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private Integer pageSize;
     private String continuationToken;
+
+    public ClientReadAuthorizationModelsOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientReadAuthorizationModelsOptions pageSize(Integer pageSize) {
         this.pageSize = pageSize;

@@ -16,6 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * Configuration overrides for an api client. Values are initialized to null, and any values unset are intended to fall
@@ -31,6 +32,7 @@ public class ConfigurationOverride implements BaseConfiguration {
     private Duration connectTimeout;
     private Integer maxRetries;
     private Duration minimumRetryDelay;
+    private Map<String, String> additionalHeaders;
 
     public ConfigurationOverride() {
         this.apiUrl = null;
@@ -38,6 +40,7 @@ public class ConfigurationOverride implements BaseConfiguration {
         this.userAgent = null;
         this.readTimeout = null;
         this.connectTimeout = null;
+        this.additionalHeaders = null;
     }
 
     /**
@@ -178,5 +181,29 @@ public class ConfigurationOverride implements BaseConfiguration {
     @Override
     public Duration getMinimumRetryDelay() {
         return minimumRetryDelay;
+    }
+
+    public ConfigurationOverride additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    public ConfigurationOverride addHeaders(AdditionalHeadersSupplier supplier) {
+        if (supplier == null || supplier.getAdditionalHeaders() == null) {
+            // No headers to add.
+            return this;
+        }
+
+        var additionalHeaders = supplier.getAdditionalHeaders();
+        if (this.additionalHeaders != null) {
+            this.additionalHeaders.putAll(additionalHeaders);
+        } else {
+            this.additionalHeaders = additionalHeaders;
+        }
+        return this;
+    }
+
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
     }
 }

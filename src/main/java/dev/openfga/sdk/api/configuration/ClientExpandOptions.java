@@ -12,8 +12,21 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientExpandOptions {
+import java.util.Map;
+
+public class ClientExpandOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private String authorizationModelId;
+
+    public ClientExpandOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientExpandOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;

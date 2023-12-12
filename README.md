@@ -736,6 +736,8 @@ fgaClient.writeAssertions(assertions, options).get();
 ### Models
 
 
+- [AbortedMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/AbortedMessageResponse.md)
+
 - [Any](https://github.com/openfga/java-sdk/blob/main/docs/Any.md)
 
 - [Assertion](https://github.com/openfga/java-sdk/blob/main/docs/Assertion.md)
