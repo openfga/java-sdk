@@ -22,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,7 +43,7 @@ public class Configuration implements BaseConfiguration {
     private Duration connectTimeout;
     private int maxRetries;
     private Duration minimumRetryDelay;
-    private Map<String, String> additionalHeaders;
+    private Map<String, String> defaultHeaders;
 
     public Configuration() {
         this.apiUrl = DEFAULT_API_URL;
@@ -111,14 +112,21 @@ public class Configuration implements BaseConfiguration {
         Duration overrideMinimumRetryDelay = configurationOverride.getMinimumRetryDelay();
         result.minimumRetryDelay(overrideMinimumRetryDelay != null ? overrideMinimumRetryDelay : minimumRetryDelay);
 
-        Map<String, String> overrideAdditionalHeaders = configurationOverride.getAdditionalHeaders();
-        if (overrideAdditionalHeaders != null) {
-            if (this.additionalHeaders == null) {
-                this.additionalHeaders = overrideAdditionalHeaders;
-            } else {
-                this.additionalHeaders.putAll(overrideAdditionalHeaders);
-            }
+        Map<String, String> headers = new HashMap<>();
+        if (defaultHeaders != null) {
+            headers.putAll(defaultHeaders);
         }
+        Map<String, String> additionalHeaders = configurationOverride.getAdditionalHeaders();
+        if (additionalHeaders != null) {
+            additionalHeaders.forEach((header, value) -> {
+                if (value == null) {
+                    headers.remove(header);
+                } else {
+                    headers.put(header, value);
+                }
+            });
+        }
+        result.defaultHeaders(headers);
 
         return result;
     }
@@ -150,6 +158,10 @@ public class Configuration implements BaseConfiguration {
 
     /**
      * Set the user agent.
+     *
+     * <p>Within the context of a single request, a "User-Agent" header from either
+     * {@link Configuration#defaultHeaders(Map)} or {@link ConfigurationOverride#additionalHeaders(Map)}
+     * will take precedence over this value.</p>
      *
      * @param userAgent The user agent.
      * @return This object.
@@ -271,12 +283,15 @@ public class Configuration implements BaseConfiguration {
         return minimumRetryDelay;
     }
 
-    public Configuration additionalHeaders(Map<String, String> additionalHeaders) {
-        this.additionalHeaders = additionalHeaders;
+    public Configuration defaultHeaders(Map<String, String> defaultHeaders) {
+        this.defaultHeaders = defaultHeaders;
         return this;
     }
 
-    public Map<String, String> getAdditionalHeaders() {
-        return this.additionalHeaders;
+    public Map<String, String> getDefaultHeaders() {
+        if (this.defaultHeaders == null) {
+            this.defaultHeaders = Map.of();
+        }
+        return this.defaultHeaders;
     }
 }

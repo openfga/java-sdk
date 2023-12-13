@@ -71,9 +71,9 @@ public class OpenFgaApi {
             this.oAuth2Client = null;
         }
 
-        var additionalHeaders = configuration.getAdditionalHeaders();
-        if (additionalHeaders != null) {
-            apiClient.addRequestInterceptor(httpRequest -> additionalHeaders.forEach(httpRequest::setHeader));
+        var defaultHeaders = configuration.getDefaultHeaders();
+        if (defaultHeaders != null) {
+            apiClient.addRequestInterceptor(httpRequest -> defaultHeaders.forEach(httpRequest::setHeader));
         }
     }
 
@@ -146,8 +146,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -227,8 +231,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -307,8 +315,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
@@ -392,8 +404,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -472,8 +488,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -558,8 +578,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -657,8 +681,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -741,8 +769,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -834,8 +866,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -923,8 +959,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -1033,8 +1073,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -1144,8 +1188,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -1227,8 +1275,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -1330,8 +1382,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -1427,8 +1483,12 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
-        if (configuration.getAdditionalHeaders() != null) {
-            configuration.getAdditionalHeaders().forEach(localVarRequestBuilder::header);
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {

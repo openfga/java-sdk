@@ -1132,7 +1132,7 @@ public class OpenFgaClientTest {
                 .onPost(postPath)
                 .withBody(isOneOf(write2Body, write1Body, delete2Body, delete1Body))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
@@ -1149,28 +1149,28 @@ public class OpenFgaClientTest {
                 .post(postPath)
                 .withBody(is(write2Body))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(2);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(write1Body))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(delete2Body))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(2);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(delete1Body))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(200, response.getStatusCode());
     }
@@ -1189,13 +1189,13 @@ public class OpenFgaClientTest {
                 .onPost(postPath)
                 .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(skippedUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, EMPTY_RESPONSE_BODY);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(is(writeBody.apply(failedUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(Stream.of(firstUser, failedUser, skippedUser)
@@ -1218,21 +1218,21 @@ public class OpenFgaClientTest {
                 .post(postPath)
                 .withBody(is(writeBody.apply(firstUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(writeBody.apply(failedUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(writeBody.apply(skippedUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(0);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
         assertEquals(400, exception.getStatusCode());
@@ -1584,7 +1584,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
@@ -1602,7 +1602,7 @@ public class OpenFgaClientTest {
                 .post(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(Boolean.TRUE, response.get(0).getAllowed());
     }
@@ -1618,7 +1618,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         List<ClientCheckRequest> requests = IntStream.range(0, 20)
                 .mapToObj(ignored -> new ClientCheckRequest()
@@ -1637,7 +1637,7 @@ public class OpenFgaClientTest {
                 .post(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(20);
     }
 
@@ -1966,7 +1966,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of(DEFAULT_RELATION))
@@ -1985,7 +1985,7 @@ public class OpenFgaClientTest {
                 .post(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
         assertNotNull(response.getRelations());
@@ -2004,7 +2004,7 @@ public class OpenFgaClientTest {
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of("owner"))
@@ -2023,7 +2023,7 @@ public class OpenFgaClientTest {
                 .post(postUrl)
                 .withBody(is(expectedBody))
                 .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, isUUID())
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
         assertNotNull(response.getRelations());
@@ -2467,7 +2467,7 @@ public class OpenFgaClientTest {
                         + "If this behavior ever changes, it could be a subtle breaking change.");
     }
 
-    private Matcher<String> isUUID() {
+    private Matcher<String> anyValidUUID() {
         return new UUIDMatcher();
     }
 
@@ -2476,7 +2476,9 @@ public class OpenFgaClientTest {
         private boolean wasInvalidUUID = false;
 
         @Override
-        public void describeTo(Description description) {}
+        public void describeTo(Description description) {
+            description.appendText("any valid UUID");
+        }
 
         @Override
         public boolean matches(Object item) {

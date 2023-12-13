@@ -16,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import dev.openfga.sdk.errors.*;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ConfigurationTest {
@@ -23,6 +25,7 @@ class ConfigurationTest {
     private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.2.3";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Map<String, String> DEFAULT_HEADERS = Map.of();
 
     @Test
     void apiUrl_nullDefaults() throws FgaInvalidParameterException {
@@ -129,13 +132,83 @@ class ConfigurationTest {
         Configuration config = new Configuration();
 
         // NOTE: Failures in this test indicate that default values in Configuration have changed. Changing
-        // the defaults of Configuration can be a suprising and breaking change for consumers.
+        // the defaults of Configuration can be a surprising and breaking change for consumers.
 
         // Then
         assertEquals(DEFAULT_API_URL, config.getApiUrl());
         assertEquals(DEFAULT_USER_AGENT, config.getUserAgent());
         assertEquals(DEFAULT_READ_TIMEOUT, config.getReadTimeout());
         assertEquals(DEFAULT_CONNECT_TIMEOUT, config.getConnectTimeout());
+        assertEquals(DEFAULT_HEADERS, config.getDefaultHeaders());
+    }
+
+    @Test
+    void override_addHeader() {
+        // Given
+        var originalHeaders = Map.of("Original-Header", "from original");
+        var original = new Configuration().defaultHeaders(originalHeaders);
+
+        var overrideHeaders = Map.of("Override-Header", "from override");
+        var override = new ConfigurationOverride().additionalHeaders(overrideHeaders);
+
+        // When
+        Configuration result = original.override(override);
+
+        // Then
+        assertEquals("from original", result.getDefaultHeaders().get("Original-Header"));
+        assertEquals("from override", result.getDefaultHeaders().get("Override-Header"));
+        assertEquals(
+                2,
+                result.getDefaultHeaders().size(),
+                "Resulting configuration should have one header from the original configuration and one header from the override.");
+        assertEquals(1, originalHeaders.size(), "Original headers should not be modified.");
+        assertEquals(1, overrideHeaders.size(), "Override headers should not be modified.");
+    }
+
+    @Test
+    void override_overwriteHeader() {
+        // Given
+        var originalHeaders = Map.of("Header-To-Overwrite", "from original");
+        var original = new Configuration().defaultHeaders(originalHeaders);
+
+        var overrideHeaders = Map.of("Header-To-Overwrite", "from override");
+        var override = new ConfigurationOverride().additionalHeaders(overrideHeaders);
+
+        // When
+        Configuration result = original.override(override);
+
+        // Then
+        assertEquals("from override", result.getDefaultHeaders().get("Header-To-Overwrite"));
+
+        assertEquals(
+                "from original",
+                originalHeaders.get("Header-To-Overwrite"),
+                "Original headers should not be modified.");
+        assertEquals(1, result.getDefaultHeaders().size(), "Original headers should not be modified.");
+        assertEquals(1, originalHeaders.size(), "Original headers should not be modified.");
+        assertEquals(1, overrideHeaders.size(), "Override headers should not be modified.");
+    }
+
+    @Test
+    void override_unsetHeader() {
+        // Given
+        var originalHeaders = Map.of("Header-To-Unset", "from original");
+        var original = new Configuration().defaultHeaders(originalHeaders);
+
+        Map<String, String> overrideHeaders = new HashMap<>();
+        overrideHeaders.put("Header-To-Unset", null);
+        var override = new ConfigurationOverride().additionalHeaders(overrideHeaders);
+
+        // When
+        Configuration result = original.override(override);
+
+        // Then
+        assertEquals(0, result.getDefaultHeaders().size());
+
+        assertEquals(
+                "from original", originalHeaders.get("Header-To-Unset"), "Original headers should not be modified.");
+        assertEquals(1, originalHeaders.size(), "Original headers should not be modified.");
+        assertEquals(1, overrideHeaders.size(), "Override headers should not be modified.");
     }
 
     @Test
