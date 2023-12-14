@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
 import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.errors.FgaError;

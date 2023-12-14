@@ -10,24 +10,25 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
-import dev.openfga.sdk.api.model.ReadAssertionsResponse;
+import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.model.ReadResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ClientReadAssertionsResponse extends ReadAssertionsResponse {
+public class ClientReadResponse extends ReadResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
 
-    public ClientReadAssertionsResponse(ApiResponse<ReadAssertionsResponse> apiResponse) {
+    public ClientReadResponse(ApiResponse<ReadResponse> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
-        ReadAssertionsResponse response = apiResponse.getData();
-        this.setAssertions(response.getAssertions());
-        this.setAuthorizationModelId(response.getAuthorizationModelId());
+        ReadResponse response = apiResponse.getData();
+        this.setTuples(response.getTuples());
+        this.setContinuationToken(response.getContinuationToken());
     }
 
     public int getStatusCode() {

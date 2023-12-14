@@ -10,8 +10,9 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
+import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.model.ReadAuthorizationModelResponse;
 import dev.openfga.sdk.api.model.ReadAuthorizationModelsResponse;
 import java.util.List;

@@ -10,14 +10,22 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
-public class ClientReadRequest {
+import dev.openfga.sdk.api.model.CheckRequestTupleKey;
+import java.util.List;
+
+public class ClientCheckRequest {
     private String user;
     private String relation;
     private String _object;
+    private List<ClientTupleKey> contextualTuples;
 
-    public ClientReadRequest _object(String _object) {
+    public CheckRequestTupleKey asCheckRequestTupleKey() {
+        return new CheckRequestTupleKey().user(user).relation(relation)._object(_object);
+    }
+
+    public ClientCheckRequest _object(String _object) {
         this._object = _object;
         return this;
     }
@@ -30,7 +38,7 @@ public class ClientReadRequest {
         return _object;
     }
 
-    public ClientReadRequest relation(String relation) {
+    public ClientCheckRequest relation(String relation) {
         this.relation = relation;
         return this;
     }
@@ -43,7 +51,7 @@ public class ClientReadRequest {
         return relation;
     }
 
-    public ClientReadRequest user(String user) {
+    public ClientCheckRequest user(String user) {
         this.user = user;
         return this;
     }
@@ -54,5 +62,14 @@ public class ClientReadRequest {
      **/
     public String getUser() {
         return user;
+    }
+
+    public ClientCheckRequest contextualTuples(List<ClientTupleKey> contextualTuples) {
+        this.contextualTuples = contextualTuples;
+        return this;
+    }
+
+    public List<ClientTupleKey> getContextualTuples() {
+        return contextualTuples;
     }
 }

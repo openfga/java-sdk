@@ -10,17 +10,17 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
 import java.util.List;
 
-public class ClientListRelationsRequest {
+public class ClientListObjectsRequest {
     private String user;
-    private String _object;
-    private List<String> relations;
+    private String relation;
+    private String type;
     private List<ClientTupleKey> contextualTupleKeys;
 
-    public ClientListRelationsRequest user(String user) {
+    public ClientListObjectsRequest user(String user) {
         this.user = user;
         return this;
     }
@@ -33,29 +33,29 @@ public class ClientListRelationsRequest {
         return user;
     }
 
-    public ClientListRelationsRequest _object(String _object) {
-        this._object = _object;
-        return this;
-    }
-
-    public String getObject() {
-        return _object;
-    }
-
-    public ClientListRelationsRequest relations(List<String> relations) {
-        this.relations = relations;
+    public ClientListObjectsRequest relation(String relation) {
+        this.relation = relation;
         return this;
     }
 
     /**
-     * Get relations
-     * @return relations
+     * Get relation
+     * @return relation
      **/
-    public List<String> getRelations() {
-        return relations;
+    public String getRelation() {
+        return relation;
     }
 
-    public ClientListRelationsRequest contextualTupleKeys(List<ClientTupleKey> contextualTupleKeys) {
+    public ClientListObjectsRequest type(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public ClientListObjectsRequest contextualTupleKeys(List<ClientTupleKey> contextualTupleKeys) {
         this.contextualTupleKeys = contextualTupleKeys;
         return this;
     }

@@ -16,6 +16,7 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static java.util.UUID.randomUUID;
 
 import dev.openfga.sdk.api.*;
+import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;

@@ -10,24 +10,21 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
-import dev.openfga.sdk.api.model.ReadResponse;
+import dev.openfga.sdk.api.client.ApiResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ClientReadResponse extends ReadResponse {
+public class ClientDeleteStoreResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
 
-    public ClientReadResponse(ApiResponse<ReadResponse> apiResponse) {
+    public ClientDeleteStoreResponse(ApiResponse<Void> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
-        ReadResponse response = apiResponse.getData();
-        this.setTuples(response.getTuples());
-        this.setContinuationToken(response.getContinuationToken());
     }
 
     public int getStatusCode() {

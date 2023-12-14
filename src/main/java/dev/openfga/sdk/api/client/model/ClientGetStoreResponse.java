@@ -10,20 +10,27 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
+import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.model.GetStoreResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ClientWriteAssertionsResponse {
+public class ClientGetStoreResponse extends GetStoreResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
 
-    public ClientWriteAssertionsResponse(ApiResponse<Void> apiResponse) {
+    public ClientGetStoreResponse(ApiResponse<GetStoreResponse> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
+        GetStoreResponse response = apiResponse.getData();
+        this.setName(response.getName());
+        this.setId(response.getId());
+        this.setCreatedAt(response.getCreatedAt());
+        this.setUpdatedAt(response.getUpdatedAt());
     }
 
     public int getStatusCode() {

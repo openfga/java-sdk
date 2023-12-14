@@ -10,23 +10,21 @@
  * Do not edit the class manually.
  */
 
-package dev.openfga.sdk.api.client;
+package dev.openfga.sdk.api.client.model;
 
-import dev.openfga.sdk.api.model.ExpandResponse;
+import dev.openfga.sdk.api.client.ApiResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ClientExpandResponse extends ExpandResponse {
+public class ClientWriteAssertionsResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
 
-    public ClientExpandResponse(ApiResponse<ExpandResponse> apiResponse) {
+    public ClientWriteAssertionsResponse(ApiResponse<Void> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
-        ExpandResponse response = apiResponse.getData();
-        this.setTree(response.getTree());
     }
 
     public int getStatusCode() {
