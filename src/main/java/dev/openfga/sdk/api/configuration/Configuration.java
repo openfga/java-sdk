@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.configuration;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.MalformedURLException;
@@ -29,10 +30,10 @@ import java.util.Map;
  * Configurations for an api client.
  */
 public class Configuration implements BaseConfiguration {
-    public static final String VERSION = "0.2.3";
+    public static final String VERSION = "0.3.0";
 
     private static final String DEFAULT_API_URL = "http://localhost:8080";
-    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.2.3";
+    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.3.0";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
@@ -68,13 +69,8 @@ public class Configuration implements BaseConfiguration {
                 throw new FgaInvalidParameterException("apiUrl", "Configuration", cause);
             }
 
-            if (isNullOrWhitespace(uri.getScheme())) {
-                throw new FgaInvalidParameterException("scheme", "Configuration");
-            }
-
-            if (isNullOrWhitespace(uri.getHost())) {
-                throw new FgaInvalidParameterException("hostname", "Configuration");
-            }
+            assertParamExists(uri.getScheme(), "scheme", "Configuration");
+            assertParamExists(uri.getHost(), "hostname", "Configuration");
         }
 
         if (credentials != null) {

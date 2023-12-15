@@ -1,6 +1,7 @@
 package dev.openfga.sdk.api.client;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.*;
@@ -28,9 +29,7 @@ public class HttpRequestAttempt<T> {
     public HttpRequestAttempt(
             HttpRequest request, String name, Class<T> clazz, ApiClient apiClient, Configuration configuration)
             throws FgaInvalidParameterException {
-        if (configuration.getMaxRetries() == null) {
-            throw new FgaInvalidParameterException("maxRetries", "Configuration");
-        }
+        assertParamExists(configuration.getMaxRetries(), "maxRetries", "Configuration");
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.name = name;

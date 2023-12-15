@@ -12,7 +12,7 @@
 
 package dev.openfga.sdk.api.configuration;
 
-import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 
@@ -30,21 +30,10 @@ public class ClientCredentials {
     }
 
     public void assertValid() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(clientId)) {
-            throw new FgaInvalidParameterException("clientId", "ClientCredentials");
-        }
-
-        if (isNullOrWhitespace(clientSecret)) {
-            throw new FgaInvalidParameterException("clientSecret", "ClientCredentials");
-        }
-
-        if (isNullOrWhitespace(apiTokenIssuer)) {
-            throw new FgaInvalidParameterException("apiTokenIssuer", "ClientCredentials");
-        }
-
-        if (isNullOrWhitespace(apiAudience)) {
-            throw new FgaInvalidParameterException("apiAudience", "ClientCredentials");
-        }
+        assertParamExists(clientId, "clientId", "ClientCredentials");
+        assertParamExists(clientSecret, "clientSecret", "ClientCredentials");
+        assertParamExists(apiTokenIssuer, "apiTokenIssuer", "ClientCredentials");
+        assertParamExists(apiAudience, "apiAudience", "ClientCredentials");
     }
 
     public String getClientId() {

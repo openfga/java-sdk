@@ -256,8 +256,8 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.createStore(null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling createStore", exception.getMessage());
+        var exception = assertInstanceOf(FgaInvalidParameterException.class, execException.getCause());
+        assertEquals("Required parameter body was invalid when calling createStore.", exception.getMessage());
     }
 
     @Test
@@ -717,9 +717,9 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
+        var exception = assertInstanceOf(FgaInvalidParameterException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'body' when calling writeAuthorizationModel", exception.getMessage());
+                "Required parameter body was invalid when calling writeAuthorizationModel.", exception.getMessage());
     }
 
     @Test
