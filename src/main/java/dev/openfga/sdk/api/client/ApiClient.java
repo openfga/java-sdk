@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import dev.openfga.sdk.util.Pair;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -31,12 +30,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
 /**
@@ -142,79 +136,6 @@ public class ApiClient {
      */
     public static String urlEncode(String s) {
         return URLEncoder.encode(s, UTF_8).replaceAll("\\+", "%20");
-    }
-
-    /**
-     * Convert a URL query name/value parameter to a list of encoded {@link Pair}
-     * objects.
-     *
-     * <p>The value can be null, in which case an empty list is returned.</p>
-     *
-     * @param name The query name parameter.
-     * @param value The query value, which may not be a collection but may be
-     *              null.
-     * @return A singleton list of the {@link Pair} objects representing the input
-     * parameters, which is encoded for use in a URL. If the value is null, an
-     * empty list is returned.
-     */
-    public static List<Pair> parameterToPairs(String name, Object value) {
-        if (name == null || name.isEmpty() || value == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(new Pair(urlEncode(name), urlEncode(valueToString(value))));
-    }
-
-    /**
-     * Convert a URL query name/collection parameter to a list of encoded
-     * {@link Pair} objects.
-     *
-     * @param collectionFormat The swagger collectionFormat string (csv, tsv, etc).
-     * @param name The query name parameter.
-     * @param values A collection of values for the given query name, which may be
-     *               null.
-     * @return A list of {@link Pair} objects representing the input parameters,
-     * which is encoded for use in a URL. If the values collection is null, an
-     * empty list is returned.
-     */
-    public static List<Pair> parameterToPairs(String collectionFormat, String name, Collection<?> values) {
-        if (name == null || name.isEmpty() || values == null || values.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // get the collection format (default: csv)
-        String format = collectionFormat == null || collectionFormat.isEmpty() ? "csv" : collectionFormat;
-
-        // create the params based on the collection format
-        if ("multi".equals(format)) {
-            return values.stream()
-                    .map(value -> new Pair(urlEncode(name), urlEncode(valueToString(value))))
-                    .collect(Collectors.toList());
-        }
-
-        String delimiter;
-        switch (format) {
-            case "csv":
-                delimiter = urlEncode(",");
-                break;
-            case "ssv":
-                delimiter = urlEncode(" ");
-                break;
-            case "tsv":
-                delimiter = urlEncode("\t");
-                break;
-            case "pipes":
-                delimiter = urlEncode("|");
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal collection format: " + collectionFormat);
-        }
-
-        StringJoiner joiner = new StringJoiner(delimiter);
-        for (Object value : values) {
-            joiner.add(urlEncode(valueToString(value)));
-        }
-
-        return Collections.singletonList(new Pair(urlEncode(name), joiner.toString()));
     }
 
     protected ObjectMapper createDefaultObjectMapper() {

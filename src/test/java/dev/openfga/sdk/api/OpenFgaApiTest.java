@@ -19,7 +19,6 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.*;
-import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
@@ -204,12 +203,11 @@ public class OpenFgaApiTest {
     @Test
     public void createStore_bodyRequired() {
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.createStore(null).get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.createStore(null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling createStore", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling createStore.", exception.getMessage());
     }
 
     @Test
@@ -296,12 +294,11 @@ public class OpenFgaApiTest {
     @Test
     public void getStore_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.getStore(null).get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.getStore(null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling getStore", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling getStore.", exception.getMessage());
     }
 
     @Test
@@ -384,12 +381,11 @@ public class OpenFgaApiTest {
     @Test
     public void deleteStore_storeIdRequired() {
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.deleteStore(null).get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class, () -> fga.deleteStore(null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling deleteStore", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling deleteStore.", exception.getMessage());
     }
 
     @Test
@@ -487,15 +483,13 @@ public class OpenFgaApiTest {
     @Test
     public void readAuthorizationModels_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readAuthorizationModels(null, null, null)
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.readAuthorizationModels(null, null, null)
                         .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'storeId' when calling readAuthorizationModels",
-                exception.getMessage());
+                "Required parameter storeId was invalid when calling readAuthorizationModels.", exception.getMessage());
     }
 
     @Test
@@ -595,28 +589,25 @@ public class OpenFgaApiTest {
     @Test
     public void writeAuthorizationModel_storeIdRequired() {
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.writeAuthorizationModel(null, new WriteAuthorizationModelRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAuthorizationModel(
+                        null, new WriteAuthorizationModelRequest())
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'storeId' when calling writeAuthorizationModel",
-                exception.getMessage());
+                "Required parameter storeId was invalid when calling writeAuthorizationModel.", exception.getMessage());
     }
 
     @Test
     public void writeAuthorizationModel_bodyRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.writeAuthorizationModel(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class,
+                () -> fga.writeAuthorizationModel(DEFAULT_STORE_ID, null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'body' when calling writeAuthorizationModel", exception.getMessage());
+                "Required parameter body was invalid when calling writeAuthorizationModel.", exception.getMessage());
     }
 
     @Test
@@ -712,26 +703,24 @@ public class OpenFgaApiTest {
     @Test
     public void readAuthorizationModel_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readAuthorizationModel(null, DEFAULT_AUTH_MODEL_ID)
-                        .get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class,
+                () -> fga.readAuthorizationModel(null, DEFAULT_AUTH_MODEL_ID).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'storeId' when calling readAuthorizationModel", exception.getMessage());
+                "Required parameter storeId was invalid when calling readAuthorizationModel.", exception.getMessage());
     }
 
     @Test
     public void readAuthorizationModel_idRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readAuthorizationModel(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(
+                FgaInvalidParameterException.class,
+                () -> fga.readAuthorizationModel(DEFAULT_STORE_ID, null).get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'id' when calling readAuthorizationModel", exception.getMessage());
+        assertEquals("Required parameter id was invalid when calling readAuthorizationModel.", exception.getMessage());
     }
 
     @Test
@@ -835,13 +824,11 @@ public class OpenFgaApiTest {
     @Test
     public void readChanges_storeIdRequired() throws Exception {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readChanges(null, null, null, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.readChanges(null, null, null, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling readChanges", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling readChanges.", exception.getMessage());
     }
 
     @Test
@@ -1008,24 +995,21 @@ public class OpenFgaApiTest {
     @Test
     public void read_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.read(null, new ReadRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.read(null, new ReadRequest())
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling read", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling read.", exception.getMessage());
     }
 
     @Test
     public void read_bodyRequired() {
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.read(DEFAULT_STORE_ID, null).get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.read(DEFAULT_STORE_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling read", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling read.", exception.getMessage());
     }
 
     @Test
@@ -1240,25 +1224,21 @@ public class OpenFgaApiTest {
     @Test
     public void write_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(null, new WriteRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.write(null, new WriteRequest())
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling write", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling write.", exception.getMessage());
     }
 
     @Test
     public void write_bodyRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.write(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.write(DEFAULT_STORE_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling write", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling write.", exception.getMessage());
     }
 
     @Test
@@ -1358,25 +1338,21 @@ public class OpenFgaApiTest {
     @Test
     public void check_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.check(null, new CheckRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.check(null, new CheckRequest())
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling check", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling check.", exception.getMessage());
     }
 
     @Test
     public void check_bodyRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.check(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.check(DEFAULT_STORE_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling check", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling check.", exception.getMessage());
     }
 
     @Test
@@ -1487,25 +1463,21 @@ public class OpenFgaApiTest {
     @Test
     public void expand_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.expand(null, new ExpandRequest())
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.expand(null, new ExpandRequest())
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling expand", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling expand.", exception.getMessage());
     }
 
     @Test
     public void expand_bodyRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.expand(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.expand(DEFAULT_STORE_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling expand", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling expand.", exception.getMessage());
     }
 
     @Test
@@ -1603,25 +1575,22 @@ public class OpenFgaApiTest {
     @Test
     public void listObjects_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listObjects(null, new ListObjectsRequest())
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.listObjects(null, new ListObjectsRequest())
                         .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling listObjects", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling listObjects.", exception.getMessage());
     }
 
     @Test
     public void listObjects_bodyRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listObjects(DEFAULT_STORE_ID, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.listObjects(DEFAULT_STORE_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling listObjects", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling listObjects.", exception.getMessage());
     }
 
     @Test
@@ -1721,26 +1690,24 @@ public class OpenFgaApiTest {
     @Test
     public void readAssertions_storeIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readAssertions(null, DEFAULT_AUTH_MODEL_ID)
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.readAssertions(null, DEFAULT_AUTH_MODEL_ID)
                         .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling readAssertions", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling readAssertions.", exception.getMessage());
     }
 
     @Test
     public void readAssertions_authModelIdRequired() {
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.readAssertions(DEFAULT_STORE_ID, null)
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.readAssertions(DEFAULT_STORE_ID, null)
                         .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'authorizationModelId' when calling readAssertions",
+                "Required parameter authorizationModelId was invalid when calling readAssertions.",
                 exception.getMessage());
     }
 
@@ -1837,39 +1804,36 @@ public class OpenFgaApiTest {
     @Test
     public void writeAssertions_storeIdRequired() {
         // When
-        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.writeAssertions(
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(
                         null, DEFAULT_AUTH_MODEL_ID, new WriteAssertionsRequest())
                 .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'storeId' when calling writeAssertions", exception.getMessage());
+        assertEquals("Required parameter storeId was invalid when calling writeAssertions.", exception.getMessage());
     }
 
     @Test
     public void writeAssertions_authModelIdRequired() {
         // When
-        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.writeAssertions(
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(
                         DEFAULT_STORE_ID, null, new WriteAssertionsRequest())
                 .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
         assertEquals(
-                "Missing the required parameter 'authorizationModelId' when calling writeAssertions",
+                "Required parameter authorizationModelId was invalid when calling writeAssertions.",
                 exception.getMessage());
     }
 
     @Test
     public void writeAssertions_bodyRequired() {
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.writeAssertions(DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID, null)
-                        .get());
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.writeAssertions(
+                        DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID, null)
+                .get());
 
         // Then
-        var exception = assertInstanceOf(ApiException.class, execException.getCause());
-        assertEquals("Missing the required parameter 'body' when calling writeAssertions", exception.getMessage());
+        assertEquals("Required parameter body was invalid when calling writeAssertions.", exception.getMessage());
     }
 
     @Test

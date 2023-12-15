@@ -12,6 +12,8 @@
 
 package dev.openfga.sdk.api;
 
+import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+
 import dev.openfga.sdk.api.auth.*;
 import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
@@ -41,10 +43,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A low-level API representation of an OpenFGA server.
@@ -108,66 +109,20 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<CheckResponse>> check(
             String storeId, CheckRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "check");
+
+        validate(body, "body", "check");
+
+        String path = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    checkRequestBuilder(storeId, body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "check", CheckResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder checkRequestBuilder(String storeId, CheckRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling check");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling check");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -198,61 +153,18 @@ public class OpenFgaApi {
 
     private CompletableFuture<ApiResponse<CreateStoreResponse>> createStore(
             CreateStoreRequest body, Configuration configuration) throws ApiException, FgaInvalidParameterException {
+
+        validate(body, "body", "createStore");
+
+        String path = "/stores";
+
         try {
-            HttpRequest request = createStoreRequestBuilder(body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "createStore", CreateStoreResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder createStoreRequestBuilder(CreateStoreRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling createStore");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores";
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -282,56 +194,18 @@ public class OpenFgaApi {
 
     private CompletableFuture<ApiResponse<Void>> deleteStore(String storeId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "deleteStore");
+
+        String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    deleteStoreRequestBuilder(storeId, configuration).build();
+            HttpRequest request = buildHttpRequest("DELETE", path, configuration);
             return new HttpRequestAttempt<>(request, "deleteStore", Void.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder deleteStoreRequestBuilder(String storeId, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling deleteStore");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -365,67 +239,20 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ExpandResponse>> expand(
             String storeId, ExpandRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "expand");
+
+        validate(body, "body", "expand");
+
+        String path = "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    expandRequestBuilder(storeId, body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "expand", ExpandResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder expandRequestBuilder(String storeId, ExpandRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling expand");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling expand");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath =
-                "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -456,55 +283,18 @@ public class OpenFgaApi {
 
     private CompletableFuture<ApiResponse<GetStoreResponse>> getStore(String storeId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "getStore");
+
+        String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request = getStoreRequestBuilder(storeId, configuration).build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "getStore", GetStoreResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder getStoreRequestBuilder(String storeId, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling getStore");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -538,68 +328,20 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ListObjectsResponse>> listObjects(
             String storeId, ListObjectsRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "listObjects");
+
+        validate(body, "body", "listObjects");
+
+        String path = "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    listObjectsRequestBuilder(storeId, body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "listObjects", ListObjectsResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder listObjectsRequestBuilder(
-            String storeId, ListObjectsRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling listObjects");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling listObjects");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath =
-                "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -633,71 +375,17 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ListStoresResponse>> listStores(
             Integer pageSize, String continuationToken, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        String path = "/stores";
+        path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
+
         try {
-            HttpRequest request = listStoresRequestBuilder(pageSize, continuationToken, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "listStores", ListStoresResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder listStoresRequestBuilder(
-            Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores";
-
-        List<Pair> localVarQueryParams = new ArrayList<>();
-        StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
-        String localVarQueryParameterBaseName;
-        localVarQueryParameterBaseName = "page_size";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("page_size", pageSize));
-        localVarQueryParameterBaseName = "continuation_token";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("continuation_token", continuationToken));
-
-        if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
-            StringJoiner queryJoiner = new StringJoiner("&");
-            localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
-            if (localVarQueryStringJoiner.length() != 0) {
-                queryJoiner.add(localVarQueryStringJoiner.toString());
-            }
-            localVarRequestBuilder.uri(
-                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
-        } else {
-            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-        }
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -731,66 +419,20 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ReadResponse>> read(
             String storeId, ReadRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "read");
+
+        validate(body, "body", "read");
+
+        String path = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    readRequestBuilder(storeId, body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "read", ReadResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder readRequestBuilder(String storeId, ReadRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling read");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling read");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -824,65 +466,23 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ReadAssertionsResponse>> readAssertions(
             String storeId, String authorizationModelId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "readAssertions");
+
+        validate(authorizationModelId, "authorizationModelId", "readAssertions");
+
+        String path = "/stores/{store_id}/assertions/{authorization_model_id}"
+                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
+                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
+
         try {
-            HttpRequest request = readAssertionsRequestBuilder(storeId, authorizationModelId, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
                             request, "readAssertions", ReadAssertionsResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder readAssertionsRequestBuilder(
-            String storeId, String authorizationModelId, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling readAssertions");
-        }
-        // verify the required parameter 'authorizationModelId' is set
-        if (authorizationModelId == null) {
-            throw new ApiException(
-                    400, "Missing the required parameter 'authorizationModelId' when calling readAssertions");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/assertions/{authorization_model_id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -915,9 +515,17 @@ public class OpenFgaApi {
 
     private CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModel(
             String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "readAuthorizationModel");
+
+        validate(id, "id", "readAuthorizationModel");
+
+        String path = "/stores/{store_id}/authorization-models/{id}"
+                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
+                .replace("{id}", ApiClient.urlEncode(id.toString()));
+
         try {
-            HttpRequest request = readAuthorizationModelRequestBuilder(storeId, id, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
                             request,
                             "readAuthorizationModel",
@@ -928,54 +536,6 @@ public class OpenFgaApi {
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder readAuthorizationModelRequestBuilder(
-            String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling readAuthorizationModel");
-        }
-        // verify the required parameter 'id' is set
-        if (id == null) {
-            throw new ApiException(400, "Missing the required parameter 'id' when calling readAuthorizationModel");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/authorization-models/{id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{id}", ApiClient.urlEncode(id.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -1013,10 +573,15 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ReadAuthorizationModelsResponse>> readAuthorizationModels(
             String storeId, Integer pageSize, String continuationToken, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "readAuthorizationModels");
+
+        String path = "/stores/{store_id}/authorization-models"
+                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
+
         try {
-            HttpRequest request = readAuthorizationModelsRequestBuilder(
-                            storeId, pageSize, continuationToken, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
                             request,
                             "readAuthorizationModels",
@@ -1027,69 +592,6 @@ public class OpenFgaApi {
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder readAuthorizationModelsRequestBuilder(
-            String storeId, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(
-                    400, "Missing the required parameter 'storeId' when calling readAuthorizationModels");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/authorization-models"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<>();
-        StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
-        String localVarQueryParameterBaseName;
-        localVarQueryParameterBaseName = "page_size";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("page_size", pageSize));
-        localVarQueryParameterBaseName = "continuation_token";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("continuation_token", continuationToken));
-
-        if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
-            StringJoiner queryJoiner = new StringJoiner("&");
-            localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
-            if (localVarQueryStringJoiner.length() != 0) {
-                queryJoiner.add(localVarQueryStringJoiner.toString());
-            }
-            localVarRequestBuilder.uri(
-                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
-        } else {
-            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-        }
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -1133,78 +635,19 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ReadChangesResponse>> readChanges(
             String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "readChanges");
+
+        String path = "/stores/{store_id}/changes".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        path = pathWithParams(path, "type", type, "page_size", pageSize, "continuation_token", continuationToken);
+
         try {
-            HttpRequest request = readChangesRequestBuilder(storeId, type, pageSize, continuationToken, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "readChanges", ReadChangesResponse.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder readChangesRequestBuilder(
-            String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling readChanges");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath =
-                "/stores/{store_id}/changes".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<>();
-        StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
-        String localVarQueryParameterBaseName;
-        localVarQueryParameterBaseName = "type";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("type", type));
-        localVarQueryParameterBaseName = "page_size";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("page_size", pageSize));
-        localVarQueryParameterBaseName = "continuation_token";
-        localVarQueryParams.addAll(ApiClient.parameterToPairs("continuation_token", continuationToken));
-
-        if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
-            StringJoiner queryJoiner = new StringJoiner("&");
-            localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
-            if (localVarQueryStringJoiner.length() != 0) {
-                queryJoiner.add(localVarQueryStringJoiner.toString());
-            }
-            localVarRequestBuilder.uri(
-                    URI.create(configuration.getApiUrl() + localVarPath + '?' + queryJoiner.toString()));
-        } else {
-            localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-        }
-
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -1237,66 +680,20 @@ public class OpenFgaApi {
 
     private CompletableFuture<ApiResponse<Object>> write(String storeId, WriteRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "write");
+
+        validate(body, "body", "write");
+
+        String path = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request =
-                    writeRequestBuilder(storeId, body, configuration).build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "write", Object.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder writeRequestBuilder(String storeId, WriteRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling write");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling write");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -1336,74 +733,24 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<Void>> writeAssertions(
             String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "writeAssertions");
+
+        validate(authorizationModelId, "authorizationModelId", "writeAssertions");
+
+        validate(body, "body", "writeAssertions");
+
+        String path = "/stores/{store_id}/assertions/{authorization_model_id}"
+                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
+                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
+
         try {
-            HttpRequest request = writeAssertionsRequestBuilder(storeId, authorizationModelId, body, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("PUT", path, body, configuration);
             return new HttpRequestAttempt<>(request, "writeAssertions", Void.class, apiClient, configuration)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    private HttpRequest.Builder writeAssertionsRequestBuilder(
-            String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
-            throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(400, "Missing the required parameter 'storeId' when calling writeAssertions");
-        }
-        // verify the required parameter 'authorizationModelId' is set
-        if (authorizationModelId == null) {
-            throw new ApiException(
-                    400, "Missing the required parameter 'authorizationModelId' when calling writeAssertions");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling writeAssertions");
-        }
-
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/assertions/{authorization_model_id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
-        try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
-        Duration readTimeout = configuration.getReadTimeout();
-        if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
-        }
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
-        }
-        return localVarRequestBuilder;
     }
 
     /**
@@ -1437,9 +784,16 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<WriteAuthorizationModelResponse>> writeAuthorizationModel(
             String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
+
+        validate(storeId, "storeId", "writeAuthorizationModel");
+
+        validate(body, "body", "writeAuthorizationModel");
+
+        String path = "/stores/{store_id}/authorization-models"
+                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+
         try {
-            HttpRequest request = writeAuthorizationModelRequestBuilder(storeId, body, configuration)
-                    .build();
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(
                             request,
                             "writeAuthorizationModel",
@@ -1452,59 +806,83 @@ public class OpenFgaApi {
         }
     }
 
-    private HttpRequest.Builder writeAuthorizationModelRequestBuilder(
-            String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
+    private HttpRequest buildHttpRequest(String method, String path, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
-        // verify the required parameter 'storeId' is set
-        if (storeId == null) {
-            throw new ApiException(
-                    400, "Missing the required parameter 'storeId' when calling writeAuthorizationModel");
-        }
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException(400, "Missing the required parameter 'body' when calling writeAuthorizationModel");
-        }
+        return buildHttpRequestWithPublisher(method, path, HttpRequest.BodyPublishers.noBody(), configuration);
+    }
 
-        // verify the Configuration is valid
-        configuration.assertValid();
-
-        HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-        String localVarPath = "/stores/{store_id}/authorization-models"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
-
-        localVarRequestBuilder.uri(URI.create(configuration.getApiUrl() + localVarPath));
-
-        localVarRequestBuilder.header("Content-Type", "application/json");
-        localVarRequestBuilder.header("Accept", "application/json");
-
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
-        }
-
-        if (configuration.getUserAgent() != null) {
-            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
-        }
-
-        if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
-        }
-
+    private <T> HttpRequest buildHttpRequest(String method, String path, T body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
         try {
             byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+            var bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(localVarPostBody);
+            return buildHttpRequestWithPublisher(method, path, bodyPublisher, configuration);
         } catch (IOException e) {
             throw new ApiException(e);
         }
+    }
+
+    private HttpRequest buildHttpRequestWithPublisher(
+            String method, String path, HttpRequest.BodyPublisher bodyPublisher, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
+        // verify the Configuration is valid
+        configuration.assertValid();
+
+        var httpRequest = HttpRequest.newBuilder();
+
+        httpRequest.uri(URI.create(configuration.getApiUrl() + path));
+
+        httpRequest.header("Content-Type", "application/json");
+        httpRequest.header("Accept", "application/json");
+
+        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
+            String accessToken = getAccessToken(configuration);
+            httpRequest.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            httpRequest.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(httpRequest::header);
+        }
+
+        httpRequest.method(method, bodyPublisher);
+
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
-            localVarRequestBuilder.timeout(readTimeout);
+            httpRequest.timeout(readTimeout);
         }
         if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(localVarRequestBuilder);
+            apiClient.getRequestInterceptor().accept(httpRequest);
         }
-        return localVarRequestBuilder;
+
+        return httpRequest.build();
+    }
+
+    private String pathWithParams(String basePath, Object... params) {
+        var path = new StringBuilder().append(basePath);
+        var paramStream = Stream.<String>builder();
+        for (int i = 0; i < params.length - 1; i += 2) {
+            if (params[i] == null || params[i + 1] == null) {
+                continue;
+            }
+            Pair.of(params[i].toString(), params[i + 1].toString())
+                    .map(Pair::asQueryStringPair)
+                    .ifPresent(paramStream::add);
+        }
+        String parameters = paramStream.build().collect(Collectors.joining("&"));
+        if (!isNullOrWhitespace(parameters)) {
+            path.append("?").append(parameters);
+        }
+        return path.toString();
+    }
+
+    private void validate(Object obj, String name, String context) throws FgaInvalidParameterException {
+        if (obj == null || obj instanceof String && isNullOrWhitespace((String) obj)) {
+            throw new FgaInvalidParameterException(name, context);
+        }
     }
 
     /**
