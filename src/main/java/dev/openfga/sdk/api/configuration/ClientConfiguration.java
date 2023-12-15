@@ -12,7 +12,7 @@
 
 package dev.openfga.sdk.api.configuration;
 
-import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.time.Duration;
@@ -22,15 +22,11 @@ public class ClientConfiguration extends Configuration {
     private String authorizationModelId;
 
     public void assertValidStoreId() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(storeId)) {
-            throw new FgaInvalidParameterException("storeId", "ClientConfiguration");
-        }
+        assertParamExists(storeId, "storeId", "ClientConfiguration");
     }
 
     public void assertValidAuthorizationModelId() throws FgaInvalidParameterException {
-        if (isNullOrWhitespace(authorizationModelId)) {
-            throw new FgaInvalidParameterException("authorizationModelId", "ClientConfiguration");
-        }
+        assertParamExists(authorizationModelId, "authorizationModelId", "ClientConfiguration");
     }
 
     /**

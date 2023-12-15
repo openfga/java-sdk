@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.api.auth.*;
 import dev.openfga.sdk.api.client.*;
@@ -110,9 +111,9 @@ public class OpenFgaApi {
             String storeId, CheckRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "check");
+        assertParamExists(storeId, "storeId", "check");
 
-        validate(body, "body", "check");
+        assertParamExists(body, "body", "check");
 
         String path = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -154,7 +155,7 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<CreateStoreResponse>> createStore(
             CreateStoreRequest body, Configuration configuration) throws ApiException, FgaInvalidParameterException {
 
-        validate(body, "body", "createStore");
+        assertParamExists(body, "body", "createStore");
 
         String path = "/stores";
 
@@ -195,7 +196,7 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<Void>> deleteStore(String storeId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "deleteStore");
+        assertParamExists(storeId, "storeId", "deleteStore");
 
         String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -240,9 +241,9 @@ public class OpenFgaApi {
             String storeId, ExpandRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "expand");
+        assertParamExists(storeId, "storeId", "expand");
 
-        validate(body, "body", "expand");
+        assertParamExists(body, "body", "expand");
 
         String path = "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -284,7 +285,7 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<GetStoreResponse>> getStore(String storeId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "getStore");
+        assertParamExists(storeId, "storeId", "getStore");
 
         String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -329,9 +330,9 @@ public class OpenFgaApi {
             String storeId, ListObjectsRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "listObjects");
+        assertParamExists(storeId, "storeId", "listObjects");
 
-        validate(body, "body", "listObjects");
+        assertParamExists(body, "body", "listObjects");
 
         String path = "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -420,9 +421,9 @@ public class OpenFgaApi {
             String storeId, ReadRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "read");
+        assertParamExists(storeId, "storeId", "read");
 
-        validate(body, "body", "read");
+        assertParamExists(body, "body", "read");
 
         String path = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -467,9 +468,9 @@ public class OpenFgaApi {
             String storeId, String authorizationModelId, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "readAssertions");
+        assertParamExists(storeId, "storeId", "readAssertions");
 
-        validate(authorizationModelId, "authorizationModelId", "readAssertions");
+        assertParamExists(authorizationModelId, "authorizationModelId", "readAssertions");
 
         String path = "/stores/{store_id}/assertions/{authorization_model_id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
@@ -516,9 +517,9 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<ReadAuthorizationModelResponse>> readAuthorizationModel(
             String storeId, String id, Configuration configuration) throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "readAuthorizationModel");
+        assertParamExists(storeId, "storeId", "readAuthorizationModel");
 
-        validate(id, "id", "readAuthorizationModel");
+        assertParamExists(id, "id", "readAuthorizationModel");
 
         String path = "/stores/{store_id}/authorization-models/{id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
@@ -574,7 +575,7 @@ public class OpenFgaApi {
             String storeId, Integer pageSize, String continuationToken, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "readAuthorizationModels");
+        assertParamExists(storeId, "storeId", "readAuthorizationModels");
 
         String path = "/stores/{store_id}/authorization-models"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
@@ -636,7 +637,7 @@ public class OpenFgaApi {
             String storeId, String type, Integer pageSize, String continuationToken, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "readChanges");
+        assertParamExists(storeId, "storeId", "readChanges");
 
         String path = "/stores/{store_id}/changes".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
         path = pathWithParams(path, "type", type, "page_size", pageSize, "continuation_token", continuationToken);
@@ -681,9 +682,9 @@ public class OpenFgaApi {
     private CompletableFuture<ApiResponse<Object>> write(String storeId, WriteRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "write");
+        assertParamExists(storeId, "storeId", "write");
 
-        validate(body, "body", "write");
+        assertParamExists(body, "body", "write");
 
         String path = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
@@ -734,11 +735,11 @@ public class OpenFgaApi {
             String storeId, String authorizationModelId, WriteAssertionsRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "writeAssertions");
+        assertParamExists(storeId, "storeId", "writeAssertions");
 
-        validate(authorizationModelId, "authorizationModelId", "writeAssertions");
+        assertParamExists(authorizationModelId, "authorizationModelId", "writeAssertions");
 
-        validate(body, "body", "writeAssertions");
+        assertParamExists(body, "body", "writeAssertions");
 
         String path = "/stores/{store_id}/assertions/{authorization_model_id}"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
@@ -785,9 +786,9 @@ public class OpenFgaApi {
             String storeId, WriteAuthorizationModelRequest body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
-        validate(storeId, "storeId", "writeAuthorizationModel");
+        assertParamExists(storeId, "storeId", "writeAuthorizationModel");
 
-        validate(body, "body", "writeAuthorizationModel");
+        assertParamExists(body, "body", "writeAuthorizationModel");
 
         String path = "/stores/{store_id}/authorization-models"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
@@ -877,12 +878,6 @@ public class OpenFgaApi {
             path.append("?").append(parameters);
         }
         return path.toString();
-    }
-
-    private void validate(Object obj, String name, String context) throws FgaInvalidParameterException {
-        if (obj == null || obj instanceof String && isNullOrWhitespace((String) obj)) {
-            throw new FgaInvalidParameterException(name, context);
-        }
     }
 
     /**

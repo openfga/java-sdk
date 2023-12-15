@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.configuration;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.MalformedURLException;
@@ -68,13 +69,8 @@ public class Configuration implements BaseConfiguration {
                 throw new FgaInvalidParameterException("apiUrl", "Configuration", cause);
             }
 
-            if (isNullOrWhitespace(uri.getScheme())) {
-                throw new FgaInvalidParameterException("scheme", "Configuration");
-            }
-
-            if (isNullOrWhitespace(uri.getHost())) {
-                throw new FgaInvalidParameterException("hostname", "Configuration");
-            }
+            assertParamExists(uri.getScheme(), "scheme", "Configuration");
+            assertParamExists(uri.getHost(), "hostname", "Configuration");
         }
 
         if (credentials != null) {
