@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.io.IOException;

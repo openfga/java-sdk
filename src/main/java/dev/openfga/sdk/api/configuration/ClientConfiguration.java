@@ -98,12 +98,6 @@ public class ClientConfiguration extends Configuration {
     /* Overrides beyond this point required for typing. */
 
     @Override
-    public ClientConfiguration override(ConfigurationOverride configurationOverride) {
-        super.override(configurationOverride);
-        return this;
-    }
-
-    @Override
     public ClientConfiguration apiUrl(String apiUrl) {
         super.apiUrl(apiUrl);
         return this;

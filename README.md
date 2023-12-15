@@ -212,8 +212,11 @@ Get a paginated list of stores.
 
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/ListStores)
 
+> Passing `ClientListStoresOptions` is optional. All fields of `ClientListStoresOptions` are optional.
+
 ```java
 var options = new ClientListStoresOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .pageSize(10)
     .continuationToken("...");
 var stores = fgaClient.listStores(options);
@@ -227,9 +230,12 @@ Initialize a store.
 
 [API Documentation](https://openfga.dev/api/service/docs/api#/Stores/CreateStore)
 
+> Passing `ClientCreateStoreOptions` is optional. All fields of `ClientCreateStoreOptions` are optional.
+
 ```java
 var request = new CreateStoreRequest().name("FGA Demo");
-var store = fgaClient.createStore(request).get();
+var options = new ClientCreateStoreOptions().additionalHeaders(Map.of("Some-Http-Header", "Some value"));
+var store = fgaClient.createStore(request, options).get();
 
 // store.getId() = "01FQH7V8BEG3GPQW93KTRFR8JB"
 
@@ -249,8 +255,11 @@ Get information about the current store.
 
 > Requires a client initialized with a storeId
 
+> Passing `ClientGetStoreOptions` is optional. All fields of `ClientGetStoreOptions` are optional.
+
 ```java
-var store = fgaClient.getStore().get();
+var options = new ClientGetStoreOptions().additionalHeaders(Map.of("Some-Http-Header", "Some value"));
+var store = fgaClient.getStore(options).get();
 
 // store = { "id": "01FQH7V8BEG3GPQW93KTRFR8JB", "name": "FGA Demo Store", "created_at": "2022-01-01T00:00:00.000Z", "updated_at": "2022-01-01T00:00:00.000Z" }
 ```
@@ -263,8 +272,11 @@ Delete a store.
 
 > Requires a client initialized with a storeId
 
+> Passing `ClientDeleteStoreOptions` is optional. All fields of `ClientDeleteStoreOptions` are optional.
+
 ```java
-var store = fgaClient.deleteStore().get();
+var options = new ClientDeleteStoreOptions().additionalHeaders(Map.of("Some-Http-Header", "Some value"));
+var store = fgaClient.deleteStore(options).get();
 ```
 
 #### Authorization Models
@@ -275,8 +287,11 @@ Read all authorization models in the store.
 
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModels)
 
+> Passing `ClientReadAuthorizationModelsOptions` is optional. All fields of `ClientReadAuthorizationModelsOptions` are optional.
+
 ```java
 var options = new ClientReadAuthorizationModelsOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .pageSize(10)
     .continuationToken("...");
 var response = fgaClient.readAuthorizationModels(options).get();
@@ -297,6 +312,8 @@ Create a new authorization model.
 > Learn more about [the OpenFGA configuration language](https://openfga.dev/docs/configuration-language).
 
 > You can use the OpenFGA [CLI](https://github.com/openfga/cli) or [Syntax Transformer](https://github.com/openfga/syntax-transformer) to convert between the OpenFGA DSL and the JSON authorization model.
+
+> Passing `ClientWriteAuthorizationModelOptions` is optional. All fields of `ClientWriteAuthorizationModelOptions` are optional.
 
 ```java
 
@@ -326,8 +343,9 @@ var request = new WriteAuthorizationModelRequest()
                 ))
             )
     ));
+var options = new ClientWriteAuthorizationModelOptions().additionalHeaders(Map.of("Some-Http-Header", "Some value"));
 
-var response = fgaClient.writeAuthorizationModel(request).get();
+var response = fgaClient.writeAuthorizationModel(request, options).get();
 
 // response.getAuthorizationModelId() = "01GXSA8YR785C4FYS3C0RTG7B1"
 ```
@@ -338,8 +356,11 @@ Read a particular authorization model.
 
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
+> Passing `ClientReadAuthorizationModelOptions` is optional. All fields of `ClientReadAuthorizationModelOptions` are optional.
+
 ```java
 var options = new ClientReadAuthorizationModelOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
@@ -356,8 +377,11 @@ Reads the latest authorization model (note: this ignores the model id in configu
 
 [API Documentation](https://openfga.dev/api/service#/Authorization%20Models/ReadAuthorizationModel)
 
+> Passing `ClientReadLatestAuthorizationModelOptions` is optional. All fields of `ClientReadLatestAuthorizationModelOptions` are optional.
+
 ```java
-var response = fgaClient.readLatestAuthorizationModel().get();
+var options = new ClientReadLatestAuthorizationModelOptions().additionalHeaders(Map.of("Some-Http-Header", "Some value"));
+var response = fgaClient.readLatestAuthorizationModel(options).get();
 
 // response.getAuthorizationModel().getId() = "01GXSA8YR785C4FYS3C0RTG7B1"
 // response.getAuthorizationModel().SchemaVersion() = "1.1"
@@ -372,13 +396,16 @@ Reads the list of historical relationship tuple writes and deletes.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/ReadChanges)
 
+> Passing `ClientReadChangesOptions` is optional. All fields of `ClientReadChangesOptions` are optional.
+
 ```java
+var request = new ClientReadChangesRequest().type("document");
 var options = new ClientReadChangesOptions()
-    .type("document")
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .pageSize(10)
     .continuationToken("...");
 
-var response = fgaClient.readChanges(options).get();
+var response = fgaClient.readChanges(request, options).get();
 
 // response.getContinuationToken() = ...
 // response.getChanges() = [
@@ -392,6 +419,8 @@ var response = fgaClient.readChanges(options).get();
 Reads the relationship tuples stored in the database. It does not evaluate nor exclude invalid tuples according to the authorization model.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/Read)
+
+> Passing `ClientReadOptions` is optional. All fields of `ClientReadOptions` are optional.
 
 ```java
 // Find if a relationship tuple stating that a certain user is a viewer of a certain document
@@ -419,6 +448,7 @@ var request = new ClientReadRequest()
 var request = new ClientReadRequest();
 
 var options = new ClientReadOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .pageSize(10)
     .continuationToken("...");
 
@@ -433,6 +463,8 @@ var response = fgaClient.read(request, options).get();
 Create and/or delete relationship tuples to update the system state.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Tuples/Write)
+
+> Passing `ClientWriteOptions` is optional. All fields of `ClientWriteOptions` are optional.
 
 ###### Transaction mode (default)
 
@@ -457,9 +489,11 @@ var request = new ClientWriteRequest()
             ._object("document:roadmap")
     ));
 
-// You can rely on the model id set in the configuration or override it for this specific request
 var options = new ClientWriteOptions()
-    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
+    .disableTransactions(false);
 
 var response = fgaClient.write(request, options).get();
 ```
@@ -469,6 +503,9 @@ Convenience `WriteTuples` and `DeleteTuples` methods are also available.
 ###### Non-transaction mode
 
 The SDK will split the writes into separate requests and send them sequentially to avoid violating rate limits.
+
+> Passing `ClientWriteOptions` with `.disableTransactions(true)` is required to use non-transaction mode.
+> All other fields of `ClientWriteOptions` are optional.
 
 ```java
 var request = new ClientWriteRequest()
@@ -489,6 +526,7 @@ var request = new ClientWriteRequest()
             ._object("document:roadmap")
     ));
 var options = new ClientWriteOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
     .disableTransactions(true)
@@ -505,12 +543,15 @@ Check if a user has a particular relation with an object.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Check)
 
+> Passing `ClientCheckOptions` is optional. All fields of `ClientCheckOptions` are optional.
+
 ```java
 var request = new ClientCheckRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
     .relation("writer")
     ._object("document:roadmap");
 var options = new ClientCheckOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
@@ -522,6 +563,8 @@ var response = fgaClient.check(request, options).get();
 
 Run a set of [checks](#check). Batch Check will return `allowed: false` if it encounters an error, and will return the error in the body.
 If 429s or 5xxs are encountered, the underlying check will retry up to 15 times before giving up.
+
+> Passing `ClientBatchCheckOptions` is optional. All fields of `ClientBatchCheckOptions` are optional.
 
 ```java
 var request = List.of(
@@ -555,6 +598,7 @@ var request = List.of(
         ._object("document:roadmap")
 );
 var options = new ClientBatchCheckOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
     .maxParallelRequests(5); // Max number of requests to issue in parallel, defaults to 10
@@ -611,11 +655,14 @@ Expands the relationships in userset tree format.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/Expand)
 
+> Passing `ClientExpandOptions` is optional. All fields of `ClientExpandOptions` are optional.
+
 ```java
 var request = new ClientExpandRequest()
     .relation("viewer")
     ._object("document:roadmap");
-var options = new ClientCheckOptions()
+var options = new ClientExpandOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
@@ -630,6 +677,8 @@ List the objects of a particular type a user has access to.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/ListObjects)
 
+> Passing `ClientListObjectsOptions` is optional. All fields of `ClientListObjectsOptions` are optional.
+
 ```java
 var request = new ClientListObjectsRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
@@ -642,6 +691,7 @@ var request = new ClientListObjectsRequest()
             ._object("document:budget")
     ));
 var options = new ClientListObjectsOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 
@@ -653,6 +703,8 @@ var response = fgaClient.listObjects(request, options).get();
 ##### List Relations
 
 List the relations a user has on an object.
+
+> Passing `ClientListRelationsOptions` is optional. All fields of `ClientListRelationsOptions` are optional.
 
 ```java
 var request = new ClientListRelationsRequest()
@@ -667,6 +719,7 @@ var request = new ClientListRelationsRequest()
         )
     );
 var options = new ClientListRelationsOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // When unspecified, defaults to 10
     .maxParallelRequests()
     // You can rely on the model id set in the configuration or override it for this specific request
@@ -685,8 +738,12 @@ Read assertions for a particular authorization model.
 
 [API Documentation](https://openfga.dev/api/service#/Assertions/Read%20Assertions)
 
+> Passing `ClientReadAssertionsOptions` is optional. All fields of `ClientReadAssertionsOptions` are optional.
+
 ```java
 var options = new ClientReadAssertionsOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
+    // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 var response = fgaClient.readAssertions(options).get();
 ```
@@ -697,8 +754,11 @@ Update the assertions for a particular authorization model.
 
 [API Documentation](https://openfga.dev/api/service#/Assertions/Write%20Assertions)
 
+> Passing `ClientWriteAssertionsOptions` is optional. All fields of `ClientWriteAssertionsOptions` are optional.
+
 ```java
 var options = new ClientWriteAssertionsOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
 var assertions = List.of(
     new ClientAssertion()
@@ -735,6 +795,8 @@ fgaClient.writeAssertions(assertions, options).get();
 
 ### Models
 
+
+- [AbortedMessageResponse](https://github.com/openfga/java-sdk/blob/main/docs/AbortedMessageResponse.md)
 
 - [Any](https://github.com/openfga/java-sdk/blob/main/docs/Any.md)
 

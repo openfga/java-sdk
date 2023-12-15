@@ -12,9 +12,22 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientBatchCheckOptions {
+import java.util.Map;
+
+public class ClientBatchCheckOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private Integer maxParallelRequests;
     private String authorizationModelId;
+
+    public ClientBatchCheckOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientBatchCheckOptions maxParallelRequests(Integer maxParallelRequests) {
         this.maxParallelRequests = maxParallelRequests;
@@ -35,6 +48,6 @@ public class ClientBatchCheckOptions {
     }
 
     public ClientCheckOptions asClientCheckOptions() {
-        return new ClientCheckOptions().authorizationModelId(authorizationModelId);
+        return new ClientCheckOptions().additionalHeaders(additionalHeaders).authorizationModelId(authorizationModelId);
     }
 }

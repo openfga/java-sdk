@@ -12,8 +12,21 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientCheckOptions {
+import java.util.Map;
+
+public class ClientCheckOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private String authorizationModelId;
+
+    public ClientCheckOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientCheckOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;

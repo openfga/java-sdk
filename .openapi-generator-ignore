@@ -14,3 +14,6 @@ pom.xml
 .github/workflows/maven.yml
 git_push.sh
 .travis.yml
+
+# Model tests intentionally ignored
+**/test/**/model/*

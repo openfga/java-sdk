@@ -12,18 +12,21 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientReadChangesOptions {
-    private String type;
+import java.util.Map;
+
+public class ClientReadChangesOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private Integer pageSize;
     private String continuationToken;
 
-    public ClientReadChangesOptions type(String type) {
-        this.type = type;
+    public ClientReadChangesOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
         return this;
     }
 
-    public String getType() {
-        return type;
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
     }
 
     public ClientReadChangesOptions pageSize(Integer pageSize) {

@@ -17,16 +17,18 @@ import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 public class OAuth2Client {
+    private static final String DEFAULT_API_TOKEN_ISSUER_PATH = "/oauth/token";
+
     private final ApiClient apiClient;
-    private final Credentials credentials;
+    private final String apiTokenIssuer;
     private final AccessToken token = new AccessToken();
     private final CredentialsFlowRequest authRequest;
-    private final String apiTokenIssuer;
 
     /**
      * Initializes a new instance of the {@link OAuth2Client} class
@@ -34,14 +36,14 @@ public class OAuth2Client {
      * @param configuration Configuration, including credentials, that can be used to retrieve an access tokens
      */
     public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
-        this.credentials = configuration.getCredentials();
+        var clientCredentials = configuration.getCredentials().getClientCredentials();
 
         this.apiClient = apiClient;
-        this.apiTokenIssuer = credentials.getClientCredentials().getApiTokenIssuer();
+        this.apiTokenIssuer = buildApiTokenIssuer(clientCredentials.getApiTokenIssuer());
         this.authRequest = new CredentialsFlowRequest();
-        this.authRequest.setClientId(credentials.getClientCredentials().getClientId());
-        this.authRequest.setClientSecret(credentials.getClientCredentials().getClientSecret());
-        this.authRequest.setAudience(credentials.getClientCredentials().getApiAudience());
+        this.authRequest.setClientId(clientCredentials.getClientId());
+        this.authRequest.setClientSecret(clientCredentials.getClientSecret());
+        this.authRequest.setAudience(clientCredentials.getApiAudience());
         this.authRequest.setGrantType("client_credentials");
     }
 
@@ -72,10 +74,11 @@ public class OAuth2Client {
         try {
             byte[] body = apiClient.getObjectMapper().writeValueAsBytes(authRequest);
 
-            Configuration config = new Configuration().apiUrl("https://" + apiTokenIssuer);
+            Configuration config = new Configuration().apiUrl(apiTokenIssuer);
 
-            HttpRequest request = ApiClient.requestBuilder("POST", "/oauth/token", body, config)
-                    .build();
+            HttpRequest.Builder requestBuilder = ApiClient.requestBuilder("POST", "", body, config);
+
+            HttpRequest request = requestBuilder.build();
 
             return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config)
                     .attemptHttpRequest()
@@ -83,5 +86,27 @@ public class OAuth2Client {
         } catch (IOException e) {
             throw new ApiException(e);
         }
+    }
+
+    private static String buildApiTokenIssuer(String issuer) throws FgaInvalidParameterException {
+        URI uri;
+        try {
+            uri = URI.create(issuer);
+        } catch (IllegalArgumentException cause) {
+            throw new FgaInvalidParameterException("apiTokenIssuer", "ClientCredentials", cause);
+        }
+
+        var scheme = uri.getScheme();
+        if (scheme == null) {
+            uri = URI.create("https://" + issuer);
+        } else if (!"https".equals(scheme) && !"http".equals(scheme)) {
+            throw new FgaInvalidParameterException("scheme", "apiTokenIssuer");
+        }
+
+        if (uri.getPath().isEmpty() || uri.getPath().equals("/")) {
+            uri = URI.create(uri.getScheme() + "://" + uri.getAuthority() + DEFAULT_API_TOKEN_ISSUER_PATH);
+        }
+
+        return uri.toString();
     }
 }

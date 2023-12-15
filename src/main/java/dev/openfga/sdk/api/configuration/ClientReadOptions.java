@@ -12,9 +12,22 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientReadOptions {
+import java.util.Map;
+
+public class ClientReadOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private Integer pageSize;
     private String continuationToken;
+
+    public ClientReadOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientReadOptions pageSize(Integer pageSize) {
         this.pageSize = pageSize;

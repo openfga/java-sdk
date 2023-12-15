@@ -12,9 +12,22 @@
 
 package dev.openfga.sdk.api.configuration;
 
-public class ClientListRelationsOptions {
+import java.util.Map;
+
+public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
+    private Map<String, String> additionalHeaders;
     private Integer maxParallelRequests;
     private String authorizationModelId;
+
+    public ClientListRelationsOptions additionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalHeaders() {
+        return this.additionalHeaders;
+    }
 
     public ClientListRelationsOptions maxParallelRequests(Integer maxParallelRequests) {
         this.maxParallelRequests = maxParallelRequests;

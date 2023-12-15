@@ -70,6 +70,11 @@ public class OpenFgaApi {
         } else {
             this.oAuth2Client = null;
         }
+
+        var defaultHeaders = configuration.getDefaultHeaders();
+        if (defaultHeaders != null) {
+            apiClient.addRequestInterceptor(httpRequest -> defaultHeaders.forEach(httpRequest::setHeader));
+        }
     }
 
     /**
@@ -139,6 +144,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -218,6 +231,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         try {
             byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
             localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
@@ -292,6 +313,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
@@ -375,6 +404,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         try {
             byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
             localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
@@ -449,6 +486,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -531,6 +576,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -628,6 +681,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
@@ -706,6 +767,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -797,6 +866,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
@@ -880,6 +957,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -986,6 +1071,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
@@ -1095,6 +1188,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
         Duration readTimeout = configuration.getReadTimeout();
         if (readTimeout != null) {
@@ -1172,6 +1273,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {
@@ -1273,6 +1382,14 @@ public class OpenFgaApi {
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
+        }
+
         try {
             byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
             localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
@@ -1364,6 +1481,14 @@ public class OpenFgaApi {
         if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
             String accessToken = getAccessToken(configuration);
             localVarRequestBuilder.header("Authorization", "Bearer " + accessToken);
+        }
+
+        if (configuration.getUserAgent() != null) {
+            localVarRequestBuilder.header("User-Agent", configuration.getUserAgent());
+        }
+
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(localVarRequestBuilder::header);
         }
 
         try {

@@ -1,7 +1,7 @@
 package dev.openfga.sdk.api.auth;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,25 +10,91 @@ import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class OAuth2ClientTest {
     private static final String CLIENT_ID = "client";
     private static final String CLIENT_SECRET = "secret";
     private static final String AUDIENCE = "audience";
     private static final String GRANT_TYPE = "client_credentials";
-    private static final String API_TOKEN_ISSUER = "test.fga.dev";
-    private static final String POST_URL = "https://" + API_TOKEN_ISSUER + "/oauth/token";
     private static final String ACCESS_TOKEN = "0123456789";
 
     private final ObjectMapper mapper = new ObjectMapper();
     private HttpClientMock mockHttpClient;
 
-    private OAuth2Client oAuth2;
+    private static Stream<Arguments> apiTokenIssuers() {
+        return Stream.of(
+                Arguments.of("issuer.fga.example", "https://issuer.fga.example/oauth/token"),
+                Arguments.of("https://issuer.fga.example", "https://issuer.fga.example/oauth/token"),
+                Arguments.of("https://issuer.fga.example/", "https://issuer.fga.example/oauth/token"),
+                Arguments.of("https://issuer.fga.example:8080", "https://issuer.fga.example:8080/oauth/token"),
+                Arguments.of("https://issuer.fga.example:8080/", "https://issuer.fga.example:8080/oauth/token"),
+                Arguments.of("issuer.fga.example/some_endpoint", "https://issuer.fga.example/some_endpoint"),
+                Arguments.of("https://issuer.fga.example/some_endpoint", "https://issuer.fga.example/some_endpoint"),
+                Arguments.of(
+                        "https://issuer.fga.example:8080/some_endpoint",
+                        "https://issuer.fga.example:8080/some_endpoint"));
+    }
 
-    @BeforeEach
-    public void setup() throws FgaInvalidParameterException {
+    @ParameterizedTest
+    @MethodSource("apiTokenIssuers")
+    public void exchangeToken(String apiTokenIssuer, String tokenEndpointUrl) throws Exception {
+        // Given
+        OAuth2Client oAuth2 = newOAuth2Client(apiTokenIssuer);
+        String expectedPostBody = String.format(
+                "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"audience\":\"%s\",\"grant_type\":\"%s\"}",
+                CLIENT_ID, CLIENT_SECRET, AUDIENCE, GRANT_TYPE);
+        String responseBody = String.format("{\"access_token\":\"%s\"}", ACCESS_TOKEN);
+        mockHttpClient.onPost(tokenEndpointUrl).withBody(is(expectedPostBody)).doReturn(200, responseBody);
+
+        // When
+        String result = oAuth2.getAccessToken().get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(tokenEndpointUrl)
+                .withBody(is(expectedPostBody))
+                .called();
+        assertEquals(ACCESS_TOKEN, result);
+    }
+
+    @Test
+    public void apiTokenIssuer_invalidScheme() {
+        // When
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> newOAuth2Client("ftp://issuer.fga.example"));
+
+        // Then
+        assertEquals("Required parameter scheme was invalid when calling apiTokenIssuer.", exception.getMessage());
+    }
+
+    private static Stream<Arguments> invalidApiTokenIssuers() {
+        return Stream.of(
+                Arguments.of("://issuer.fga.example"),
+                Arguments.of("http://issuer.fga.example#bad#fragment"),
+                Arguments.of("http://issuer.fga.example/space in path"),
+                Arguments.of("http://"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidApiTokenIssuers")
+    public void apiTokenIssuers_invalidURI(String invalidApiTokenIssuer) {
+        // When
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> newOAuth2Client(invalidApiTokenIssuer));
+
+        // Then
+        assertEquals(
+                "Required parameter apiTokenIssuer was invalid when calling ClientCredentials.",
+                exception.getMessage());
+        assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+    }
+
+    private OAuth2Client newOAuth2Client(String apiTokenIssuer) throws FgaInvalidParameterException {
         System.setProperty("HttpRequestAttempt.debug-logging", "enable");
 
         mockHttpClient = new HttpClientMock();
@@ -38,7 +104,7 @@ class OAuth2ClientTest {
                 .clientId(CLIENT_ID)
                 .clientSecret(CLIENT_SECRET)
                 .apiAudience(AUDIENCE)
-                .apiTokenIssuer(API_TOKEN_ISSUER));
+                .apiTokenIssuer(apiTokenIssuer));
 
         var configuration = new Configuration().apiUrl("").credentials(credentials);
 
@@ -46,23 +112,6 @@ class OAuth2ClientTest {
         when(apiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(apiClient.getObjectMapper()).thenReturn(mapper);
 
-        oAuth2 = new OAuth2Client(configuration, apiClient);
-    }
-
-    @Test
-    public void exchangeToken() throws Exception {
-        // Given
-        String expectedPostBody = String.format(
-                "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"audience\":\"%s\",\"grant_type\":\"%s\"}",
-                CLIENT_ID, CLIENT_SECRET, AUDIENCE, GRANT_TYPE);
-        String responseBody = String.format("{\"access_token\":\"%s\"}", ACCESS_TOKEN);
-        mockHttpClient.onPost(POST_URL).withBody(is(expectedPostBody)).doReturn(200, responseBody);
-
-        // When
-        String result = oAuth2.getAccessToken().get();
-
-        // Then
-        mockHttpClient.verify().post(POST_URL).withBody(is(expectedPostBody)).called();
-        assertEquals(ACCESS_TOKEN, result);
+        return new OAuth2Client(configuration, apiClient);
     }
 }
