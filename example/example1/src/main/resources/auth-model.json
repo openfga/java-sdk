@@ -59,6 +59,12 @@
         "parameters": {
           "ViewCount": {
             "type_name": "TYPE_NAME_INT"
+          },
+          "Type": {
+            "type_name": "TYPE_NAME_STRING"
+          },
+          "Name": {
+            "type_name": "TYPE_NAME_STRING"
           }
         }
       }
