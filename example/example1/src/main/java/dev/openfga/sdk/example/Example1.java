@@ -6,7 +6,6 @@ import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.model.*;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -77,9 +76,11 @@ class Example1 {
 
         // WriteAuthorizationModel
         var authModelJson = Files.readString(Paths.get("src", "main", "resources", "auth-model.json"));
-        var authorizationModel = fgaClient.writeAuthorizationModel(mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class)).get();
+        var authorizationModel = fgaClient
+                .writeAuthorizationModel(mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class))
+                .get();
         System.out.println("Authorization Model ID " + authorizationModel.getAuthorizationModelId());
-        
+
         // ReadAuthorizationModels - after Write
         System.out.println("Reading Authorization Models");
         models = fgaClient.readAuthorizationModels().get();
@@ -87,10 +88,12 @@ class Example1 {
 
         // ReadLatestAuthorizationModel - after Write
         var latestAuthorizationModel = fgaClient.readLatestAuthorizationModel().get();
-        System.out.println("Latest Authorization Model ID " + latestAuthorizationModel.getAuthorizationModel().getId());
+        System.out.println("Latest Authorization Model ID "
+                + latestAuthorizationModel.getAuthorizationModel().getId());
 
         // Set the model ID
-        fgaClient.setAuthorizationModelId(latestAuthorizationModel.getAuthorizationModel().getId());
+        fgaClient.setAuthorizationModelId(
+                latestAuthorizationModel.getAuthorizationModel().getId());
 
         System.out.println("MORE COMING SOON");
     }
