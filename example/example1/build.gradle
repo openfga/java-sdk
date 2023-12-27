@@ -1,10 +1,17 @@
 plugins {
     id 'application'
     id 'com.diffplug.spotless' version '6.23.3'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0-Beta2'
 }
 
 application {
-    mainClass = 'dev.openfga.sdk.example.Example1'
+    switch (language) {
+        case 'kotlin':
+            mainClass = 'dev.openfga.sdk.example.KotlinExample1'
+            break
+        default:
+            mainClass = 'dev.openfga.sdk.example.Example1'
+    }
 }
 
 repositories {
@@ -24,6 +31,9 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("org.openapitools:jackson-databind-nullable:0.2.+")
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 // Use spotless plugin to automatically format code, remove unused import, etc
@@ -52,4 +62,16 @@ spotless {
 // Ref: https://github.com/diffplug/spotless/tree/main/plugin-gradle
 tasks.register('fmt') {
     dependsOn 'spotlessApply'
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
