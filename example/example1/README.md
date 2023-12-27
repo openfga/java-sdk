@@ -22,6 +22,7 @@ Steps
 2. Run `make` to build the project
 3. If you have an OpenFGA server running, you can use it, otherwise run `make run-openfga` to spin up an instance (you'll need to switch to a different terminal after - don't forget to close it when done)
 4. Run `make run` to run the example
+   * This should run a Java example by default. Where implemented, it's possible to specify an alternate JVM language too, like `make run language=kotlin`. 
 
 #### Run using a local unpublished SDK build
 

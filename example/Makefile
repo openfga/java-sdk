@@ -2,18 +2,15 @@ all: build
 
 project_name=example1
 openfga_version=latest
+language=java
 
 build:
 	cd "${project_name}" && \
-		./gradlew build
+		./gradlew -P language=$(language) build
 
 run:
 	cd "${project_name}" && \
-		./gradlew run
-
-run-kotlin:
-	cd "${project_name}" && \
-		./gradlew -P language=kotlin run
+		./gradlew -P language=$(language) run
 
 run-openfga:
 	docker pull docker.io/openfga/openfga:${openfga_version} && \
