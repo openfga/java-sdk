@@ -5,11 +5,11 @@ openfga_version=latest
 
 build:
 	cd "${project_name}" && \
-		gradle build
+		./gradlew build
 
 run:
 	cd "${project_name}" && \
-		gradle run
+		./gradlew run
 
 run-openfga:
 	docker pull docker.io/openfga/openfga:${openfga_version} && \
