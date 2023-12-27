@@ -78,7 +78,7 @@ class Example1 {
             var mapper = new ObjectMapper().findAndRegisterModules();
 
             // WriteAuthorizationModel
-            var authModelJson = Files.readString(Paths.get("src", "main", "resources", "auth-model.json"));
+            var authModelJson = new String(new Example1().getClass().getClassLoader().getResourceAsStream("example1-auth-model.json").readAllBytes());
             var authorizationModel = fgaClient
                     .writeAuthorizationModel(mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class))
                     .get();
