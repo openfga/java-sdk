@@ -146,15 +146,15 @@ public class Store {
      * Get deletedAt
      * @return deletedAt
      **/
-    @javax.annotation.Nonnull
+    @javax.annotation.Nullable
     @JsonProperty(JSON_PROPERTY_DELETED_AT)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
     public OffsetDateTime getDeletedAt() {
         return deletedAt;
     }
 
     @JsonProperty(JSON_PROPERTY_DELETED_AT)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
     public void setDeletedAt(OffsetDateTime deletedAt) {
         this.deletedAt = deletedAt;
     }
