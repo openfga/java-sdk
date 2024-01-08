@@ -535,16 +535,7 @@ public class OpenFgaClient {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 
-        CheckRequest body = new CheckRequest();
-
-        if (request != null) {
-            body.tupleKey(request.asCheckRequestTupleKey());
-
-            var contextualTuples = request.getContextualTuples();
-            if (contextualTuples != null && !contextualTuples.isEmpty()) {
-                body.contextualTuples(ClientTupleKey.asContextualTupleKeys(contextualTuples));
-            }
-        }
+        CheckRequest body = request.asCheckRequest();
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
             body.authorizationModelId(options.getAuthorizationModelId());
