@@ -21,6 +21,7 @@ public class ClientCredentials {
     private String clientSecret;
     private String apiTokenIssuer;
     private String apiAudience;
+    private String scopes;
 
     public ClientCredentials() {}
 
@@ -65,5 +66,14 @@ public class ClientCredentials {
 
     public String getApiAudience() {
         return this.apiAudience;
+    }
+
+    public ClientCredentials scopes(String scopes) {
+        this.scopes = scopes;
+        return this;
+    }
+
+    public String getScopes() {
+        return this.scopes;
     }
 }

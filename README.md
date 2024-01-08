@@ -165,7 +165,7 @@ public class Example {
 }
 ```
 
-#### Client Credentials
+#### Auth0 Client Credentials
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -185,6 +185,36 @@ public class Example {
                     new ClientCredentials()
                             .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
                             .apiAudience(System.getenv("FGA_API_AUDIENCE"))
+                            .clientId(System.getenv("FGA_CLIENT_ID"))
+                            .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
+                ));
+
+        var fgaClient = new OpenFgaClient(config);
+        var response = fgaClient.readAuthorizationModels().get();
+    }
+}
+```
+
+#### Oauth2 Credentials
+
+```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.Credentials;
+import java.net.http.HttpClient;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var config = new ClientConfiguration()
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
+                .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .credentials(new Credentials(
+                    new ClientCredentials()
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
+                            .scopes(System.getenv("FGA_API_SCOPES")) // optional space separated scopes
                             .clientId(System.getenv("FGA_CLIENT_ID"))
                             .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
                 ));

@@ -92,21 +92,4 @@ public class ClientCredentialsTest {
                         "Required parameter apiTokenIssuer was invalid when calling ClientCredentials.",
                         exception.getMessage()));
     }
-
-    @Test
-    public void assertValid_invalidApiAudience() {
-        INVALID_IDENTIFIERS.stream()
-                // Given
-                .map(invalid -> new ClientCredentials()
-                        .clientId(VALID_CLIENT_ID)
-                        .clientSecret(VALID_CLIENT_SECRET)
-                        .apiTokenIssuer(VALID_API_TOKEN_ISSUER)
-                        .apiAudience(invalid))
-                // When
-                .map(creds -> assertThrows(FgaInvalidParameterException.class, creds::assertValid))
-                // Then
-                .forEach(exception -> assertEquals(
-                        "Required parameter apiAudience was invalid when calling ClientCredentials.",
-                        exception.getMessage()));
-    }
 }
