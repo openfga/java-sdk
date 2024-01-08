@@ -44,6 +44,7 @@ public class OAuth2Client {
         this.authRequest.setClientId(clientCredentials.getClientId());
         this.authRequest.setClientSecret(clientCredentials.getClientSecret());
         this.authRequest.setAudience(clientCredentials.getApiAudience());
+        this.authRequest.setScope(clientCredentials.getScopes());
         this.authRequest.setGrantType("client_credentials");
     }
 

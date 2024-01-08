@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.auth;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     CredentialsFlowRequest.JSON_PROPERTY_CLIENT_ID,
     CredentialsFlowRequest.JSON_PROPERTY_CLIENT_SECRET,
     CredentialsFlowRequest.JSON_PROPERTY_AUDIENCE,
+    CredentialsFlowRequest.JSON_PROPERTY_SCOPE,
     CredentialsFlowRequest.JSON_PROPERTY_GRANT_TYPE
 })
 class CredentialsFlowRequest {
@@ -36,6 +38,9 @@ class CredentialsFlowRequest {
 
     public static final String JSON_PROPERTY_AUDIENCE = "audience";
     private String audience;
+
+    public static final String JSON_PROPERTY_SCOPE = "scope";
+    private String scope;
 
     public static final String JSON_PROPERTY_GRANT_TYPE = "grant_type";
     private String grantType;
@@ -64,6 +69,7 @@ class CredentialsFlowRequest {
     }
 
     @JsonProperty(JSON_PROPERTY_AUDIENCE)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public String getAudience() {
         return audience;
     }
@@ -71,6 +77,17 @@ class CredentialsFlowRequest {
     @JsonProperty(JSON_PROPERTY_AUDIENCE)
     public void setAudience(String audience) {
         this.audience = audience;
+    }
+
+    @JsonProperty(JSON_PROPERTY_SCOPE)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public String getScope() {
+        return scope;
+    }
+
+    @JsonProperty(JSON_PROPERTY_SCOPE)
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
     @JsonProperty(JSON_PROPERTY_GRANT_TYPE)
