@@ -28,7 +28,8 @@ import java.util.StringJoiner;
     GetStoreResponse.JSON_PROPERTY_ID,
     GetStoreResponse.JSON_PROPERTY_NAME,
     GetStoreResponse.JSON_PROPERTY_CREATED_AT,
-    GetStoreResponse.JSON_PROPERTY_UPDATED_AT
+    GetStoreResponse.JSON_PROPERTY_UPDATED_AT,
+    GetStoreResponse.JSON_PROPERTY_DELETED_AT
 })
 public class GetStoreResponse {
     public static final String JSON_PROPERTY_ID = "id";
@@ -42,6 +43,9 @@ public class GetStoreResponse {
 
     public static final String JSON_PROPERTY_UPDATED_AT = "updated_at";
     private OffsetDateTime updatedAt;
+
+    public static final String JSON_PROPERTY_DELETED_AT = "deleted_at";
+    private OffsetDateTime deletedAt;
 
     public GetStoreResponse() {}
 
@@ -133,6 +137,28 @@ public class GetStoreResponse {
         this.updatedAt = updatedAt;
     }
 
+    public GetStoreResponse deletedAt(OffsetDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+        return this;
+    }
+
+    /**
+     * Get deletedAt
+     * @return deletedAt
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_DELETED_AT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public OffsetDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    @JsonProperty(JSON_PROPERTY_DELETED_AT)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setDeletedAt(OffsetDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
     /**
      * Return true if this GetStoreResponse object is equal to o.
      */
@@ -148,12 +174,13 @@ public class GetStoreResponse {
         return Objects.equals(this.id, getStoreResponse.id)
                 && Objects.equals(this.name, getStoreResponse.name)
                 && Objects.equals(this.createdAt, getStoreResponse.createdAt)
-                && Objects.equals(this.updatedAt, getStoreResponse.updatedAt);
+                && Objects.equals(this.updatedAt, getStoreResponse.updatedAt)
+                && Objects.equals(this.deletedAt, getStoreResponse.deletedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, createdAt, updatedAt);
+        return Objects.hash(id, name, createdAt, updatedAt, deletedAt);
     }
 
     @Override
@@ -164,6 +191,7 @@ public class GetStoreResponse {
         sb.append("    name: ").append(toIndentedString(name)).append("\n");
         sb.append("    createdAt: ").append(toIndentedString(createdAt)).append("\n");
         sb.append("    updatedAt: ").append(toIndentedString(updatedAt)).append("\n");
+        sb.append("    deletedAt: ").append(toIndentedString(deletedAt)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -248,6 +276,16 @@ public class GetStoreResponse {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getUpdatedAt()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `deleted_at` to the URL query string
+        if (getDeletedAt() != null) {
+            joiner.add(String.format(
+                    "%sdeleted_at%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getDeletedAt()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

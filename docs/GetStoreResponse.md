@@ -11,6 +11,7 @@
 |**name** | **String** |  |  |
 |**createdAt** | **OffsetDateTime** |  |  |
 |**updatedAt** | **OffsetDateTime** |  |  |
+|**deletedAt** | **OffsetDateTime** |  |  [optional] |
 
 
 
