@@ -1,15 +1,23 @@
 # Changelog
 
+## v0.3.1
+
+### [0.3.1](https://github.com/openfga/java-sdk/compare/v0.3.0...v0.3.1) (2024-01-22)
+
+- feat: oauth2 client credentials support - thanks @le-yams
+- fix: add context to ClientCheckRequest
+- fix incorrect check for whether transactionChunkSize is not set
+
 ## v0.3.0
 
 ### [0.3.0](https://github.com/openfga/java-sdk/compare/v0.2.3...v0.3.0) (2023-12-13)
 
-- feat: support for Conditions
+- feat: support for [conditions](https://openfga.dev/blog/conditional-tuples-announcement)
 - feat: standard OpenFGA headers have been added to Write, BatchCheck, and ListRelations calls
 - feat: apiTokenIssuer has been expanded to support arbitrary http and https URLs. previously it supported
   only configuring a hostname - thanks @le-yams
 - feat: allow setting and overriding http headers
-- [BREAKING] chore: use latest API interfaces
+- [BREAKING] chore!: use latest API interfaces
 - chore: dependency updates
 - refactor: abstract common functionality; update validation and exception types
 
