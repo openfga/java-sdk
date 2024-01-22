@@ -54,6 +54,6 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
     }
 
     public int getTransactionChunkSize() {
-        return transactionChunkSize >= 0 ? transactionChunkSize : 1;
+        return transactionChunkSize > 0 ? transactionChunkSize : 1;
     }
 }
