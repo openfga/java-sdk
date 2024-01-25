@@ -30,9 +30,9 @@ class AccessToken {
     public boolean isValid() {
         return !isNullOrWhitespace(token)
                 && (expiresAt == null
-                        || expiresAt.isBefore(Instant.now()
-                                .plusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
-                                .plusSeconds(random.nextLong() % TOKEN_EXPIRY_JITTER_IN_SEC)));
+                        || expiresAt.isAfter(Instant.now()
+                                .minusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
+                                .minusSeconds(random.nextLong() % TOKEN_EXPIRY_JITTER_IN_SEC)));
     }
 
     public String getToken() {
