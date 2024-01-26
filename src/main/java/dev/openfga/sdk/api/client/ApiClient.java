@@ -49,6 +49,7 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
 public class ApiClient {
 
     private HttpClient.Builder builder;
+    private HttpClient client;
     private ObjectMapper mapper;
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
@@ -60,6 +61,7 @@ public class ApiClient {
     public ApiClient() {
         this.builder = createDefaultHttpClientBuilder();
         this.mapper = createDefaultObjectMapper();
+        this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
         asyncResponseInterceptor = null;
@@ -78,6 +80,7 @@ public class ApiClient {
     public ApiClient(HttpClient.Builder builder, ObjectMapper mapper) {
         this.builder = builder;
         this.mapper = mapper;
+        this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
         asyncResponseInterceptor = null;
@@ -190,6 +193,7 @@ public class ApiClient {
      */
     public ApiClient setHttpClientBuilder(HttpClient.Builder builder) {
         this.builder = builder;
+        this.client = this.builder.build();
         return this;
     }
 
@@ -201,7 +205,7 @@ public class ApiClient {
      * @return The HTTP client.
      */
     public HttpClient getHttpClient() {
-        return builder.build();
+        return client;
     }
 
     /**
