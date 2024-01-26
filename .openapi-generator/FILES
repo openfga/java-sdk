@@ -256,6 +256,7 @@ src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/auth/AccessTokenTest.java
 src/test/java/dev/openfga/sdk/api/auth/OAuth2ClientTest.java
+src/test/java/dev/openfga/sdk/api/client/ApiClientTest.java
 src/test/java/dev/openfga/sdk/api/client/OpenFgaClientTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ClientCredentialsTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ConfigurationTest.java
