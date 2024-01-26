@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 class ConfigurationTest {
     private static final String DEFAULT_API_URL = "http://localhost:8080";
-    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.3.1";
+    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.3.2";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final Map<String, String> DEFAULT_HEADERS = Map.of();
