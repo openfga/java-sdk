@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.2
+
+### [0.3.2](https://github.com/openfga/java-sdk/compare/v0.3.1...v0.3.2) (2024-01-26)
+
+- fix: fix token validity check for expiry (#48)
+- fix: send OAuth2 credentials request as form-urlencoded post (#47) - thanks @le-yams
+- fix: do not create new http client on every request (#46)
+
 ## v0.3.1
 
 ### [0.3.1](https://github.com/openfga/java-sdk/compare/v0.3.0...v0.3.1) (2024-01-22)
