@@ -12,91 +12,44 @@
 
 package dev.openfga.sdk.api.auth;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A credentials flow request. It contains a Client ID and Secret that can be exchanged for an access token.
  * <p>
  * {@see "https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow"}
  */
-@JsonPropertyOrder({
-    CredentialsFlowRequest.JSON_PROPERTY_CLIENT_ID,
-    CredentialsFlowRequest.JSON_PROPERTY_CLIENT_SECRET,
-    CredentialsFlowRequest.JSON_PROPERTY_AUDIENCE,
-    CredentialsFlowRequest.JSON_PROPERTY_SCOPE,
-    CredentialsFlowRequest.JSON_PROPERTY_GRANT_TYPE
-})
 class CredentialsFlowRequest {
-    public static final String JSON_PROPERTY_CLIENT_ID = "client_id";
-    private String clientId;
+    public static final String CLIENT_ID_PARAM_NAME = "client_id";
+    public static final String CLIENT_SECRET_PARAM_NAME = "client_secret";
+    public static final String AUDIENCE_PARAM_NAME = "audience";
+    public static final String SCOPE_PARAM_NAME = "scope";
+    public static final String GRANT_TYPE_PARAM_NAME = "grant_type";
 
-    public static final String JSON_PROPERTY_CLIENT_SECRET = "client_secret";
-    private String clientSecret;
+    private final Map<String, String> parameters = new HashMap<>();
 
-    public static final String JSON_PROPERTY_AUDIENCE = "audience";
-    private String audience;
-
-    public static final String JSON_PROPERTY_SCOPE = "scope";
-    private String scope;
-
-    public static final String JSON_PROPERTY_GRANT_TYPE = "grant_type";
-    private String grantType;
-
-    @JsonCreator
-    public CredentialsFlowRequest() {}
-
-    @JsonProperty(JSON_PROPERTY_CLIENT_ID)
-    public String getClientId() {
-        return clientId;
+    public CredentialsFlowRequest(String clientId, String clientSecret) {
+        this.parameters.put(CLIENT_ID_PARAM_NAME, clientId);
+        this.parameters.put(CLIENT_SECRET_PARAM_NAME, clientSecret);
+        this.parameters.put(GRANT_TYPE_PARAM_NAME, "client_credentials");
     }
 
-    @JsonProperty(JSON_PROPERTY_CLIENT_ID)
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    @JsonProperty(JSON_PROPERTY_CLIENT_SECRET)
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    @JsonProperty(JSON_PROPERTY_CLIENT_SECRET)
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    @JsonProperty(JSON_PROPERTY_AUDIENCE)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public String getAudience() {
-        return audience;
-    }
-
-    @JsonProperty(JSON_PROPERTY_AUDIENCE)
-    public void setAudience(String audience) {
-        this.audience = audience;
-    }
-
-    @JsonProperty(JSON_PROPERTY_SCOPE)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public String getScope() {
-        return scope;
-    }
-
-    @JsonProperty(JSON_PROPERTY_SCOPE)
     public void setScope(String scope) {
-        this.scope = scope;
+        this.parameters.put(SCOPE_PARAM_NAME, scope);
     }
 
-    @JsonProperty(JSON_PROPERTY_GRANT_TYPE)
-    public String getGrantType() {
-        return grantType;
+    public void setAudience(String audience) {
+        this.parameters.put(AUDIENCE_PARAM_NAME, audience);
     }
 
-    @JsonProperty(JSON_PROPERTY_GRANT_TYPE)
-    public void setGrantType(String grantType) {
-        this.grantType = grantType;
+    public String buildFormRequestBody() {
+        return parameters.entrySet().stream()
+                .filter(e -> e.getValue() != null)
+                .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
     }
 }

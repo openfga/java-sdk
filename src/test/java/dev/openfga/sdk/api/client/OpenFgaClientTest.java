@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.client;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -137,14 +138,15 @@ public class OpenFgaClientTest {
                 .apiAudience(apiAudience)));
         fga.setConfiguration(clientConfiguration);
 
-        String expectedOAuth2Body = String.format(
-                "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"audience\":\"%s\",\"grant_type\":\"client_credentials\"}",
-                clientId, clientSecret, apiAudience);
         String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
         String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
         mockHttpClient
                 .onPost(String.format("https://%s/oauth/token", apiTokenIssuer))
-                .withBody(is(expectedOAuth2Body))
+                .withBody(allOf(
+                        containsString(String.format("client_id=%s", clientId)),
+                        containsString(String.format("client_secret=%s", clientSecret)),
+                        containsString(String.format("audience=%s", apiAudience)),
+                        containsString(String.format("grant_type=%s", "client_credentials"))))
                 .doReturn(200, String.format("{\"access_token\":\"%s\"}", apiToken));
         mockHttpClient
                 .onPost("https://localhost/stores")

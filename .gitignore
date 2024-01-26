@@ -23,3 +23,7 @@ build
 # openapi files
 /api/openapi.yaml
 VERSION.txt
+
+# JetBrains IDEs
+.idea/
+*.iml
