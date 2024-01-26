@@ -106,6 +106,23 @@ public class ApiClient {
         return builder;
     }
 
+    /**
+     * Creates a {@link HttpRequest.Builder} for a {@code x-www-form-urlencoded} request.
+     * @param method the HTTP method to be make.
+     * @param path the URL path.
+     * @param body the request body. It must be URL-encoded.
+     * @param configuration the client configuration.
+     * @return a configured builder.
+     * @throws FgaInvalidParameterException
+     */
+    public static HttpRequest.Builder formRequestBuilder(
+            String method, String path, String body, Configuration configuration) throws FgaInvalidParameterException {
+        HttpRequest.Builder builder =
+                requestBuilder(method, path, HttpRequest.BodyPublishers.ofString(body), configuration);
+        builder.header("content-type", "application/x-www-form-urlencoded");
+        return builder;
+    }
+
     private static HttpRequest.Builder requestBuilder(
             String method, String path, HttpRequest.BodyPublisher bodyPublisher, Configuration configuration)
             throws FgaInvalidParameterException {
