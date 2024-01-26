@@ -83,6 +83,7 @@ class OAuth2ClientTest {
                 .verify()
                 .post(tokenEndpointUrl)
                 .withBody(is(expectedPostBody))
+                .withHeader("Content-Type", "application/x-www-form-urlencoded")
                 .called();
         assertEquals(ACCESS_TOKEN, result);
     }

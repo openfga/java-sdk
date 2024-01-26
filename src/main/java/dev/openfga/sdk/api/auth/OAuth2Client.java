@@ -77,7 +77,8 @@ public class OAuth2Client {
 
             Configuration config = new Configuration().apiUrl(apiTokenIssuer);
 
-            HttpRequest.Builder requestBuilder = ApiClient.requestBuilder("POST", "", body, config);
+            HttpRequest.Builder requestBuilder = ApiClient.requestBuilder("POST", "", body, config)
+                    .header("Content-Type", "application/x-www-form-urlencoded");
 
             HttpRequest request = requestBuilder.build();
 
