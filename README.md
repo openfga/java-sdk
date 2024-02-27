@@ -118,6 +118,10 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.3.2"
 
 [Learn how to initialize your SDK](https://openfga.dev/docs/getting-started/setup-sdk-client)
 
+We strongly recommend you initialize the `OpenFgaClient` only once and then re-use it throughout your app, otherwise you will incur the cost of having to re-initialize multiple times or at every request, the cost of reduced connection pooling and re-use, and would be particularly costly in the client credentials flow, as that flow will be preformed on every request.
+
+> The `Client` will by default retry API requests up to 15 times on 429 and 5xx errors.
+
 #### No Credentials
 
 ```java
