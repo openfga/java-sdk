@@ -409,6 +409,12 @@ public class OpenFgaClient {
         var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
 
         var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
+
+        if (transactions.isEmpty()) {
+            var emptyTransaction = new ClientWriteRequest().writes(null).deletes(null);
+            return this.writeNonTransaction(storeId, emptyTransaction, writeOptions);
+        }
+
         var futureResponse = this.writeNonTransaction(storeId, transactions.get(0), options);
 
         for (int i = 1; i < transactions.size(); i++) {

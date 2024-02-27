@@ -25,6 +25,7 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -1367,6 +1368,25 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void write_nothingSentWhenWritesAndDeletesAreEmpty()
+            throws FgaInvalidParameterException, ExecutionException, InterruptedException {
+        // Given
+        String postPath = String.format("https://localhost/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":null,\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+
+        // When
+        var clientWriteRequest =
+                new ClientWriteRequest().writes(Collections.emptyList()).deletes(Collections.emptyList());
+        var response = fga.write(clientWriteRequest).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).called(1);
         assertEquals(200, response.getStatusCode());
     }
 
