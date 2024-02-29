@@ -1106,7 +1106,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void writeTest_transactions() throws Exception {
+    public void writeTest_nonTransaction() throws Exception {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
@@ -1142,7 +1142,7 @@ public class OpenFgaClientTest {
                 .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
                 .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(2);
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(2);
 
         // When
         var response = fga.write(request, options).get();
@@ -1180,7 +1180,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void writeTest_transactionsWithFailure() throws Exception {
+    public void writeTest_nonTransactionsWithFailure() {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String firstUser = "user:first";
@@ -1210,7 +1210,7 @@ public class OpenFgaClientTest {
                                 .condition(DEFAULT_CONDITION))
                         .collect(Collectors.toList()));
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
+                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
 
         // When
         var execException = assertThrows(
@@ -1243,7 +1243,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void writeTest_nonTransaction() throws Exception {
+    public void writeTest_transaction() throws Exception {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
@@ -1272,7 +1272,7 @@ public class OpenFgaClientTest {
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
 
         // When
         var response = fga.write(request, options).get();
@@ -1283,7 +1283,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void writeTest_nonTransactionsWithFailure() throws Exception {
+    public void writeTest_transactionWithFailure() {
         // Given
         String postPath = "https://localhost/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
@@ -1315,7 +1315,7 @@ public class OpenFgaClientTest {
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
 
         // When
         var execException = assertThrows(

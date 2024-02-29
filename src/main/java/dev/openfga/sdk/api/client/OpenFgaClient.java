@@ -363,7 +363,7 @@ public class OpenFgaClient {
         return writeTransactions(storeId, request, options);
     }
 
-    private CompletableFuture<ClientWriteResponse> writeNonTransaction(
+    private CompletableFuture<ClientWriteResponse> writeTransactions(
             String storeId, ClientWriteRequest request, ClientWriteOptions options) {
 
         WriteRequest body = new WriteRequest();
@@ -390,7 +390,7 @@ public class OpenFgaClient {
         return call(() -> api.write(storeId, body, overrides)).thenApply(ClientWriteResponse::new);
     }
 
-    private CompletableFuture<ClientWriteResponse> writeTransactions(
+    private CompletableFuture<ClientWriteResponse> writeNonTransaction(
             String storeId, ClientWriteRequest request, ClientWriteOptions writeOptions) {
 
         var options = writeOptions != null
@@ -412,10 +412,10 @@ public class OpenFgaClient {
 
         if (transactions.isEmpty()) {
             var emptyTransaction = new ClientWriteRequest().writes(null).deletes(null);
-            return this.writeNonTransaction(storeId, emptyTransaction, writeOptions);
+            return this.writeTransactions(storeId, emptyTransaction, writeOptions);
         }
 
-        var futureResponse = this.writeNonTransaction(storeId, transactions.get(0), options);
+        var futureResponse = this.writeTransactions(storeId, transactions.get(0), options);
 
         for (int i = 1; i < transactions.size(); i++) {
             final int index = i; // Must be final in this scope for closure.
@@ -424,7 +424,7 @@ public class OpenFgaClient {
             // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
             // 2. The final successful ClientWriteResponse.
             futureResponse = futureResponse.thenCompose(
-                    _response -> this.writeNonTransaction(storeId, transactions.get(index), options));
+                    _response -> this.writeTransactions(storeId, transactions.get(index), options));
         }
 
         return futureResponse;
