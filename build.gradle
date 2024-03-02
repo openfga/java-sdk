@@ -50,7 +50,7 @@ jacocoTestReport {
 
 ext {
     jackson_version = "2.16.1"
-    junit_version = "5.10.1"
+    junit_version = "5.10.2"
 }
 
 dependencies {
