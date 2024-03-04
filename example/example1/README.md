@@ -31,7 +31,7 @@ Steps
 2. In the Example project file (e.g. `build.gradle`), comment out the part that specifies the remote SDK, e.g.
 ```groovy
 dependencies {
-    implementation("dev.openfga:openfga-sdk:0.3.+")
+    implementation("dev.openfga:openfga-sdk:0.4.+")
 
     // ...etc
 }
@@ -39,7 +39,7 @@ dependencies {
 and replace it with one pointing to the local gradle project, e.g.
 ```groovy
 dependencies {
-    // implementation("dev.openfga:openfga-sdk:0.3.+")
+    // implementation("dev.openfga:openfga-sdk:0.4.+")
     implementation project(path: ':')
 
     // ...etc

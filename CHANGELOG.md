@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0
+
+### [0.4.0](https://github.com/openfga/java-sdk/compare/v0.3.2...v0.4.0) (2024-03-04)
+
+- fix!: reverse the transaction behaviour when `disableTransactions` is set on `Write`
+  ⚠️ This is a behavioral breaking change!
+  Previously, the `OpenFgaClient` reversed the behavior of write transactions based on the `disableTransactions` flag. This has been fixed so that batched writes are sent if `disableTransactions == true` and a single transactional write if it is false (default).
+
 ## v0.3.2
 
 ### [0.3.2](https://github.com/openfga/java-sdk/compare/v0.3.1...v0.3.2) (2024-01-26)
