@@ -28,9 +28,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.openfga.OpenFGAContainer;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@Testcontainers
 public class OpenFgaClientIntegrationTest {
+
+    @Container
+    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.5.0");
+
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
@@ -62,7 +70,7 @@ public class OpenFgaClientIntegrationTest {
     public void initializeApi() throws Exception {
         System.setProperty("HttpRequestAttempt.debug-logging", "enable");
 
-        ClientConfiguration apiConfig = new ClientConfiguration().apiUrl("http://localhost:8080");
+        ClientConfiguration apiConfig = new ClientConfiguration().apiUrl(openfga.getHttpEndpoint());
         fga = new OpenFgaClient(apiConfig);
     }
 
