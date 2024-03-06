@@ -97,6 +97,8 @@ testing {
             dependencies {
                 implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
                 implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+                implementation "org.testcontainers:junit-jupiter:1.19.7"
+                implementation "org.testcontainers:openfga:1.19.7"
                 implementation project()
             }
 

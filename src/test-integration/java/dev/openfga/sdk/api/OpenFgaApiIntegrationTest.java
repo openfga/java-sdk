@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.io.IOException;
@@ -28,9 +27,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.openfga.OpenFGAContainer;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@Testcontainers
 public class OpenFgaApiIntegrationTest {
+
+    @Container
+    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.5.0");
+
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
@@ -50,7 +57,7 @@ public class OpenFgaApiIntegrationTest {
     public void initializeApi() throws Exception {
         System.setProperty("HttpRequestAttempt.debug-logging", "enable");
 
-        Configuration apiConfig = new Configuration().apiUrl("http://localhost:8080");
+        Configuration apiConfig = new Configuration().apiUrl(openfga.getHttpEndpoint());
         api = new OpenFgaApi(apiConfig);
     }
 
