@@ -25,6 +25,7 @@ docs/CheckRequestTupleKey.md
 docs/CheckResponse.md
 docs/Computed.md
 docs/Condition.md
+docs/ConditionMetadata.md
 docs/ConditionParamTypeRef.md
 docs/ContextualTupleKeys.md
 docs/CreateStoreRequest.md
@@ -59,6 +60,7 @@ docs/ReadResponse.md
 docs/RelationMetadata.md
 docs/RelationReference.md
 docs/RelationshipCondition.md
+docs/SourceInfo.md
 docs/Status.md
 docs/Store.md
 docs/Tuple.md
@@ -178,6 +180,7 @@ src/main/java/dev/openfga/sdk/api/model/CheckRequestTupleKey.java
 src/main/java/dev/openfga/sdk/api/model/CheckResponse.java
 src/main/java/dev/openfga/sdk/api/model/Computed.java
 src/main/java/dev/openfga/sdk/api/model/Condition.java
+src/main/java/dev/openfga/sdk/api/model/ConditionMetadata.java
 src/main/java/dev/openfga/sdk/api/model/ConditionParamTypeRef.java
 src/main/java/dev/openfga/sdk/api/model/ContextualTupleKeys.java
 src/main/java/dev/openfga/sdk/api/model/CreateStoreRequest.java
@@ -211,6 +214,7 @@ src/main/java/dev/openfga/sdk/api/model/ReadResponse.java
 src/main/java/dev/openfga/sdk/api/model/RelationMetadata.java
 src/main/java/dev/openfga/sdk/api/model/RelationReference.java
 src/main/java/dev/openfga/sdk/api/model/RelationshipCondition.java
+src/main/java/dev/openfga/sdk/api/model/SourceInfo.java
 src/main/java/dev/openfga/sdk/api/model/Status.java
 src/main/java/dev/openfga/sdk/api/model/Store.java
 src/main/java/dev/openfga/sdk/api/model/Tuple.java

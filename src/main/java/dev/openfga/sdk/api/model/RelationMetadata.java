@@ -15,6 +15,8 @@ package dev.openfga.sdk.api.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +25,20 @@ import java.util.StringJoiner;
 /**
  * RelationMetadata
  */
-@JsonPropertyOrder({RelationMetadata.JSON_PROPERTY_DIRECTLY_RELATED_USER_TYPES})
+@JsonPropertyOrder({
+    RelationMetadata.JSON_PROPERTY_DIRECTLY_RELATED_USER_TYPES,
+    RelationMetadata.JSON_PROPERTY_MODULE,
+    RelationMetadata.JSON_PROPERTY_SOURCE_INFO
+})
 public class RelationMetadata {
     public static final String JSON_PROPERTY_DIRECTLY_RELATED_USER_TYPES = "directly_related_user_types";
     private List<RelationReference> directlyRelatedUserTypes = new ArrayList<>();
+
+    public static final String JSON_PROPERTY_MODULE = "module";
+    private String module;
+
+    public static final String JSON_PROPERTY_SOURCE_INFO = "source_info";
+    private SourceInfo sourceInfo;
 
     public RelationMetadata() {}
 
@@ -60,6 +72,50 @@ public class RelationMetadata {
         this.directlyRelatedUserTypes = directlyRelatedUserTypes;
     }
 
+    public RelationMetadata module(String module) {
+        this.module = module;
+        return this;
+    }
+
+    /**
+     * Get module
+     * @return module
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_MODULE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public String getModule() {
+        return module;
+    }
+
+    @JsonProperty(JSON_PROPERTY_MODULE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public RelationMetadata sourceInfo(SourceInfo sourceInfo) {
+        this.sourceInfo = sourceInfo;
+        return this;
+    }
+
+    /**
+     * Get sourceInfo
+     * @return sourceInfo
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_SOURCE_INFO)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public SourceInfo getSourceInfo() {
+        return sourceInfo;
+    }
+
+    @JsonProperty(JSON_PROPERTY_SOURCE_INFO)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setSourceInfo(SourceInfo sourceInfo) {
+        this.sourceInfo = sourceInfo;
+    }
+
     /**
      * Return true if this RelationMetadata object is equal to o.
      */
@@ -72,12 +128,14 @@ public class RelationMetadata {
             return false;
         }
         RelationMetadata relationMetadata = (RelationMetadata) o;
-        return Objects.equals(this.directlyRelatedUserTypes, relationMetadata.directlyRelatedUserTypes);
+        return Objects.equals(this.directlyRelatedUserTypes, relationMetadata.directlyRelatedUserTypes)
+                && Objects.equals(this.module, relationMetadata.module)
+                && Objects.equals(this.sourceInfo, relationMetadata.sourceInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(directlyRelatedUserTypes);
+        return Objects.hash(directlyRelatedUserTypes, module, sourceInfo);
     }
 
     @Override
@@ -87,6 +145,8 @@ public class RelationMetadata {
         sb.append("    directlyRelatedUserTypes: ")
                 .append(toIndentedString(directlyRelatedUserTypes))
                 .append("\n");
+        sb.append("    module: ").append(toIndentedString(module)).append("\n");
+        sb.append("    sourceInfo: ").append(toIndentedString(sourceInfo)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -149,6 +209,21 @@ public class RelationMetadata {
                                             : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
                 }
             }
+        }
+
+        // add `module` to the URL query string
+        if (getModule() != null) {
+            joiner.add(String.format(
+                    "%smodule%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getModule()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `source_info` to the URL query string
+        if (getSourceInfo() != null) {
+            joiner.add(getSourceInfo().toUrlQueryString(prefix + "source_info" + suffix));
         }
 
         return joiner.toString();
