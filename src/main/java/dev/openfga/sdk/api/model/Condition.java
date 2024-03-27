@@ -25,7 +25,11 @@ import java.util.StringJoiner;
 /**
  * Condition
  */
-@JsonPropertyOrder({Condition.JSON_PROPERTY_NAME, Condition.JSON_PROPERTY_EXPRESSION, Condition.JSON_PROPERTY_PARAMETERS
+@JsonPropertyOrder({
+    Condition.JSON_PROPERTY_NAME,
+    Condition.JSON_PROPERTY_EXPRESSION,
+    Condition.JSON_PROPERTY_PARAMETERS,
+    Condition.JSON_PROPERTY_METADATA
 })
 public class Condition {
     public static final String JSON_PROPERTY_NAME = "name";
@@ -36,6 +40,9 @@ public class Condition {
 
     public static final String JSON_PROPERTY_PARAMETERS = "parameters";
     private Map<String, ConditionParamTypeRef> parameters = new HashMap<>();
+
+    public static final String JSON_PROPERTY_METADATA = "metadata";
+    private ConditionMetadata metadata;
 
     public Condition() {}
 
@@ -113,6 +120,28 @@ public class Condition {
         this.parameters = parameters;
     }
 
+    public Condition metadata(ConditionMetadata metadata) {
+        this.metadata = metadata;
+        return this;
+    }
+
+    /**
+     * Get metadata
+     * @return metadata
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_METADATA)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ConditionMetadata getMetadata() {
+        return metadata;
+    }
+
+    @JsonProperty(JSON_PROPERTY_METADATA)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setMetadata(ConditionMetadata metadata) {
+        this.metadata = metadata;
+    }
+
     /**
      * Return true if this Condition object is equal to o.
      */
@@ -127,12 +156,13 @@ public class Condition {
         Condition condition = (Condition) o;
         return Objects.equals(this.name, condition.name)
                 && Objects.equals(this.expression, condition.expression)
-                && Objects.equals(this.parameters, condition.parameters);
+                && Objects.equals(this.parameters, condition.parameters)
+                && Objects.equals(this.metadata, condition.metadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, expression, parameters);
+        return Objects.hash(name, expression, parameters, metadata);
     }
 
     @Override
@@ -142,6 +172,7 @@ public class Condition {
         sb.append("    name: ").append(toIndentedString(name)).append("\n");
         sb.append("    expression: ").append(toIndentedString(expression)).append("\n");
         sb.append("    parameters: ").append(toIndentedString(parameters)).append("\n");
+        sb.append("    metadata: ").append(toIndentedString(metadata)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -224,6 +255,11 @@ public class Condition {
                                             : String.format("%s%d%s", containerPrefix, _key, containerSuffix))));
                 }
             }
+        }
+
+        // add `metadata` to the URL query string
+        if (getMetadata() != null) {
+            joiner.add(getMetadata().toUrlQueryString(prefix + "metadata" + suffix));
         }
 
         return joiner.toString();

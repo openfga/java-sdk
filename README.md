@@ -850,6 +850,8 @@ fgaClient.writeAssertions(assertions, options).get();
 
 - [Condition](https://github.com/openfga/java-sdk/blob/main/docs/Condition.md)
 
+- [ConditionMetadata](https://github.com/openfga/java-sdk/blob/main/docs/ConditionMetadata.md)
+
 - [ConditionParamTypeRef](https://github.com/openfga/java-sdk/blob/main/docs/ConditionParamTypeRef.md)
 
 - [ContextualTupleKeys](https://github.com/openfga/java-sdk/blob/main/docs/ContextualTupleKeys.md)
@@ -915,6 +917,8 @@ fgaClient.writeAssertions(assertions, options).get();
 - [RelationReference](https://github.com/openfga/java-sdk/blob/main/docs/RelationReference.md)
 
 - [RelationshipCondition](https://github.com/openfga/java-sdk/blob/main/docs/RelationshipCondition.md)
+
+- [SourceInfo](https://github.com/openfga/java-sdk/blob/main/docs/SourceInfo.md)
 
 - [Status](https://github.com/openfga/java-sdk/blob/main/docs/Status.md)
 

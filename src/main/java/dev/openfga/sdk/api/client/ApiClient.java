@@ -232,12 +232,12 @@ public class ApiClient {
     }
 
     /**
-     * Get a copy of the current {@link ObjectMapper}.
+     * Get current {@link ObjectMapper}.
      *
-     * @return A copy of the current object mapper.
+     * @return the current object mapper.
      */
     public ObjectMapper getObjectMapper() {
-        return mapper.copy();
+        return mapper;
     }
 
     /**

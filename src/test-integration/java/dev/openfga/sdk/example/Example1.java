@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 class Example1 {
-    public void run() throws Exception {
+    public void run(String apiUrl) throws Exception {
         var credentials = new Credentials();
         if (System.getenv("FGA_CLIENT_ID") != null) {
             credentials = new Credentials(new ClientCredentials()
@@ -26,7 +26,7 @@ class Example1 {
         }
 
         var configuration = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // required, e.g. https://api.fga.example
+                .apiUrl(apiUrl) // required, e.g. https://api.fga.example
                 .storeId(System.getenv("FGA_STORE_ID")) // not needed when calling `CreateStore` or `ListStores`
                 .authorizationModelId(
                         System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
@@ -179,7 +179,7 @@ class Example1 {
     public static void main(String[] args) {
         System.out.println("=== Example 1 (Java) ===");
         try {
-            new Example1().run();
+            new Example1().run(System.getenv("FGA_API_URL"));
         } catch (Exception e) {
             System.err.printf("ERROR: %s%n", e);
         }

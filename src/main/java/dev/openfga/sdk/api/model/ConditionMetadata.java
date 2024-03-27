@@ -17,59 +17,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * Metadata
+ * ConditionMetadata
  */
-@JsonPropertyOrder({Metadata.JSON_PROPERTY_RELATIONS, Metadata.JSON_PROPERTY_MODULE, Metadata.JSON_PROPERTY_SOURCE_INFO
-})
-public class Metadata {
-    public static final String JSON_PROPERTY_RELATIONS = "relations";
-    private Map<String, RelationMetadata> relations = new HashMap<>();
-
+@JsonPropertyOrder({ConditionMetadata.JSON_PROPERTY_MODULE, ConditionMetadata.JSON_PROPERTY_SOURCE_INFO})
+public class ConditionMetadata {
     public static final String JSON_PROPERTY_MODULE = "module";
     private String module;
 
     public static final String JSON_PROPERTY_SOURCE_INFO = "source_info";
     private SourceInfo sourceInfo;
 
-    public Metadata() {}
+    public ConditionMetadata() {}
 
-    public Metadata relations(Map<String, RelationMetadata> relations) {
-        this.relations = relations;
-        return this;
-    }
-
-    public Metadata putRelationsItem(String key, RelationMetadata relationsItem) {
-        if (this.relations == null) {
-            this.relations = new HashMap<>();
-        }
-        this.relations.put(key, relationsItem);
-        return this;
-    }
-
-    /**
-     * Get relations
-     * @return relations
-     **/
-    @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_RELATIONS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public Map<String, RelationMetadata> getRelations() {
-        return relations;
-    }
-
-    @JsonProperty(JSON_PROPERTY_RELATIONS)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setRelations(Map<String, RelationMetadata> relations) {
-        this.relations = relations;
-    }
-
-    public Metadata module(String module) {
+    public ConditionMetadata module(String module) {
         this.module = module;
         return this;
     }
@@ -91,7 +55,7 @@ public class Metadata {
         this.module = module;
     }
 
-    public Metadata sourceInfo(SourceInfo sourceInfo) {
+    public ConditionMetadata sourceInfo(SourceInfo sourceInfo) {
         this.sourceInfo = sourceInfo;
         return this;
     }
@@ -114,7 +78,7 @@ public class Metadata {
     }
 
     /**
-     * Return true if this Metadata object is equal to o.
+     * Return true if this ConditionMetadata object is equal to o.
      */
     @Override
     public boolean equals(Object o) {
@@ -124,22 +88,20 @@ public class Metadata {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Metadata metadata = (Metadata) o;
-        return Objects.equals(this.relations, metadata.relations)
-                && Objects.equals(this.module, metadata.module)
-                && Objects.equals(this.sourceInfo, metadata.sourceInfo);
+        ConditionMetadata conditionMetadata = (ConditionMetadata) o;
+        return Objects.equals(this.module, conditionMetadata.module)
+                && Objects.equals(this.sourceInfo, conditionMetadata.sourceInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(relations, module, sourceInfo);
+        return Objects.hash(module, sourceInfo);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class Metadata {\n");
-        sb.append("    relations: ").append(toIndentedString(relations)).append("\n");
+        sb.append("class ConditionMetadata {\n");
         sb.append("    module: ").append(toIndentedString(module)).append("\n");
         sb.append("    sourceInfo: ").append(toIndentedString(sourceInfo)).append("\n");
         sb.append("}");
@@ -188,23 +150,6 @@ public class Metadata {
         }
 
         StringJoiner joiner = new StringJoiner("&");
-
-        // add `relations` to the URL query string
-        if (getRelations() != null) {
-            for (String _key : getRelations().keySet()) {
-                if (getRelations().get(_key) != null) {
-                    joiner.add(getRelations()
-                            .get(_key)
-                            .toUrlQueryString(String.format(
-                                    "%srelations%s%s",
-                                    prefix,
-                                    suffix,
-                                    "".equals(suffix)
-                                            ? ""
-                                            : String.format("%s%d%s", containerPrefix, _key, containerSuffix))));
-                }
-            }
-        }
 
         // add `module` to the URL query string
         if (getModule() != null) {

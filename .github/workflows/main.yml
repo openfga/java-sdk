@@ -25,7 +25,8 @@ jobs:
     # runs tests and lints. See the project's build.gradle for configurations.
     - name: Test and Build with Gradle
       run: |
-        ./gradlew build
+        ./gradlew build test-integration
+  
 
   publish-maven-central:
     runs-on: ubuntu-latest
