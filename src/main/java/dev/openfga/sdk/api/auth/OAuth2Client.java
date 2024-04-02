@@ -25,9 +25,9 @@ public class OAuth2Client {
     private static final String DEFAULT_API_TOKEN_ISSUER_PATH = "/oauth/token";
 
     private final ApiClient apiClient;
-    private final String apiTokenIssuer;
     private final AccessToken token = new AccessToken();
     private final CredentialsFlowRequest authRequest;
+    private final Configuration config;
 
     /**
      * Initializes a new instance of the {@link OAuth2Client} class
@@ -38,11 +38,14 @@ public class OAuth2Client {
         var clientCredentials = configuration.getCredentials().getClientCredentials();
 
         this.apiClient = apiClient;
-        this.apiTokenIssuer = buildApiTokenIssuer(clientCredentials.getApiTokenIssuer());
         this.authRequest =
                 new CredentialsFlowRequest(clientCredentials.getClientId(), clientCredentials.getClientSecret());
         this.authRequest.setAudience(clientCredentials.getApiAudience());
         this.authRequest.setScope(clientCredentials.getScopes());
+        this.config = new Configuration()
+                .apiUrl(buildApiTokenIssuer(clientCredentials.getApiTokenIssuer()))
+                .maxRetries(configuration.getMaxRetries())
+                .minimumRetryDelay(configuration.getMinimumRetryDelay());
     }
 
     /**
@@ -69,8 +72,6 @@ public class OAuth2Client {
      */
     private CompletableFuture<CredentialsFlowResponse> exchangeToken()
             throws ApiException, FgaInvalidParameterException {
-
-        Configuration config = new Configuration().apiUrl(apiTokenIssuer);
 
         HttpRequest.Builder requestBuilder =
                 ApiClient.formRequestBuilder("POST", "", this.authRequest.buildFormRequestBody(), config);
