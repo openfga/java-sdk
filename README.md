@@ -134,7 +134,7 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")); // Optional, can be overridden per request
 
@@ -157,7 +157,7 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
@@ -183,7 +183,7 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
@@ -213,7 +213,7 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
@@ -808,9 +808,9 @@ fgaClient.writeAssertions(assertions, options).get();
 
 ### Retries
 
-By default API requests are retried up to 15 times on 429 and 5xx errors and credential requests are retried up to 15 times on 429 and 5xx errors. In both instances they will wait a minimum of 100 milliseconds between requests.
+If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 15 times with a minimum wait time of 100 milliseconds between each attempt.
 
-In order to change the behavior for API requests, when using the `ClientConfiguration` builder, call `maxRetries` to control the amount of retries and `minimumRetryDelay` to control the minimum wait time between retried requests.
+To customize this behavior, call `maxRetries` and `minimumRetryDelay` on the `ClientConfiguration` builder. `maxRetries` determines the maximum number of retries (up to 15), while `minimumRetryDelay` sets the minimum wait time between retries in milliseconds.
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -821,7 +821,7 @@ import java.net.http.HttpClient;
 public class Example {
     public static void main(String[] args) throws Exception {
         var config = new ClientConfiguration()
-                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "https://localhost:8080"
+                .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
                 .maxRetries(3) // retry up to 3 times on API requests
