@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        java: ["11", "17", "21"]
+        java: [11, 17, 21]
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -32,7 +32,7 @@ jobs:
         run: |
           ./gradlew build test-integration
 
-      - if: matrix.java == '11'
+      - if: matrix.java == 11
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@c16abc29c95fcf9174b58eb7e1abf4c866893bc8 # v4.1.1
         continue-on-error: true
