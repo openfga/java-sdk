@@ -46,6 +46,12 @@ test {
 jacocoTestReport {
     // tests are required to run before generating a JaCoCo coverage report.
     dependsOn test
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = true
+    }
 }
 
 ext {
