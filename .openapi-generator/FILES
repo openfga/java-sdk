@@ -1,10 +1,11 @@
+.codecov.yml
 .fossa.yml
 .github/CODEOWNERS
 .github/ISSUE_TEMPLATE/bug_report.yaml
 .github/ISSUE_TEMPLATE/config.yaml
 .github/ISSUE_TEMPLATE/feature_request.yaml
 .github/dependabot.yaml
-.github/workflows/main.yml
+.github/workflows/main.yaml
 .github/workflows/semgrep.yaml
 .gitignore
 CHANGELOG.md

@@ -14,19 +14,28 @@ jobs:
       matrix:
         java: [ '11', '17', '21' ]
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3.5.2
-    - name: Set up JDK
-      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
-      with:
-        java-version: ${{ matrix.java }}
-        distribution: 'temurin'
-        cache: gradle
-    # By Gradle conventions, "build" requires "check" to pass. "check" is an umbrella task that
-    # runs tests and lints. See the project's build.gradle for configurations.
-    - name: Test and Build with Gradle
-      run: |
-        ./gradlew build test-integration
-  
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+
+      - name: Test and Build with Gradle
+        run: |
+          ./gradlew build test-integration
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@c16abc29c95fcf9174b58eb7e1abf4c866893bc8 # v4.1.1
+        continue-on-error: true
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: openfga/java-sdk
 
   publish-maven-central:
     runs-on: ubuntu-latest
@@ -37,7 +46,7 @@ jobs:
     needs: [test]
 
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3.5.2
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Set up JDK
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
@@ -49,7 +58,7 @@ jobs:
       uses: gradle/wrapper-validation-action@b231772637bb498f11fdbc86052b6e8a8dc9fc92 # v2.1.2
 
     - name: Publish package
-      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3.1.0
+      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
       with:
         # Tasks created by https://github.com/gradle-nexus/publish-plugin
         arguments: publishToSonatype closeAndReleaseSonatypeStagingRepository
@@ -68,7 +77,7 @@ jobs:
     needs: [test]
 
     steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3.5.2
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Set up JDK
       uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
@@ -80,7 +89,7 @@ jobs:
       uses: gradle/wrapper-validation-action@b231772637bb498f11fdbc86052b6e8a8dc9fc92 # v2.1.2
 
     - name: Publish package
-      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3.1.0
+      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
       with:
         # Tasks created by https://docs.gradle.org/current/userguide/publishing_maven.html
         arguments: publishAllPublicationsToGitHubPackagesRepository
@@ -95,9 +104,9 @@ jobs:
     needs: [publish-maven-central, publish-github-packages]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: Roang-zero1/github-create-release-action@57eb9bdce7a964e48788b9e78b5ac766cb684803
+      - uses: Roang-zero1/github-create-release-action@57eb9bdce7a964e48788b9e78b5ac766cb684803 # v3.0.1
         with:
           version_regex: ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+
         env:
