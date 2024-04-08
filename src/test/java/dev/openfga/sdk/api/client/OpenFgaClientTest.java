@@ -1975,6 +1975,30 @@ public class OpenFgaClientTest {
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
+    @Test
+    public void listObjectsWithContextTest() throws Exception {
+        // Given
+        String postPath = String.format("https://localhost/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":{\"some\":\"context\"}}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .doReturn(200, String.format("{\"objects\":[\"%s\"]}", DEFAULT_OBJECT));
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .context(Map.of("some", "context"));
+
+        // When
+        ClientListObjectsResponse response = fga.listObjects(request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(List.of(DEFAULT_OBJECT), response.getObjects());
+    }
+
     /**
      * Check whether a user is authorized to access an object.
      */
