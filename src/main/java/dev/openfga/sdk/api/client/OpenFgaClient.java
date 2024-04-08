@@ -679,6 +679,9 @@ public class OpenFgaClient {
                 var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
                 body.contextualTuples(bodyContextualTuples);
             }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
