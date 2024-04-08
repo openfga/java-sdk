@@ -2196,6 +2196,54 @@ public class OpenFgaClientTest {
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
+    @Test
+    public void listRelations_contextAndContextualTuples() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":{\"some\":\"context\"}}",
+                DEFAULT_USER,
+                "owner",
+                DEFAULT_OBJECT,
+                DEFAULT_USER,
+                DEFAULT_RELATION,
+                DEFAULT_OBJECT,
+                DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .doReturn(200, "{\"allowed\":false}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of("owner"))
+                ._object(DEFAULT_OBJECT)
+                .user(DEFAULT_USER)
+                .context(Map.of("some", "context"))
+                .contextualTupleKeys(List.of(new ClientTupleKey()
+                        .user(DEFAULT_USER)
+                        .relation(DEFAULT_RELATION)
+                        ._object(DEFAULT_OBJECT)));
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertTrue(response.getRelations().isEmpty());
+    }
+
     /**
      * Read assertions for an authorization model ID.
      */

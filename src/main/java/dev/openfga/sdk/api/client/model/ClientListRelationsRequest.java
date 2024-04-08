@@ -19,6 +19,7 @@ public class ClientListRelationsRequest {
     private String _object;
     private List<String> relations;
     private List<ClientTupleKey> contextualTupleKeys;
+    private Object context;
 
     public ClientListRelationsRequest user(String user) {
         this.user = user;
@@ -62,5 +63,18 @@ public class ClientListRelationsRequest {
 
     public List<ClientTupleKey> getContextualTupleKeys() {
         return contextualTupleKeys;
+    }
+
+    public ClientListRelationsRequest context(Object context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
+     * Get context
+     * @return context
+     **/
+    public Object getContext() {
+        return context;
     }
 }

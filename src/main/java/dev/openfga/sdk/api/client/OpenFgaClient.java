@@ -726,7 +726,9 @@ public class OpenFgaClient {
                 .map(relation -> new ClientCheckRequest()
                         .user(request.getUser())
                         .relation(relation)
-                        ._object(request.getObject()))
+                        ._object(request.getObject())
+                        .contextualTuples(request.getContextualTupleKeys())
+                        .context(request.getContext()))
                 .collect(Collectors.toList());
 
         return this.batchCheck(batchCheckRequests, options.asClientBatchCheckOptions())
