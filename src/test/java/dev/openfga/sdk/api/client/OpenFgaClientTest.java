@@ -1975,6 +1975,30 @@ public class OpenFgaClientTest {
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
 
+    @Test
+    public void listObjectsWithContextTest() throws Exception {
+        // Given
+        String postPath = String.format("https://localhost/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":{\"some\":\"context\"}}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .doReturn(200, String.format("{\"objects\":[\"%s\"]}", DEFAULT_OBJECT));
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .context(Map.of("some", "context"));
+
+        // When
+        ClientListObjectsResponse response = fga.listObjects(request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(List.of(DEFAULT_OBJECT), response.getObjects());
+    }
+
     /**
      * Check whether a user is authorized to access an object.
      */
@@ -2194,6 +2218,54 @@ public class OpenFgaClientTest {
         assertEquals(500, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void listRelations_contextAndContextualTuples() throws Exception {
+        // Given
+        String postUrl = String.format("https://localhost/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":{\"some\":\"context\"}}",
+                DEFAULT_USER,
+                "owner",
+                DEFAULT_OBJECT,
+                DEFAULT_USER,
+                DEFAULT_RELATION,
+                DEFAULT_OBJECT,
+                DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .doReturn(200, "{\"allowed\":false}");
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of("owner"))
+                ._object(DEFAULT_OBJECT)
+                .user(DEFAULT_USER)
+                .context(Map.of("some", "context"))
+                .contextualTupleKeys(List.of(new ClientTupleKey()
+                        .user(DEFAULT_USER)
+                        .relation(DEFAULT_RELATION)
+                        ._object(DEFAULT_OBJECT)));
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+
+        // When
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .called(1);
+        assertNotNull(response);
+        assertNotNull(response.getRelations());
+        assertTrue(response.getRelations().isEmpty());
     }
 
     /**

@@ -679,6 +679,9 @@ public class OpenFgaClient {
                 var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
                 body.contextualTuples(bodyContextualTuples);
             }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
@@ -726,7 +729,9 @@ public class OpenFgaClient {
                 .map(relation -> new ClientCheckRequest()
                         .user(request.getUser())
                         .relation(relation)
-                        ._object(request.getObject()))
+                        ._object(request.getObject())
+                        .contextualTuples(request.getContextualTupleKeys())
+                        .context(request.getContext()))
                 .collect(Collectors.toList());
 
         return this.batchCheck(batchCheckRequests, options.asClientBatchCheckOptions())
