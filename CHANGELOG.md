@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.1
+
+### [0.4.1](https://github.com/openfga/java-sdk/compare/v0.4.0...v0.4.1) (2024-04-09)
+
+- feat: support setting context on ListObjects - thanks @Didier-SimpleCommeDev
+- feat: support setting context and contextual tuples on ListRelations
+- feat: add retries to OAuth2 Client Credentials request
+- feat: support modular models metadata
+- fix: avoid clone of object mapper - thanks @paulosuzart
+
 ## v0.4.0
 
 ### [0.4.0](https://github.com/openfga/java-sdk/compare/v0.3.2...v0.4.0) (2024-03-04)
