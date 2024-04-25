@@ -15,6 +15,7 @@ package dev.openfga.sdk.api.client;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -148,7 +149,7 @@ public class OpenFgaClientTest {
                         containsString(String.format("client_secret=%s", clientSecret)),
                         containsString(String.format("audience=%s", apiAudience)),
                         containsString(String.format("grant_type=%s", "client_credentials"))))
-                .doReturn(200, String.format("{\"access_token\":\"%s\"}", apiToken));
+                .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":\"%s\"}", apiToken, 3600));
         mockHttpClient
                 .onPost("https://localhost/stores")
                 .withBody(is(expectedBody))
@@ -167,6 +168,62 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(String.format("https://%s/oauth/token", apiTokenIssuer))
                 .called(1);
+        // OpenFGA server should be called 2 times.
+        mockHttpClient
+                .verify()
+                .post("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .called(2);
+        assertEquals(DEFAULT_STORE_ID, response1.getId());
+        assertEquals(DEFAULT_STORE_NAME, response1.getName());
+        assertEquals(DEFAULT_STORE_ID, response2.getId());
+        assertEquals(DEFAULT_STORE_NAME, response2.getName());
+    }
+
+    @Test
+    public void createStore_withClientCredentialsWithRefresh() throws Exception {
+        // Given
+        String apiTokenIssuer = "oauth2.server";
+        String clientId = "some-client-id";
+        String clientSecret = "some-client-secret";
+        String apiToken = "some-generated-token";
+        String apiAudience = "some-audience";
+        clientConfiguration.credentials(new Credentials(new ClientCredentials()
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .apiTokenIssuer(apiTokenIssuer)
+                .apiAudience(apiAudience)));
+        fga.setConfiguration(clientConfiguration);
+
+        String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
+        String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        mockHttpClient
+                .onPost(String.format("https://%s/oauth/token", apiTokenIssuer))
+                .withBody(allOf(
+                        containsString(String.format("client_id=%s", clientId)),
+                        containsString(String.format("client_secret=%s", clientSecret)),
+                        containsString(String.format("audience=%s", apiAudience)),
+                        containsString(String.format("grant_type=%s", "client_credentials"))))
+                .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":\"%s\"}", apiToken, 1));
+        mockHttpClient
+                .onPost("https://localhost/stores")
+                .withBody(is(expectedBody))
+                .withHeader("Authorization", String.format("Bearer %s", apiToken))
+                .doReturn(201, requestBody);
+        CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
+
+        // When
+        // We call two times to ensure the token is cached after the first request.
+        CreateStoreResponse response1 = fga.createStore(request).get();
+        CreateStoreResponse response2 = fga.createStore(request).get();
+
+        // Then
+        // OAuth2 server should be called 1 time.
+        mockHttpClient
+                .verify()
+                .post(String.format("https://%s/oauth/token", apiTokenIssuer))
+                .called(2);
         // OpenFGA server should be called 2 times.
         mockHttpClient
                 .verify()
