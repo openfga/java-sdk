@@ -15,24 +15,24 @@ package dev.openfga.sdk.api.auth;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import java.time.Instant;
-import java.util.Random;
+import java.time.temporal.ChronoUnit;
 
 class AccessToken {
     private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = 300;
-    private static final int TOKEN_EXPIRY_JITTER_IN_SEC =
-            300; // We add some jitter so that token refreshes are less likely to collide
-
-    private final Random random = new Random();
     private Instant expiresAt;
 
     private String token;
 
     public boolean isValid() {
-        return !isNullOrWhitespace(token)
-                && (expiresAt == null
-                        || expiresAt.isAfter(Instant.now()
-                                .minusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
-                                .minusSeconds(random.nextLong() % TOKEN_EXPIRY_JITTER_IN_SEC)));
+        if (isNullOrWhitespace(token) || expiresAt == null) {
+            return false;
+        }
+
+        // A token should be considered valid until 5 minutes before the expiry
+        Instant nowWithLeeway =
+                Instant.now().plusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC).truncatedTo(ChronoUnit.SECONDS);
+
+        return expiresAt.isAfter(nowWithLeeway);
     }
 
     public String getToken() {
@@ -40,7 +40,10 @@ class AccessToken {
     }
 
     public void setExpiresAt(Instant expiresAt) {
-        this.expiresAt = expiresAt;
+        if (expiresAt != null) {
+            // Truncate to seconds to zero out the milliseconds to keep comparison simpler
+            this.expiresAt = expiresAt.truncatedTo(ChronoUnit.SECONDS);
+        }
     }
 
     public void setToken(String token) {

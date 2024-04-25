@@ -35,11 +35,11 @@ class AccessTokenTest {
                         Instant.now().minus(1, ChronoUnit.HOURS),
                         false),
                 Arguments.of(
-                        "Expired 10 minutes should not not be valid",
+                        "Expired 10 minutes ago should not not be valid",
                         Instant.now().minus(10, ChronoUnit.MINUTES),
                         false),
                 Arguments.of(
-                        "Expired 5 minutes should not not be valid",
+                        "Expired 5 minutes ago should not not be valid",
                         Instant.now().minus(5, ChronoUnit.MINUTES),
                         false),
                 Arguments.of(
