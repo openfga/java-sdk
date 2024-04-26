@@ -20,6 +20,9 @@ import java.util.Random;
 
 class AccessToken {
     private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = 300;
+    private static final int TOKEN_EXPIRY_JITTER_IN_SEC =
+            300; // We add some jitter so that token refreshes are less likely to collide
+
     private Instant expiresAt;
 
     private final Random random = new Random();
@@ -39,7 +42,7 @@ class AccessToken {
         // to account for multiple calls to `isValid` at the same time and prevent multiple refresh calls
         Instant expiresWithLeeway = expiresAt
                 .minusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
-                .minusSeconds(random.nextInt(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC))
+                .minusSeconds(random.nextInt(TOKEN_EXPIRY_JITTER_IN_SEC))
                 .truncatedTo(ChronoUnit.SECONDS);
 
         return Instant.now().truncatedTo(ChronoUnit.SECONDS).isBefore(expiresWithLeeway);
