@@ -27,9 +27,8 @@ class AccessTokenTest {
         return Stream.of(
                 Arguments.of("Expires in 1 hour should be valid", Instant.now().plus(1, ChronoUnit.HOURS), true),
                 Arguments.of(
-                        "Expires in 10 minutes should be valid", Instant.now().plus(10, ChronoUnit.MINUTES), true),
-                Arguments.of(
-                        "Expires in 6 minutes should be valid", Instant.now().plus(6, ChronoUnit.MINUTES), true),
+                        "Expires in 15 minutes should be valid", Instant.now().plus(15, ChronoUnit.MINUTES), true),
+                Arguments.of("No expiry value should be valid", null, true),
                 Arguments.of(
                         "Expired 1 hour ago should not not be valid",
                         Instant.now().minus(1, ChronoUnit.HOURS),
@@ -46,8 +45,11 @@ class AccessTokenTest {
                         "Expires in 5 minutes should not not be valid",
                         Instant.now().plus(5, ChronoUnit.MINUTES),
                         false),
-                Arguments.of("Expires now should not not be valid", Instant.now(), false),
-                Arguments.of("Not set should not not be valid", null, false));
+                Arguments.of(
+                        "Expires in 1 minute should not not be valid",
+                        Instant.now().plus(1, ChronoUnit.MINUTES),
+                        false),
+                Arguments.of("Expires now should not not be valid", Instant.now(), false));
     }
 
     @MethodSource("expTimeAndResults")

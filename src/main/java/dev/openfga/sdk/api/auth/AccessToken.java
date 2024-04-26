@@ -16,23 +16,33 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Random;
 
 class AccessToken {
     private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = 300;
     private Instant expiresAt;
 
+    private final Random random = new Random();
     private String token;
 
     public boolean isValid() {
-        if (isNullOrWhitespace(token) || expiresAt == null) {
+        if (isNullOrWhitespace(token)) {
             return false;
         }
 
-        // A token should be considered valid until 5 minutes before the expiry
-        Instant nowWithLeeway =
-                Instant.now().plusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC).truncatedTo(ChronoUnit.SECONDS);
+        // Is expiry is null then the token will not expire so should be considered always valid
+        if (expiresAt == null) {
+            return true;
+        }
 
-        return expiresAt.isAfter(nowWithLeeway);
+        // A token should be considered valid until 5 minutes before the expiry with some jitter
+        // to account for multiple calls to `isValid` at the same time and prevent multiple refresh calls
+        Instant expiresWithLeeway = expiresAt
+                .minusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
+                .minusSeconds(random.nextInt(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC))
+                .truncatedTo(ChronoUnit.SECONDS);
+
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS).isBefore(expiresWithLeeway);
     }
 
     public String getToken() {
