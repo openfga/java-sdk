@@ -18,6 +18,8 @@ All URIs are relative to *http://localhost*
 | [**listObjectsWithHttpInfo**](OpenFgaApi.md#listObjectsWithHttpInfo) | **POST** /stores/{store_id}/list-objects | List all objects of the given type that the user has a relation with |
 | [**listStores**](OpenFgaApi.md#listStores) | **GET** /stores | List all stores |
 | [**listStoresWithHttpInfo**](OpenFgaApi.md#listStoresWithHttpInfo) | **GET** /stores | List all stores |
+| [**listUsers**](OpenFgaApi.md#listUsers) | **POST** /stores/{store_id}/list-users | List the users matching the provided filter who have a certain relation to a particular type. |
+| [**listUsersWithHttpInfo**](OpenFgaApi.md#listUsersWithHttpInfo) | **POST** /stores/{store_id}/list-users | List the users matching the provided filter who have a certain relation to a particular type. |
 | [**read**](OpenFgaApi.md#read) | **POST** /stores/{store_id}/read | Get tuples from the store that matches a query, without following userset rewrite rules |
 | [**readWithHttpInfo**](OpenFgaApi.md#readWithHttpInfo) | **POST** /stores/{store_id}/read | Get tuples from the store that matches a query, without following userset rewrite rules |
 | [**readAssertions**](OpenFgaApi.md#readAssertions) | **GET** /stores/{store_id}/assertions/{authorization_model_id} | Read assertions for an authorization model ID |
@@ -43,7 +45,7 @@ All URIs are relative to *http://localhost*
 
 Check whether a user is authorized to access an object
 
-The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
+The Check API returns whether a given user has a relationship with a given object in a given store. The &#x60;user&#x60; field of the request can be a specific target, such as &#x60;user:anne&#x60;, or a userset (set of users) such as &#x60;group:marketing#member&#x60; or a type-bound public access &#x60;user:*&#x60;. To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  Some exceptions apply, but in general, if a Check API responds with &#x60;{allowed: true}&#x60;, then you can expect the equivalent ListObjects query to return the object, and viceversa.  For example, if &#x60;Check(user:anne, reader, document:2021-budget)&#x60; responds with &#x60;{allowed: true}&#x60;, then &#x60;ListObjects(user:anne, reader, document)&#x60; may include &#x60;document:2021-budget&#x60; in the response. ## Examples ### Querying with contextual tuples In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Querying usersets Some Checks will always return &#x60;true&#x60;, even without any tuples. For example, for the following authorization model &#x60;&#x60;&#x60;python model   schema 1.1 type user type document   relations     define reader: [user] &#x60;&#x60;&#x60; the following query &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;document:2021-budget#reader\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   } } &#x60;&#x60;&#x60; will always return &#x60;{ \&quot;allowed\&quot;: true }&#x60;. This is because usersets are self-defining: the userset &#x60;document:2021-budget#reader&#x60; will always have the &#x60;reader&#x60; relation with &#x60;document:2021-budget&#x60;. ### Querying usersets with exclusion in the model A Check for a userset can yield results that must be treated carefully if the model involves exclusion. For example, for the following authorization model &#x60;&#x60;&#x60;python model   schema 1.1 type user type group   relations     define member: [user] type document   relations     define blocked: [user]     define reader: [group#member] but not blocked &#x60;&#x60;&#x60; the following query &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;group:finance#member\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;group:finance\&quot;       },       {         \&quot;user\&quot;: \&quot;group:finance#member\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;blocked\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   }, } &#x60;&#x60;&#x60; will return &#x60;{ \&quot;allowed\&quot;: true }&#x60;, even though a specific user of the userset &#x60;group:finance#member&#x60; does not have the &#x60;reader&#x60; relationship with the given object. 
 
 ### Example
 
@@ -107,6 +109,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## checkWithHttpInfo
@@ -115,7 +118,7 @@ No authorization required
 
 Check whether a user is authorized to access an object
 
-The Check API queries to check if the user has a certain relationship with an object in a certain store. A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  ## Example In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; OpenFGA&#39;s response will include &#x60;{ \&quot;allowed\&quot;: true }&#x60; if there is a relationship and &#x60;{ \&quot;allowed\&quot;: false }&#x60; if there isn&#39;t.
+The Check API returns whether a given user has a relationship with a given object in a given store. The &#x60;user&#x60; field of the request can be a specific target, such as &#x60;user:anne&#x60;, or a userset (set of users) such as &#x60;group:marketing#member&#x60; or a type-bound public access &#x60;user:*&#x60;. To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). A &#x60;contextual_tuples&#x60; object may also be included in the body of the request. This object contains one field &#x60;tuple_keys&#x60;, which is an array of tuple keys. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide an &#x60;authorization_model_id&#x60; in the body. This will be used to assert that the input &#x60;tuple_key&#x60; is valid for the model specified. If not specified, the assertion will be made against the latest authorization model ID. It is strongly recommended to specify authorization model id for better performance. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will return whether the relationship exists in the field &#x60;allowed&#x60;.  Some exceptions apply, but in general, if a Check API responds with &#x60;{allowed: true}&#x60;, then you can expect the equivalent ListObjects query to return the object, and viceversa.  For example, if &#x60;Check(user:anne, reader, document:2021-budget)&#x60; responds with &#x60;{allowed: true}&#x60;, then &#x60;ListObjects(user:anne, reader, document)&#x60; may include &#x60;document:2021-budget&#x60; in the response. ## Examples ### Querying with contextual tuples In order to check if user &#x60;user:anne&#x60; of type &#x60;user&#x60; has a &#x60;reader&#x60; relationship with object &#x60;document:2021-budget&#x60; given the following contextual tuple &#x60;&#x60;&#x60;json {   \&quot;user\&quot;: \&quot;user:anne\&quot;,   \&quot;relation\&quot;: \&quot;member\&quot;,   \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot; } &#x60;&#x60;&#x60; the Check API can be used with the following request body: &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {     \&quot;user\&quot;: \&quot;user:anne\&quot;,     \&quot;relation\&quot;: \&quot;reader\&quot;,     \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;time_slot:office_hours\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Querying usersets Some Checks will always return &#x60;true&#x60;, even without any tuples. For example, for the following authorization model &#x60;&#x60;&#x60;python model   schema 1.1 type user type document   relations     define reader: [user] &#x60;&#x60;&#x60; the following query &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;document:2021-budget#reader\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   } } &#x60;&#x60;&#x60; will always return &#x60;{ \&quot;allowed\&quot;: true }&#x60;. This is because usersets are self-defining: the userset &#x60;document:2021-budget#reader&#x60; will always have the &#x60;reader&#x60; relation with &#x60;document:2021-budget&#x60;. ### Querying usersets with exclusion in the model A Check for a userset can yield results that must be treated carefully if the model involves exclusion. For example, for the following authorization model &#x60;&#x60;&#x60;python model   schema 1.1 type user type group   relations     define member: [user] type document   relations     define blocked: [user]     define reader: [group#member] but not blocked &#x60;&#x60;&#x60; the following query &#x60;&#x60;&#x60;json {   \&quot;tuple_key\&quot;: {      \&quot;user\&quot;: \&quot;group:finance#member\&quot;,      \&quot;relation\&quot;: \&quot;reader\&quot;,      \&quot;object\&quot;: \&quot;document:2021-budget\&quot;   },   \&quot;contextual_tuples\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;member\&quot;,         \&quot;object\&quot;: \&quot;group:finance\&quot;       },       {         \&quot;user\&quot;: \&quot;group:finance#member\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       },       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;blocked\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   }, } &#x60;&#x60;&#x60; will return &#x60;{ \&quot;allowed\&quot;: true }&#x60;, even though a specific user of the userset &#x60;group:finance#member&#x60; does not have the &#x60;reader&#x60; relationship with the given object. 
 
 ### Example
 
@@ -189,6 +192,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -260,6 +264,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## createStoreWithHttpInfo
@@ -340,6 +345,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -410,6 +416,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## deleteStoreWithHttpInfo
@@ -489,6 +496,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -562,6 +570,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## expandWithHttpInfo
@@ -644,6 +653,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -715,6 +725,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## getStoreWithHttpInfo
@@ -795,6 +806,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -804,7 +816,7 @@ No authorization required
 
 List all objects of the given type that the user has a relation with
 
-The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first. The objects given will not be sorted, and therefore two identical calls can give a given different set of objects.
+The ListObjects API returns a list of all the objects of the given type that the user has a relation with.  To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first. The objects given will not be sorted, and therefore two identical calls can give a given different set of objects.
 
 ### Example
 
@@ -868,6 +880,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## listObjectsWithHttpInfo
@@ -876,7 +889,7 @@ No authorization required
 
 List all objects of the given type that the user has a relation with
 
-The ListObjects API returns a list of all the objects of the given type that the user has a relation with. To achieve this, both the store tuples and the authorization model are used. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first. The objects given will not be sorted, and therefore two identical calls can give a given different set of objects.
+The ListObjects API returns a list of all the objects of the given type that the user has a relation with.  To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related objects in an array in the \&quot;objects\&quot; field of the response and they will be strings in the object format &#x60;&lt;type&gt;:&lt;id&gt;&#x60; (e.g. \&quot;document:roadmap\&quot;). The number of objects in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_OBJECTS_MAX_RESULTS, whichever is hit first. The objects given will not be sorted, and therefore two identical calls can give a given different set of objects.
 
 ### Example
 
@@ -950,6 +963,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1023,6 +1037,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## listStoresWithHttpInfo
@@ -1105,6 +1120,164 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
+| **500** | Request failed due to internal server error. |  -  |
+
+
+## listUsers
+
+> CompletableFuture<ListUsersResponse> listUsers(storeId, body)
+
+List the users matching the provided filter who have a certain relation to a particular type.
+
+The ListUsers API returns a list of all the users of a specific type that have a relation to a given object.  This API is available in an experimental capacity and can be enabled with the &#x60;--experimentals enable-list-users&#x60; flag.  To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related users in an array in the \&quot;users\&quot; field of the response. These results may include specific objects, usersets  or type-bound public access. Each of these types of results is encoded in its own type and not represented as a string.In certain cases of negation via the &#x60;but not&#x60; operator, some results are marked as excluded from the main set of results. These exclusions  are returned in the &#x60;excluded_users&#x60; property and should be handled appropriately at the point of implementation.The number of users in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_USERS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_USERS_MAX_RESULTS, whichever is hit first. The returned users will not be sorted, and therefore two identical calls may yield different sets of users.
+
+### Example
+
+```java
+// Import classes:
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.client.models.*;
+import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost");
+
+        OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
+        String storeId = "storeId_example"; // String | 
+        ListUsersRequest body = new ListUsersRequest(); // ListUsersRequest | 
+        try {
+            CompletableFuture<ListUsersResponse> result = apiInstance.listUsers(storeId, body);
+            System.out.println(result.get());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling OpenFgaApi#listUsers");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storeId** | **String**|  | |
+| **body** | [**ListUsersRequest**](ListUsersRequest.md)|  | |
+
+### Return type
+
+CompletableFuture<[**ListUsersResponse**](ListUsersResponse.md)>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | A successful response. |  -  |
+| **400** | Request failed due to invalid input. |  -  |
+| **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
+| **500** | Request failed due to internal server error. |  -  |
+
+## listUsersWithHttpInfo
+
+> CompletableFuture<ApiResponse<ListUsersResponse>> listUsers listUsersWithHttpInfo(storeId, body)
+
+List the users matching the provided filter who have a certain relation to a particular type.
+
+The ListUsers API returns a list of all the users of a specific type that have a relation to a given object.  This API is available in an experimental capacity and can be enabled with the &#x60;--experimentals enable-list-users&#x60; flag.  To arrive at a result, the API uses: an authorization model, explicit tuples written through the Write API, contextual tuples present in the request, and implicit tuples that exist by virtue of applying set theory (such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;; the set of users who are viewers of &#x60;document:2021-budget&#x60; are the set of users who are the viewers of &#x60;document:2021-budget&#x60;). An &#x60;authorization_model_id&#x60; may be specified in the body. If it is not specified, the latest authorization model ID will be used. It is strongly recommended to specify authorization model id for better performance. You may also specify &#x60;contextual_tuples&#x60; that will be treated as regular tuples. Each of these tuples may have an associated &#x60;condition&#x60;. You may also provide a &#x60;context&#x60; object that will be used to evaluate the conditioned tuples in the system. It is strongly recommended to provide a value for all the input parameters of all the conditions, to ensure that all tuples be evaluated correctly. The response will contain the related users in an array in the \&quot;users\&quot; field of the response. These results may include specific objects, usersets  or type-bound public access. Each of these types of results is encoded in its own type and not represented as a string.In certain cases of negation via the &#x60;but not&#x60; operator, some results are marked as excluded from the main set of results. These exclusions  are returned in the &#x60;excluded_users&#x60; property and should be handled appropriately at the point of implementation.The number of users in the response array will be limited by the execution timeout specified in the flag OPENFGA_LIST_USERS_DEADLINE and by the upper bound specified in the flag OPENFGA_LIST_USERS_MAX_RESULTS, whichever is hit first. The returned users will not be sorted, and therefore two identical calls may yield different sets of users.
+
+### Example
+
+```java
+// Import classes:
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.client.models.*;
+import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost");
+
+        OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
+        String storeId = "storeId_example"; // String | 
+        ListUsersRequest body = new ListUsersRequest(); // ListUsersRequest | 
+        try {
+            CompletableFuture<ApiResponse<ListUsersResponse>> response = apiInstance.listUsersWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#listUsers");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
+        } catch (ApiException e) {
+            System.err.println("Exception when calling OpenFgaApi#listUsers");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storeId** | **String**|  | |
+| **body** | [**ListUsersRequest**](ListUsersRequest.md)|  | |
+
+### Return type
+
+CompletableFuture<ApiResponse<[**ListUsersResponse**](ListUsersResponse.md)>>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | A successful response. |  -  |
+| **400** | Request failed due to invalid input. |  -  |
+| **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1178,6 +1351,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readWithHttpInfo
@@ -1260,6 +1434,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1333,6 +1508,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAssertionsWithHttpInfo
@@ -1415,6 +1591,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1488,6 +1665,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAuthorizationModelWithHttpInfo
@@ -1570,6 +1748,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1645,6 +1824,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readAuthorizationModelsWithHttpInfo
@@ -1729,6 +1909,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1806,6 +1987,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## readChangesWithHttpInfo
@@ -1892,6 +2074,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -1901,7 +2084,7 @@ No authorization required
 
 Add or delete tuples from the store
 
-The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples and &#x60;deletes&#x60; removes existing tuples. When deleting a tuple, any &#x60;condition&#x60; specified with it is ignored. The API is not idempotent: if, later on, you try to add the same tuple key (even if the &#x60;condition&#x60; is different), or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60; 
+The Write API will transactionally update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples and &#x60;deletes&#x60; removes existing tuples. When deleting a tuple, any &#x60;condition&#x60; specified with it is ignored. The API is not idempotent: if, later on, you try to add the same tuple key (even if the &#x60;condition&#x60; is different), or if you try to delete a non-existing tuple, it will throw an error. The API will not allow you to write tuples such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;, because they are implicit. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60; 
 
 ### Example
 
@@ -1965,6 +2148,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeWithHttpInfo
@@ -1973,7 +2157,7 @@ No authorization required
 
 Add or delete tuples from the store
 
-The Write API will update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples and &#x60;deletes&#x60; removes existing tuples. When deleting a tuple, any &#x60;condition&#x60; specified with it is ignored. The API is not idempotent: if, later on, you try to add the same tuple key (even if the &#x60;condition&#x60; is different), or if you try to delete a non-existing tuple, it will throw an error. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60; 
+The Write API will transactionally update the tuples for a certain store. Tuples and type definitions allow OpenFGA to determine whether a relationship exists between an object and an user. In the body, &#x60;writes&#x60; adds new tuples and &#x60;deletes&#x60; removes existing tuples. When deleting a tuple, any &#x60;condition&#x60; specified with it is ignored. The API is not idempotent: if, later on, you try to add the same tuple key (even if the &#x60;condition&#x60; is different), or if you try to delete a non-existing tuple, it will throw an error. The API will not allow you to write tuples such as &#x60;document:2021-budget#viewer@document:2021-budget#viewer&#x60;, because they are implicit. An &#x60;authorization_model_id&#x60; may be specified in the body. If it is, it will be used to assert that each written tuple (not deleted) is valid for the model specified. If it is not specified, the latest authorization model ID will be used. ## Example ### Adding relationships To add &#x60;user:anne&#x60; as a &#x60;writer&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;writes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:anne\&quot;,         \&quot;relation\&quot;: \&quot;writer\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   },   \&quot;authorization_model_id\&quot;: \&quot;01G50QVV17PECNVAHX1GG4Y5NC\&quot; } &#x60;&#x60;&#x60; ### Removing relationships To remove &#x60;user:bob&#x60; as a &#x60;reader&#x60; for &#x60;document:2021-budget&#x60;, call write API with the following  &#x60;&#x60;&#x60;json {   \&quot;deletes\&quot;: {     \&quot;tuple_keys\&quot;: [       {         \&quot;user\&quot;: \&quot;user:bob\&quot;,         \&quot;relation\&quot;: \&quot;reader\&quot;,         \&quot;object\&quot;: \&quot;document:2021-budget\&quot;       }     ]   } } &#x60;&#x60;&#x60; 
 
 ### Example
 
@@ -2047,6 +2231,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -2121,6 +2306,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeAssertionsWithHttpInfo
@@ -2204,6 +2390,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 
@@ -2277,6 +2464,7 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 
 ## writeAuthorizationModelWithHttpInfo
@@ -2359,5 +2547,6 @@ No authorization required
 | **400** | Request failed due to invalid input. |  -  |
 | **404** | Request failed due to incorrect path. |  -  |
 | **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
 | **500** | Request failed due to internal server error. |  -  |
 

@@ -738,6 +738,48 @@ public class OpenFgaClient {
                 .thenCompose(responses -> call(() -> ClientListRelationsResponse.fromBatchCheckResponses(responses)));
     }
 
+    /**
+     * ListUsers - List all users of the given type that the object has a relation with (evaluates)
+     */
+    public CompletableFuture<ClientListUsersResponse> listUsers(ClientListUsersRequest request)
+            throws FgaInvalidParameterException {
+        return listUsers(request, null);
+    }
+
+    /**
+     * ListUsers - List all users of the given type that the object has a relation with (evaluates)
+     */
+    public CompletableFuture<ClientListUsersResponse> listUsers(
+            ClientListUsersRequest request, ClientListUsersOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
+        String storeId = configuration.getStoreIdChecked();
+
+        ListUsersRequest body = new ListUsersRequest();
+
+        if (request != null) {
+            body._object(request.getObject()).relation(request.getRelation()).userFilters(request.getUserFilters());
+            if (request.getContextualTupleKeys() != null) {
+                var contextualTuples = request.getContextualTupleKeys();
+                var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
+                body.contextualTuples(bodyContextualTuples.getTupleKeys());
+            }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
+        }
+
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            body.authorizationModelId(options.getAuthorizationModelId());
+        } else {
+            String authorizationModelId = configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        }
+
+        var overrides = new ConfigurationOverride().addHeaders(options);
+
+        return call(() -> api.listUsers(storeId, body, overrides)).thenApply(ClientListUsersResponse::new);
+    }
+
     /* ************
      * Assertions *
      **************/
