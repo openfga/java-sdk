@@ -13,7 +13,7 @@ plugins {
     // Publishing
     id 'maven-publish'
     id 'signing'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
 apply from: 'publish.gradle'
@@ -78,7 +78,7 @@ testing {
                 implementation "org.junit.jupiter:junit-jupiter:$junit_version"
                 implementation "org.mockito:mockito-core:5.+"
                 runtimeOnly "org.junit.platform:junit-platform-launcher"
-                implementation "org.wiremock:wiremock:3.5.2"
+                implementation "org.wiremock:wiremock:3.5.4"
 
                 // This test-only dependency is convenient but not widely used.
                 // Review project activity before updating the version here.
