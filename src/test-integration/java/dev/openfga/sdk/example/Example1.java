@@ -28,8 +28,7 @@ class Example1 {
         var configuration = new ClientConfiguration()
                 .apiUrl(apiUrl) // required, e.g. https://api.fga.example
                 .storeId(System.getenv("FGA_STORE_ID")) // not needed when calling `CreateStore` or `ListStores`
-                .authorizationModelId(
-                        System.getenv("FGA_AUTHORIZATION_MODEL_ID")) // Optional, can be overridden per request
+                .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(credentials);
         var fgaClient = new OpenFgaClient(configuration);
 
