@@ -26,6 +26,7 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,8 @@ public class OpenFgaClientTest {
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_RELATION = "reader";
     private static final String DEFAULT_TYPE = "document";
-    private static final String DEFAULT_OBJECT = "document:budget";
+    private static final String DEFAULT_ID = "budget";
+    private static final String DEFAULT_OBJECT = DEFAULT_TYPE + ":" + DEFAULT_ID;
     private static final String DEFAULT_SCHEMA_VERSION = "1.1";
     private static final String EMPTY_RESPONSE_BODY = "{}";
     private static final ClientRelationshipCondition DEFAULT_CONDITION =
@@ -2325,6 +2327,51 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertNotNull(response.getRelations());
         assertTrue(response.getRelations().isEmpty());
+    }
+
+    /**
+     * Test list users
+     */
+    @Test
+    public void listUsersTest() throws Exception {
+        // Given
+        String postPath = String.format("https://api.fga.example/stores/%s/list-users", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"authorization_model_id\":\"%s\",\"object\":{\"type\":\"%s\",\"id\":\"%s\"},\"relation\":\"%s\",\"user_filters\":[{\"type\":\"user\",\"relation\":null},{\"type\":\"team\",\"relation\":\"member\"}],\"contextual_tuples\":[],\"context\":null}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_TYPE, DEFAULT_ID, DEFAULT_RELATION);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .doReturn(
+                        200,
+                        "{\"excluded_users\":null,\"users\":[{\"object\":{\"id\":\"81684243-9356-4421-8fbf-a4f8d36aa31b\",\"type\":\"user\"}},{\"userset\":{\"id\":\"fga\",\"relation\":\"member\",\"type\":\"team\"}},{\"wildcard\":{\"type\":\"user\"}}]}");
+
+        ClientListUsersRequest request = new ClientListUsersRequest()
+                ._object(new FgaObject().type(DEFAULT_TYPE).id(DEFAULT_ID))
+                .relation(DEFAULT_RELATION)
+                .userFilters(new ArrayList<>() {
+                    {
+                        add(new UserTypeFilter().type("user"));
+                        add(new UserTypeFilter().type("team").relation("member"));
+                    }
+                });
+
+        // When
+        ClientListUsersResponse response = fga.listUsers(request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+
+        assertEquals(
+                List.of(
+                        new User()._object(new FgaObject().type("user").id("81684243-9356-4421-8fbf-a4f8d36aa31b")),
+                        new User()
+                                .userset(
+                                        new UsersetUser().type("team").id("fga").relation("member")),
+                        new User().wildcard(new TypedWildcard().type("user"))),
+                response.getUsers());
+
+        assertNull(response.getExcludedUsers());
     }
 
     /**

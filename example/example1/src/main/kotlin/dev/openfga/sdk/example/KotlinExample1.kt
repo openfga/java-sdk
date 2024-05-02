@@ -30,7 +30,7 @@ internal class KotlinExample1 {
             .apiUrl(System.getenv("FGA_API_URL")) // required, e.g. https://api.fga.example
             .storeId(System.getenv("FGA_STORE_ID")) // not needed when calling `CreateStore` or `ListStores`
             .authorizationModelId(
-                System.getenv("FGA_AUTHORIZATION_MODEL_ID")
+                System.getenv("FGA_MODEL_ID")
             ) // Optional, can be overridden per request
             .credentials(credentials)
         val fgaClient = OpenFgaClient(configuration)
