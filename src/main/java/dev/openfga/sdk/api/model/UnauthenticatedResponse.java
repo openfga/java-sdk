@@ -21,64 +21,64 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * UserTypeFilter
+ * UnauthenticatedResponse
  */
-@JsonPropertyOrder({UserTypeFilter.JSON_PROPERTY_TYPE, UserTypeFilter.JSON_PROPERTY_RELATION})
-public class UserTypeFilter {
-    public static final String JSON_PROPERTY_TYPE = "type";
-    private String type;
+@JsonPropertyOrder({UnauthenticatedResponse.JSON_PROPERTY_CODE, UnauthenticatedResponse.JSON_PROPERTY_MESSAGE})
+public class UnauthenticatedResponse {
+    public static final String JSON_PROPERTY_CODE = "code";
+    private ErrorCode code = ErrorCode.NO_ERROR;
 
-    public static final String JSON_PROPERTY_RELATION = "relation";
-    private String relation;
+    public static final String JSON_PROPERTY_MESSAGE = "message";
+    private String message;
 
-    public UserTypeFilter() {}
+    public UnauthenticatedResponse() {}
 
-    public UserTypeFilter type(String type) {
-        this.type = type;
+    public UnauthenticatedResponse code(ErrorCode code) {
+        this.code = code;
         return this;
     }
 
     /**
-     * Get type
-     * @return type
-     **/
-    @javax.annotation.Nonnull
-    @JsonProperty(JSON_PROPERTY_TYPE)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public String getType() {
-        return type;
-    }
-
-    @JsonProperty(JSON_PROPERTY_TYPE)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public UserTypeFilter relation(String relation) {
-        this.relation = relation;
-        return this;
-    }
-
-    /**
-     * Get relation
-     * @return relation
+     * Get code
+     * @return code
      **/
     @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_RELATION)
+    @JsonProperty(JSON_PROPERTY_CODE)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public String getRelation() {
-        return relation;
+    public ErrorCode getCode() {
+        return code;
     }
 
-    @JsonProperty(JSON_PROPERTY_RELATION)
+    @JsonProperty(JSON_PROPERTY_CODE)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setRelation(String relation) {
-        this.relation = relation;
+    public void setCode(ErrorCode code) {
+        this.code = code;
+    }
+
+    public UnauthenticatedResponse message(String message) {
+        this.message = message;
+        return this;
     }
 
     /**
-     * Return true if this UserTypeFilter object is equal to o.
+     * Get message
+     * @return message
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_MESSAGE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public String getMessage() {
+        return message;
+    }
+
+    @JsonProperty(JSON_PROPERTY_MESSAGE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    /**
+     * Return true if this UnauthenticatedResponse object is equal to o.
      */
     @Override
     public boolean equals(Object o) {
@@ -88,21 +88,22 @@ public class UserTypeFilter {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        UserTypeFilter userTypeFilter = (UserTypeFilter) o;
-        return Objects.equals(this.type, userTypeFilter.type) && Objects.equals(this.relation, userTypeFilter.relation);
+        UnauthenticatedResponse unauthenticatedResponse = (UnauthenticatedResponse) o;
+        return Objects.equals(this.code, unauthenticatedResponse.code)
+                && Objects.equals(this.message, unauthenticatedResponse.message);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, relation);
+        return Objects.hash(code, message);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class UserTypeFilter {\n");
-        sb.append("    type: ").append(toIndentedString(type)).append("\n");
-        sb.append("    relation: ").append(toIndentedString(relation)).append("\n");
+        sb.append("class UnauthenticatedResponse {\n");
+        sb.append("    code: ").append(toIndentedString(code)).append("\n");
+        sb.append("    message: ").append(toIndentedString(message)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -150,23 +151,23 @@ public class UserTypeFilter {
 
         StringJoiner joiner = new StringJoiner("&");
 
-        // add `type` to the URL query string
-        if (getType() != null) {
+        // add `code` to the URL query string
+        if (getCode() != null) {
             joiner.add(String.format(
-                    "%stype%s=%s",
+                    "%scode%s=%s",
                     prefix,
                     suffix,
-                    URLEncoder.encode(String.valueOf(getType()), StandardCharsets.UTF_8)
+                    URLEncoder.encode(String.valueOf(getCode()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 
-        // add `relation` to the URL query string
-        if (getRelation() != null) {
+        // add `message` to the URL query string
+        if (getMessage() != null) {
             joiner.add(String.format(
-                    "%srelation%s=%s",
+                    "%smessage%s=%s",
                     prefix,
                     suffix,
-                    URLEncoder.encode(String.valueOf(getRelation()), StandardCharsets.UTF_8)
+                    URLEncoder.encode(String.valueOf(getMessage()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

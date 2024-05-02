@@ -77,6 +77,7 @@ docs/TupleToUserset.md
 docs/TypeDefinition.md
 docs/TypeName.md
 docs/TypedWildcard.md
+docs/UnauthenticatedResponse.md
 docs/UnprocessableContentErrorCode.md
 docs/UnprocessableContentMessageResponse.md
 docs/User.md
@@ -244,6 +245,7 @@ src/main/java/dev/openfga/sdk/api/model/TupleToUserset.java
 src/main/java/dev/openfga/sdk/api/model/TypeDefinition.java
 src/main/java/dev/openfga/sdk/api/model/TypeName.java
 src/main/java/dev/openfga/sdk/api/model/TypedWildcard.java
+src/main/java/dev/openfga/sdk/api/model/UnauthenticatedResponse.java
 src/main/java/dev/openfga/sdk/api/model/UnprocessableContentErrorCode.java
 src/main/java/dev/openfga/sdk/api/model/UnprocessableContentMessageResponse.java
 src/main/java/dev/openfga/sdk/api/model/User.java
