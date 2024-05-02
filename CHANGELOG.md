@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.2
+
+### [0.4.2](https://github.com/openfga/java-sdk/compare/v0.4.1...v0.4.2) (2024-05-02)
+
+- feat: support the [ListUsers](https://github.com/openfga/rfcs/blob/main/20231214-listUsers-api.md) endpoint (#80)
+- fix: improve check for validity of token (#76)
+
 ## v0.4.1
 
 ### [0.4.1](https://github.com/openfga/java-sdk/compare/v0.4.0...v0.4.1) (2024-04-09)
