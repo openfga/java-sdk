@@ -51,7 +51,6 @@ docs/Node.md
 docs/Nodes.md
 docs/NotFoundErrorCode.md
 docs/NullValue.md
-docs/ObjectOrUserset.md
 docs/ObjectRelation.md
 docs/OpenFgaApi.md
 docs/PathUnknownErrorMessageResponse.md
@@ -220,7 +219,6 @@ src/main/java/dev/openfga/sdk/api/model/Node.java
 src/main/java/dev/openfga/sdk/api/model/Nodes.java
 src/main/java/dev/openfga/sdk/api/model/NotFoundErrorCode.java
 src/main/java/dev/openfga/sdk/api/model/NullValue.java
-src/main/java/dev/openfga/sdk/api/model/ObjectOrUserset.java
 src/main/java/dev/openfga/sdk/api/model/ObjectRelation.java
 src/main/java/dev/openfga/sdk/api/model/PathUnknownErrorMessageResponse.java
 src/main/java/dev/openfga/sdk/api/model/ReadAssertionsResponse.java

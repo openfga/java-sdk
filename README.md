@@ -806,7 +806,6 @@ var options = new ClientListUsersOptions()
 var response = fgaClient.listUsers(request, options).get();
 
 // response.getUsers() = [{object: {type: "user", id: "81684243-9356-4421-8fbf-a4f8d36aa31b"}}, {userset: { type: "user" }}, ...]
-// response.getExcludedUsers = [ {object: {type: "user", id: "4a455e27-d15a-4434-82e0-136f9c2aa4cf"}}, ... ]
 ```
 
 #### Assertions
@@ -972,8 +971,6 @@ public class Example {
 - [NotFoundErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/NotFoundErrorCode.md)
 
 - [NullValue](https://github.com/openfga/java-sdk/blob/main/docs/NullValue.md)
-
-- [ObjectOrUserset](https://github.com/openfga/java-sdk/blob/main/docs/ObjectOrUserset.md)
 
 - [ObjectRelation](https://github.com/openfga/java-sdk/blob/main/docs/ObjectRelation.md)
 

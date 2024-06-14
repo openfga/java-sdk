@@ -2344,7 +2344,7 @@ public class OpenFgaClientTest {
                 .withBody(is(expectedBody))
                 .doReturn(
                         200,
-                        "{\"excluded_users\":null,\"users\":[{\"object\":{\"id\":\"81684243-9356-4421-8fbf-a4f8d36aa31b\",\"type\":\"user\"}},{\"userset\":{\"id\":\"fga\",\"relation\":\"member\",\"type\":\"team\"}},{\"wildcard\":{\"type\":\"user\"}}]}");
+                        "{\"users\":[{\"object\":{\"id\":\"81684243-9356-4421-8fbf-a4f8d36aa31b\",\"type\":\"user\"}},{\"userset\":{\"id\":\"fga\",\"relation\":\"member\",\"type\":\"team\"}},{\"wildcard\":{\"type\":\"user\"}}]}");
 
         ClientListUsersRequest request = new ClientListUsersRequest()
                 ._object(new FgaObject().type(DEFAULT_TYPE).id(DEFAULT_ID))
@@ -2370,8 +2370,6 @@ public class OpenFgaClientTest {
                                         new UsersetUser().type("team").id("fga").relation("member")),
                         new User().wildcard(new TypedWildcard().type("user"))),
                 response.getUsers());
-
-        assertNull(response.getExcludedUsers());
     }
 
     /**
