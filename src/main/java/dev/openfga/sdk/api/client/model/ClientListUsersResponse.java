@@ -28,7 +28,6 @@ public class ClientListUsersResponse extends ListUsersResponse {
         this.rawResponse = apiResponse.getRawResponse();
         ListUsersResponse response = apiResponse.getData();
         this.setUsers(response.getUsers());
-        this.setExcludedUsers(response.getExcludedUsers());
     }
 
     public int getStatusCode() {

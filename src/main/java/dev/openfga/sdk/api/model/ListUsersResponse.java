@@ -23,13 +23,10 @@ import java.util.StringJoiner;
 /**
  * ListUsersResponse
  */
-@JsonPropertyOrder({ListUsersResponse.JSON_PROPERTY_USERS, ListUsersResponse.JSON_PROPERTY_EXCLUDED_USERS})
+@JsonPropertyOrder({ListUsersResponse.JSON_PROPERTY_USERS})
 public class ListUsersResponse {
     public static final String JSON_PROPERTY_USERS = "users";
     private List<User> users = new ArrayList<>();
-
-    public static final String JSON_PROPERTY_EXCLUDED_USERS = "excluded_users";
-    private List<ObjectOrUserset> excludedUsers = new ArrayList<>();
 
     public ListUsersResponse() {}
 
@@ -63,36 +60,6 @@ public class ListUsersResponse {
         this.users = users;
     }
 
-    public ListUsersResponse excludedUsers(List<ObjectOrUserset> excludedUsers) {
-        this.excludedUsers = excludedUsers;
-        return this;
-    }
-
-    public ListUsersResponse addExcludedUsersItem(ObjectOrUserset excludedUsersItem) {
-        if (this.excludedUsers == null) {
-            this.excludedUsers = new ArrayList<>();
-        }
-        this.excludedUsers.add(excludedUsersItem);
-        return this;
-    }
-
-    /**
-     * Get excludedUsers
-     * @return excludedUsers
-     **/
-    @javax.annotation.Nonnull
-    @JsonProperty(JSON_PROPERTY_EXCLUDED_USERS)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public List<ObjectOrUserset> getExcludedUsers() {
-        return excludedUsers;
-    }
-
-    @JsonProperty(JSON_PROPERTY_EXCLUDED_USERS)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setExcludedUsers(List<ObjectOrUserset> excludedUsers) {
-        this.excludedUsers = excludedUsers;
-    }
-
     /**
      * Return true if this ListUsersResponse object is equal to o.
      */
@@ -105,13 +72,12 @@ public class ListUsersResponse {
             return false;
         }
         ListUsersResponse listUsersResponse = (ListUsersResponse) o;
-        return Objects.equals(this.users, listUsersResponse.users)
-                && Objects.equals(this.excludedUsers, listUsersResponse.excludedUsers);
+        return Objects.equals(this.users, listUsersResponse.users);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(users, excludedUsers);
+        return Objects.hash(users);
     }
 
     @Override
@@ -119,7 +85,6 @@ public class ListUsersResponse {
         StringBuilder sb = new StringBuilder();
         sb.append("class ListUsersResponse {\n");
         sb.append("    users: ").append(toIndentedString(users)).append("\n");
-        sb.append("    excludedUsers: ").append(toIndentedString(excludedUsers)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -175,23 +140,6 @@ public class ListUsersResponse {
                             .get(i)
                             .toUrlQueryString(String.format(
                                     "%susers%s%s",
-                                    prefix,
-                                    suffix,
-                                    "".equals(suffix)
-                                            ? ""
-                                            : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
-                }
-            }
-        }
-
-        // add `excluded_users` to the URL query string
-        if (getExcludedUsers() != null) {
-            for (int i = 0; i < getExcludedUsers().size(); i++) {
-                if (getExcludedUsers().get(i) != null) {
-                    joiner.add(getExcludedUsers()
-                            .get(i)
-                            .toUrlQueryString(String.format(
-                                    "%sexcluded_users%s%s",
                                     prefix,
                                     suffix,
                                     "".equals(suffix)
