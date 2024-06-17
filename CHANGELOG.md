@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0
+
+### [0.5.0](https://github.com/openfga/java-sdk/compare/v0.4.0...v0.5.0) (2024-06-14)
+- chore!: remove excluded users from ListUsers response
+
+BREAKING CHANGE:
+
+This version removes `getExcludedUsers` and `setExcludedUsers` from the `ListUsersResponse` and `ClientListUsersResponse` classes,
+for more details see the [associated API change](https://github.com/openfga/api/pull/171).
+
 ## v0.4.2
 
 ### [0.4.2](https://github.com/openfga/java-sdk/compare/v0.4.1...v0.4.2) (2024-05-02)
