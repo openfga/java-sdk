@@ -56,7 +56,7 @@ jacocoTestReport {
 
 ext {
     jackson_version = "2.17.1"
-    junit_version = "5.10.2"
+    junit_version = "5.10.3"
 }
 
 dependencies {
@@ -78,7 +78,7 @@ testing {
                 implementation "org.junit.jupiter:junit-jupiter:$junit_version"
                 implementation "org.mockito:mockito-core:5.+"
                 runtimeOnly "org.junit.platform:junit-platform-launcher"
-                implementation "org.wiremock:wiremock:3.6.0"
+                implementation "org.wiremock:wiremock:3.8.0"
 
                 // This test-only dependency is convenient but not widely used.
                 // Review project activity before updating the version here.
