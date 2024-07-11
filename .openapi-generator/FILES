@@ -5,6 +5,7 @@
 .github/ISSUE_TEMPLATE/config.yaml
 .github/ISSUE_TEMPLATE/feature_request.yaml
 .github/dependabot.yaml
+.github/workflows/fossa.yaml
 .github/workflows/main.yaml
 .github/workflows/semgrep.yaml
 .gitignore
