@@ -1328,7 +1328,6 @@ public class OpenFgaApiTest {
         var response = fga.check(DEFAULT_STORE_ID, request).get();
 
         // Then
-        verify(mockConfiguration).getApiUrl();
         verify(mockConfiguration).getReadTimeout();
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
         assertNotNull(response.getData());

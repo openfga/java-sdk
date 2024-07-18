@@ -12,13 +12,19 @@
 
 package dev.openfga.sdk.api.auth;
 
-import dev.openfga.sdk.api.client.*;
-import dev.openfga.sdk.api.configuration.*;
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.client.HttpRequestAttempt;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.telemetry.Attribute;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class OAuth2Client {
@@ -28,6 +34,7 @@ public class OAuth2Client {
     private final AccessToken token = new AccessToken();
     private final CredentialsFlowRequest authRequest;
     private final Configuration config;
+    private final Telemetry telemetry;
 
     /**
      * Initializes a new instance of the {@link OAuth2Client} class
@@ -46,6 +53,7 @@ public class OAuth2Client {
                 .apiUrl(buildApiTokenIssuer(clientCredentials.getApiTokenIssuer()))
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay());
+        this.telemetry = new Telemetry();
     }
 
     /**
@@ -59,6 +67,18 @@ public class OAuth2Client {
             return exchangeToken().thenCompose(response -> {
                 token.setToken(response.getAccessToken());
                 token.setExpiresAt(Instant.now().plusSeconds(response.getExpiresInSeconds()));
+
+                Map<Attribute, String> attributesMap = new HashMap<>();
+
+                try {
+                    attributesMap.put(
+                            dev.openfga.sdk.telemetry.Attributes.REQUEST_CLIENT_ID,
+                            config.getCredentials().getClientCredentials().getClientId());
+                } catch (Exception e) {
+                }
+
+                telemetry.metrics().credentialsRequest(1L, attributesMap);
+
                 return CompletableFuture.completedFuture(token.getToken());
             });
         }
