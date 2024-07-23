@@ -45,6 +45,7 @@ public class Configuration implements BaseConfiguration {
     private int maxRetries;
     private Duration minimumRetryDelay;
     private Map<String, String> defaultHeaders;
+    private TelemetryConfiguration telemetryConfiguration;
 
     public Configuration() {
         this.apiUrl = DEFAULT_API_URL;
@@ -123,6 +124,10 @@ public class Configuration implements BaseConfiguration {
             });
         }
         result.defaultHeaders(headers);
+
+        TelemetryConfiguration overrideTelemetryConfiguration = configurationOverride.getTelemetryConfiguration();
+        result.telemetryConfiguration =
+                overrideTelemetryConfiguration != null ? overrideTelemetryConfiguration : telemetryConfiguration;
 
         return result;
     }
@@ -289,5 +294,14 @@ public class Configuration implements BaseConfiguration {
             this.defaultHeaders = Map.of();
         }
         return this.defaultHeaders;
+    }
+
+    public TelemetryConfiguration getTelemetryConfiguration() {
+        return telemetryConfiguration;
+    }
+
+    public Configuration telemetryConfiguration(TelemetryConfiguration telemetryConfiguration) {
+        this.telemetryConfiguration = telemetryConfiguration;
+        return this;
     }
 }
