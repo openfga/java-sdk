@@ -1,18 +1,25 @@
 package dev.openfga.sdk.telemetry;
 
+import dev.openfga.sdk.api.configuration.Configuration;
+
 /**
  * The Telemetry class provides access to telemetry-related functionality.
  */
 public class Telemetry {
+    private Configuration configuration = new Configuration();
     private Metrics metrics = null;
 
+    public Telemetry(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     /**
-     * Returns the Metrics object for collecting telemetry data.
-     * If the Metrics object has not been initialized, it will be created.
+     * Returns a Metrics singleton for collecting telemetry data.
+     * If the Metrics singleton has not previously been initialized, it will be created.
      */
     public Metrics metrics() {
         if (metrics == null) {
-            metrics = new Metrics();
+            metrics = new Metrics(this.configuration);
         }
 
         return metrics;

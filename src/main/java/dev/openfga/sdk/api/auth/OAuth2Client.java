@@ -12,10 +12,8 @@
 
 package dev.openfga.sdk.api.auth;
 
-import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.HttpRequestAttempt;
-import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.client.*;
+import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.telemetry.Attribute;
@@ -53,7 +51,7 @@ public class OAuth2Client {
                 .apiUrl(buildApiTokenIssuer(clientCredentials.getApiTokenIssuer()))
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay());
-        this.telemetry = new Telemetry();
+        this.telemetry = new Telemetry(this.config);
     }
 
     /**
@@ -69,13 +67,6 @@ public class OAuth2Client {
                 token.setExpiresAt(Instant.now().plusSeconds(response.getExpiresInSeconds()));
 
                 Map<Attribute, String> attributesMap = new HashMap<>();
-
-                try {
-                    attributesMap.put(
-                            dev.openfga.sdk.telemetry.Attributes.REQUEST_CLIENT_ID,
-                            config.getCredentials().getClientCredentials().getClientId());
-                } catch (Exception e) {
-                }
 
                 telemetry.metrics().credentialsRequest(1L, attributesMap);
 

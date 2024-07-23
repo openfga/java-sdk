@@ -4,10 +4,7 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.api.configuration.Configuration;
-import dev.openfga.sdk.errors.ApiException;
-import dev.openfga.sdk.errors.FgaError;
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import dev.openfga.sdk.errors.HttpStatusCode;
+import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
@@ -22,9 +19,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class HttpRequestAttempt<T> {
     private final ApiClient apiClient;
@@ -32,7 +27,7 @@ public class HttpRequestAttempt<T> {
     private final Class<T> clazz;
     private final String name;
     private final HttpRequest request;
-    private final Telemetry telemetry = new Telemetry();
+    private final Telemetry telemetry;
     private Long requestStarted;
     private Map<Attribute, String> telemetryAttributes;
 
@@ -48,6 +43,7 @@ public class HttpRequestAttempt<T> {
         this.name = name;
         this.request = request;
         this.clazz = clazz;
+        this.telemetry = new Telemetry(configuration);
         this.telemetryAttributes = new HashMap<>();
     }
 
@@ -79,15 +75,11 @@ public class HttpRequestAttempt<T> {
                             requestBodyPublisher.subscribe(new BodyLogger(System.err, "request")));
         }
 
-        addTelemetryAttribute(Attributes.HTTP_HOST, configuration.getApiUrl());
-        addTelemetryAttribute(Attributes.HTTP_METHOD, request.method());
-
-        try {
-            addTelemetryAttribute(
-                    Attributes.REQUEST_CLIENT_ID,
-                    configuration.getCredentials().getClientCredentials().getClientId());
-        } catch (Exception e) {
-        }
+        addTelemetryAttribute(Attributes.HTTP_HOST, request.uri().getHost());
+        addTelemetryAttribute(Attributes.URL_SCHEME, request.uri().getScheme());
+        addTelemetryAttribute(Attributes.URL_FULL, request.uri().toString());
+        addTelemetryAttribute(Attributes.HTTP_REQUEST_METHOD, request.method());
+        addTelemetryAttribute(Attributes.USER_AGENT, configuration.getUserAgent());
 
         return attemptHttpRequest(createClient(), 0, null);
     }
@@ -119,20 +111,25 @@ public class HttpRequestAttempt<T> {
                     }
 
                     addTelemetryAttributes(Attributes.fromHttpResponse(response, this.configuration.getCredentials()));
-                    addTelemetryAttribute(Attributes.REQUEST_RETRIES, String.valueOf(retryNumber));
 
-                    if (response.headers().firstValue("fga-query-duration-ms").isPresent()) {
-                        double queryDuration = Double.parseDouble(response.headers()
-                                .firstValue("fga-query-duration-ms")
-                                .get());
-                        telemetry.metrics().queryDuration(queryDuration, this.getTelemetryAttributes());
+                    if (retryNumber > 0) {
+                        addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber));
                     }
 
-                    telemetry
-                            .metrics()
-                            .requestDuration(
-                                    (double) (System.currentTimeMillis() - this.requestStarted),
-                                    this.getTelemetryAttributes());
+                    if (response.headers().firstValue("fga-query-duration-ms").isPresent()) {
+                        String queryDuration = response.headers()
+                                .firstValue("fga-query-duration-ms")
+                                .orElse(null);
+
+                        if (!isNullOrWhitespace(queryDuration)) {
+                            double queryDurationDouble = Double.parseDouble(queryDuration);
+                            telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
+                        }
+                    }
+
+                    Double requestDuration = (double) (System.currentTimeMillis() - requestStarted);
+
+                    telemetry.metrics().requestDuration(requestDuration, this.getTelemetryAttributes());
 
                     return deserializeResponse(response)
                             .thenApply(modeledResponse -> new ApiResponse<>(

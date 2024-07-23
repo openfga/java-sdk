@@ -3,10 +3,8 @@ package dev.openfga.sdk.telemetry;
 /**
  * Represents a histogram for telemetry data.
  */
-public class Histogram {
-    private final String name;
+public class Histogram extends Metric {
     private final String unit;
-    private final String description;
 
     /**
      * Constructs a Histogram object with the specified name, unit, and description.
@@ -16,16 +14,19 @@ public class Histogram {
      * @param description the description of the histogram
      */
     public Histogram(String name, String unit, String description) {
-        this.name = name;
+        super(name, description);
         this.unit = unit;
-        this.description = description;
     }
 
     /**
-     * Returns the name of the histogram.
+     * Constructs a Histogram object with the specified name and description. The unit of measurement is set to "milliseconds" by default.
+     *
+     * @param name        the name of the histogram
+     * @param description the description of the histogram
      */
-    public String getName() {
-        return name;
+    public Histogram(String name, String description) {
+        super(name, description);
+        this.unit = "milliseconds";
     }
 
     /**
@@ -33,12 +34,5 @@ public class Histogram {
      */
     public String getUnit() {
         return unit;
-    }
-
-    /**
-     * Returns the description of the histogram.
-     */
-    public String getDescription() {
-        return description;
     }
 }

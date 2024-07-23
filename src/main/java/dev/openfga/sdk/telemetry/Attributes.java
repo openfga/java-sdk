@@ -1,6 +1,9 @@
 package dev.openfga.sdk.telemetry;
 
+import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
+
 import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import io.opentelemetry.api.common.AttributeKey;
@@ -8,60 +11,77 @@ import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class represents a collection of attributes used for telemetry purposes.
  */
 public class Attributes {
-    /**
-     * Attribute representing the model ID of a request.
-     */
-    public static final Attribute REQUEST_MODEL_ID = new Attribute("fga-client.request.model_id");
 
     /**
-     * Attribute representing the method of a request.
+     * The client ID used in the request, if applicable.
      */
-    public static final Attribute REQUEST_METHOD = new Attribute("fga-client.request.method");
+    public static final Attribute FGA_CLIENT_REQUEST_CLIENT_ID = new Attribute("fga-client.request.client_id");
 
     /**
-     * Attribute representing the store ID of a request.
+     * The FGA method/action of the request.
      */
-    public static final Attribute REQUEST_STORE_ID = new Attribute("fga-client.request.store_id");
+    public static final Attribute FGA_CLIENT_REQUEST_METHOD = new Attribute("fga-client.request.method");
 
     /**
-     * Attribute representing the client ID of a request.
+     * The authorization model ID used in the request, if applicable.
      */
-    public static final Attribute REQUEST_CLIENT_ID = new Attribute("fga-client.request.client_id");
+    public static final Attribute FGA_CLIENT_REQUEST_MODEL_ID = new Attribute("fga-client.request.model_id");
 
     /**
-     * Attribute representing the number of retries for a request.
+     * The store ID used in the request, if applicable.
      */
-    public static final Attribute REQUEST_RETRIES = new Attribute("fga-client.request.retries");
+    public static final Attribute FGA_CLIENT_REQUEST_STORE_ID = new Attribute("fga-client.request.store_id");
 
     /**
-     * Attribute representing the model ID of a response.
+     * The authorization model ID used by the server when evaluating the request, if applicable.
      */
-    public static final Attribute RESPONSE_MODEL_ID = new Attribute("fga-client.response.model_id");
+    public static final Attribute FGA_CLIENT_RESPONSE_MODEL_ID = new Attribute("fga-client.response.model_id");
 
     /**
-     * Attribute representing the user of a client.
+     * The user associated with the action of the request, if applicable.
      */
-    public static final Attribute CLIENT_USER = new Attribute("fga-client.user");
+    public static final Attribute FGA_CLIENT_USER = new Attribute("fga-client.user");
 
     /**
-     * Attribute representing the host of an HTTP request.
+     * The HTTP host used in the request.
      */
     public static final Attribute HTTP_HOST = new Attribute("http.host");
 
     /**
-     * Attribute representing the method of an HTTP request.
+     * The HTTP method used in the request.
      */
-    public static final Attribute HTTP_METHOD = new Attribute("http.method");
+    public static final Attribute HTTP_REQUEST_METHOD = new Attribute("http.request.method");
 
     /**
-     * Attribute representing the status code of an HTTP response.
+     * The number of times the request was retried.
      */
-    public static final Attribute HTTP_STATUS_CODE = new Attribute("http.status_code");
+    public static final Attribute HTTP_REQUEST_RESEND_COUNT = new Attribute("http.request.resend_count");
+
+    /**
+     * The HTTP status code returned by the server for the request.
+     */
+    public static final Attribute HTTP_RESPONSE_STATUS_CODE = new Attribute("http.response.status_code");
+
+    /**
+     * The scheme used in the request.
+     */
+    public static final Attribute URL_SCHEME = new Attribute("url.scheme");
+
+    /**
+     * The complete URL used in the request.
+     */
+    public static final Attribute URL_FULL = new Attribute("url.full");
+
+    /**
+     * The user agent used in the request.
+     */
+    public static final Attribute USER_AGENT = new Attribute("user_agent.original");
 
     /**
      * Prepares the attributes for OpenTelemetry publishing by converting them into the expected format.
@@ -70,12 +90,41 @@ public class Attributes {
      *
      * @return the prepared attributes
      */
-    public static io.opentelemetry.api.common.Attributes prepare(Map<Attribute, String> attributes) {
+    public static io.opentelemetry.api.common.Attributes prepare(
+            Map<Attribute, String> attributes, Metric metric, Configuration configuration) {
+        if (attributes == null
+                || attributes.isEmpty()
+                || configuration == null
+                || configuration.getTelemetryConfiguration() == null
+                || configuration.getTelemetryConfiguration().metrics() == null
+                || configuration.getTelemetryConfiguration().metrics().isEmpty()
+                || !configuration.getTelemetryConfiguration().metrics().containsKey(metric)
+                || configuration
+                        .getTelemetryConfiguration()
+                        .metrics()
+                        .get(metric)
+                        .isEmpty()) {
+            return io.opentelemetry.api.common.Attributes.empty();
+        }
+
+        Map<Attribute, Optional<Object>> configAllowedAttributes =
+                configuration.getTelemetryConfiguration().metrics().get(metric);
+
         io.opentelemetry.api.common.AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
 
-        attributes.forEach((key, value) -> {
-            builder.put(AttributeKey.stringKey(key.getName()), value);
-        });
+        for (Map.Entry<Attribute, Optional<Object>> configAllowedAttr : configAllowedAttributes.entrySet()) {
+            Attribute attr = configAllowedAttr.getKey();
+
+            if (!attributes.containsKey(attr)) {
+                continue;
+            }
+
+            String attrVal = attributes.getOrDefault(attr, "");
+
+            if (!isNullOrWhitespace(attrVal)) {
+                builder.put(AttributeKey.stringKey(attr.getName()), attrVal);
+            }
+        }
 
         return builder.build();
     }
@@ -92,19 +141,23 @@ public class Attributes {
         Map<Attribute, String> attributes = new HashMap<>();
 
         if (response != null) {
-            attributes.put(HTTP_STATUS_CODE, String.valueOf(response.statusCode()));
+            attributes.put(HTTP_RESPONSE_STATUS_CODE, String.valueOf(response.statusCode()));
 
             String responseModelId = response.headers()
                     .firstValue("openfga-authorization-model-id")
                     .orElse(null);
 
-            if (responseModelId != null) {
-                attributes.put(RESPONSE_MODEL_ID, responseModelId);
+            if (!isNullOrWhitespace(responseModelId)) {
+                attributes.put(FGA_CLIENT_RESPONSE_MODEL_ID, responseModelId);
             }
         }
 
         if (credentials != null && credentials.getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
-            attributes.put(REQUEST_CLIENT_ID, credentials.getClientCredentials().getClientId());
+            if (!isNullOrWhitespace(credentials.getClientCredentials().getClientId())) {
+                attributes.put(
+                        FGA_CLIENT_REQUEST_CLIENT_ID,
+                        credentials.getClientCredentials().getClientId());
+            }
         }
 
         return attributes;
@@ -122,19 +175,23 @@ public class Attributes {
         Map<Attribute, String> attributes = new HashMap<>();
 
         if (response != null) {
-            attributes.put(HTTP_STATUS_CODE, String.valueOf(response.getStatusCode()));
+            attributes.put(HTTP_RESPONSE_STATUS_CODE, String.valueOf(response.getStatusCode()));
 
             List<String> responseModelIdList =
                     response.getHeaders().getOrDefault("openfga-authorization-model-id", null);
             String responseModelId = responseModelIdList != null ? responseModelIdList.get(0) : null;
 
-            if (responseModelId != null) {
-                attributes.put(RESPONSE_MODEL_ID, responseModelId);
+            if (!isNullOrWhitespace(responseModelId)) {
+                attributes.put(FGA_CLIENT_RESPONSE_MODEL_ID, responseModelId);
             }
         }
 
         if (credentials != null && credentials.getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
-            attributes.put(REQUEST_CLIENT_ID, credentials.getClientCredentials().getClientId());
+            if (!isNullOrWhitespace(credentials.getClientCredentials().getClientId())) {
+                attributes.put(
+                        FGA_CLIENT_REQUEST_CLIENT_ID,
+                        credentials.getClientCredentials().getClientId());
+            }
         }
 
         return attributes;

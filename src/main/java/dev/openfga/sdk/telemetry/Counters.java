@@ -8,5 +8,6 @@ public class Counters {
      * The CREDENTIALS_REQUEST counter represents the number of times an access token is requested.
      */
     public static final Counter CREDENTIALS_REQUEST = new Counter(
-            "fga-client.credentials.request", "milliseconds", "The number of times an access token is requested.");
+            "fga-client.credentials.request",
+            "The total number of times new access tokens have been requested using ClientCredentials.");
 }
