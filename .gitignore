@@ -27,3 +27,6 @@ VERSION.txt
 # JetBrains IDEs
 .idea/
 *.iml
+
+# VSCode IDE
+/.vscode

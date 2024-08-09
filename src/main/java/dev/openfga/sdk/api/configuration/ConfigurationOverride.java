@@ -33,6 +33,7 @@ public class ConfigurationOverride implements BaseConfiguration {
     private Integer maxRetries;
     private Duration minimumRetryDelay;
     private Map<String, String> additionalHeaders;
+    private TelemetryConfiguration telemetryConfiguration;
 
     public ConfigurationOverride() {
         this.apiUrl = null;
@@ -41,6 +42,7 @@ public class ConfigurationOverride implements BaseConfiguration {
         this.readTimeout = null;
         this.connectTimeout = null;
         this.additionalHeaders = null;
+        this.telemetryConfiguration = null;
     }
 
     /**
@@ -205,5 +207,14 @@ public class ConfigurationOverride implements BaseConfiguration {
 
     public Map<String, String> getAdditionalHeaders() {
         return this.additionalHeaders;
+    }
+
+    public ConfigurationOverride telemetryConfiguration(TelemetryConfiguration telemetryConfiguration) {
+        this.telemetryConfiguration = telemetryConfiguration;
+        return this;
+    }
+
+    public TelemetryConfiguration getTelemetryConfiguration() {
+        return telemetryConfiguration;
     }
 }

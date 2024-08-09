@@ -15,14 +15,9 @@ package dev.openfga.sdk.api;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
-import dev.openfga.sdk.api.auth.OAuth2Client;
-import dev.openfga.sdk.api.client.ApiClient;
-import dev.openfga.sdk.api.client.ApiResponse;
-import dev.openfga.sdk.api.client.HttpRequestAttempt;
-import dev.openfga.sdk.api.client.OpenFgaClient;
-import dev.openfga.sdk.api.configuration.Configuration;
-import dev.openfga.sdk.api.configuration.ConfigurationOverride;
-import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.api.auth.*;
+import dev.openfga.sdk.api.client.*;
+import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.CheckRequest;
 import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
@@ -45,8 +40,8 @@ import dev.openfga.sdk.api.model.WriteAssertionsRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelResponse;
 import dev.openfga.sdk.api.model.WriteRequest;
-import dev.openfga.sdk.errors.ApiException;
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.errors.*;
+import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
 import dev.openfga.sdk.util.Pair;
@@ -54,6 +49,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,7 +74,7 @@ public class OpenFgaApi {
     public OpenFgaApi(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         this.apiClient = apiClient;
         this.configuration = configuration;
-        this.telemetry = new Telemetry();
+        this.telemetry = new Telemetry(this.configuration);
 
         if (configuration.getCredentials().getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
             this.oAuth2Client = new OAuth2Client(configuration, apiClient);
@@ -129,11 +126,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "Check");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "check", CheckResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "check")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -173,10 +177,17 @@ public class OpenFgaApi {
 
         String path = "/stores";
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "CreateStore");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "createStore", CreateStoreResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "createStore")
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -215,11 +226,17 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "DeleteStore");
+
         try {
             HttpRequest request = buildHttpRequest("DELETE", path, configuration);
             return new HttpRequestAttempt<>(request, "deleteStore", Void.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "deleteStore")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -264,11 +281,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "Expand");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "expand", ExpandResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "expand")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -308,11 +332,17 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "GetStore");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "getStore", GetStoreResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "getStore")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -357,11 +387,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ListObjects");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "listObjects", ListObjectsResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "listObjects")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -403,10 +440,16 @@ public class OpenFgaApi {
         String path = "/stores";
         path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
 
+        Map<String, Object> methodParameters = new HashMap<>();
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ListStores");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "listStores", ListStoresResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "listStores")
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -451,11 +494,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/list-users".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ListUsers");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "listUsers", ListUsersResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "listUsers")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -500,11 +550,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "Read");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "read", ReadResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "read")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -551,13 +608,19 @@ public class OpenFgaApi {
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("authorizationModelId", authorizationModelId);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ReadAssertions");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
                             request, "readAssertions", ReadAssertionsResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "readAssertions")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
-                    .addTelemetryAttribute(Attributes.REQUEST_MODEL_ID, authorizationModelId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -603,6 +666,14 @@ public class OpenFgaApi {
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{id}", ApiClient.urlEncode(id.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("id", id);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ReadAuthorizationModel");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
@@ -611,9 +682,7 @@ public class OpenFgaApi {
                             ReadAuthorizationModelResponse.class,
                             apiClient,
                             configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "readAuthorizationModel")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
-                    .addTelemetryAttribute(Attributes.REQUEST_MODEL_ID, id)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -662,6 +731,13 @@ public class OpenFgaApi {
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
         path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ReadAuthorizationModels");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
@@ -670,8 +746,7 @@ public class OpenFgaApi {
                             ReadAuthorizationModelsResponse.class,
                             apiClient,
                             configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "readAuthorizationModels")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -725,11 +800,17 @@ public class OpenFgaApi {
         String path = "/stores/{store_id}/changes".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
         path = pathWithParams(path, "type", type, "page_size", pageSize, "continuation_token", continuationToken);
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "ReadChanges");
+
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "readChanges", ReadChangesResponse.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "readChanges")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -773,11 +854,18 @@ public class OpenFgaApi {
 
         String path = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "Write");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(request, "write", Object.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "write")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -832,12 +920,19 @@ public class OpenFgaApi {
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
                 .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("authorizationModelId", authorizationModelId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "WriteAssertions");
+
         try {
             HttpRequest request = buildHttpRequest("PUT", path, body, configuration);
             return new HttpRequestAttempt<>(request, "writeAssertions", Void.class, apiClient, configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "writeAssertions")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
-                    .addTelemetryAttribute(Attributes.REQUEST_MODEL_ID, authorizationModelId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
@@ -883,6 +978,14 @@ public class OpenFgaApi {
         String path = "/stores/{store_id}/authorization-models"
                 .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
 
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "WriteAuthorizationModel");
+
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(
@@ -891,12 +994,83 @@ public class OpenFgaApi {
                             WriteAuthorizationModelResponse.class,
                             apiClient,
                             configuration)
-                    .addTelemetryAttribute(Attributes.REQUEST_METHOD, "writeAuthorizationModel")
-                    .addTelemetryAttribute(Attributes.REQUEST_STORE_ID, storeId)
+                    .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
             return CompletableFuture.failedFuture(e);
         }
+    }
+
+    private Map<Attribute, String> buildTelemetryAttributes(Map<String, Object> attributes) {
+        Map<Attribute, String> telemetryAttributes = new HashMap<>();
+
+        Object storeId = attributes.get("storeId");
+        Object authorizationModelId = attributes.get("authorizationModelId");
+        Object body = attributes.get("body");
+
+        if (storeId != null) {
+            telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_STORE_ID, storeId.toString());
+        }
+
+        if (authorizationModelId != null) {
+            telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_MODEL_ID, authorizationModelId.toString());
+        }
+
+        if (body != null) {
+            if (body instanceof CheckRequest) {
+                CheckRequest checkRequest = (CheckRequest) body;
+
+                if (checkRequest.getTupleKey() != null
+                        && !isNullOrWhitespace(checkRequest.getTupleKey().getUser())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_USER,
+                            checkRequest.getTupleKey().getUser());
+                }
+
+                if (!isNullOrWhitespace(checkRequest.getAuthorizationModelId())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_MODEL_ID, checkRequest.getAuthorizationModelId());
+                }
+            }
+
+            if (body instanceof ExpandRequest) {
+                ExpandRequest expandRequest = (ExpandRequest) body;
+
+                if (!isNullOrWhitespace(expandRequest.getAuthorizationModelId())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_MODEL_ID, expandRequest.getAuthorizationModelId());
+                }
+            }
+
+            if (body instanceof ListObjectsRequest) {
+                ListObjectsRequest listObjectsRequest = (ListObjectsRequest) body;
+
+                if (!isNullOrWhitespace(listObjectsRequest.getAuthorizationModelId())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_MODEL_ID, listObjectsRequest.getAuthorizationModelId());
+                }
+            }
+
+            if (body instanceof ListUsersRequest) {
+                ListUsersRequest listUsersRequest = (ListUsersRequest) body;
+
+                if (!isNullOrWhitespace(listUsersRequest.getAuthorizationModelId())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_MODEL_ID, listUsersRequest.getAuthorizationModelId());
+                }
+            }
+
+            if (body instanceof WriteRequest) {
+                WriteRequest writeRequest = (WriteRequest) body;
+
+                if (!isNullOrWhitespace(writeRequest.getAuthorizationModelId())) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_MODEL_ID, writeRequest.getAuthorizationModelId());
+                }
+            }
+        }
+
+        return telemetryAttributes;
     }
 
     private HttpRequest buildHttpRequest(String method, String path, Configuration configuration)
