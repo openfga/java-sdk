@@ -54,6 +54,7 @@ docs/NotFoundErrorCode.md
 docs/NullValue.md
 docs/ObjectRelation.md
 docs/OpenFgaApi.md
+docs/OpenTelemetry.md
 docs/PathUnknownErrorMessageResponse.md
 docs/ReadAssertionsResponse.md
 docs/ReadAuthorizationModelResponse.md
