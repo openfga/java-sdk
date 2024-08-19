@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.1
+
+- fix: Maven build issue
+
 ## v0.6.0
 
 - feat: support [OpenTelemetry metrics reporting](https://github.com/openfga/java-sdk/blob/main/docs/OpenTelemetry.md) [\#94](https://github.com/openfga/java-sdk/pull/94) [\#95](https://github.com/openfga/java-sdk/pull/95)
