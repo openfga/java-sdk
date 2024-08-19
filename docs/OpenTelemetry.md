@@ -33,3 +33,146 @@ In cases when metrics events are sent, they will not be viewable outside of infr
 | `url.full`                     | `string` | Full URL of the request                                                                                                                                     |
 | `url.scheme`                   | `string` | HTTP Scheme of the request (`http`/`https`)                                                                                                                 |
 | `user_agent.original`          | `string` | User Agent used in the query                                                                                                                                |
+
+## Examples
+
+### Usage
+
+Please see [the OpenTelemetry documentation](https://opentelemetry.io/docs/languages/java/) for how to configure the SDK for your application. Below is an example of how to configure the SDK to use OpenTelemetry.
+
+In most cases you can use the `io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk` package to automatically configure OpenTelemetry.
+
+However, if you prefer to configure OpenTelemetry manually, you can use the `io.opentelemetry.sdk.OpenTelemetrySdk` package to configure OpenTelemetry manually, as shown below.
+
+```java
+// Import the OpenFGA SDK
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+
+// Import the OpenTelemetry SDK
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+
+public class Example {
+    private OpenTelemetry otel;
+
+    public static void main(String[] args) throws Exception {
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(System.getenv("FGA_API_URL"))
+                .storeId(System.getenv("FGA_STORE_ID"))
+                .authorizationModelId(System.getenv("FGA_MODEL_ID"));
+
+        OpenFgaClient fgaClient = new OpenFgaClient(config);
+
+        configureOpenTelemetry();
+
+        // Your application logic here ...
+    }
+
+    public static void configureOpenTelemetry() {
+        Resource resource =
+            Resource.getDefault().toBuilder()
+                .put(ServiceAttributes.SERVICE_NAME, "example-app")
+                .put(ServiceAttributes.SERVICE_VERSION, "0.1.0")
+                .build();
+
+        SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
+            .registerMetricReader(PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build()).build())
+            .setResource(resource)
+            .build();
+
+        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+            .setMeterProvider(sdkMeterProvider)
+            .buildAndRegisterGlobal();
+
+        otel = openTelemetry;
+    }
+}
+```
+
+### Metrics Configuration
+
+The SDK includes a default configuration for metrics. You can override these defaults by providing your own `TelemetryConfiguration` instance.
+
+```java
+// Import the OpenFGA SDK
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
+import dev.openfga.sdk.telemetry.Attribute;
+import dev.openfga.sdk.telemetry.Attributes;
+import dev.openfga.sdk.telemetry.Counters;
+import dev.openfga.sdk.telemetry.Histograms;
+import dev.openfga.sdk.telemetry.Metric;
+
+// Import the OpenTelemetry SDK
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+public class Example {
+    private OpenTelemetry otel;
+
+    public static void main(String[] args) {
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(System.getenv("FGA_API_URL"))
+                .storeId(System.getenv("FGA_STORE_ID"))
+                .authorizationModelId(System.getenv("FGA_MODEL_ID"))
+                .telemetryConfiguration(buildOpenTelemetryConfiguration()); // Supply your custom TelemetryConfiguration
+
+        OpenFgaClient fgaClient = new OpenFgaClient(config);
+
+        configureOpenTelemetry();
+
+        // Your application logic here ...
+    }
+
+    public static TelemetryConfiguration buildOpenTelemetryConfiguration() {
+        Map<Attribute, Optional<Object>> attributes = new HashMap<>();
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID, Optional.empty());
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, Optional.empty());
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_MODEL_ID, Optional.empty());
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_STORE_ID, Optional.empty());
+        attributes.put(Attributes.FGA_CLIENT_RESPONSE_MODEL_ID, Optional.empty());
+        attributes.put(Attributes.HTTP_HOST, Optional.empty());
+        attributes.put(Attributes.HTTP_REQUEST_RESEND_COUNT, Optional.empty());
+        attributes.put(Attributes.HTTP_RESPONSE_STATUS_CODE, Optional.empty());
+        attributes.put(Attributes.URL_FULL, Optional.empty());
+        attributes.put(Attributes.URL_SCHEME, Optional.empty());
+        attributes.put(Attributes.USER_AGENT, Optional.empty());
+
+        Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
+        metrics.put(Counters.CREDENTIALS_REQUEST, attributes);
+        metrics.put(Histograms.QUERY_DURATION, attributes);
+        metrics.put(Histograms.REQUEST_DURATION, attributes);
+
+        return new TelemetryConfiguration(metrics);
+    }
+
+    public static void configureOpenTelemetry() {
+        Resource resource =
+            Resource.getDefault().toBuilder()
+                .put(ServiceAttributes.SERVICE_NAME, "example-app")
+                .put(ServiceAttributes.SERVICE_VERSION, "0.1.0")
+                .build();
+
+        SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
+            .registerMetricReader(PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build()).build())
+            .setResource(resource)
+            .build();
+
+        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+            .setMeterProvider(sdkMeterProvider)
+            .buildAndRegisterGlobal();
+
+        otel = openTelemetry;
+    }
+}
+```
