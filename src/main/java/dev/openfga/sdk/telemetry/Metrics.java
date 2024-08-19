@@ -19,14 +19,14 @@ public class Metrics {
     private final Configuration configuration;
 
     public Metrics() {
-        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.5.0");
+        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.6.0");
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = new Configuration();
     }
 
     public Metrics(Configuration configuration) {
-        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.5.0");
+        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.6.0");
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = configuration;

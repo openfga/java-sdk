@@ -1,8 +1,14 @@
 # Changelog
 
+## v0.6.0
+
+- feat: support [OpenTelemetry metrics reporting](https://github.com/openfga/java-sdk/blob/main/docs/OpenTelemetry.md) [\#94](https://github.com/openfga/java-sdk/pull/94) [\#95](https://github.com/openfga/java-sdk/pull/95)
+- chore: update dependencies [\#100](https://github.com/openfga/java-sdk/pull/100) [\#101](https://github.com/openfga/java-sdk/pull/100) [\#102](https://github.com/openfga/java-sdk/pull/102) [\#103](https://github.com/openfga/java-sdk/pull/103)
+
 ## v0.5.0
 
 ### [0.5.0](https://github.com/openfga/java-sdk/compare/v0.4.0...v0.5.0) (2024-06-14)
+
 - chore!: remove excluded users from ListUsers response
 
 BREAKING CHANGE:
@@ -92,7 +98,7 @@ No changes, this patch release is just to test release automation.
   will automatically be retried. (With the exception of the HTTP 501 "Not Implemented" status code.)
 - feat(client): new response error classes have been introduced to classify FGA error responses
 - feat(client): response types have been enriched with HTTP status/header/body response data
-- feat(client): response errors have been enriched with data from both the HTTP request and its repsonse 
+- feat(client): response errors have been enriched with data from both the HTTP request and its repsonse
 - [BREAKING] refactor(client): in the lower level OpenFgaApi class, api calls and api calls "...WithHttpInfo"
   are collapsed into a single api call that always includes HTTP information.
 
