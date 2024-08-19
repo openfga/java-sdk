@@ -54,6 +54,7 @@ docs/NotFoundErrorCode.md
 docs/NullValue.md
 docs/ObjectRelation.md
 docs/OpenFgaApi.md
+docs/OpenTelemetry.md
 docs/PathUnknownErrorMessageResponse.md
 docs/ReadAssertionsResponse.md
 docs/ReadAuthorizationModelResponse.md
@@ -184,6 +185,7 @@ src/main/java/dev/openfga/sdk/api/configuration/Configuration.java
 src/main/java/dev/openfga/sdk/api/configuration/ConfigurationOverride.java
 src/main/java/dev/openfga/sdk/api/configuration/Credentials.java
 src/main/java/dev/openfga/sdk/api/configuration/CredentialsMethod.java
+src/main/java/dev/openfga/sdk/api/configuration/TelemetryConfiguration.java
 src/main/java/dev/openfga/sdk/api/model/AbortedMessageResponse.java
 src/main/java/dev/openfga/sdk/api/model/AbstractOpenApiSchema.java
 src/main/java/dev/openfga/sdk/api/model/Any.java
@@ -272,6 +274,15 @@ src/main/java/dev/openfga/sdk/errors/FgaApiValidationError.java
 src/main/java/dev/openfga/sdk/errors/FgaError.java
 src/main/java/dev/openfga/sdk/errors/FgaInvalidParameterException.java
 src/main/java/dev/openfga/sdk/errors/HttpStatusCode.java
+src/main/java/dev/openfga/sdk/telemetry/Attribute.java
+src/main/java/dev/openfga/sdk/telemetry/Attributes.java
+src/main/java/dev/openfga/sdk/telemetry/Counter.java
+src/main/java/dev/openfga/sdk/telemetry/Counters.java
+src/main/java/dev/openfga/sdk/telemetry/Histogram.java
+src/main/java/dev/openfga/sdk/telemetry/Histograms.java
+src/main/java/dev/openfga/sdk/telemetry/Metric.java
+src/main/java/dev/openfga/sdk/telemetry/Metrics.java
+src/main/java/dev/openfga/sdk/telemetry/Telemetry.java
 src/main/java/dev/openfga/sdk/util/Pair.java
 src/main/java/dev/openfga/sdk/util/StringUtil.java
 src/main/java/dev/openfga/sdk/util/Validation.java
@@ -290,4 +301,14 @@ src/test/java/dev/openfga/sdk/api/client/ApiClientTest.java
 src/test/java/dev/openfga/sdk/api/client/OpenFgaClientTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ClientCredentialsTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ConfigurationTest.java
+src/test/java/dev/openfga/sdk/api/configuration/TelemetryConfigurationTest.java
+src/test/java/dev/openfga/sdk/telemetry/AttributeTest.java
+src/test/java/dev/openfga/sdk/telemetry/AttributesTest.java
+src/test/java/dev/openfga/sdk/telemetry/CounterTest.java
+src/test/java/dev/openfga/sdk/telemetry/CountersTest.java
+src/test/java/dev/openfga/sdk/telemetry/HistogramTest.java
+src/test/java/dev/openfga/sdk/telemetry/HistogramsTest.java
+src/test/java/dev/openfga/sdk/telemetry/MetricTest.java
+src/test/java/dev/openfga/sdk/telemetry/MetricsTest.java
+src/test/java/dev/openfga/sdk/telemetry/TelemetryTest.java
 src/test/java/dev/openfga/sdk/util/StringUtilTest.java

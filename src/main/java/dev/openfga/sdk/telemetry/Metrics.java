@@ -1,5 +1,6 @@
 package dev.openfga.sdk.telemetry;
 
+import dev.openfga.sdk.api.configuration.Configuration;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -15,11 +16,20 @@ public class Metrics {
     private final Meter meter;
     private final Map<String, LongCounter> counters;
     private final Map<String, DoubleHistogram> histograms;
+    private final Configuration configuration;
 
     public Metrics() {
         this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.5.0");
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
+        this.configuration = new Configuration();
+    }
+
+    public Metrics(Configuration configuration) {
+        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk/0.5.0");
+        this.counters = new HashMap<>();
+        this.histograms = new HashMap<>();
+        this.configuration = configuration;
     }
 
     /**
@@ -46,14 +56,13 @@ public class Metrics {
                     counter.getName(),
                     meter.counterBuilder(counter.getName())
                             .setDescription(counter.getDescription())
-                            .setUnit(counter.getUnit())
                             .build());
         }
 
         LongCounter counterInstance = counters.get(counter.getName());
 
         if (value != null) {
-            counterInstance.add(value, Attributes.prepare(attributes));
+            counterInstance.add(value, Attributes.prepare(attributes, counter, configuration));
         }
 
         return counterInstance;
@@ -79,14 +88,14 @@ public class Metrics {
         DoubleHistogram histogramInstance = histograms.get(histogram.getName());
 
         if (value != null) {
-            histogramInstance.record(value, Attributes.prepare(attributes));
+            histogramInstance.record(value, Attributes.prepare(attributes, histogram, configuration));
         }
 
         return histogramInstance;
     }
 
     /**
-     * Returns a LongCounter metric instance, for publishing the number of times an access token is requested.
+     * Returns a LongCounter counter for tracking the number of times an access token is requested through ClientCredentials.
      *
      * @param value      The value to be added to the counter.
      * @param attributes A map of attributes associated with the metric.
@@ -98,7 +107,7 @@ public class Metrics {
     }
 
     /**
-     * Returns a DoubleHistogram metric instance, for publishing the duration of requests.
+     * Returns a DoubleHistogram histogram for measuring the total roundtrip time it took to process a request, including the time it took to send the request and receive the response.
      *
      * @param value      The value to be recorded in the histogram.
      * @param attributes A map of attributes associated with the metric.
@@ -108,7 +117,7 @@ public class Metrics {
     }
 
     /**
-     * Returns a DoubleHistogram metric instance, for publishing the duration of queries.
+     * Returns a DoubleHistogram for measuring how long the FGA server took to process and evaluate a request.
      *
      * @param value      The value to be recorded in the histogram.
      * @param attributes A map of attributes associated with the metric.
