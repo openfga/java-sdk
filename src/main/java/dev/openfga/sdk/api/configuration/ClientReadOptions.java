@@ -12,12 +12,14 @@
 
 package dev.openfga.sdk.api.configuration;
 
+import dev.openfga.sdk.api.model.ConsistencyPreference;
 import java.util.Map;
 
 public class ClientReadOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private Integer pageSize;
     private String continuationToken;
+    private ConsistencyPreference consistency;
 
     public ClientReadOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
@@ -45,5 +47,14 @@ public class ClientReadOptions implements AdditionalHeadersSupplier {
 
     public String getContinuationToken() {
         return continuationToken;
+    }
+
+    public ClientReadOptions consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    public ConsistencyPreference getConsistency() {
+        return consistency;
     }
 }

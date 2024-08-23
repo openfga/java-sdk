@@ -26,7 +26,8 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({
     ReadRequest.JSON_PROPERTY_TUPLE_KEY,
     ReadRequest.JSON_PROPERTY_PAGE_SIZE,
-    ReadRequest.JSON_PROPERTY_CONTINUATION_TOKEN
+    ReadRequest.JSON_PROPERTY_CONTINUATION_TOKEN,
+    ReadRequest.JSON_PROPERTY_CONSISTENCY
 })
 public class ReadRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
@@ -37,6 +38,9 @@ public class ReadRequest {
 
     public static final String JSON_PROPERTY_CONTINUATION_TOKEN = "continuation_token";
     private String continuationToken;
+
+    public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
+    private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
 
     public ReadRequest() {}
 
@@ -106,6 +110,28 @@ public class ReadRequest {
         this.continuationToken = continuationToken;
     }
 
+    public ReadRequest consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    /**
+     * Get consistency
+     * @return consistency
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ConsistencyPreference getConsistency() {
+        return consistency;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConsistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+    }
+
     /**
      * Return true if this Read_request object is equal to o.
      */
@@ -120,12 +146,13 @@ public class ReadRequest {
         ReadRequest readRequest = (ReadRequest) o;
         return Objects.equals(this.tupleKey, readRequest.tupleKey)
                 && Objects.equals(this.pageSize, readRequest.pageSize)
-                && Objects.equals(this.continuationToken, readRequest.continuationToken);
+                && Objects.equals(this.continuationToken, readRequest.continuationToken)
+                && Objects.equals(this.consistency, readRequest.consistency);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, pageSize, continuationToken);
+        return Objects.hash(tupleKey, pageSize, continuationToken, consistency);
     }
 
     @Override
@@ -137,6 +164,7 @@ public class ReadRequest {
         sb.append("    continuationToken: ")
                 .append(toIndentedString(continuationToken))
                 .append("\n");
+        sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -206,6 +234,16 @@ public class ReadRequest {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getContinuationToken()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `consistency` to the URL query string
+        if (getConsistency() != null) {
+            joiner.add(String.format(
+                    "%sconsistency%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getConsistency()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

@@ -29,7 +29,8 @@ import java.util.StringJoiner;
     CheckRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES,
     CheckRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
     CheckRequest.JSON_PROPERTY_TRACE,
-    CheckRequest.JSON_PROPERTY_CONTEXT
+    CheckRequest.JSON_PROPERTY_CONTEXT,
+    CheckRequest.JSON_PROPERTY_CONSISTENCY
 })
 public class CheckRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
@@ -46,6 +47,9 @@ public class CheckRequest {
 
     public static final String JSON_PROPERTY_CONTEXT = "context";
     private Object context;
+
+    public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
+    private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
 
     public CheckRequest() {}
 
@@ -154,6 +158,28 @@ public class CheckRequest {
         this.context = context;
     }
 
+    public CheckRequest consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    /**
+     * Get consistency
+     * @return consistency
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ConsistencyPreference getConsistency() {
+        return consistency;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConsistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+    }
+
     /**
      * Return true if this Check_request object is equal to o.
      */
@@ -170,12 +196,13 @@ public class CheckRequest {
                 && Objects.equals(this.contextualTuples, checkRequest.contextualTuples)
                 && Objects.equals(this.authorizationModelId, checkRequest.authorizationModelId)
                 && Objects.equals(this.trace, checkRequest.trace)
-                && Objects.equals(this.context, checkRequest.context);
+                && Objects.equals(this.context, checkRequest.context)
+                && Objects.equals(this.consistency, checkRequest.consistency);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, contextualTuples, authorizationModelId, trace, context);
+        return Objects.hash(tupleKey, contextualTuples, authorizationModelId, trace, context, consistency);
     }
 
     @Override
@@ -191,6 +218,7 @@ public class CheckRequest {
                 .append("\n");
         sb.append("    trace: ").append(toIndentedString(trace)).append("\n");
         sb.append("    context: ").append(toIndentedString(context)).append("\n");
+        sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -275,6 +303,16 @@ public class CheckRequest {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getContext()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `consistency` to the URL query string
+        if (getConsistency() != null) {
+            joiner.add(String.format(
+                    "%sconsistency%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getConsistency()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

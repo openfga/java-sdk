@@ -10,6 +10,7 @@
 |**tupleKey** | [**ReadRequestTupleKey**](ReadRequestTupleKey.md) |  |  [optional] |
 |**pageSize** | **Integer** |  |  [optional] |
 |**continuationToken** | **String** |  |  [optional] |
+|**consistency** | **ConsistencyPreference** |  |  [optional] |
 
 
 

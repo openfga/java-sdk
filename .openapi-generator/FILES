@@ -29,6 +29,7 @@ docs/Computed.md
 docs/Condition.md
 docs/ConditionMetadata.md
 docs/ConditionParamTypeRef.md
+docs/ConsistencyPreference.md
 docs/ContextualTupleKeys.md
 docs/CreateStoreRequest.md
 docs/CreateStoreResponse.md
@@ -199,6 +200,7 @@ src/main/java/dev/openfga/sdk/api/model/Computed.java
 src/main/java/dev/openfga/sdk/api/model/Condition.java
 src/main/java/dev/openfga/sdk/api/model/ConditionMetadata.java
 src/main/java/dev/openfga/sdk/api/model/ConditionParamTypeRef.java
+src/main/java/dev/openfga/sdk/api/model/ConsistencyPreference.java
 src/main/java/dev/openfga/sdk/api/model/ContextualTupleKeys.java
 src/main/java/dev/openfga/sdk/api/model/CreateStoreRequest.java
 src/main/java/dev/openfga/sdk/api/model/CreateStoreResponse.java

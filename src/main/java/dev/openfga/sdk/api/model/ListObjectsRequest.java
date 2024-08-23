@@ -29,7 +29,8 @@ import java.util.StringJoiner;
     ListObjectsRequest.JSON_PROPERTY_RELATION,
     ListObjectsRequest.JSON_PROPERTY_USER,
     ListObjectsRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES,
-    ListObjectsRequest.JSON_PROPERTY_CONTEXT
+    ListObjectsRequest.JSON_PROPERTY_CONTEXT,
+    ListObjectsRequest.JSON_PROPERTY_CONSISTENCY
 })
 public class ListObjectsRequest {
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
@@ -49,6 +50,9 @@ public class ListObjectsRequest {
 
     public static final String JSON_PROPERTY_CONTEXT = "context";
     private Object context;
+
+    public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
+    private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
 
     public ListObjectsRequest() {}
 
@@ -184,6 +188,28 @@ public class ListObjectsRequest {
         this.context = context;
     }
 
+    public ListObjectsRequest consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    /**
+     * Get consistency
+     * @return consistency
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ConsistencyPreference getConsistency() {
+        return consistency;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConsistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+    }
+
     /**
      * Return true if this ListObjects_request object is equal to o.
      */
@@ -201,12 +227,13 @@ public class ListObjectsRequest {
                 && Objects.equals(this.relation, listObjectsRequest.relation)
                 && Objects.equals(this.user, listObjectsRequest.user)
                 && Objects.equals(this.contextualTuples, listObjectsRequest.contextualTuples)
-                && Objects.equals(this.context, listObjectsRequest.context);
+                && Objects.equals(this.context, listObjectsRequest.context)
+                && Objects.equals(this.consistency, listObjectsRequest.consistency);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(authorizationModelId, type, relation, user, contextualTuples, context);
+        return Objects.hash(authorizationModelId, type, relation, user, contextualTuples, context, consistency);
     }
 
     @Override
@@ -223,6 +250,7 @@ public class ListObjectsRequest {
                 .append(toIndentedString(contextualTuples))
                 .append("\n");
         sb.append("    context: ").append(toIndentedString(context)).append("\n");
+        sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -322,6 +350,16 @@ public class ListObjectsRequest {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getContext()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `consistency` to the URL query string
+        if (getConsistency() != null) {
+            joiner.add(String.format(
+                    "%sconsistency%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getConsistency()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

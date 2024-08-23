@@ -9,6 +9,7 @@
 |------------ | ------------- | ------------- | -------------|
 |**tupleKey** | [**ExpandRequestTupleKey**](ExpandRequestTupleKey.md) |  |  |
 |**authorizationModelId** | **String** |  |  [optional] |
+|**consistency** | **ConsistencyPreference** |  |  [optional] |
 
 
 
