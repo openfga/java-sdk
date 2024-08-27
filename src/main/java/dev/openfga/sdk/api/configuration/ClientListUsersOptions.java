@@ -12,11 +12,13 @@
 
 package dev.openfga.sdk.api.configuration;
 
+import dev.openfga.sdk.api.model.ConsistencyPreference;
 import java.util.Map;
 
 public class ClientListUsersOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private String authorizationModelId;
+    private ConsistencyPreference consistency;
 
     public ClientListUsersOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
@@ -35,5 +37,14 @@ public class ClientListUsersOptions implements AdditionalHeadersSupplier {
 
     public String getAuthorizationModelId() {
         return authorizationModelId;
+    }
+
+    public ClientListUsersOptions consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    public ConsistencyPreference getConsistency() {
+        return consistency;
     }
 }

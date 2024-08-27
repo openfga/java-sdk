@@ -23,13 +23,20 @@ import java.util.StringJoiner;
 /**
  * ExpandRequest
  */
-@JsonPropertyOrder({ExpandRequest.JSON_PROPERTY_TUPLE_KEY, ExpandRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID})
+@JsonPropertyOrder({
+    ExpandRequest.JSON_PROPERTY_TUPLE_KEY,
+    ExpandRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
+    ExpandRequest.JSON_PROPERTY_CONSISTENCY
+})
 public class ExpandRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
     private ExpandRequestTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
     private String authorizationModelId;
+
+    public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
+    private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
 
     public ExpandRequest() {}
 
@@ -77,6 +84,28 @@ public class ExpandRequest {
         this.authorizationModelId = authorizationModelId;
     }
 
+    public ExpandRequest consistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+        return this;
+    }
+
+    /**
+     * Get consistency
+     * @return consistency
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ConsistencyPreference getConsistency() {
+        return consistency;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONSISTENCY)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setConsistency(ConsistencyPreference consistency) {
+        this.consistency = consistency;
+    }
+
     /**
      * Return true if this Expand_request object is equal to o.
      */
@@ -90,12 +119,13 @@ public class ExpandRequest {
         }
         ExpandRequest expandRequest = (ExpandRequest) o;
         return Objects.equals(this.tupleKey, expandRequest.tupleKey)
-                && Objects.equals(this.authorizationModelId, expandRequest.authorizationModelId);
+                && Objects.equals(this.authorizationModelId, expandRequest.authorizationModelId)
+                && Objects.equals(this.consistency, expandRequest.consistency);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, authorizationModelId);
+        return Objects.hash(tupleKey, authorizationModelId, consistency);
     }
 
     @Override
@@ -106,6 +136,7 @@ public class ExpandRequest {
         sb.append("    authorizationModelId: ")
                 .append(toIndentedString(authorizationModelId))
                 .append("\n");
+        sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -165,6 +196,16 @@ public class ExpandRequest {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getAuthorizationModelId()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `consistency` to the URL query string
+        if (getConsistency() != null) {
+            joiner.add(String.format(
+                    "%sconsistency%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getConsistency()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

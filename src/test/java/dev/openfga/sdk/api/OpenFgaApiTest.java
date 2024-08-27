@@ -912,8 +912,8 @@ public class OpenFgaApiTest {
         // Given
         String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/read";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
-                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null,\"consistency\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.HIGHER_CONSISTENCY);
         String responseBody = String.format(
                 "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -922,7 +922,8 @@ public class OpenFgaApiTest {
                 .tupleKey(new ReadRequestTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER));
+                        .user(DEFAULT_USER))
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
 
         // When
         var response = fga.read(DEFAULT_STORE_ID, request).get();
@@ -944,8 +945,8 @@ public class OpenFgaApiTest {
         // Given
         String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/read";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null}",
-                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null,\"consistency\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.HIGHER_CONSISTENCY);
         String responseBody = String.format(
                 "{\"tuples\":[{\"key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\","
                         + "\"condition\":{\"context\":{"
@@ -965,7 +966,8 @@ public class OpenFgaApiTest {
                 .tupleKey(new ReadRequestTupleKey()
                         ._object(DEFAULT_OBJECT)
                         .relation(DEFAULT_RELATION)
-                        .user(DEFAULT_USER));
+                        .user(DEFAULT_USER))
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
 
         // When
         var response = fga.read(DEFAULT_STORE_ID, request).get();
@@ -1313,8 +1315,8 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/check";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[]},\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null}",
-                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[]},\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.MINIMIZE_LATENCY);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, "{\"allowed\":true}");
         CheckRequest request = new CheckRequest()
                 .tupleKey(new CheckRequestTupleKey()
@@ -1322,7 +1324,8 @@ public class OpenFgaApiTest {
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER))
                 .contextualTuples(new ContextualTupleKeys())
-                .authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
 
         // When
         var response = fga.check(DEFAULT_STORE_ID, request).get();
@@ -1426,15 +1429,16 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\"}",
-                DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\",\"consistency\":\"%s\"}",
+                DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID, ConsistencyPreference.HIGHER_CONSISTENCY);
         String responseBody = String.format(
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
                 DEFAULT_USER);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, responseBody);
         ExpandRequest request = new ExpandRequest()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .tupleKey(new ExpandRequestTupleKey()._object(DEFAULT_OBJECT).relation(DEFAULT_RELATION));
+                .tupleKey(new ExpandRequestTupleKey()._object(DEFAULT_OBJECT).relation(DEFAULT_RELATION))
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
 
         // When
         var response = fga.expand(DEFAULT_STORE_ID, request).get();
@@ -1551,8 +1555,8 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/list-objects";
         String expectedBody = String.format(
-                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null}",
-                DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
+                "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null,\"consistency\":\"%s\"}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER, ConsistencyPreference.HIGHER_CONSISTENCY);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(is(expectedBody))
@@ -1560,7 +1564,8 @@ public class OpenFgaApiTest {
         ListObjectsRequest request = new ListObjectsRequest()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
                 .relation(DEFAULT_RELATION)
-                .user(DEFAULT_USER);
+                .user(DEFAULT_USER)
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
 
         // When
         var response = fga.listObjects(DEFAULT_STORE_ID, request).get();
