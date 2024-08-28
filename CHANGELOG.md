@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.0
+
+### [0.7.0](https://github.com/openfga/java-sdk/compare/v0.6.1...v0.7.0) (2024-08-28)
+
+- feat: support consistency parameter [\#107](https://github.com/openfga/java-sdk/pull/107)
+Note: To use this feature, you need to be running OpenFGA v1.5.7+ with the experimental flag `enable-consistency-params` enabled. 
+See the [v1.5.7 release notes](https://github.com/openfga/openfga/releases/tag/v1.5.7) for details.
+
 ## v0.6.1
 
 - fix: Maven build issue
