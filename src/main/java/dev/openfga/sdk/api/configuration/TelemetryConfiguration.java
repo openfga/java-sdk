@@ -20,6 +20,7 @@ public class TelemetryConfiguration {
         defaultAttributes.put(Attributes.FGA_CLIENT_REQUEST_STORE_ID, Optional.empty());
         defaultAttributes.put(Attributes.FGA_CLIENT_RESPONSE_MODEL_ID, Optional.empty());
         defaultAttributes.put(Attributes.HTTP_HOST, Optional.empty());
+        defaultAttributes.put(Attributes.HTTP_REQUEST_METHOD, Optional.empty());
         defaultAttributes.put(Attributes.HTTP_REQUEST_RESEND_COUNT, Optional.empty());
         defaultAttributes.put(Attributes.HTTP_RESPONSE_STATUS_CODE, Optional.empty());
         defaultAttributes.put(Attributes.URL_FULL, Optional.empty());
