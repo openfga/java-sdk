@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.1
+
+### [0.7.1](https://github.com/openfga/java-sdk/compare/v0.7.0...v0.7.1) (2024-09-23)
+
+- refactor(OpenTelemetry): remove SDK version from meter name
+- fix(OpenTelemetry): `http.request.method` should be enabled by default (#114)
+- chore(deps): update dependencies  (#110, #111, #112)
+- docs(OpenTelemetry): update Metrics and Attributes tables (#115)
+
 ## v0.7.0
 
 ### [0.7.0](https://github.com/openfga/java-sdk/compare/v0.6.1...v0.7.0) (2024-08-28)
