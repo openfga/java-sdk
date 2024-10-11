@@ -72,6 +72,8 @@ OpenFGA is designed to make it easy for application builders to model their perm
 
 The OpenFGA Java SDK is available on [Maven Central](https://central.sonatype.com/).
 
+The OpenFGA Java SDK currently supports **Java11** as the minimum JDK version.
+
 It can be used with the following:
 
 * Gradle (Groovy)
