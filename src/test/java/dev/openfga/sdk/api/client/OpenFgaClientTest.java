@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -41,6 +43,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /**
  * API tests for OpenFgaClient.
@@ -1701,6 +1704,41 @@ public class OpenFgaClientTest {
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(Boolean.TRUE, response.get(0).getAllowed());
+    }
+
+    @Test
+    public void shouldShutdownExecutorAfterBatchCheck() throws Exception {
+        // Given
+        ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
+
+        try (MockedStatic<Executors> mockedExecutors = mockStatic(Executors.class)) {
+            mockedExecutors
+                    .when(() -> Executors.newScheduledThreadPool(anyInt()))
+                    .thenReturn(mockExecutor);
+
+            // mockExecutor needs to handle tasks submitted to it so latch can count down
+            doAnswer(invocation -> {
+                        Runnable task = invocation.getArgument(0);
+                        task.run();
+                        return null;
+                    })
+                    .when(mockExecutor)
+                    .execute(any(Runnable.class));
+
+            ClientCheckRequest request = new ClientCheckRequest()
+                    ._object(DEFAULT_OBJECT)
+                    .relation(DEFAULT_RELATION)
+                    .user(DEFAULT_USER);
+            ClientBatchCheckOptions options = new ClientBatchCheckOptions()
+                    .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                    .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
+
+            // When
+            fga.batchCheck(List.of(request), options).get();
+
+            // Then
+            verify(mockExecutor).shutdown();
+        }
     }
 
     @Test
