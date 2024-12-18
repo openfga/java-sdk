@@ -30,10 +30,10 @@ import java.util.Map;
  * Configurations for an api client.
  */
 public class Configuration implements BaseConfiguration {
-    public static final String VERSION = "0.7.1";
+    public static final String VERSION = "0.7.2";
 
     private static final String DEFAULT_API_URL = "http://localhost:8080";
-    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.7.1";
+    private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.7.2";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
