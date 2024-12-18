@@ -617,6 +617,8 @@ public class OpenFgaClient {
             return CompletableFuture.completedFuture(new ArrayList<>(responses));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
+        } finally {
+            executor.shutdown();
         }
     }
 
