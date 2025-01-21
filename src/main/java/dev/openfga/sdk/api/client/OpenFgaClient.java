@@ -294,7 +294,12 @@ public class OpenFgaClient {
         var options = readChangesOptions != null ? readChangesOptions : new ClientReadChangesOptions();
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readChanges(
-                        storeId, request.getType(), options.getPageSize(), options.getContinuationToken(), overrides))
+                        storeId,
+                        request.getType(),
+                        options.getPageSize(),
+                        options.getContinuationToken(),
+                        request.getStartTime(),
+                        overrides))
                 .thenApply(ClientReadChangesResponse::new);
     }
 

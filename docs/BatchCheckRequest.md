@@ -1,16 +1,15 @@
 
 
-# ExpandRequest
+# BatchCheckRequest
 
 
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**tupleKey** | [**ExpandRequestTupleKey**](ExpandRequestTupleKey.md) |  |  |
+|**checks** | [**List&lt;BatchCheckItem&gt;**](BatchCheckItem.md) |  |  |
 |**authorizationModelId** | **String** |  |  [optional] |
 |**consistency** | **ConsistencyPreference** |  |  [optional] |
-|**contextualTuples** | [**ContextualTupleKeys**](ContextualTupleKeys.md) |  |  [optional] |
 
 
 

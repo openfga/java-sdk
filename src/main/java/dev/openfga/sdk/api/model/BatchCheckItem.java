@@ -17,36 +17,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * Assertion
+ * BatchCheckItem
  */
 @JsonPropertyOrder({
-    Assertion.JSON_PROPERTY_TUPLE_KEY,
-    Assertion.JSON_PROPERTY_EXPECTATION,
-    Assertion.JSON_PROPERTY_CONTEXTUAL_TUPLES,
-    Assertion.JSON_PROPERTY_CONTEXT
+    BatchCheckItem.JSON_PROPERTY_TUPLE_KEY,
+    BatchCheckItem.JSON_PROPERTY_CONTEXTUAL_TUPLES,
+    BatchCheckItem.JSON_PROPERTY_CONTEXT,
+    BatchCheckItem.JSON_PROPERTY_CORRELATION_ID
 })
-public class Assertion {
+public class BatchCheckItem {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private AssertionTupleKey tupleKey;
-
-    public static final String JSON_PROPERTY_EXPECTATION = "expectation";
-    private Boolean expectation;
+    private CheckRequestTupleKey tupleKey;
 
     public static final String JSON_PROPERTY_CONTEXTUAL_TUPLES = "contextual_tuples";
-    private List<TupleKey> contextualTuples = new ArrayList<>();
+    private ContextualTupleKeys contextualTuples;
 
     public static final String JSON_PROPERTY_CONTEXT = "context";
     private Object context;
 
-    public Assertion() {}
+    public static final String JSON_PROPERTY_CORRELATION_ID = "correlation_id";
+    private String correlationId;
 
-    public Assertion tupleKey(AssertionTupleKey tupleKey) {
+    public BatchCheckItem() {}
+
+    public BatchCheckItem tupleKey(CheckRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
         return this;
     }
@@ -58,48 +56,18 @@ public class Assertion {
     @javax.annotation.Nonnull
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public AssertionTupleKey getTupleKey() {
+    public CheckRequestTupleKey getTupleKey() {
         return tupleKey;
     }
 
     @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setTupleKey(AssertionTupleKey tupleKey) {
+    public void setTupleKey(CheckRequestTupleKey tupleKey) {
         this.tupleKey = tupleKey;
     }
 
-    public Assertion expectation(Boolean expectation) {
-        this.expectation = expectation;
-        return this;
-    }
-
-    /**
-     * Get expectation
-     * @return expectation
-     **/
-    @javax.annotation.Nonnull
-    @JsonProperty(JSON_PROPERTY_EXPECTATION)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public Boolean getExpectation() {
-        return expectation;
-    }
-
-    @JsonProperty(JSON_PROPERTY_EXPECTATION)
-    @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    public void setExpectation(Boolean expectation) {
-        this.expectation = expectation;
-    }
-
-    public Assertion contextualTuples(List<TupleKey> contextualTuples) {
+    public BatchCheckItem contextualTuples(ContextualTupleKeys contextualTuples) {
         this.contextualTuples = contextualTuples;
-        return this;
-    }
-
-    public Assertion addContextualTuplesItem(TupleKey contextualTuplesItem) {
-        if (this.contextualTuples == null) {
-            this.contextualTuples = new ArrayList<>();
-        }
-        this.contextualTuples.add(contextualTuplesItem);
         return this;
     }
 
@@ -110,23 +78,23 @@ public class Assertion {
     @javax.annotation.Nullable
     @JsonProperty(JSON_PROPERTY_CONTEXTUAL_TUPLES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public List<TupleKey> getContextualTuples() {
+    public ContextualTupleKeys getContextualTuples() {
         return contextualTuples;
     }
 
     @JsonProperty(JSON_PROPERTY_CONTEXTUAL_TUPLES)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setContextualTuples(List<TupleKey> contextualTuples) {
+    public void setContextualTuples(ContextualTupleKeys contextualTuples) {
         this.contextualTuples = contextualTuples;
     }
 
-    public Assertion context(Object context) {
+    public BatchCheckItem context(Object context) {
         this.context = context;
         return this;
     }
 
     /**
-     * Additional request context that will be used to evaluate any ABAC conditions encountered in the query evaluation.
+     * Get context
      * @return context
      **/
     @javax.annotation.Nullable
@@ -142,8 +110,30 @@ public class Assertion {
         this.context = context;
     }
 
+    public BatchCheckItem correlationId(String correlationId) {
+        this.correlationId = correlationId;
+        return this;
+    }
+
     /**
-     * Return true if this Assertion object is equal to o.
+     * correlation_id must be a string containing only letters, numbers, or hyphens, with length ≤ 36 characters.
+     * @return correlationId
+     **/
+    @javax.annotation.Nonnull
+    @JsonProperty(JSON_PROPERTY_CORRELATION_ID)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CORRELATION_ID)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
+    /**
+     * Return true if this BatchCheckItem object is equal to o.
      */
     @Override
     public boolean equals(Object o) {
@@ -153,28 +143,28 @@ public class Assertion {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Assertion assertion = (Assertion) o;
-        return Objects.equals(this.tupleKey, assertion.tupleKey)
-                && Objects.equals(this.expectation, assertion.expectation)
-                && Objects.equals(this.contextualTuples, assertion.contextualTuples)
-                && Objects.equals(this.context, assertion.context);
+        BatchCheckItem batchCheckItem = (BatchCheckItem) o;
+        return Objects.equals(this.tupleKey, batchCheckItem.tupleKey)
+                && Objects.equals(this.contextualTuples, batchCheckItem.contextualTuples)
+                && Objects.equals(this.context, batchCheckItem.context)
+                && Objects.equals(this.correlationId, batchCheckItem.correlationId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, expectation, contextualTuples, context);
+        return Objects.hash(tupleKey, contextualTuples, context, correlationId);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class Assertion {\n");
+        sb.append("class BatchCheckItem {\n");
         sb.append("    tupleKey: ").append(toIndentedString(tupleKey)).append("\n");
-        sb.append("    expectation: ").append(toIndentedString(expectation)).append("\n");
         sb.append("    contextualTuples: ")
                 .append(toIndentedString(contextualTuples))
                 .append("\n");
         sb.append("    context: ").append(toIndentedString(context)).append("\n");
+        sb.append("    correlationId: ").append(toIndentedString(correlationId)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -227,31 +217,9 @@ public class Assertion {
             joiner.add(getTupleKey().toUrlQueryString(prefix + "tuple_key" + suffix));
         }
 
-        // add `expectation` to the URL query string
-        if (getExpectation() != null) {
-            joiner.add(String.format(
-                    "%sexpectation%s=%s",
-                    prefix,
-                    suffix,
-                    URLEncoder.encode(String.valueOf(getExpectation()), StandardCharsets.UTF_8)
-                            .replaceAll("\\+", "%20")));
-        }
-
         // add `contextual_tuples` to the URL query string
         if (getContextualTuples() != null) {
-            for (int i = 0; i < getContextualTuples().size(); i++) {
-                if (getContextualTuples().get(i) != null) {
-                    joiner.add(getContextualTuples()
-                            .get(i)
-                            .toUrlQueryString(String.format(
-                                    "%scontextual_tuples%s%s",
-                                    prefix,
-                                    suffix,
-                                    "".equals(suffix)
-                                            ? ""
-                                            : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
-                }
-            }
+            joiner.add(getContextualTuples().toUrlQueryString(prefix + "contextual_tuples" + suffix));
         }
 
         // add `context` to the URL query string
@@ -261,6 +229,16 @@ public class Assertion {
                     prefix,
                     suffix,
                     URLEncoder.encode(String.valueOf(getContext()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
+        }
+
+        // add `correlation_id` to the URL query string
+        if (getCorrelationId() != null) {
+            joiner.add(String.format(
+                    "%scorrelation_id%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getCorrelationId()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 

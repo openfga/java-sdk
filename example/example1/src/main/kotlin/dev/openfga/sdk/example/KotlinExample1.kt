@@ -113,7 +113,7 @@ internal class KotlinExample1 {
                             ClientTupleKey()
                                 .user("user:anne")
                                 .relation("writer")
-                                ._object("document:roadmap")
+                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
                         )
                     ),
                 ClientWriteOptions()
@@ -141,7 +141,7 @@ internal class KotlinExample1 {
                     ClientCheckRequest()
                         .user("user:anne")
                         .relation("reader")
-                        ._object("document:roadmap")
+                        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
                 )
                 .get()
             println("Allowed: " + failingCheckResponse.allowed)
@@ -156,7 +156,7 @@ internal class KotlinExample1 {
         //         .check(new ClientCheckRequest()
         //                 .user("user:anne")
         //                 .relation("reader")
-        //                 ._object("document:roadmap")
+        //                 ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         //                 .context(Map.of("ViewCount", 100)))
         //         .get();
         // System.out.println("Allowed: " + checkResponse.getAllowed());
@@ -173,7 +173,7 @@ internal class KotlinExample1 {
                     ClientAssertion()
                         .user("user:anne")
                         .relation("reader")
-                        ._object("document:roadmap")
+                        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
                         .expectation(false)
                 )
             )

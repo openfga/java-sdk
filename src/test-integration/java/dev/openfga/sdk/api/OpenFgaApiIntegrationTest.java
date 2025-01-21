@@ -285,7 +285,7 @@ public class OpenFgaApiIntegrationTest {
         // When
         api.write(storeId, writeRequest).get();
         ReadChangesResponse response =
-                api.readChanges(storeId, null, null, null).get().getData();
+                api.readChanges(storeId, null, null, null, null).get().getData();
 
         // Then
         assertEquals(1, response.getChanges().size());
@@ -318,7 +318,7 @@ public class OpenFgaApiIntegrationTest {
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
         assertEquals(
-                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true}]",
+                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true,\"contextual_tuples\":[],\"context\":null}]",
                 responseJson);
     }
 

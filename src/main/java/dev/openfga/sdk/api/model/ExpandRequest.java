@@ -26,7 +26,8 @@ import java.util.StringJoiner;
 @JsonPropertyOrder({
     ExpandRequest.JSON_PROPERTY_TUPLE_KEY,
     ExpandRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
-    ExpandRequest.JSON_PROPERTY_CONSISTENCY
+    ExpandRequest.JSON_PROPERTY_CONSISTENCY,
+    ExpandRequest.JSON_PROPERTY_CONTEXTUAL_TUPLES
 })
 public class ExpandRequest {
     public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
@@ -37,6 +38,9 @@ public class ExpandRequest {
 
     public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
     private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
+
+    public static final String JSON_PROPERTY_CONTEXTUAL_TUPLES = "contextual_tuples";
+    private ContextualTupleKeys contextualTuples;
 
     public ExpandRequest() {}
 
@@ -106,6 +110,28 @@ public class ExpandRequest {
         this.consistency = consistency;
     }
 
+    public ExpandRequest contextualTuples(ContextualTupleKeys contextualTuples) {
+        this.contextualTuples = contextualTuples;
+        return this;
+    }
+
+    /**
+     * Get contextualTuples
+     * @return contextualTuples
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_CONTEXTUAL_TUPLES)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public ContextualTupleKeys getContextualTuples() {
+        return contextualTuples;
+    }
+
+    @JsonProperty(JSON_PROPERTY_CONTEXTUAL_TUPLES)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setContextualTuples(ContextualTupleKeys contextualTuples) {
+        this.contextualTuples = contextualTuples;
+    }
+
     /**
      * Return true if this Expand_request object is equal to o.
      */
@@ -120,12 +146,13 @@ public class ExpandRequest {
         ExpandRequest expandRequest = (ExpandRequest) o;
         return Objects.equals(this.tupleKey, expandRequest.tupleKey)
                 && Objects.equals(this.authorizationModelId, expandRequest.authorizationModelId)
-                && Objects.equals(this.consistency, expandRequest.consistency);
+                && Objects.equals(this.consistency, expandRequest.consistency)
+                && Objects.equals(this.contextualTuples, expandRequest.contextualTuples);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, authorizationModelId, consistency);
+        return Objects.hash(tupleKey, authorizationModelId, consistency, contextualTuples);
     }
 
     @Override
@@ -137,6 +164,9 @@ public class ExpandRequest {
                 .append(toIndentedString(authorizationModelId))
                 .append("\n");
         sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
+        sb.append("    contextualTuples: ")
+                .append(toIndentedString(contextualTuples))
+                .append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -207,6 +237,11 @@ public class ExpandRequest {
                     suffix,
                     URLEncoder.encode(String.valueOf(getConsistency()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
+        }
+
+        // add `contextual_tuples` to the URL query string
+        if (getContextualTuples() != null) {
+            joiner.add(getContextualTuples().toUrlQueryString(prefix + "contextual_tuples" + suffix));
         }
 
         return joiner.toString();

@@ -101,6 +101,10 @@
 
 * `UNSUPPORTED_SCHEMA_VERSION` (value: `"unsupported_schema_version"`)
 
+* `CANCELLED` (value: `"cancelled"`)
+
+* `INVALID_START_TIME` (value: `"invalid_start_time"`)
+
 * `UNKNOWN_DEFAULT_OPEN_API` (value: `"unknown_default_open_api"`)
 
 

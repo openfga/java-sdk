@@ -16,34 +16,32 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Gets or Sets InternalErrorCode
+ * Gets or Sets AuthErrorCode
  */
-public enum InternalErrorCode {
-    NO_INTERNAL_ERROR("no_internal_error"),
+public enum AuthErrorCode {
+    NO_AUTH_ERROR("no_auth_error"),
 
-    INTERNAL_ERROR("internal_error"),
+    AUTH_FAILED_INVALID_SUBJECT("auth_failed_invalid_subject"),
 
-    DEADLINE_EXCEEDED("deadline_exceeded"),
+    AUTH_FAILED_INVALID_AUDIENCE("auth_failed_invalid_audience"),
 
-    ALREADY_EXISTS("already_exists"),
+    AUTH_FAILED_INVALID_ISSUER("auth_failed_invalid_issuer"),
 
-    RESOURCE_EXHAUSTED("resource_exhausted"),
+    INVALID_CLAIMS("invalid_claims"),
 
-    FAILED_PRECONDITION("failed_precondition"),
+    AUTH_FAILED_INVALID_BEARER_TOKEN("auth_failed_invalid_bearer_token"),
 
-    ABORTED("aborted"),
+    BEARER_TOKEN_MISSING("bearer_token_missing"),
 
-    OUT_OF_RANGE("out_of_range"),
+    UNAUTHENTICATED("unauthenticated"),
 
-    UNAVAILABLE("unavailable"),
-
-    DATA_LOSS("data_loss"),
+    FORBIDDEN("forbidden"),
 
     UNKNOWN_DEFAULT_OPEN_API("unknown_default_open_api");
 
     private String value;
 
-    InternalErrorCode(String value) {
+    AuthErrorCode(String value) {
         this.value = value;
     }
 
@@ -58,8 +56,8 @@ public enum InternalErrorCode {
     }
 
     @JsonCreator
-    public static InternalErrorCode fromValue(String value) {
-        for (InternalErrorCode b : InternalErrorCode.values()) {
+    public static AuthErrorCode fromValue(String value) {
+        for (AuthErrorCode b : AuthErrorCode.values()) {
             if (b.value.equals(value)) {
                 return b;
             }
