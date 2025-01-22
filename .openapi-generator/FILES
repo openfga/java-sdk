@@ -5,9 +5,6 @@
 .github/ISSUE_TEMPLATE/config.yaml
 .github/ISSUE_TEMPLATE/feature_request.yaml
 .github/dependabot.yaml
-.github/workflows/fossa.yaml
-.github/workflows/main.yaml
-.github/workflows/semgrep.yaml
 .gitignore
 CHANGELOG.md
 CONTRIBUTING.md
@@ -21,7 +18,13 @@ docs/AbortedMessageResponse.md
 docs/Any.md
 docs/Assertion.md
 docs/AssertionTupleKey.md
+docs/AuthErrorCode.md
 docs/AuthorizationModel.md
+docs/BatchCheckItem.md
+docs/BatchCheckRequest.md
+docs/BatchCheckResponse.md
+docs/BatchCheckSingleResult.md
+docs/CheckError.md
 docs/CheckRequest.md
 docs/CheckRequestTupleKey.md
 docs/CheckResponse.md
@@ -39,6 +42,7 @@ docs/ExpandRequest.md
 docs/ExpandRequestTupleKey.md
 docs/ExpandResponse.md
 docs/FgaObject.md
+docs/ForbiddenResponse.md
 docs/GetStoreResponse.md
 docs/InternalErrorCode.md
 docs/InternalErrorMessageResponse.md
@@ -192,7 +196,13 @@ src/main/java/dev/openfga/sdk/api/model/AbstractOpenApiSchema.java
 src/main/java/dev/openfga/sdk/api/model/Any.java
 src/main/java/dev/openfga/sdk/api/model/Assertion.java
 src/main/java/dev/openfga/sdk/api/model/AssertionTupleKey.java
+src/main/java/dev/openfga/sdk/api/model/AuthErrorCode.java
 src/main/java/dev/openfga/sdk/api/model/AuthorizationModel.java
+src/main/java/dev/openfga/sdk/api/model/BatchCheckItem.java
+src/main/java/dev/openfga/sdk/api/model/BatchCheckRequest.java
+src/main/java/dev/openfga/sdk/api/model/BatchCheckResponse.java
+src/main/java/dev/openfga/sdk/api/model/BatchCheckSingleResult.java
+src/main/java/dev/openfga/sdk/api/model/CheckError.java
 src/main/java/dev/openfga/sdk/api/model/CheckRequest.java
 src/main/java/dev/openfga/sdk/api/model/CheckRequestTupleKey.java
 src/main/java/dev/openfga/sdk/api/model/CheckResponse.java
@@ -210,6 +220,7 @@ src/main/java/dev/openfga/sdk/api/model/ExpandRequest.java
 src/main/java/dev/openfga/sdk/api/model/ExpandRequestTupleKey.java
 src/main/java/dev/openfga/sdk/api/model/ExpandResponse.java
 src/main/java/dev/openfga/sdk/api/model/FgaObject.java
+src/main/java/dev/openfga/sdk/api/model/ForbiddenResponse.java
 src/main/java/dev/openfga/sdk/api/model/GetStoreResponse.java
 src/main/java/dev/openfga/sdk/api/model/InternalErrorCode.java
 src/main/java/dev/openfga/sdk/api/model/InternalErrorMessageResponse.java

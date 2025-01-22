@@ -72,7 +72,7 @@ OpenFGA is designed to make it easy for application builders to model their perm
 
 The OpenFGA Java SDK is available on [Maven Central](https://central.sonatype.com/).
 
-The OpenFGA Java SDK currently supports **Java11** as the minimum JDK version.
+The OpenFGA Java SDK currently supports **Java 11** as the minimum JDK version.
 
 It can be used with the following:
 
@@ -125,7 +125,7 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.7.2"
 
 We strongly recommend you initialize the `OpenFgaClient` only once and then re-use it throughout your app, otherwise you will incur the cost of having to re-initialize multiple times or at every request, the cost of reduced connection pooling and re-use, and would be particularly costly in the client credentials flow, as that flow will be preformed on every request.
 
-> The `Client` will by default retry API requests up to 15 times on 429 and 5xx errors.
+> The `Client` will by default retry API requests up to 3 times on 429 and 5xx errors.
 
 #### No Credentials
 
@@ -249,7 +249,7 @@ If your server is configured with [authentication enabled](https://openfga.dev/d
 
 Get a paginated list of stores.
 
-[API Documentation](https://openfga.dev/api/service/docs/api#/Stores/ListStores)
+[API Documentation](https://openfga.dev/api/service#/Stores/ListStores)
 
 > Passing `ClientListStoresOptions` is optional. All fields of `ClientListStoresOptions` are optional.
 
@@ -267,7 +267,7 @@ var stores = fgaClient.listStores(options);
 
 Initialize a store.
 
-[API Documentation](https://openfga.dev/api/service/docs/api#/Stores/CreateStore)
+[API Documentation](https://openfga.dev/api/service#/Stores/CreateStore)
 
 > Passing `ClientCreateStoreOptions` is optional. All fields of `ClientCreateStoreOptions` are optional.
 
@@ -290,7 +290,7 @@ fgaClient.setStoreId(store.getId());
 
 Get information about the current store.
 
-[API Documentation](https://openfga.dev/api/service/docs/api#/Stores/GetStore)
+[API Documentation](https://openfga.dev/api/service#/Stores/GetStore)
 
 > Requires a client initialized with a storeId
 
@@ -307,7 +307,7 @@ var store = fgaClient.getStore(options).get();
 
 Delete a store.
 
-[API Documentation](https://openfga.dev/api/service/docs/api#/Stores/DeleteStore)
+[API Documentation](https://openfga.dev/api/service#/Stores/DeleteStore)
 
 > Requires a client initialized with a storeId
 
@@ -438,7 +438,8 @@ Reads the list of historical relationship tuple writes and deletes.
 > Passing `ClientReadChangesOptions` is optional. All fields of `ClientReadChangesOptions` are optional.
 
 ```java
-var request = new ClientReadChangesRequest().type("document");
+var startTime = OffsetDateTime.parse("2022-01-01T00:00:00+00:00");
+var request = new ClientReadChangesRequest().type("document").startTime(startTime);
 var options = new ClientReadChangesOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     .pageSize(10)
@@ -466,12 +467,12 @@ Reads the relationship tuples stored in the database. It does not evaluate nor e
 var request = new ClientReadRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
     .relation("viewer")
-    ._object("document:roadmap");
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a");
 
 // Find all relationship tuples where a certain user has a relationship as any relation to a certain document
 var request = new ClientReadRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
-    ._object("document:roadmap");
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a");
 
 // Find all relationship tuples where a certain user is a viewer of any document
 var request = new ClientReadRequest()
@@ -481,7 +482,7 @@ var request = new ClientReadRequest()
 
 // Find all relationship tuples where any user has a relationship as any relation with a particular document
 var request = new ClientReadRequest()
-    ._object("document:roadmap");
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a");
 
 // Read all stored relationship tuples
 var request = new ClientReadRequest();
@@ -515,17 +516,17 @@ var request = new ClientWriteRequest()
         new TupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("viewer")
-            ._object("document:roadmap"),
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
         new TupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("viewer")
-            ._object("document:budget")
+            ._object("document:0192ab2d-d36e-7cb3-a4a8-5d1d67a300c5")
     ))
     .deletes(List.of(
         new TupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("writer")
-            ._object("document:roadmap")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
     ));
 
 var options = new ClientWriteOptions()
@@ -552,17 +553,17 @@ var request = new ClientWriteRequest()
         new ClientTupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("viewer")
-            ._object("document:roadmap"),
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
         new ClientTupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("viewer")
-            ._object("document:budget")
+            ._object("document:0192ab2d-d36e-7cb3-a4a8-5d1d67a300c5")
     ))
     .deletes(List.of(
         new ClientTupleKeyWithoutCondition()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("writer")
-            ._object("document:roadmap")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
     ));
 var options = new ClientWriteOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
@@ -588,7 +589,7 @@ Check if a user has a particular relation with an object.
 var request = new ClientCheckRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
     .relation("writer")
-    ._object("document:roadmap");
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a");
 var options = new ClientCheckOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
@@ -601,7 +602,7 @@ var response = fgaClient.check(request, options).get();
 ##### Batch Check
 
 Run a set of [checks](#check). Batch Check will return `allowed: false` if it encounters an error, and will return the error in the body.
-If 429s or 5xxs are encountered, the underlying check will retry up to 15 times before giving up.
+If 429s or 5xxs are encountered, the underlying check will retry up to 3 times before giving up.
 
 > Passing `ClientBatchCheckOptions` is optional. All fields of `ClientBatchCheckOptions` are optional.
 
@@ -610,31 +611,31 @@ var request = List.of(
     new ClientCheckRequest()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("viewer")
-        ._object("document:roadmap")
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         .contextualTuples(List.of(
             new ClientTupleKey()
                 .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
                 .relation("editor")
-                ._object("document:roadmap")
+                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         )),
     new ClientCheckRequest()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("admin")
-        ._object("document:roadmap"),
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
         .contextualTuples(List.of(
             new ClientTupleKey()
                 .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
                 .relation("editor")
-                ._object("document:roadmap")
+                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         )),
     new ClientCheckRequest()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("creator")
-        ._object("document:roadmap"),
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
     new ClientCheckRequest()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("deleter")
-        ._object("document:roadmap")
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
 );
 var options = new ClientBatchCheckOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
@@ -650,11 +651,11 @@ response.getResponses() = [{
   request: {
     user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
     relation: "viewer",
-    _object: "document:roadmap",
+    _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
     contextualTuples: [{
       user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
       relation: "editor",
-      _object: "document:roadmap"
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"
     }]
   }
 }, {
@@ -662,11 +663,11 @@ response.getResponses() = [{
   request: {
     user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
     relation: "admin",
-    _object: "document:roadmap",
+    _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
     contextualTuples: [{
       user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
       relation: "editor",
-      _object: "document:roadmap"
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"
     }]
   }
 }, {
@@ -674,7 +675,7 @@ response.getResponses() = [{
   request: {
     user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
     relation: "creator",
-    _object: "document:roadmap",
+    _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
   },
   error: <FgaError ...>
 }, {
@@ -682,7 +683,7 @@ response.getResponses() = [{
   request: {
     user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
     relation: "deleter",
-    _object: "document:roadmap",
+    _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
   }},
 ]
 */
@@ -699,7 +700,7 @@ Expands the relationships in userset tree format.
 ```java
 var request = new ClientExpandRequest()
     .relation("viewer")
-    ._object("document:roadmap");
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a");
 var options = new ClientExpandOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
@@ -707,7 +708,7 @@ var options = new ClientExpandOptions()
 
 var response = fgaClient.expand(request, options).get();
 
-// response.getTree().getRoot() = {"name":"document:roadmap#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
+// response.getTree().getRoot() = {"name":"document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a#viewer","leaf":{"users":{"users":["user:81684243-9356-4421-8fbf-a4f8d36aa31b","user:f52a4f7a-054d-47ff-bb6e-3ac81269988f"]}}}
 ```
 
 ##### List Objects
@@ -727,7 +728,7 @@ var request = new ClientListObjectsRequest()
         new ClientTupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("writer")
-            ._object("document:budget")
+            ._object("document:0192ab2d-d36e-7cb3-a4a8-5d1d67a300c5")
     ));
 var options = new ClientListObjectsOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
@@ -736,7 +737,7 @@ var options = new ClientListObjectsOptions()
 
 var response = fgaClient.listObjects(request, options).get();
 
-// response.getObjects() = ["document:roadmap"]
+// response.getObjects() = ["document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"]
 ```
 
 ##### List Relations
@@ -748,13 +749,13 @@ List the relations a user has on an object.
 ```java
 var request = new ClientListRelationsRequest()
     .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
-    ._object("document:roadmap")
+    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
     .relations(List.of("can_view", "can_edit", "can_delete", "can_rename"))
     .contextualTuples(List.of(
         new ClientTupleKey()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("editor")
-            ._object("document:roadmap")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         )
     );
 var options = new ClientListRelationsOptions()
@@ -798,7 +799,7 @@ var request = new ClientListUsersRequest()
         new ClientTupleKey()
             .user("folder:product")
             .relation("parent")
-            ._object("document:roadmap")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
 ));
 
 var options = new ClientListUsersOptions()
@@ -845,7 +846,7 @@ var assertions = List.of(
     new ClientAssertion()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("viewer")
-        ._object("document:roadmap")
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
         .expectation(true)
 );
 fgaClient.writeAssertions(assertions, options).get();
@@ -854,7 +855,7 @@ fgaClient.writeAssertions(assertions, options).get();
 
 ### Retries
 
-If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 15 times with a minimum wait time of 100 milliseconds between each attempt.
+If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 3 times with a minimum wait time of 100 milliseconds between each attempt.
 
 To customize this behavior, call `maxRetries` and `minimumRetryDelay` on the `ClientConfiguration` builder. `maxRetries` determines the maximum number of retries (up to 15), while `minimumRetryDelay` sets the minimum wait time between retries in milliseconds.
 
@@ -883,6 +884,7 @@ public class Example {
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**batchCheck**](docs/OpenFgaApi.md#batchcheck) | **POST** /stores/{store_id}/batch-check | Send a list of &#x60;check&#x60; operations in a single request |
 | [**check**](docs/OpenFgaApi.md#check) | **POST** /stores/{store_id}/check | Check whether a user is authorized to access an object |
 | [**createStore**](docs/OpenFgaApi.md#createstore) | **POST** /stores | Create a store |
 | [**deleteStore**](docs/OpenFgaApi.md#deletestore) | **DELETE** /stores/{store_id} | Delete a store |
@@ -913,7 +915,19 @@ public class Example {
 
 - [AssertionTupleKey](https://github.com/openfga/java-sdk/blob/main/docs/AssertionTupleKey.md)
 
+- [AuthErrorCode](https://github.com/openfga/java-sdk/blob/main/docs/AuthErrorCode.md)
+
 - [AuthorizationModel](https://github.com/openfga/java-sdk/blob/main/docs/AuthorizationModel.md)
+
+- [BatchCheckItem](https://github.com/openfga/java-sdk/blob/main/docs/BatchCheckItem.md)
+
+- [BatchCheckRequest](https://github.com/openfga/java-sdk/blob/main/docs/BatchCheckRequest.md)
+
+- [BatchCheckResponse](https://github.com/openfga/java-sdk/blob/main/docs/BatchCheckResponse.md)
+
+- [BatchCheckSingleResult](https://github.com/openfga/java-sdk/blob/main/docs/BatchCheckSingleResult.md)
+
+- [CheckError](https://github.com/openfga/java-sdk/blob/main/docs/CheckError.md)
 
 - [CheckRequest](https://github.com/openfga/java-sdk/blob/main/docs/CheckRequest.md)
 
@@ -948,6 +962,8 @@ public class Example {
 - [ExpandResponse](https://github.com/openfga/java-sdk/blob/main/docs/ExpandResponse.md)
 
 - [FgaObject](https://github.com/openfga/java-sdk/blob/main/docs/FgaObject.md)
+
+- [ForbiddenResponse](https://github.com/openfga/java-sdk/blob/main/docs/ForbiddenResponse.md)
 
 - [GetStoreResponse](https://github.com/openfga/java-sdk/blob/main/docs/GetStoreResponse.md)
 
@@ -1077,7 +1093,7 @@ If you have found a bug or if you have a feature request, please report them on 
 
 ### Pull Requests
 
-All changes made to this repo will be overwritten on the next generation, so we kindly ask that you send all pull requests related to the SDKs to the [sdk-generator repo](https://github.com/openfga/sdk-generator) instead.
+While we accept Pull Requests on this repository, the SDKs are autogenerated so please consider additionally submitting your Pull Requests to the [sdk-generator](https://github.com/openfga/sdk-generator) and linking the two PRs together and to the corresponding issue. This will greatly assist the OpenFGA team in being able to give timely reviews as well as deploying fixes and updates to our other SDKs as well. 
 
 ## Author
 

@@ -24,6 +24,7 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -804,9 +805,10 @@ public class OpenFgaApiTest {
         String type = null; // Input is optional
         Integer pageSize = null; // Input is optional
         String continuationToken = null; // Input is optional
+        OffsetDateTime startTime = null; // Input is optional
 
         // When
-        var response = fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
+        var response = fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken, startTime)
                 .get();
 
         // Then
@@ -824,8 +826,9 @@ public class OpenFgaApiTest {
     @Test
     public void readChanges_storeIdRequired() throws Exception {
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.readChanges(null, null, null, null)
-                .get());
+        var exception =
+                assertThrows(FgaInvalidParameterException.class, () -> fga.readChanges(null, null, null, null, null)
+                        .get());
 
         // Then
         assertEquals("Required parameter storeId was invalid when calling readChanges.", exception.getMessage());
@@ -841,11 +844,12 @@ public class OpenFgaApiTest {
         String type = null; // Input is optional
         Integer pageSize = null; // Input is optional
         String continuationToken = null; // Input is optional
+        OffsetDateTime startTime = null; // Input is optional
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
-                        .get());
+        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.readChanges(
+                        DEFAULT_STORE_ID, type, pageSize, continuationToken, startTime)
+                .get());
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -866,11 +870,12 @@ public class OpenFgaApiTest {
         String type = null; // Input is optional
         Integer pageSize = null; // Input is optional
         String continuationToken = null; // Input is optional
+        OffsetDateTime startTime = null; // Input is optional
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
-                        .get());
+        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.readChanges(
+                        DEFAULT_STORE_ID, type, pageSize, continuationToken, startTime)
+                .get());
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1);
@@ -890,11 +895,12 @@ public class OpenFgaApiTest {
         String type = null; // Input is optional
         Integer pageSize = null; // Input is optional
         String continuationToken = null; // Input is optional
+        OffsetDateTime startTime = null; // Input is optional
 
         // When
-        ExecutionException execException = assertThrows(
-                ExecutionException.class, () -> fga.readChanges(DEFAULT_STORE_ID, type, pageSize, continuationToken)
-                        .get());
+        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.readChanges(
+                        DEFAULT_STORE_ID, type, pageSize, continuationToken, startTime)
+                .get());
 
         // Then
         mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
@@ -1429,7 +1435,7 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
-                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\",\"consistency\":\"%s\"}",
+                "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\",\"consistency\":\"%s\",\"contextual_tuples\":null}",
                 DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID, ConsistencyPreference.HIGHER_CONSISTENCY);
         String responseBody = String.format(
                 "{\"tree\":{\"root\":{\"union\":{\"nodes\":[{\"leaf\":{\"users\":{\"users\":[\"%s\"]}}}]}}}}",
@@ -1792,7 +1798,7 @@ public class OpenFgaApiTest {
         String putUrl =
                 "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/assertions/01G5JAVJ41T49E9TT3SKVS7X1J";
         String expectedBody = String.format(
-                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true}]}",
+                "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true,\"contextual_tuples\":[],\"context\":null}]}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
         mockHttpClient.onPut(putUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteAssertionsRequest request = new WriteAssertionsRequest()

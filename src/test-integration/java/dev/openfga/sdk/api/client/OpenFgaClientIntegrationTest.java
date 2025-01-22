@@ -331,7 +331,7 @@ public class OpenFgaClientIntegrationTest {
         // Then
         String responseJson = mapper.writeValueAsString(response.getAssertions());
         assertEquals(
-                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true}]",
+                "[{\"tuple_key\":{\"object\":\"document:2021-budget\",\"relation\":\"reader\",\"user\":\"user:81684243-9356-4421-8fbf-a4f8d36aa31b\"},\"expectation\":true,\"contextual_tuples\":[],\"context\":null}]",
                 responseJson);
     }
 

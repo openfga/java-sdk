@@ -17,102 +17,84 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * ReadRequest
+ * BatchCheckRequest
  */
 @JsonPropertyOrder({
-    ReadRequest.JSON_PROPERTY_TUPLE_KEY,
-    ReadRequest.JSON_PROPERTY_PAGE_SIZE,
-    ReadRequest.JSON_PROPERTY_CONTINUATION_TOKEN,
-    ReadRequest.JSON_PROPERTY_CONSISTENCY
+    BatchCheckRequest.JSON_PROPERTY_CHECKS,
+    BatchCheckRequest.JSON_PROPERTY_AUTHORIZATION_MODEL_ID,
+    BatchCheckRequest.JSON_PROPERTY_CONSISTENCY
 })
-public class ReadRequest {
-    public static final String JSON_PROPERTY_TUPLE_KEY = "tuple_key";
-    private ReadRequestTupleKey tupleKey;
+public class BatchCheckRequest {
+    public static final String JSON_PROPERTY_CHECKS = "checks";
+    private List<BatchCheckItem> checks = new ArrayList<>();
 
-    public static final String JSON_PROPERTY_PAGE_SIZE = "page_size";
-    private Integer pageSize;
-
-    public static final String JSON_PROPERTY_CONTINUATION_TOKEN = "continuation_token";
-    private String continuationToken;
+    public static final String JSON_PROPERTY_AUTHORIZATION_MODEL_ID = "authorization_model_id";
+    private String authorizationModelId;
 
     public static final String JSON_PROPERTY_CONSISTENCY = "consistency";
     private ConsistencyPreference consistency = ConsistencyPreference.UNSPECIFIED;
 
-    public ReadRequest() {}
+    public BatchCheckRequest() {}
 
-    public ReadRequest tupleKey(ReadRequestTupleKey tupleKey) {
-        this.tupleKey = tupleKey;
+    public BatchCheckRequest checks(List<BatchCheckItem> checks) {
+        this.checks = checks;
+        return this;
+    }
+
+    public BatchCheckRequest addChecksItem(BatchCheckItem checksItem) {
+        if (this.checks == null) {
+            this.checks = new ArrayList<>();
+        }
+        this.checks.add(checksItem);
         return this;
     }
 
     /**
-     * Get tupleKey
-     * @return tupleKey
+     * Get checks
+     * @return checks
      **/
-    @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public ReadRequestTupleKey getTupleKey() {
-        return tupleKey;
+    @javax.annotation.Nonnull
+    @JsonProperty(JSON_PROPERTY_CHECKS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public List<BatchCheckItem> getChecks() {
+        return checks;
     }
 
-    @JsonProperty(JSON_PROPERTY_TUPLE_KEY)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setTupleKey(ReadRequestTupleKey tupleKey) {
-        this.tupleKey = tupleKey;
+    @JsonProperty(JSON_PROPERTY_CHECKS)
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
+    public void setChecks(List<BatchCheckItem> checks) {
+        this.checks = checks;
     }
 
-    public ReadRequest pageSize(Integer pageSize) {
-        this.pageSize = pageSize;
+    public BatchCheckRequest authorizationModelId(String authorizationModelId) {
+        this.authorizationModelId = authorizationModelId;
         return this;
     }
 
     /**
-     * Get pageSize
-     * minimum: 1
-     * maximum: 100
-     * @return pageSize
+     * Get authorizationModelId
+     * @return authorizationModelId
      **/
     @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_PAGE_SIZE)
+    @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODEL_ID)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public Integer getPageSize() {
-        return pageSize;
+    public String getAuthorizationModelId() {
+        return authorizationModelId;
     }
 
-    @JsonProperty(JSON_PROPERTY_PAGE_SIZE)
+    @JsonProperty(JSON_PROPERTY_AUTHORIZATION_MODEL_ID)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
+    public void setAuthorizationModelId(String authorizationModelId) {
+        this.authorizationModelId = authorizationModelId;
     }
 
-    public ReadRequest continuationToken(String continuationToken) {
-        this.continuationToken = continuationToken;
-        return this;
-    }
-
-    /**
-     * Get continuationToken
-     * @return continuationToken
-     **/
-    @javax.annotation.Nullable
-    @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public String getContinuationToken() {
-        return continuationToken;
-    }
-
-    @JsonProperty(JSON_PROPERTY_CONTINUATION_TOKEN)
-    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    public void setContinuationToken(String continuationToken) {
-        this.continuationToken = continuationToken;
-    }
-
-    public ReadRequest consistency(ConsistencyPreference consistency) {
+    public BatchCheckRequest consistency(ConsistencyPreference consistency) {
         this.consistency = consistency;
         return this;
     }
@@ -135,7 +117,7 @@ public class ReadRequest {
     }
 
     /**
-     * Return true if this Read_request object is equal to o.
+     * Return true if this BatchCheck_request object is equal to o.
      */
     @Override
     public boolean equals(Object o) {
@@ -145,26 +127,24 @@ public class ReadRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ReadRequest readRequest = (ReadRequest) o;
-        return Objects.equals(this.tupleKey, readRequest.tupleKey)
-                && Objects.equals(this.pageSize, readRequest.pageSize)
-                && Objects.equals(this.continuationToken, readRequest.continuationToken)
-                && Objects.equals(this.consistency, readRequest.consistency);
+        BatchCheckRequest batchCheckRequest = (BatchCheckRequest) o;
+        return Objects.equals(this.checks, batchCheckRequest.checks)
+                && Objects.equals(this.authorizationModelId, batchCheckRequest.authorizationModelId)
+                && Objects.equals(this.consistency, batchCheckRequest.consistency);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKey, pageSize, continuationToken, consistency);
+        return Objects.hash(checks, authorizationModelId, consistency);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class ReadRequest {\n");
-        sb.append("    tupleKey: ").append(toIndentedString(tupleKey)).append("\n");
-        sb.append("    pageSize: ").append(toIndentedString(pageSize)).append("\n");
-        sb.append("    continuationToken: ")
-                .append(toIndentedString(continuationToken))
+        sb.append("class BatchCheckRequest {\n");
+        sb.append("    checks: ").append(toIndentedString(checks)).append("\n");
+        sb.append("    authorizationModelId: ")
+                .append(toIndentedString(authorizationModelId))
                 .append("\n");
         sb.append("    consistency: ").append(toIndentedString(consistency)).append("\n");
         sb.append("}");
@@ -214,28 +194,30 @@ public class ReadRequest {
 
         StringJoiner joiner = new StringJoiner("&");
 
-        // add `tuple_key` to the URL query string
-        if (getTupleKey() != null) {
-            joiner.add(getTupleKey().toUrlQueryString(prefix + "tuple_key" + suffix));
+        // add `checks` to the URL query string
+        if (getChecks() != null) {
+            for (int i = 0; i < getChecks().size(); i++) {
+                if (getChecks().get(i) != null) {
+                    joiner.add(getChecks()
+                            .get(i)
+                            .toUrlQueryString(String.format(
+                                    "%schecks%s%s",
+                                    prefix,
+                                    suffix,
+                                    "".equals(suffix)
+                                            ? ""
+                                            : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+                }
+            }
         }
 
-        // add `page_size` to the URL query string
-        if (getPageSize() != null) {
+        // add `authorization_model_id` to the URL query string
+        if (getAuthorizationModelId() != null) {
             joiner.add(String.format(
-                    "%spage_size%s=%s",
+                    "%sauthorization_model_id%s=%s",
                     prefix,
                     suffix,
-                    URLEncoder.encode(String.valueOf(getPageSize()), StandardCharsets.UTF_8)
-                            .replaceAll("\\+", "%20")));
-        }
-
-        // add `continuation_token` to the URL query string
-        if (getContinuationToken() != null) {
-            joiner.add(String.format(
-                    "%scontinuation_token%s=%s",
-                    prefix,
-                    suffix,
-                    URLEncoder.encode(String.valueOf(getContinuationToken()), StandardCharsets.UTF_8)
+                    URLEncoder.encode(String.valueOf(getAuthorizationModelId()), StandardCharsets.UTF_8)
                             .replaceAll("\\+", "%20")));
         }
 
