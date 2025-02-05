@@ -15,13 +15,13 @@ package dev.openfga.sdk.api.configuration;
 import dev.openfga.sdk.api.model.ConsistencyPreference;
 import java.util.Map;
 
-public class ClientBatchCheckOptions implements AdditionalHeadersSupplier {
+public class ClientBatchCheckClientRequestOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private Integer maxParallelRequests;
     private String authorizationModelId;
     private ConsistencyPreference consistency;
 
-    public ClientBatchCheckOptions additionalHeaders(Map<String, String> additionalHeaders) {
+    public ClientBatchCheckClientRequestOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
         return this;
     }
@@ -31,7 +31,7 @@ public class ClientBatchCheckOptions implements AdditionalHeadersSupplier {
         return this.additionalHeaders;
     }
 
-    public ClientBatchCheckOptions maxParallelRequests(Integer maxParallelRequests) {
+    public ClientBatchCheckClientRequestOptions maxParallelRequests(Integer maxParallelRequests) {
         this.maxParallelRequests = maxParallelRequests;
         return this;
     }
@@ -40,7 +40,7 @@ public class ClientBatchCheckOptions implements AdditionalHeadersSupplier {
         return maxParallelRequests;
     }
 
-    public ClientBatchCheckOptions authorizationModelId(String authorizationModelId) {
+    public ClientBatchCheckClientRequestOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
         return this;
     }
@@ -49,7 +49,7 @@ public class ClientBatchCheckOptions implements AdditionalHeadersSupplier {
         return authorizationModelId;
     }
 
-    public ClientBatchCheckOptions consistency(ConsistencyPreference consistency) {
+    public ClientBatchCheckClientRequestOptions consistency(ConsistencyPreference consistency) {
         this.consistency = consistency;
         return this;
     }

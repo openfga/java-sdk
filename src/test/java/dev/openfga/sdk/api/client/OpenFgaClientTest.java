@@ -12,6 +12,7 @@
 
 package dev.openfga.sdk.api.client;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +20,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
@@ -49,6 +53,7 @@ import org.mockito.MockedStatic;
 /**
  * API tests for OpenFgaClient.
  */
+@WireMockTest
 public class OpenFgaClientTest {
     private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
     private static final String DEFAULT_STORE_NAME = "test_store";
@@ -1674,7 +1679,7 @@ public class OpenFgaClientTest {
      * Check whether a user is authorized to access an object.
      */
     @Test
-    public void batchCheck() throws Exception {
+    public void clientBatchCheck() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
@@ -1683,27 +1688,27 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER);
-        ClientBatchCheckOptions options = new ClientBatchCheckOptions()
+        ClientBatchCheckClientRequestOptions options = new ClientBatchCheckClientRequestOptions()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
                 .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
 
         // When
-        List<ClientBatchCheckResponse> response =
-                fga.batchCheck(List.of(request), options).get();
+        List<ClientBatchCheckClientResponse> response =
+                fga.clientBatchCheck(List.of(request), options).get();
 
         // Then
         mockHttpClient
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(Boolean.TRUE, response.get(0).getAllowed());
@@ -1732,12 +1737,12 @@ public class OpenFgaClientTest {
                     ._object(DEFAULT_OBJECT)
                     .relation(DEFAULT_RELATION)
                     .user(DEFAULT_USER);
-            ClientBatchCheckOptions options = new ClientBatchCheckOptions()
+            ClientBatchCheckClientRequestOptions options = new ClientBatchCheckClientRequestOptions()
                     .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
                     .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
 
             // When
-            fga.batchCheck(List.of(request), options).get();
+            fga.clientBatchCheck(List.of(request), options).get();
 
             // Then
             verify(mockExecutor).shutdown();
@@ -1745,7 +1750,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void batchCheck_twentyTimes() throws Exception {
+    public void clientBatchCheck_twentyTimes() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
@@ -1754,7 +1759,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         List<ClientCheckRequest> requests = IntStream.range(0, 20)
@@ -1763,29 +1768,30 @@ public class OpenFgaClientTest {
                         .relation(DEFAULT_RELATION)
                         .user(DEFAULT_USER))
                 .collect(Collectors.toList());
-        ClientBatchCheckOptions options = new ClientBatchCheckOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
+        ClientBatchCheckClientRequestOptions options =
+                new ClientBatchCheckClientRequestOptions().authorizationModelId(DEFAULT_AUTH_MODEL_ID);
 
         // When
-        fga.batchCheck(requests, options).get();
+        fga.clientBatchCheck(requests, options).get();
 
         // Then
         mockHttpClient
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(20);
     }
 
     @Test
-    public void batchCheck_storeIdRequired() {
+    public void clientBatchCheck_storeIdRequired() {
         // Given
         clientConfiguration.storeId(null);
 
         // When
-        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.batchCheck(
-                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+        var exception = assertThrows(FgaInvalidParameterException.class, () -> fga.clientBatchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckClientRequestOptions())
                 .get());
 
         // Then
@@ -1794,7 +1800,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void batchCheck_400() throws Exception {
+    public void clientBatchCheck_400() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
@@ -1802,8 +1808,8 @@ public class OpenFgaClientTest {
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
-        List<ClientBatchCheckResponse> response = fga.batchCheck(
-                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+        List<ClientBatchCheckClientResponse> response = fga.clientBatchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckClientRequestOptions())
                 .join();
 
         // Then
@@ -1820,7 +1826,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void batchCheck_404() throws Exception {
+    public void clientBatchCheck_404() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
@@ -1828,8 +1834,8 @@ public class OpenFgaClientTest {
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
-        List<ClientBatchCheckResponse> response = fga.batchCheck(
-                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+        List<ClientBatchCheckClientResponse> response = fga.clientBatchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckClientRequestOptions())
                 .join();
 
         // Then
@@ -1845,7 +1851,7 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void batchCheck_500() throws Exception {
+    public void clientBatchCheck_500() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
@@ -1853,8 +1859,8 @@ public class OpenFgaClientTest {
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
-        List<ClientBatchCheckResponse> response = fga.batchCheck(
-                        List.of(new ClientCheckRequest()), new ClientBatchCheckOptions())
+        List<ClientBatchCheckClientResponse> response = fga.clientBatchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckClientRequestOptions())
                 .join();
 
         // Then
@@ -1867,6 +1873,171 @@ public class OpenFgaClientTest {
         assertEquals(500, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenCorrelationIdsAreDuplicated() {
+        // Given
+        ClientBatchCheckItem item1 = new ClientBatchCheckItem()
+                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("viewer")
+                ._object("workspace:1")
+                .correlationId("cor-id");
+        ClientBatchCheckItem item2 = new ClientBatchCheckItem()
+                .user("user:91284243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("viewer")
+                ._object("workspace:2")
+                .correlationId("cor-id");
+        ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item1, item2));
+
+        // When
+        FgaValidationError error = assertThrows(
+                FgaValidationError.class, () -> fga.batchCheck(request).join());
+
+        // Then
+        assertEquals("correlationId", error.getField());
+        assertEquals("When calling batchCheck, correlation IDs must be unique", error.getMessage());
+    }
+
+    @Test
+    public void shouldReturnEmptyResultsWhenEmptyChecksAreSpecified() throws Exception {
+        // Given
+        ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of());
+
+        // When
+        ClientBatchCheckResponse response = fga.batchCheck(request).join();
+
+        // Then
+        assertEquals(0, response.getResult().size());
+    }
+
+    @Test
+    public void shouldHandleSingleBatchSuccessfully() throws Exception {
+        // Given
+        String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(
+                        200,
+                        "{\"result\": {\"cor-1\": {\"allowed\": true, \"error\": null}, \"cor-2\": {\"allowed\": false, \"error\": null}}}");
+
+        ClientBatchCheckItem item1 = new ClientBatchCheckItem()
+                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("can_read")
+                ._object("document")
+                .contextualTuples(List.of(
+                        new ClientTupleKey()
+                                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                                .relation("editor")
+                                ._object("folder:product"),
+                        new ClientTupleKey()
+                                .user("folder:product")
+                                .relation("parent")
+                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")))
+                .correlationId("cor-1");
+        ClientBatchCheckItem item2 = new ClientBatchCheckItem()
+                .user("folder:product")
+                .relation("parent")
+                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+                .correlationId("cor-2");
+        ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item1, item2));
+
+        // When
+        ClientBatchCheckResponse response = fga.batchCheck(request).join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+
+        assertNotNull(response);
+        assertEquals(2, response.getResult().size());
+        assertTrue(response.getResult().get(0).isAllowed());
+        assertFalse(response.getResult().get(1).isAllowed());
+    }
+
+    @Test
+    public void shouldSplitBatchesSuccessfully(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
+        // Given
+        String httpBaseUrl = wireMockRuntimeInfo.getHttpBaseUrl();
+        var fga = new OpenFgaClient(clientConfiguration.apiUrl(httpBaseUrl), new ApiClient());
+        String postUrl = String.format("/stores/%s/batch-check", DEFAULT_STORE_ID);
+
+        WireMock.stubFor(
+                WireMock.post(postUrl)
+                        .withRequestBody(matchingJsonPath("$.checks[0].correlation_id", WireMock.equalTo("cor-1")))
+                        .willReturn(
+                                WireMock.aResponse()
+                                        .withStatus(200)
+                                        .withBody(
+                                                "{\"result\": {\"cor-1\": {\"allowed\": true, \"error\": null}, \"cor-2\": {\"allowed\": false, \"error\": null}}}")));
+
+        WireMock.stubFor(
+                WireMock.post(postUrl)
+                        .withRequestBody(matchingJsonPath("$.checks[0].correlation_id", WireMock.equalTo("cor-3")))
+                        .willReturn(
+                                WireMock.aResponse()
+                                        .withStatus(200)
+                                        .withBody(
+                                                "{\"result\": {\"cor-3\": {\"allowed\": false, \"error\": {\"input_error\": \"relation_not_found\", \"message\": \"relation not found\"}}}}}")));
+
+        ClientBatchCheckItem item1 = new ClientBatchCheckItem()
+                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                .relation("can_read")
+                ._object("document")
+                .contextualTuples(List.of(
+                        new ClientTupleKey()
+                                .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                                .relation("editor")
+                                ._object("folder:product"),
+                        new ClientTupleKey()
+                                .user("folder:product")
+                                .relation("parent")
+                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")))
+                .correlationId("cor-1");
+        ClientBatchCheckItem item2 = new ClientBatchCheckItem()
+                .user("folder:product")
+                .relation("parent")
+                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+                .correlationId("cor-2");
+        ClientBatchCheckItem item3 = new ClientBatchCheckItem()
+                .user("folder:product")
+                .relation("parent")
+                ._object("document:9992ab2a-d83f-756d-9397-c5ed9f3cj8a4")
+                .correlationId("cor-3");
+        ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item1, item2, item3));
+
+        ClientBatchCheckRequestOptions options = new ClientBatchCheckRequestOptions().maxBatchSize(2);
+
+        // When
+        ClientBatchCheckResponse response = fga.batchCheck(request, options).join();
+
+        // Then
+        ClientBatchCheckSingleResponse response1 = response.getResult().stream()
+                .filter(r -> r.getCorrelationId().equals("cor-1"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(response1);
+        assertTrue(response1.isAllowed());
+        assertEquals(
+                "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+                response1.getRequest().getUser());
+
+        ClientBatchCheckSingleResponse response2 = response.getResult().stream()
+                .filter(r -> r.getCorrelationId().equals("cor-2"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(response2);
+        assertFalse(response2.isAllowed());
+        assertEquals("folder:product", response2.getRequest().getUser());
+
+        ClientBatchCheckSingleResponse response3 = response.getResult().stream()
+                .filter(r -> r.getCorrelationId().equals("cor-3"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(response3);
+        assertFalse(response3.isAllowed());
+        assertEquals("folder:product", response3.getRequest().getUser());
+        assertEquals(ErrorCode.RELATION_NOT_FOUND, response3.getError().getInputError());
+        assertEquals("relation not found", response3.getError().getMessage());
     }
 
     /**
@@ -2130,7 +2301,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2150,7 +2321,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
@@ -2169,7 +2340,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2188,7 +2359,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
@@ -2356,7 +2527,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2380,7 +2551,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "BatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);

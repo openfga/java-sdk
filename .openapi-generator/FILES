@@ -131,7 +131,11 @@ src/main/java/dev/openfga/sdk/api/client/ApiResponse.java
 src/main/java/dev/openfga/sdk/api/client/ClientAssertion.java
 src/main/java/dev/openfga/sdk/api/client/HttpRequestAttempt.java
 src/main/java/dev/openfga/sdk/api/client/OpenFgaClient.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientBatchCheckClientResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientBatchCheckItem.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientBatchCheckRequest.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientBatchCheckResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientBatchCheckSingleResponse.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientCheckRequest.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientCheckResponse.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientCreateStoreResponse.java
@@ -163,7 +167,8 @@ src/main/java/dev/openfga/sdk/api/client/model/ClientWriteResponse.java
 src/main/java/dev/openfga/sdk/api/configuration/AdditionalHeadersSupplier.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
-src/main/java/dev/openfga/sdk/api/configuration/ClientBatchCheckOptions.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientBatchCheckClientRequestOptions.java
+src/main/java/dev/openfga/sdk/api/configuration/ClientBatchCheckRequestOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientCheckOptions.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientConfiguration.java
 src/main/java/dev/openfga/sdk/api/configuration/ClientCreateStoreOptions.java
@@ -286,6 +291,7 @@ src/main/java/dev/openfga/sdk/errors/FgaApiRateLimitExceededError.java
 src/main/java/dev/openfga/sdk/errors/FgaApiValidationError.java
 src/main/java/dev/openfga/sdk/errors/FgaError.java
 src/main/java/dev/openfga/sdk/errors/FgaInvalidParameterException.java
+src/main/java/dev/openfga/sdk/errors/FgaValidationError.java
 src/main/java/dev/openfga/sdk/errors/HttpStatusCode.java
 src/main/java/dev/openfga/sdk/telemetry/Attribute.java
 src/main/java/dev/openfga/sdk/telemetry/Attributes.java

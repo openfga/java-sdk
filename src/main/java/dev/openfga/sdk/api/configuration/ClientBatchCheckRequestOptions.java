@@ -15,13 +15,14 @@ package dev.openfga.sdk.api.configuration;
 import dev.openfga.sdk.api.model.ConsistencyPreference;
 import java.util.Map;
 
-public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
+public class ClientBatchCheckRequestOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private Integer maxParallelRequests;
+    private Integer maxBatchSize;
     private String authorizationModelId;
     private ConsistencyPreference consistency;
 
-    public ClientListRelationsOptions additionalHeaders(Map<String, String> additionalHeaders) {
+    public ClientBatchCheckRequestOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
         return this;
     }
@@ -31,7 +32,7 @@ public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
         return this.additionalHeaders;
     }
 
-    public ClientListRelationsOptions maxParallelRequests(Integer maxParallelRequests) {
+    public ClientBatchCheckRequestOptions maxParallelRequests(Integer maxParallelRequests) {
         this.maxParallelRequests = maxParallelRequests;
         return this;
     }
@@ -40,7 +41,16 @@ public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
         return maxParallelRequests;
     }
 
-    public ClientListRelationsOptions authorizationModelId(String authorizationModelId) {
+    public ClientBatchCheckRequestOptions maxBatchSize(Integer maxBatchSize) {
+        this.maxBatchSize = maxBatchSize;
+        return this;
+    }
+
+    public Integer getMaxBatchSize() {
+        return maxBatchSize;
+    }
+
+    public ClientBatchCheckRequestOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
         return this;
     }
@@ -49,19 +59,12 @@ public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
         return authorizationModelId;
     }
 
-    public ClientListRelationsOptions consistency(ConsistencyPreference consistency) {
+    public ClientBatchCheckRequestOptions consistency(ConsistencyPreference consistency) {
         this.consistency = consistency;
         return this;
     }
 
     public ConsistencyPreference getConsistency() {
         return consistency;
-    }
-
-    public ClientBatchCheckClientRequestOptions asClientBatchCheckClientRequestOptions() {
-        return new ClientBatchCheckClientRequestOptions()
-                .authorizationModelId(authorizationModelId)
-                .maxParallelRequests(maxParallelRequests)
-                .consistency(consistency);
     }
 }
