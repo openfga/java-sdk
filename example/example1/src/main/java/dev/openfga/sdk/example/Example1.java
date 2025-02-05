@@ -166,6 +166,13 @@ class Example1 {
                 .relation("owner")
                 ._object("blah:1")
                 .correlationId("cor-3");
+
+        var opts = new ClientBatchCheckRequestOptions()
+                .authorizationModelId("authid")
+                .additionalHeaders(null)
+                .maxBatchSize(2)
+                .maxParallelRequests(4);
+
         try {
             var batchResponse = fgaClient.batchCheck(new ClientBatchCheckRequest().checks(List.of(item1, item2, item3))).get();
             var response1 = batchResponse.getResult().stream().filter(r -> r.getCorrelationId().equals("cor-1")).findFirst().orElse(null);
