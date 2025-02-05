@@ -38,6 +38,8 @@ public class Attributes {
      */
     public static final Attribute FGA_CLIENT_REQUEST_STORE_ID = new Attribute("fga-client.request.store_id");
 
+    public static final Attribute FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE = new Attribute("fga-client.request.batch_check_size");
+
     /**
      * The authorization model ID used by the server when evaluating the request, if applicable.
      */
