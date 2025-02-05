@@ -26,7 +26,7 @@ public class ClientListRelationsResponse {
         return relations;
     }
 
-    public static ClientListRelationsResponse fromBatchCheckResponses(List<ClientBatchCheckResponse> responses)
+    public static ClientListRelationsResponse fromBatchCheckResponses(List<ClientBatchCheckClientResponse> responses)
             throws Throwable {
         // If any response ultimately failed (with retries) we throw the first exception encountered.
         var failedResponse = responses.stream()
@@ -37,8 +37,8 @@ public class ClientListRelationsResponse {
         }
 
         var relations = responses.stream()
-                .filter(ClientBatchCheckResponse::getAllowed)
-                .map(ClientBatchCheckResponse::getRelation)
+                .filter(ClientBatchCheckClientResponse::getAllowed)
+                .map(ClientBatchCheckClientResponse::getRelation)
                 .collect(Collectors.toList());
         return new ClientListRelationsResponse(relations);
     }
