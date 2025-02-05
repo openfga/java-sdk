@@ -601,14 +601,122 @@ var response = fgaClient.check(request, options).get();
 
 ##### Batch Check
 
-Run a set of [checks](#check). Batch Check will return `allowed: false` if it encounters an error, and will return the error in the body.
-If 429s or 5xxs are encountered, the underlying check will retry up to 3 times before giving up.
+Similar to [check](#check), but instead of checking a single user-object relationship, accepts a list of relationships to check. Requires OpenFGA version 1.8.0 or greater.
 
-> Passing `ClientBatchCheckClientOptions` is optional. All fields of `ClientBatchCheckClientOptions` are optional.
+[API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/BatchCheck)
+
+> Passing `ClientBatchCheckOptions` is optional. All fields of `ClientBatchCheckOptions` are optional.
 
 ```java
+var reequst = new ClientBatchCheckRequest().checks(
+    List.of(
+        new ClientBatchCheckItem()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+            .correlationId("cor-1") // optional, one will be generated for you if not provided
+            .contextualTuples(List.of(
+                new ClientTupleKey()
+                    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                    .relation("editor")
+                    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+            )),
+        new ClientCheckRequest()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("admin")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
+            .correlationId("cor-2") // optional, one will be generated for you if not provided
+            .contextualTuples(List.of(
+                new ClientTupleKey()
+                    .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+                    .relation("editor")
+                    ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+            )),
+        new ClientCheckRequest()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("creator")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+            .correlationId("cor-3), // optional, one will be generated for you if not provided
+        new ClientCheckRequest()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("deleter")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+            .correlationId("cor-4") // optional, one will be generated for you if not provided
+        )
+);
+
+var options = new ClientBatchCheckOptions()
+    .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
+    // You can rely on the model id set in the configuration or override it for this specific request
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
+    .maxParallelRequests(5); // Max number of requests to issue in parallel, defaults to 10 
+    .maxBatchSize(20); // Max number of batches to split the list of checks into, defaults to 50
+
+var response = fgaClient.batchCheck(request, options).get();
+
+/*
+response.getResult() = [{
+    allowed: false,
+    correlationId: "cor-1",
+    request: {
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "viewer",
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
+      correlationId: "cor-1",
+      contextualTuples: [{
+        user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+        relation: "editor",
+        _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"
+      }]
+    },
+  },
+  {
+    allowed: false,
+    correlationId: "cor-2",
+    request: {
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "admin",
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
+      correlationId: "cor-2",
+      contextualTuples: [{
+        user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+        relation: "editor",
+        _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"
+      }]
+    }
+  },
+  {
+    allowed: false,
+    correlationId: "cor-3",
+    request: {
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "creator",
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
+      correlationId: "cor-3",
+    },
+    error: <FgaError ...>
+  },
+  {
+    allowed: true,
+    correlationId: "cor-4",
+    request: {
+      user: "user:81684243-9356-4421-8fbf-a4f8d36aa31b",
+      relation: "deleter",
+      _object: "document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a",
+      correlationId: "cor-4",
+    }
+  },
+]
+*/
+```
+
+If you are using an OpenFGA version less than 1.8.0, you can use `clientBatchCheck`, 
+which calls `check` in parallel. It will return `allowed: false` if it encounters an error, and will return the error in the body.
+If 429s or 5xxs are encountered, the underlying check will retry up to 3 times before giving up.
+
+```
 var request = List.of(
-    new ClientCheckRequest()
+    new ClientBatchCheckItem()
         .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
         .relation("viewer")
         ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
