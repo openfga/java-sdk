@@ -14,14 +14,19 @@ package dev.openfga.sdk.api.client.model;
 
 import java.util.List;
 
-public class ClientBatchCheckResponse {
-    private final List<ClientBatchCheckSingleResponse> result;
+public class ClientBatchCheckRequest {
+    private List<ClientBatchCheckItem> checks;
 
-    public ClientBatchCheckResponse(List<ClientBatchCheckSingleResponse> result) {
-        this.result = result;
+    public static ClientBatchCheckRequest ofChecks(List<ClientBatchCheckItem> checks) {
+        return new ClientBatchCheckRequest().checks(checks);
     }
 
-    public List<ClientBatchCheckSingleResponse> getResult() {
-        return result;
+    public ClientBatchCheckRequest checks(List<ClientBatchCheckItem> checks) {
+        this.checks = checks;
+        return this;
+    }
+
+    public List<ClientBatchCheckItem> getChecks() {
+        return checks;
     }
 }

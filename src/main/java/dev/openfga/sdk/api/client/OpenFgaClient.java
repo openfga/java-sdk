@@ -23,9 +23,11 @@ import dev.openfga.sdk.errors.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class OpenFgaClient {
@@ -36,6 +38,7 @@ public class OpenFgaClient {
     private static final String CLIENT_BULK_REQUEST_ID_HEADER = "X-OpenFGA-Client-Bulk-Request-Id";
     private static final String CLIENT_METHOD_HEADER = "X-OpenFGA-Client-Method";
     private static final int DEFAULT_MAX_METHOD_PARALLEL_REQS = 10;
+    private static final int DEFAULT_MAX_BATCH_SIZE = 50;
 
     public OpenFgaClient(ClientConfiguration configuration) throws FgaInvalidParameterException {
         this(configuration, new ApiClient());
@@ -574,9 +577,9 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<List<ClientBatchCheckResponse>> batchCheck(List<ClientCheckRequest> requests)
+    public CompletableFuture<List<ClientBatchCheckClientResponse>> clientBatchCheck(List<ClientCheckRequest> requests)
             throws FgaInvalidParameterException {
-        return batchCheck(requests, null);
+        return clientBatchCheck(requests, null);
     }
 
     /**
@@ -584,19 +587,19 @@ public class OpenFgaClient {
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
-    public CompletableFuture<List<ClientBatchCheckResponse>> batchCheck(
-            List<ClientCheckRequest> requests, ClientBatchCheckOptions batchCheckOptions)
+    public CompletableFuture<List<ClientBatchCheckClientResponse>> clientBatchCheck(
+            List<ClientCheckRequest> requests, ClientBatchCheckClientOptions batchCheckOptions)
             throws FgaInvalidParameterException {
         configuration.assertValid();
         configuration.assertValidStoreId();
 
         var options = batchCheckOptions != null
                 ? batchCheckOptions
-                : new ClientBatchCheckOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
+                : new ClientBatchCheckClientOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
         if (options.getAdditionalHeaders() == null) {
             options.additionalHeaders(new HashMap<>());
         }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
+        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "ClientBatchCheck");
         options.getAdditionalHeaders()
                 .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
 
@@ -606,13 +609,13 @@ public class OpenFgaClient {
         var executor = Executors.newScheduledThreadPool(maxParallelRequests);
         var latch = new CountDownLatch(requests.size());
 
-        var responses = new ConcurrentLinkedQueue<ClientBatchCheckResponse>();
+        var responses = new ConcurrentLinkedQueue<ClientBatchCheckClientResponse>();
 
         final var clientCheckOptions = options.asClientCheckOptions();
 
         Consumer<ClientCheckRequest> singleClientCheckRequest =
                 request -> call(() -> this.check(request, clientCheckOptions))
-                        .handleAsync(ClientBatchCheckResponse.asyncHandler(request))
+                        .handleAsync(ClientBatchCheckClientResponse.asyncHandler(request))
                         .thenAccept(responses::add)
                         .thenRun(latch::countDown);
 
@@ -620,6 +623,117 @@ public class OpenFgaClient {
             requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
             latch.await();
             return CompletableFuture.completedFuture(new ArrayList<>(responses));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    /**
+     * BatchCheck - Run a set of checks (evaluates)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<ClientBatchCheckResponse> batchCheck(ClientBatchCheckRequest request)
+            throws FgaInvalidParameterException, FgaValidationError {
+        return batchCheck(request, null);
+    }
+
+    /**
+     * BatchCheck - Run a set of checks (evaluates)
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<ClientBatchCheckResponse> batchCheck(
+            ClientBatchCheckRequest requests, ClientBatchCheckOptions batchCheckOptions)
+            throws FgaInvalidParameterException, FgaValidationError {
+        configuration.assertValid();
+        configuration.assertValidStoreId();
+
+        var options = batchCheckOptions != null
+                ? batchCheckOptions
+                : new ClientBatchCheckOptions()
+                        .maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS)
+                        .maxBatchSize(DEFAULT_MAX_BATCH_SIZE);
+        if (options.getAdditionalHeaders() == null) {
+            options.additionalHeaders(new HashMap<>());
+        }
+        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
+        options.getAdditionalHeaders()
+                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        Map<String, ClientBatchCheckItem> correlationIdToCheck = new HashMap<>();
+
+        List<BatchCheckItem> collect = new ArrayList<>();
+        for (ClientBatchCheckItem check : requests.getChecks()) {
+            String correlationId = check.getCorrelationId();
+            correlationId = correlationId == null || correlationId.isBlank()
+                    ? randomUUID().toString()
+                    : correlationId;
+
+            BatchCheckItem batchCheckItem = new BatchCheckItem()
+                    .tupleKey(new CheckRequestTupleKey()
+                            .user(check.getUser())
+                            .relation(check.getRelation())
+                            ._object(check.getObject()))
+                    .context(check.getContext())
+                    .correlationId(correlationId);
+
+            List<ClientTupleKey> contextualTuples = check.getContextualTuples();
+            if (contextualTuples != null && !contextualTuples.isEmpty()) {
+                batchCheckItem.contextualTuples(ClientTupleKey.asContextualTupleKeys(contextualTuples));
+            }
+
+            collect.add(batchCheckItem);
+
+            if (correlationIdToCheck.containsKey(correlationId)) {
+                throw new FgaValidationError(
+                        "correlationId", "When calling batchCheck, correlation IDs must be unique");
+            }
+
+            correlationIdToCheck.put(correlationId, check);
+        }
+
+        int maxBatchSize = options.getMaxBatchSize() != null ? options.getMaxBatchSize() : DEFAULT_MAX_BATCH_SIZE;
+        List<List<BatchCheckItem>> batchedChecks = IntStream.range(
+                        0, (collect.size() + maxBatchSize - 1) / maxBatchSize)
+                .mapToObj(i -> collect.subList(i * maxBatchSize, Math.min((i + 1) * maxBatchSize, collect.size())))
+                .collect(Collectors.toList());
+
+        int maxParallelRequests = options.getMaxParallelRequests() != null
+                ? options.getMaxParallelRequests()
+                : DEFAULT_MAX_METHOD_PARALLEL_REQS;
+        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
+        var latch = new CountDownLatch(batchedChecks.size());
+
+        var responses = new ConcurrentLinkedQueue<ClientBatchCheckSingleResponse>();
+
+        var override = new ConfigurationOverride().addHeaders(options);
+
+        Consumer<List<BatchCheckItem>> singleBatchCheckRequest = request -> call(() ->
+                        api.batchCheck(configuration.getStoreId(), new BatchCheckRequest().checks(request), override))
+                .handleAsync((batchCheckResponseApiResponse, throwable) -> {
+                    Map<String, BatchCheckSingleResult> response =
+                            batchCheckResponseApiResponse.getData().getResult();
+
+                    List<ClientBatchCheckSingleResponse> batchResults = new ArrayList<>();
+                    response.forEach((key, result) -> {
+                        boolean allowed = Boolean.TRUE.equals(result.getAllowed());
+                        ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
+                        var singleResponse =
+                                new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
+                        batchResults.add(singleResponse);
+                    });
+                    return batchResults;
+                })
+                .thenAccept(responses::addAll)
+                .thenRun(latch::countDown);
+
+        try {
+            batchedChecks.forEach(batch -> executor.execute(() -> singleBatchCheckRequest.accept(batch)));
+            latch.await();
+            return CompletableFuture.completedFuture(new ClientBatchCheckResponse(new ArrayList<>(responses)));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         } finally {
@@ -764,7 +878,7 @@ public class OpenFgaClient {
                         .context(request.getContext()))
                 .collect(Collectors.toList());
 
-        return this.batchCheck(batchCheckRequests, options.asClientBatchCheckOptions())
+        return this.clientBatchCheck(batchCheckRequests, options.asClientBatchCheckClientOptions())
                 .thenCompose(responses -> call(() -> ClientListRelationsResponse.fromBatchCheckResponses(responses)));
     }
 
