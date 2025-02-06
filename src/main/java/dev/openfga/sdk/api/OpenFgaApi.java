@@ -1149,6 +1149,16 @@ public class OpenFgaApi {
                             Attributes.FGA_CLIENT_REQUEST_MODEL_ID, writeRequest.getAuthorizationModelId());
                 }
             }
+
+            if (body instanceof BatchCheckRequest) {
+                BatchCheckRequest batchCheckRequest = (BatchCheckRequest) body;
+
+                if (batchCheckRequest.getChecks() != null) {
+                    telemetryAttributes.put(
+                            Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE,
+                            String.valueOf(batchCheckRequest.getChecks().size()));
+                }
+            }
         }
 
         return telemetryAttributes;
