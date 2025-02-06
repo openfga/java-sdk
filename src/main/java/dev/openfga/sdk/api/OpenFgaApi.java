@@ -1155,7 +1155,8 @@ public class OpenFgaApi {
 
                 if (batchCheckRequest.getChecks() != null) {
                     telemetryAttributes.put(
-                            Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE, String.valueOf(batchCheckRequest.getChecks().size()));
+                            Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE,
+                            String.valueOf(batchCheckRequest.getChecks().size()));
                 }
             }
         }
