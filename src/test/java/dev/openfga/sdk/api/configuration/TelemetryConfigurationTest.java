@@ -87,6 +87,9 @@ class TelemetryConfigurationTest {
         assertTrue(
                 defaultAttributes.containsKey(Attributes.USER_AGENT),
                 "The default attributes map should contain the USER_AGENT attribute.");
+        assertFalse(
+                defaultAttributes.containsKey(Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE),
+                "The default attribute map should not contain the FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE attribute.");
 
         defaultAttributes = metrics.get(Histograms.QUERY_DURATION);
         assertNotNull(defaultAttributes, "The default attributes map should not be null.");
@@ -124,6 +127,9 @@ class TelemetryConfigurationTest {
         assertTrue(
                 defaultAttributes.containsKey(Attributes.USER_AGENT),
                 "The default attributes map should contain the USER_AGENT attribute.");
+        assertFalse(
+                defaultAttributes.containsKey(Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE),
+                "The default attribute map should not contain the FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE attribute.");
     }
 
     @Test
