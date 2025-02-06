@@ -38,6 +38,9 @@ public class Attributes {
      */
     public static final Attribute FGA_CLIENT_REQUEST_STORE_ID = new Attribute("fga-client.request.store_id");
 
+    /**
+     * Then number of items to check in a batch request, if applicable.
+     */
     public static final Attribute FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE = new Attribute("fga-client.request.batch_check_size");
 
     /**
