@@ -1,12 +1,15 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.7.2...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.0...HEAD)
 
-- feat!: add support for server-side `BatchCheck` method
-- feat: add support for `start_time` parameter in `ReadChanges` endpoint
+## v0.8.0
+
+### [0.8.0](https://github.com/openfga/java-sdk/compare/v0.7.2...v0.8.0) (2025-02-07)
+
+- feat!: add support for server-side `BatchCheck` method (#141) thanks @piotrooo!!
+- feat: add support for `start_time` parameter in `ReadChanges` endpoint (#137)
 
 BREAKING CHANGES:
-
 - Usage of the existing `batchCheck` method should now use the `clientBatchCheck` method.
 
 ## v0.7.2
