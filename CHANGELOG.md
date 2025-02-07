@@ -1,12 +1,18 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.7.2...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.0...HEAD)
 
-- feat!: add support for server-side `BatchCheck` method
-- feat: add support for `start_time` parameter in `ReadChanges` endpoint
+## v0.8.0
+
+### [0.8.0](https://github.com/openfga/java-sdk/compare/v0.7.2...v0.8.0) (2025-02-07)
+
+- feat!: add support for server-side [`batchCheck`](https://openfga.dev/docs/interacting/relationship-queries#batch-check) method (#141) - thanks @piotrooo!!
+  This is a more efficient way to check on multiple tuples than calling the existing client-side `batchCheck`. Using this method requires an OpenFGA [v1.8.0+](https://github.com/openfga/openfga/releases/tag/v1.8.0) server.
+    The existing `batchCheck` method has been renamed to `clientBatchCheck`.
+    The existing `BatchCheckResponse` has been renamed to `ClientBatchCheckResponse`.
+- feat: add support for `start_time` parameter in `ReadChanges` endpoint (#137)
 
 BREAKING CHANGES:
-
 - Usage of the existing `batchCheck` method should now use the `clientBatchCheck` method.
 
 ## v0.7.2
