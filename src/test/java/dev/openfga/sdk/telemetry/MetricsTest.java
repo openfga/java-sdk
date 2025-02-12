@@ -2,13 +2,16 @@ package dev.openfga.sdk.telemetry;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +24,8 @@ class MetricsTest {
     void setUp() {
         configuration = mock(Configuration.class);
         metrics = new Metrics(configuration);
+
+        when(configuration.getTelemetryConfiguration()).thenReturn(new TelemetryConfiguration());
     }
 
     @Test
@@ -115,5 +120,56 @@ class MetricsTest {
 
         // Assert
         assertNotNull(doubleHistogram, "The DoubleHistogram object should not be null.");
+    }
+
+    @Test
+    void testMetricsNotSentIfNotConfigured() {
+        Map<Attribute, Optional<Object>> attributes = new HashMap<>();
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, Optional.empty());
+        Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
+        metrics.put(Histograms.QUERY_DURATION, attributes);
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(metrics);
+
+        Configuration config = new Configuration();
+        config.telemetryConfiguration(telemetryConfiguration);
+
+        Metrics configuredMetrics = new Metrics(config);
+
+        DoubleHistogram requestDuration =
+                configuredMetrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, new HashMap<>());
+        assertNull(requestDuration, "Unconfigured histograms should not be sent.");
+
+        DoubleHistogram queryDuration =
+                configuredMetrics.getHistogram(Histograms.QUERY_DURATION, 10.0, new HashMap<>());
+        assertNotNull(queryDuration, "Configured histograms should be sent.");
+
+        LongCounter credsRequestCounter =
+                configuredMetrics.getCounter(Counters.CREDENTIALS_REQUEST, 10L, new HashMap<>());
+        assertNull(credsRequestCounter, "Unconfigured counters should not be sent.");
+    }
+
+    @Test
+    void testCountersNotSentIfNotConfigured() {
+        Map<Attribute, Optional<Object>> attributes = new HashMap<>();
+        attributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, Optional.empty());
+        Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
+        metrics.put(Counters.CREDENTIALS_REQUEST, attributes);
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(metrics);
+
+        Configuration config = new Configuration();
+        config.telemetryConfiguration(telemetryConfiguration);
+
+        Metrics configuredMetrics = new Metrics(config);
+
+        DoubleHistogram requestDuration =
+                configuredMetrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, new HashMap<>());
+        assertNull(requestDuration, "Unconfigured histograms should not be sent.");
+
+        DoubleHistogram queryDuration =
+                configuredMetrics.getHistogram(Histograms.QUERY_DURATION, 10.0, new HashMap<>());
+        assertNull(queryDuration, "Unconfigured histograms should not be sent.");
+
+        LongCounter credsCounter = configuredMetrics.getCounter(Counters.CREDENTIALS_REQUEST, 10L, new HashMap<>());
+        assertNotNull(credsCounter, "Configured counter should be sent.");
     }
 }

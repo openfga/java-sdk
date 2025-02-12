@@ -48,9 +48,12 @@ public class Metrics {
      * @param value      The value to be added to the counter.
      * @param attributes A map of attributes associated with the metric.
      *
-     * @return The LongCounter metric instance.
+     * @return The LongCounter metric instance, if the counter was configured. Otherwise, null.
      */
     public LongCounter getCounter(Counter counter, Long value, Map<Attribute, String> attributes) {
+        if (!configuration.getTelemetryConfiguration().metrics().containsKey(counter)) {
+            return null;
+        }
         if (!counters.containsKey(counter.getName())) {
             counters.put(
                     counter.getName(),
@@ -74,8 +77,14 @@ public class Metrics {
      * @param histogram  The Histogram enum representing the metric.
      * @param value      The value to be recorded in the histogram.
      * @param attributes A map of attributes associated with the metric.
+     *
+     * @return the DoubleHistogram instance, if the histogram was configured. Otherwise, null.
      */
     public DoubleHistogram getHistogram(Histogram histogram, Double value, Map<Attribute, String> attributes) {
+        if (!configuration.getTelemetryConfiguration().metrics().containsKey(histogram)) {
+            return null;
+        }
+
         if (!histograms.containsKey(histogram.getName())) {
             histograms.put(
                     histogram.getName(),
