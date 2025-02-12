@@ -52,6 +52,7 @@ public class Configuration implements BaseConfiguration {
         this.userAgent = DEFAULT_USER_AGENT;
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+        this.telemetryConfiguration = new TelemetryConfiguration();
     }
 
     /**
