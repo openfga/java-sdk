@@ -191,4 +191,26 @@ class MetricsTest {
                 metrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, new HashMap<>()),
                 "The request duration histogram should be sent.");
     }
+
+    @Test
+    void testMetricsWithNullMetricsConfig() {
+        // Arrange
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(null);
+        Configuration config = new Configuration();
+        config.telemetryConfiguration(telemetryConfiguration);
+
+        // Act
+        Metrics metrics = new Metrics(config);
+
+        // Assert
+        assertNull(
+                metrics.getCounter(Counters.CREDENTIALS_REQUEST, 10L, new HashMap<>()),
+                "The counter should not be sent.");
+        assertNull(
+                metrics.getHistogram(Histograms.QUERY_DURATION, 10.0, new HashMap<>()),
+                "The query duration histogram should not be sent.");
+        assertNull(
+                metrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, new HashMap<>()),
+                "The request duration histogram should not be sent.");
+    }
 }

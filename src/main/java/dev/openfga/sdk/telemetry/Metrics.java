@@ -56,7 +56,8 @@ public class Metrics {
      * @return The LongCounter metric instance, if the counter was configured. Otherwise, null.
      */
     public LongCounter getCounter(Counter counter, Long value, Map<Attribute, String> attributes) {
-        if (!configuration.getTelemetryConfiguration().metrics().containsKey(counter)) {
+        if (configuration.getTelemetryConfiguration().metrics() == null
+                || !configuration.getTelemetryConfiguration().metrics().containsKey(counter)) {
             return null;
         }
         if (!counters.containsKey(counter.getName())) {
@@ -86,7 +87,8 @@ public class Metrics {
      * @return the DoubleHistogram instance, if the histogram was configured. Otherwise, null.
      */
     public DoubleHistogram getHistogram(Histogram histogram, Double value, Map<Attribute, String> attributes) {
-        if (!configuration.getTelemetryConfiguration().metrics().containsKey(histogram)) {
+        if (configuration.getTelemetryConfiguration().metrics() == null
+                || !configuration.getTelemetryConfiguration().metrics().containsKey(histogram)) {
             return null;
         }
 
