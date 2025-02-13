@@ -16,8 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.net.http.HttpClient;
-
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 
 class ApiClientTest {
@@ -42,5 +40,13 @@ class ApiClientTest {
     public void httpClientShouldUseHttp1ByDefault() {
         ApiClient apiClient = new ApiClient();
         assertEquals(apiClient.getHttpClient().version(), HttpClient.Version.HTTP_1_1);
+    }
+
+    @Test
+    public void customHttpClientWithHttp2() {
+        HttpClient.Builder builder = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2);
+        ApiClient apiClient = new ApiClient(builder);
+        ;
+        assertEquals(apiClient.getHttpClient().version(), HttpClient.Version.HTTP_2);
     }
 }
