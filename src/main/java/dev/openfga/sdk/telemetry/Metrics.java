@@ -1,6 +1,7 @@
 package dev.openfga.sdk.telemetry;
 
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -23,6 +24,7 @@ public class Metrics {
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = new Configuration();
+        this.configuration.telemetryConfiguration(new TelemetryConfiguration());
     }
 
     public Metrics(Configuration configuration) {
@@ -30,6 +32,9 @@ public class Metrics {
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = configuration;
+        if (this.configuration.getTelemetryConfiguration() == null) {
+            this.configuration.telemetryConfiguration(new TelemetryConfiguration());
+        }
     }
 
     /**

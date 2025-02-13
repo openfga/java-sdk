@@ -67,8 +67,8 @@ class AttributesTest {
 
         Metric metric = Histograms.QUERY_DURATION;
 
-        // default configuration should contain default TelemetryConfiguration
         Configuration configuration = new Configuration();
+        configuration.telemetryConfiguration(new TelemetryConfiguration());
 
         // Act
         io.opentelemetry.api.common.Attributes result = Attributes.prepare(attributes, metric, configuration);

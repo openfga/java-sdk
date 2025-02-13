@@ -172,4 +172,23 @@ class MetricsTest {
         LongCounter credsCounter = configuredMetrics.getCounter(Counters.CREDENTIALS_REQUEST, 10L, new HashMap<>());
         assertNotNull(credsCounter, "Configured counter should be sent.");
     }
+
+    @Test
+    void testDefaultMetricsEnabled() {
+        // Arrange
+        Configuration config = new Configuration();
+
+        // Act
+        Metrics metrics = new Metrics(config);
+
+        // Assert
+        assertNotNull(
+                metrics.getCounter(Counters.CREDENTIALS_REQUEST, 10L, new HashMap<>()), "The counter should be sent.");
+        assertNotNull(
+                metrics.getHistogram(Histograms.QUERY_DURATION, 10.0, new HashMap<>()),
+                "The query duration histogram should be sent.");
+        assertNotNull(
+                metrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, new HashMap<>()),
+                "The request duration histogram should be sent.");
+    }
 }
