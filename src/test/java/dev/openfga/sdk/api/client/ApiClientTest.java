@@ -35,4 +35,18 @@ class ApiClientTest {
 
         assertNotEquals(client1, apiClient.getHttpClient());
     }
+
+    @Test
+    public void httpClientShouldUseHttp1ByDefault() {
+        ApiClient apiClient = new ApiClient();
+        assertEquals(apiClient.getHttpClient().version(), HttpClient.Version.HTTP_1_1);
+    }
+
+    @Test
+    public void customHttpClientWithHttp2() {
+        HttpClient.Builder builder = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2);
+        ApiClient apiClient = new ApiClient(builder);
+        ;
+        assertEquals(apiClient.getHttpClient().version(), HttpClient.Version.HTTP_2);
+    }
 }
