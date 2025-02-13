@@ -24,17 +24,16 @@ class AttributesTest {
         // Arrange
         Map<Attribute, String> attributes = new HashMap<>();
         attributes.put(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID, "client-id-value");
-        Metric metric = mock(Metric.class);
+        Metric metric = Histograms.QUERY_DURATION;
 
-        TelemetryConfiguration telemetryConfiguration = mock(TelemetryConfiguration.class);
         Map<Metric, Map<Attribute, Optional<Object>>> metricsMap = new HashMap<>();
         Map<Attribute, Optional<Object>> attributeMap = new HashMap<>();
         attributeMap.put(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID, Optional.of("config-value"));
         metricsMap.put(metric, attributeMap);
-        when(telemetryConfiguration.metrics()).thenReturn(metricsMap);
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(metricsMap);
 
-        Configuration configuration = mock(Configuration.class);
-        when(configuration.getTelemetryConfiguration()).thenReturn(telemetryConfiguration);
+        Configuration configuration = new Configuration();
+        configuration.telemetryConfiguration(telemetryConfiguration);
 
         // Act
         io.opentelemetry.api.common.Attributes result = Attributes.prepare(attributes, metric, configuration);
@@ -42,6 +41,43 @@ class AttributesTest {
         // Assert
         AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
         builder.put(AttributeKey.stringKey(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID.getName()), "client-id-value");
+        io.opentelemetry.api.common.Attributes expected = builder.build();
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void testPrepare_filtersAttributesFromDefaults() {
+        // Arrange
+
+        // sent by default
+        Map<Attribute, String> defaultAttributes = new HashMap<>();
+        for (Map.Entry<Attribute, Optional<Object>> entry :
+                TelemetryConfiguration.defaultAttributes().entrySet()) {
+            defaultAttributes.put(entry.getKey(), entry.getKey().toString() + "-value");
+        }
+
+        // not sent by default
+        Map<Attribute, String> nonDefaultAttributes = new HashMap<>();
+        nonDefaultAttributes.put(Attributes.FGA_CLIENT_USER, "user-value");
+
+        Map<Attribute, String> attributes = new HashMap<>();
+        attributes.putAll(defaultAttributes);
+        attributes.putAll(nonDefaultAttributes);
+
+        Metric metric = Histograms.QUERY_DURATION;
+
+        Configuration configuration = new Configuration();
+        configuration.telemetryConfiguration(new TelemetryConfiguration());
+
+        // Act
+        io.opentelemetry.api.common.Attributes result = Attributes.prepare(attributes, metric, configuration);
+
+        // Assert
+        AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
+        for (Map.Entry<Attribute, String> entry : defaultAttributes.entrySet()) {
+            builder.put(AttributeKey.stringKey(entry.getKey().getName()), entry.getValue());
+        }
         io.opentelemetry.api.common.Attributes expected = builder.build();
 
         assertEquals(expected, result);

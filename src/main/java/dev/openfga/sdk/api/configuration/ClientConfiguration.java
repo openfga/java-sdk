@@ -134,4 +134,10 @@ public class ClientConfiguration extends Configuration {
         super.minimumRetryDelay(minimumRetryDelay);
         return this;
     }
+
+    @Override
+    public ClientConfiguration telemetryConfiguration(TelemetryConfiguration telemetryConfiguration) {
+        super.telemetryConfiguration(telemetryConfiguration);
+        return this;
+    }
 }

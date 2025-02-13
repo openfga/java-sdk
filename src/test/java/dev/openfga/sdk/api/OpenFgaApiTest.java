@@ -47,6 +47,7 @@ public class OpenFgaApiTest {
     private static final String EMPTY_RESPONSE_BODY = "{}";
     private static final int DEFAULT_MAX_RETRIES = 3;
     private static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(100);
+    private static final TelemetryConfiguration DEFAULT_TELEMETRY_CONFIG = new TelemetryConfiguration();
 
     private final ObjectMapper mapper = new ObjectMapper();
     private OpenFgaApi fga;
@@ -72,6 +73,7 @@ public class OpenFgaApiTest {
         when(mockConfiguration.getCredentials()).thenReturn(new Credentials());
         when(mockConfiguration.getMaxRetries()).thenReturn(DEFAULT_MAX_RETRIES);
         when(mockConfiguration.getMinimumRetryDelay()).thenReturn(DEFAULT_RETRY_DELAY);
+        when(mockConfiguration.getTelemetryConfiguration()).thenReturn(DEFAULT_TELEMETRY_CONFIG);
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getObjectMapper()).thenReturn(mapper);

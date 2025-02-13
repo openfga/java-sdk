@@ -6,7 +6,7 @@ import dev.openfga.sdk.api.configuration.Configuration;
  * The Telemetry class provides access to telemetry-related functionality.
  */
 public class Telemetry {
-    private Configuration configuration = new Configuration();
+    private Configuration configuration = null;
     private Metrics metrics = null;
 
     public Telemetry(Configuration configuration) {

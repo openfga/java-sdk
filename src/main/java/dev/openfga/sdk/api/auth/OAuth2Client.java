@@ -50,7 +50,8 @@ public class OAuth2Client {
         this.config = new Configuration()
                 .apiUrl(buildApiTokenIssuer(clientCredentials.getApiTokenIssuer()))
                 .maxRetries(configuration.getMaxRetries())
-                .minimumRetryDelay(configuration.getMinimumRetryDelay());
+                .minimumRetryDelay(configuration.getMinimumRetryDelay())
+                .telemetryConfiguration(configuration.getTelemetryConfiguration());
         this.telemetry = new Telemetry(this.config);
     }
 
