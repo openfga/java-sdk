@@ -75,6 +75,24 @@ public class ApiClient {
      * {@link HttpClient.Builder} here.
      *
      * @param builder Http client builder.
+     */
+    public ApiClient(HttpClient.Builder builder) {
+        this.builder = builder;
+        this.mapper = createDefaultObjectMapper();
+        this.client = this.builder.build();
+        interceptor = null;
+        responseInterceptor = null;
+        asyncResponseInterceptor = null;
+    }
+
+    /**
+     * Create an instance of ApiClient.
+     * <p>
+     * In other contexts, note that any settings in a {@link Configuration}
+     * will take precedence over equivalent settings in the
+     * {@link HttpClient.Builder} here.
+     *
+     * @param builder Http client builder.
      * @param mapper Object mapper.
      */
     public ApiClient(HttpClient.Builder builder, ObjectMapper mapper) {
@@ -177,7 +195,7 @@ public class ApiClient {
     }
 
     protected HttpClient.Builder createDefaultHttpClientBuilder() {
-        return HttpClient.newBuilder();
+        return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1);
     }
 
     /**
