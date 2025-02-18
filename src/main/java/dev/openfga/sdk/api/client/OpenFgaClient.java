@@ -550,7 +550,12 @@ public class OpenFgaClient {
     public CompletableFuture<ClientCheckResponse> check(ClientCheckRequest request, ClientCheckOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+
+        // TODO I don't like this, we already check for non-null options below
+        // Set storeId from options if available; otherwise, use the default from configuration
+        String storeId = options != null && !isNullOrWhitespace(options.getStoreId())
+                ? options.getStoreId()
+                : configuration.getStoreIdChecked();
 
         CheckRequest body = request.asCheckRequest();
         if (options != null) {

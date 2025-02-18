@@ -1564,7 +1564,10 @@ public class OpenFgaClientTest {
     @Test
     public void check() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+
+        // TODO should test defaults used when options not set, both for storeId and authorizationModelId
+        // String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = "https://api.fga.example/stores/override-id/check";
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},"
                         + "\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"owner\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},"
@@ -1587,7 +1590,8 @@ public class OpenFgaClientTest {
                         .condition(DEFAULT_CONDITION)));
         ClientCheckOptions options = new ClientCheckOptions()
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY)
+                .storeId("override-id");
 
         // When
         ClientCheckResponse response = fga.check(request, options).get();

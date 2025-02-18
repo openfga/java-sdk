@@ -18,6 +18,7 @@ import java.util.Map;
 public class ClientCheckOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private String authorizationModelId;
+    private String storeId;
     private ConsistencyPreference consistency;
 
     public ClientCheckOptions additionalHeaders(Map<String, String> additionalHeaders) {
@@ -37,6 +38,15 @@ public class ClientCheckOptions implements AdditionalHeadersSupplier {
 
     public String getAuthorizationModelId() {
         return authorizationModelId;
+    }
+
+    public ClientCheckOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 
     public ClientCheckOptions consistency(ConsistencyPreference consistency) {
