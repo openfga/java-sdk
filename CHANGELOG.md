@@ -1,7 +1,15 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.0...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.1...HEAD)
 
+## v0.8.1
+
+### [0.8.1](https://github.com/openfga/java-sdk/compare/v0.8.0...v0.8.1) (2025-02-18)
+
+- fix: use HTTP 1.1 by default (#148)
+- fix: ensure default telemetry attributes are sent (#145)
+- feat: add batch check telemetry attribute (#143)
+ 
 ## v0.8.0
 
 ### [0.8.0](https://github.com/openfga/java-sdk/compare/v0.7.2...v0.8.0) (2025-02-07)
