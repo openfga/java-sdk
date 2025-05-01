@@ -104,16 +104,6 @@ public class ApiClient {
         asyncResponseInterceptor = null;
     }
 
-    private static String valueToString(Object value) {
-        if (value == null) {
-            return "";
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        }
-        return value.toString();
-    }
-
     public static HttpRequest.Builder requestBuilder(String method, String path, Configuration configuration)
             throws FgaInvalidParameterException {
         return requestBuilder(method, path, HttpRequest.BodyPublishers.noBody(), configuration);
