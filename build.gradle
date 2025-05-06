@@ -56,7 +56,6 @@ jacocoTestReport {
 
 ext {
     jackson_version = "2.19.0"
-    junit_version = "5.12.2"
 }
 
 dependencies {
@@ -74,13 +73,13 @@ testing {
     suites {
         test {
             useJUnitJupiter()
-
             dependencies {
-                implementation project()
-                implementation "org.junit.jupiter:junit-jupiter:$junit_version"
-                implementation "org.mockito:mockito-core:5.17.0"
-                runtimeOnly "org.junit.platform:junit-platform-launcher"
-                implementation "org.wiremock:wiremock:3.13.0"
+                implementation 'org.assertj:assertj-core:3.27.3'
+                implementation 'org.mockito:mockito-core:5.17.0'
+                implementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+                implementation 'org.wiremock:wiremock:3.13.0'
+
+                runtimeOnly 'org.junit.platform:junit-platform-launcher'
 
                 // This test-only dependency is convenient but not widely used.
                 // Review project activity before updating the version here.
@@ -99,6 +98,7 @@ testing {
                 }
             }
         }
+
         integration(JvmTestSuite) {
             testType = TestSuiteType.INTEGRATION_TEST
             useJUnitJupiter()

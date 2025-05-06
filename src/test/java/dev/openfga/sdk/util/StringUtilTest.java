@@ -13,38 +13,50 @@
 package dev.openfga.sdk.util;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
-import static org.junit.jupiter.api.Assertions.*;
+import static dev.openfga.sdk.util.StringUtil.urlEncode;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class StringUtilTest {
     @Test
-    public void isNullOrWhitespace_someContent_false() {
-        assertFalse(isNullOrWhitespace("abc"));
+    void shouldReturnFalseWhenStringIsNotNullNorWhitespace() {
+        // when
+        boolean nullOrWhitespace = isNullOrWhitespace("abc");
+
+        // then
+        assertThat(nullOrWhitespace).isFalse();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "  ", " \t\n"})
+    @NullSource
+    void shouldReturnTrueWhenStringIsNullOrWhitespace(String string) {
+        // when
+        boolean nullOrWhitespace = isNullOrWhitespace(string);
+
+        // then
+        assertThat(nullOrWhitespace).isTrue();
     }
 
     @Test
-    public void isNullOrWhitespace_null_true() {
-        assertTrue(isNullOrWhitespace(null));
+    void shouldUrlEncodeString() {
+        // when
+        String urlEncode = urlEncode("name_with_=_char");
+
+        // then
+        assertThat(urlEncode).isEqualTo("name_with_%3D_char");
     }
 
     @Test
-    public void isNullOrWhitespace_empty_true() {
-        assertTrue(isNullOrWhitespace(""));
-    }
+    void shouldUrlEncodeStringWithSpaceCharacter() {
+        // when
+        String urlEncode = urlEncode("name_ with_ _char");
 
-    @Test
-    public void isNullOrWhitespace_singleSpace_true() {
-        assertTrue(isNullOrWhitespace(" "));
-    }
-
-    @Test
-    public void isNullOrWhitespace_multipleSpace_true() {
-        assertTrue(isNullOrWhitespace(" "));
-    }
-
-    @Test
-    public void isNullOrWhitespace_multipleOtherWhitespace_true() {
-        assertTrue(isNullOrWhitespace(" \t\r\n"));
+        // then
+        assertThat(urlEncode).isEqualTo("name_%20with_%20_char");
     }
 }

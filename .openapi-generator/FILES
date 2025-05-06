@@ -330,4 +330,6 @@ src/test/java/dev/openfga/sdk/telemetry/HistogramsTest.java
 src/test/java/dev/openfga/sdk/telemetry/MetricTest.java
 src/test/java/dev/openfga/sdk/telemetry/MetricsTest.java
 src/test/java/dev/openfga/sdk/telemetry/TelemetryTest.java
+src/test/java/dev/openfga/sdk/util/PairTest.java
 src/test/java/dev/openfga/sdk/util/StringUtilTest.java
+src/test/java/dev/openfga/sdk/util/ValidationTest.java
