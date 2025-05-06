@@ -47,6 +47,7 @@ import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
 import dev.openfga.sdk.util.Pair;
+import dev.openfga.sdk.util.StringUtil;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -127,7 +128,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "batchCheck");
 
-        String path = "/stores/{store_id}/batch-check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/batch-check".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -183,7 +184,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "check");
 
-        String path = "/stores/{store_id}/check".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/check".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -283,7 +284,7 @@ public class OpenFgaApi {
 
         assertParamExists(storeId, "storeId", "deleteStore");
 
-        String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -338,7 +339,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "expand");
 
-        String path = "/stores/{store_id}/expand".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/expand".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -389,7 +390,7 @@ public class OpenFgaApi {
 
         assertParamExists(storeId, "storeId", "getStore");
 
-        String path = "/stores/{store_id}".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -444,7 +445,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "listObjects");
 
-        String path = "/stores/{store_id}/list-objects".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/list-objects".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -551,7 +552,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "listUsers");
 
-        String path = "/stores/{store_id}/list-users".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/list-users".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -607,7 +608,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "read");
 
-        String path = "/stores/{store_id}/read".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/read".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -664,8 +665,8 @@ public class OpenFgaApi {
         assertParamExists(authorizationModelId, "authorizationModelId", "readAssertions");
 
         String path = "/stores/{store_id}/assertions/{authorization_model_id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()))
+                .replace("{authorization_model_id}", StringUtil.urlEncode(authorizationModelId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -722,8 +723,8 @@ public class OpenFgaApi {
         assertParamExists(id, "id", "readAuthorizationModel");
 
         String path = "/stores/{store_id}/authorization-models/{id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{id}", ApiClient.urlEncode(id.toString()));
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()))
+                .replace("{id}", StringUtil.urlEncode(id.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -787,7 +788,7 @@ public class OpenFgaApi {
         assertParamExists(storeId, "storeId", "readAuthorizationModels");
 
         String path = "/stores/{store_id}/authorization-models"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
         path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
 
         Map<String, Object> methodParameters = new HashMap<>();
@@ -869,7 +870,7 @@ public class OpenFgaApi {
 
         assertParamExists(storeId, "storeId", "readChanges");
 
-        String path = "/stores/{store_id}/changes".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/changes".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
         path = pathWithParams(
                 path,
                 "type",
@@ -933,7 +934,7 @@ public class OpenFgaApi {
 
         assertParamExists(body, "body", "write");
 
-        String path = "/stores/{store_id}/write".replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+        String path = "/stores/{store_id}/write".replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -998,8 +999,8 @@ public class OpenFgaApi {
         assertParamExists(body, "body", "writeAssertions");
 
         String path = "/stores/{store_id}/assertions/{authorization_model_id}"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()))
-                .replace("{authorization_model_id}", ApiClient.urlEncode(authorizationModelId.toString()));
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()))
+                .replace("{authorization_model_id}", StringUtil.urlEncode(authorizationModelId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);
@@ -1057,7 +1058,7 @@ public class OpenFgaApi {
         assertParamExists(body, "body", "writeAuthorizationModel");
 
         String path = "/stores/{store_id}/authorization-models"
-                .replace("{store_id}", ApiClient.urlEncode(storeId.toString()));
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
 
         Map<String, Object> methodParameters = new HashMap<>();
         methodParameters.put("storeId", storeId);

@@ -12,23 +12,52 @@
 
 package dev.openfga.sdk.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.net.URLEncoder;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+/**
+ * Operations on {@link String}.
+ */
 public class StringUtil {
-    private StringUtil() {} // Instantiation prevented for utility class.
-
-    private static final Predicate<String> NULL_OR_WS =
-            Pattern.compile("^\\s*$").asMatchPredicate();
+    /**
+     * The empty String {@code ""}.
+     */
+    public static final String EMPTY = "";
 
     /**
-     * Returns true when the String is null, empty or contains only whitespace
-     * characters.
-     *
-     * @param str The String being tested.
-     * @return true iff str is null, empty or contains only whitespace.
+     * A predicate that matches when a string contains only whitespace characters.
      */
-    public static boolean isNullOrWhitespace(String str) {
-        return str == null || NULL_OR_WS.test(str);
+    private static final Predicate<String> NULL_OR_WHITESPACE =
+            Pattern.compile("^\\s*$").asMatchPredicate();
+
+    private StringUtil() {} // Instantiation prevented for utility class.
+
+    /**
+     * Returns {@code true} when the string is:
+     * <ul>
+     *     <li>{@code null}</li>
+     *     <li>empty</li>
+     *     <li>contains <b>only</b> whitespace characters</li>
+     * </ul>
+     * otherwise {@code false}.
+     *
+     * @param string the string being tested
+     * @return true if string is {@code null}, empty or contains <b>only</b> whitespace(s)
+     */
+    public static boolean isNullOrWhitespace(String string) {
+        return string == null || NULL_OR_WHITESPACE.test(string);
+    }
+
+    /**
+     * URL encode a string in the UTF-8 encoding.
+     *
+     * @param string the string to encode
+     * @return URL-encoded representation of the input string
+     */
+    public static String urlEncode(String string) {
+        return URLEncoder.encode(string, UTF_8).replace("+", "%20");
     }
 }

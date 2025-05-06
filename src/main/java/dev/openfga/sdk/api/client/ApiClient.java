@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.util.StringUtil;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -28,8 +29,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
@@ -104,16 +103,6 @@ public class ApiClient {
         asyncResponseInterceptor = null;
     }
 
-    private static String valueToString(Object value) {
-        if (value == null) {
-            return "";
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        }
-        return value.toString();
-    }
-
     public static HttpRequest.Builder requestBuilder(String method, String path, Configuration configuration)
             throws FgaInvalidParameterException {
         return requestBuilder(method, path, HttpRequest.BodyPublishers.noBody(), configuration);
@@ -171,7 +160,9 @@ public class ApiClient {
      *
      * @param s String to encode.
      * @return URL-encoded representation of the input string.
+     * @deprecated in favor of {@link StringUtil#urlEncode(String)}
      */
+    @Deprecated(forRemoval = true, since = "0.8.2")
     public static String urlEncode(String s) {
         return URLEncoder.encode(s, UTF_8).replaceAll("\\+", "%20");
     }
