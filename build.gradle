@@ -4,7 +4,7 @@ plugins {
     // Quality
     id 'jacoco'
     id 'jvm-test-suite'
-    id 'com.diffplug.spotless' version '7.0.2'
+    id 'com.diffplug.spotless' version '7.0.3'
 
     // IDE
     id 'idea'
@@ -55,8 +55,8 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.18.3"
-    junit_version = "5.12.1"
+    jackson_version = "2.19.0"
+    junit_version = "5.12.2"
 }
 
 dependencies {
@@ -66,7 +66,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
     implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.48.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.49.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -78,9 +78,9 @@ testing {
             dependencies {
                 implementation project()
                 implementation "org.junit.jupiter:junit-jupiter:$junit_version"
-                implementation "org.mockito:mockito-core:5.16.1"
+                implementation "org.mockito:mockito-core:5.17.0"
                 runtimeOnly "org.junit.platform:junit-platform-launcher"
-                implementation "org.wiremock:wiremock:3.12.1"
+                implementation "org.wiremock:wiremock:3.13.0"
 
                 // This test-only dependency is convenient but not widely used.
                 // Review project activity before updating the version here.
@@ -106,8 +106,8 @@ testing {
             dependencies {
                 implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
                 implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-                implementation "org.testcontainers:junit-jupiter:1.20.6"
-                implementation "org.testcontainers:openfga:1.20.6"
+                implementation "org.testcontainers:junit-jupiter:1.21.0"
+                implementation "org.testcontainers:openfga:1.21.0"
                 implementation project()
             }
 
