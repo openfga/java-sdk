@@ -4,7 +4,7 @@ plugins {
     // Quality
     id 'jacoco'
     id 'jvm-test-suite'
-    id 'com.diffplug.spotless' version '7.0.3'
+    id 'com.diffplug.spotless' version '7.0.4'
 
     // IDE
     id 'idea'
@@ -65,7 +65,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
     implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.49.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.50.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -75,8 +75,8 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation 'org.assertj:assertj-core:3.27.3'
-                implementation 'org.mockito:mockito-core:5.17.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+                implementation 'org.mockito:mockito-core:5.18.0'
+                implementation 'org.junit.jupiter:junit-jupiter:5.13.0'
                 implementation 'org.wiremock:wiremock:3.13.0'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -106,8 +106,8 @@ testing {
             dependencies {
                 implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
                 implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-                implementation "org.testcontainers:junit-jupiter:1.21.0"
-                implementation "org.testcontainers:openfga:1.21.0"
+                implementation "org.testcontainers:junit-jupiter:1.21.1"
+                implementation "org.testcontainers:openfga:1.21.1"
                 implementation project()
             }
 
