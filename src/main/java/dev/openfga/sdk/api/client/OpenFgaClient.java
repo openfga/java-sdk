@@ -711,8 +711,23 @@ public class OpenFgaClient {
 
         var override = new ConfigurationOverride().addHeaders(options);
 
-        Consumer<List<BatchCheckItem>> singleBatchCheckRequest = request -> call(() ->
-                        api.batchCheck(configuration.getStoreId(), new BatchCheckRequest().checks(request), override))
+        Consumer<List<BatchCheckItem>> singleBatchCheckRequest = request -> call(() -> {
+                    BatchCheckRequest body = new BatchCheckRequest().checks(request);
+                    if (options.getConsistency() != null) {
+                        body.consistency(options.getConsistency());
+                    }
+
+                    // Set authorizationModelId from options if available; otherwise, use the default from configuration
+                    String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
+                            ? options.getAuthorizationModelId()
+                            : configuration.getAuthorizationModelId();
+
+                    if (!isNullOrWhitespace(authorizationModelId)) {
+                        body.authorizationModelId(authorizationModelId);
+                    }
+
+                    return api.batchCheck(configuration.getStoreId(), body, override);
+                })
                 .handleAsync((batchCheckResponseApiResponse, throwable) -> {
                     Map<String, BatchCheckSingleResult> response =
                             batchCheckResponseApiResponse.getData().getResult();
