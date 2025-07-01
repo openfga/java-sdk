@@ -2040,6 +2040,38 @@ public class OpenFgaClientTest {
         assertEquals("relation not found", response3.getError().getMessage());
     }
 
+    @Test
+    public void batchCheck_withOptions() throws Exception {
+        // Given
+        String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"checks\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"context\":null,\"correlation_id\":\"cor-1\"}],\"authorization_model_id\":\"%s\",\"consistency\":\"%s\"}",
+                DEFAULT_USER,
+                DEFAULT_RELATION,
+                DEFAULT_OBJECT,
+                DEFAULT_AUTH_MODEL_ID,
+                ConsistencyPreference.MINIMIZE_LATENCY);
+        mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, "{\"result\":{}}");
+
+        ClientBatchCheckItem item = new ClientBatchCheckItem()
+                .user(DEFAULT_USER)
+                .relation(DEFAULT_RELATION)
+                ._object(DEFAULT_OBJECT)
+                .correlationId("cor-1");
+        ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item));
+        ClientBatchCheckOptions options = new ClientBatchCheckOptions()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
+
+        // When
+        ClientBatchCheckResponse response = fga.batchCheck(request, options).join();
+
+        // Then
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1);
+        assertNotNull(response);
+        assertTrue(response.getResult().isEmpty());
+    }
+
     /**
      * Expand all relationships in userset tree format, and following userset rewrite rules.  Useful to reason
      * about and debug a certain relationship.
