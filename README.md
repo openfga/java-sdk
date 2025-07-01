@@ -174,7 +174,7 @@ public class Example {
 }
 ```
 
-#### Auth0 Client Credentials
+#### Client Credentials
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -604,6 +604,8 @@ var response = fgaClient.check(request, options).get();
 Similar to [check](#check), but instead of checking a single user-object relationship, accepts a list of relationships to check. Requires OpenFGA version 1.8.0 or greater.
 
 [API Documentation](https://openfga.dev/api/service#/Relationship%20Queries/BatchCheck)
+
+> **Note**: The order of `batchCheck` results is not guaranteed to match the order of the checks provided. Use `correlationId` to pair responses with requests.
 
 > Passing `ClientBatchCheckOptions` is optional. All fields of `ClientBatchCheckOptions` are optional.
 
