@@ -174,7 +174,7 @@ public class Example {
 }
 ```
 
-#### Auth0 Client Credentials
+#### Client Credentials
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
