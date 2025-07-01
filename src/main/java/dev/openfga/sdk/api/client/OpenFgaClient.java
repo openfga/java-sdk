@@ -54,6 +54,13 @@ public class OpenFgaClient {
      * Utilities *
      *************/
 
+    /**
+     * Returns the underlying low-level OpenFgaApi instance.
+     */
+    public OpenFgaApi getApi() {
+        return api;
+    }
+
     public void setStoreId(String storeId) {
         configuration.storeId(storeId);
     }
