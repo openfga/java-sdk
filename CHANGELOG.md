@@ -1,6 +1,12 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.1...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.2-beta.1...HEAD)
+
+## v0.8.2-beta.1
+
+### [0.8.2-beta.1](https://github.com/openfga/java-sdk/compare/v0.8.1...v0.8.2-beta.1) (2025-07-01)
+
+- fix(client): fix passing model ID in BatchCheck (#177)
 
 ## v0.8.1
 
