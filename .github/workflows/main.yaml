@@ -118,7 +118,6 @@ jobs:
           version_regex: ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+
           prerelease_regex: ^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+-(alpha|beta|preview)\.[[:digit:]]+$
           changelog_file: CHANGELOG.md
-          create_draft: true
-          release_title:
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
