@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.19.0"
+    jackson_version = "2.19.1"
 }
 
 dependencies {
@@ -65,7 +65,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
     implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.50.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.51.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -76,8 +76,8 @@ testing {
             dependencies {
                 implementation 'org.assertj:assertj-core:3.27.3'
                 implementation 'org.mockito:mockito-core:5.18.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.13.0'
-                implementation 'org.wiremock:wiremock:3.13.0'
+                implementation 'org.junit.jupiter:junit-jupiter:5.13.2'
+                implementation 'org.wiremock:wiremock:3.13.1'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -106,8 +106,8 @@ testing {
             dependencies {
                 implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
                 implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-                implementation "org.testcontainers:junit-jupiter:1.21.1"
-                implementation "org.testcontainers:openfga:1.21.1"
+                implementation "org.testcontainers:junit-jupiter:1.21.3"
+                implementation "org.testcontainers:openfga:1.21.3"
                 implementation project()
             }
 
