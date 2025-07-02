@@ -1,20 +1,24 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.2-beta.1...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.2...HEAD)
 
-## v0.8.2-beta.1
+## v0.8.2
 
-### [0.8.2-beta.1](https://github.com/openfga/java-sdk/compare/v0.8.1...v0.8.2-beta.1) (2025-07-01)
+### [0.8.2](https://github.com/openfga/java-sdk/compare/v0.8.1...v0.8.2) (2025-07-02)
 
-- fix(client): fix passing model ID in BatchCheck (#177)
+Added:
+- client: allow accessing the internal api client via `getApi` (#178)
+
+Fixed:
+- client: fix BatchCheck ignoring passed in model ID override  (#177)
 
 ## v0.8.1
 
 ### [0.8.1](https://github.com/openfga/java-sdk/compare/v0.8.0...v0.8.1) (2025-02-18)
 
+- feat: add batch check telemetry attribute (#143)
 - fix: use HTTP 1.1 by default (#148)
 - fix: ensure default telemetry attributes are sent (#145)
-- feat: add batch check telemetry attribute (#143)
  
 ## v0.8.0
 
