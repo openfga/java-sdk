@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.1...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.2...HEAD)
+
+## v0.8.2
+
+### [0.8.2](https://github.com/openfga/java-sdk/compare/v0.8.1...v0.8.2) (2025-07-02)
+
+Added:
+- client: allow accessing the internal api client via `getApi` (#178)
+
+Fixed:
+- client: fix BatchCheck ignoring passed in model ID override  (#177)
 
 ## v0.8.1
 
