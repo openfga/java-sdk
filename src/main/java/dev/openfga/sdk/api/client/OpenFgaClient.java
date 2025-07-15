@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -715,6 +716,7 @@ public class OpenFgaClient {
         var latch = new CountDownLatch(batchedChecks.size());
 
         var responses = new ConcurrentLinkedQueue<ClientBatchCheckSingleResponse>();
+        var failure = new AtomicReference<Throwable>();
 
         var override = new ConfigurationOverride().addHeaders(options);
 
@@ -735,26 +737,36 @@ public class OpenFgaClient {
 
                     return api.batchCheck(configuration.getStoreId(), body, override);
                 })
-                .handleAsync((batchCheckResponseApiResponse, throwable) -> {
-                    Map<String, BatchCheckSingleResult> response =
-                            batchCheckResponseApiResponse.getData().getResult();
+                .whenComplete((batchCheckResponseApiResponse, throwable) -> {
+                    try {
+                        if (throwable != null) {
+                            failure.compareAndSet(null, throwable);
+                            return;
+                        }
 
-                    List<ClientBatchCheckSingleResponse> batchResults = new ArrayList<>();
-                    response.forEach((key, result) -> {
-                        boolean allowed = Boolean.TRUE.equals(result.getAllowed());
-                        ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
-                        var singleResponse =
-                                new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
-                        batchResults.add(singleResponse);
-                    });
-                    return batchResults;
-                })
-                .thenAccept(responses::addAll)
-                .thenRun(latch::countDown);
+                        Map<String, BatchCheckSingleResult> response =
+                                batchCheckResponseApiResponse.getData().getResult();
+
+                        List<ClientBatchCheckSingleResponse> batchResults = new ArrayList<>();
+                        response.forEach((key, result) -> {
+                            boolean allowed = Boolean.TRUE.equals(result.getAllowed());
+                            ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
+                            var singleResponse =
+                                    new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
+                            batchResults.add(singleResponse);
+                        });
+                        responses.addAll(batchResults);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
 
         try {
             batchedChecks.forEach(batch -> executor.execute(() -> singleBatchCheckRequest.accept(batch)));
             latch.await();
+            if (failure.get() != null) {
+                return CompletableFuture.failedFuture(failure.get());
+            }
             return CompletableFuture.completedFuture(new ClientBatchCheckResponse(new ArrayList<>(responses)));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
