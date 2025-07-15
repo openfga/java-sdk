@@ -752,8 +752,7 @@ public class OpenFgaClient {
                             boolean allowed = Boolean.TRUE.equals(result.getAllowed());
                             ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
                             var singleResponse =
-                                    new ClientBatchCheckSingleResponse(
-                                            allowed, checkItem, key, result.getError());
+                                    new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
                             batchResults.add(singleResponse);
                         });
                         responses.addAll(batchResults);
@@ -768,8 +767,7 @@ public class OpenFgaClient {
             if (failure.get() != null) {
                 return CompletableFuture.failedFuture(failure.get());
             }
-            return CompletableFuture.completedFuture(
-                    new ClientBatchCheckResponse(new ArrayList<>(responses)));
+            return CompletableFuture.completedFuture(new ClientBatchCheckResponse(new ArrayList<>(responses)));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         } finally {

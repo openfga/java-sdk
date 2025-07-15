@@ -2076,9 +2076,7 @@ public class OpenFgaClientTest {
     public void batchCheck_rateLimited() {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
-        mockHttpClient
-                .onPost(postUrl)
-                .doReturn(429, "{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}");
+        mockHttpClient.onPost(postUrl).doReturn(429, "{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}");
 
         ClientBatchCheckItem item = new ClientBatchCheckItem()
                 .user(DEFAULT_USER)
@@ -2088,15 +2086,14 @@ public class OpenFgaClientTest {
         ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item));
 
         // When
-        ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.batchCheck(request).get());
+        ExecutionException execException = assertThrows(
+                ExecutionException.class, () -> fga.batchCheck(request).get());
 
         // Then
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiRateLimitExceededError.class, execException.getCause());
         assertEquals(429, exception.getStatusCode());
-        assertEquals(
-                "{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}", exception.getResponseData());
+        assertEquals("{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}", exception.getResponseData());
     }
 
     /**
