@@ -1,6 +1,14 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.2...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.3...HEAD)
+
+## v0.8.3
+
+### [0.8.3](https://github.com/openfga/java-sdk/compare/v0.8.2...v0.8.3) (2025-07-15)
+
+Fixed:
+- client: fix connectTimeout config (#182)
+- client: fix batchCheck error handling (#183)
 
 ## v0.8.2
 
