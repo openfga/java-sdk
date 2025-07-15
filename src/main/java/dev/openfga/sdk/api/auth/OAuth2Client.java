@@ -49,6 +49,7 @@ public class OAuth2Client {
         this.authRequest.setScope(clientCredentials.getScopes());
         this.config = new Configuration()
                 .apiUrl(buildApiTokenIssuer(clientCredentials.getApiTokenIssuer()))
+                .connectTimeout(configuration.getConnectTimeout())
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay())
                 .telemetryConfiguration(configuration.getTelemetryConfiguration());
