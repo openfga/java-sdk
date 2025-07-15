@@ -90,6 +90,11 @@ public class OpenFgaApi {
         if (defaultHeaders != null) {
             apiClient.addRequestInterceptor(httpRequest -> defaultHeaders.forEach(httpRequest::setHeader));
         }
+
+        Duration connectTimeout = configuration.getConnectTimeout();
+        if (connectTimeout != null) {
+            apiClient.setHttpClientBuilder(apiClient.getHttpClientBuilder().connectTimeout(connectTimeout));
+        }
     }
 
     /**
