@@ -65,9 +65,9 @@ class RetryStrategyTest {
                 .POST(HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Backward compatibility: POST requests should retry on 5xx regardless of Retry-After header
+        // Breaking change: POST requests should NOT retry on 5xx without Retry-After header
         boolean result = RetryStrategy.shouldRetry(request, 500, false);
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -88,9 +88,9 @@ class RetryStrategyTest {
                 .PUT(HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Backward compatibility: PUT requests should retry on 5xx regardless of Retry-After header
+        // Breaking change: PUT requests should NOT retry on 5xx without Retry-After header
         boolean result = RetryStrategy.shouldRetry(request, 502, false);
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -100,9 +100,9 @@ class RetryStrategyTest {
                 .method("PATCH", HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Backward compatibility: PATCH requests should retry on 5xx regardless of Retry-After header
+        // Breaking change: PATCH requests should NOT retry on 5xx without Retry-After header
         boolean result = RetryStrategy.shouldRetry(request, 503, false);
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -112,9 +112,9 @@ class RetryStrategyTest {
                 .DELETE()
                 .build();
 
-        // Backward compatibility: DELETE requests should retry on 5xx regardless of Retry-After header
+        // Breaking change: DELETE requests should NOT retry on 5xx without Retry-After header
         boolean result = RetryStrategy.shouldRetry(request, 504, false);
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
     }
 
     @Test

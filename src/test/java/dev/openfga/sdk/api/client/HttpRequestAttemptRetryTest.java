@@ -125,31 +125,29 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldRetryWith500WithoutRetryAfterHeaderForPostRequest() throws Exception {
-        // Given - backward compatibility: POST requests should retry on 5xx even without Retry-After
+    void shouldNotRetryWith500WithoutRetryAfterHeaderForPostRequest() throws Exception {
+        // Given - Breaking change: POST requests should NOT retry on 5xx without Retry-After
         wireMockServer.stubFor(post(urlEqualTo("/test"))
-                .willReturn(aResponse()
-                        .withStatus(500)
-                        .withBody("{\"error\":\"server error\"}")));
+                .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"server error\"}")));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
                 .POST(HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
-                request, "test", Void.class, apiClient, configuration);
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
 
         // When & Then
-        ExecutionException exception = assertThrows(ExecutionException.class, 
-                () -> attempt.attemptHttpRequest().get());
-        
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
         assertThat(exception.getCause()).isInstanceOf(FgaError.class);
         FgaError error = (FgaError) exception.getCause();
         assertThat(error.getStatusCode()).isEqualTo(500);
-        
-        // Verify maxRetries + 1 requests were made (initial + 3 retries for backward compatibility)
-        wireMockServer.verify(4, postRequestedFor(urlEqualTo("/test")));
+
+        // Verify only one request was made (no retry for state-affecting operations without Retry-After)
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo("/test")));
     }
 
     @Test
