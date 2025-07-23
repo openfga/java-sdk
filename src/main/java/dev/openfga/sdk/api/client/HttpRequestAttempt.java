@@ -8,6 +8,8 @@ import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.util.RetryAfterHeaderParser;
+import dev.openfga.sdk.util.RetryStrategy;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.http.HttpClient;
@@ -98,13 +100,25 @@ public class HttpRequestAttempt<T> {
 
                     if (fgaError.isPresent()) {
                         FgaError error = fgaError.get();
+                        int statusCode = error.getStatusCode();
 
-                        if (HttpStatusCode.isRetryable(error.getStatusCode())
-                                && retryNumber < configuration.getMaxRetries()) {
+                        if (retryNumber < configuration.getMaxRetries()) {
+                            // Parse Retry-After header if present
+                            Optional<Duration> retryAfterDelay = response.headers()
+                                    .firstValue("retry-after")
+                                    .flatMap(RetryAfterHeaderParser::parseRetryAfter);
 
-                            HttpClient delayingClient = getDelayedHttpClient();
+                            boolean hasValidRetryAfter = retryAfterDelay.isPresent();
 
-                            return attemptHttpRequest(delayingClient, retryNumber + 1, error);
+                            // Check if we should retry based on the new strategy
+                            if (RetryStrategy.shouldRetry(request, statusCode, hasValidRetryAfter)) {
+                                // Calculate appropriate delay
+                                Duration retryDelay = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber);
+
+                                HttpClient delayingClient = getDelayedHttpClient(retryDelay);
+
+                                return attemptHttpRequest(delayingClient, retryNumber + 1, error);
+                            }
                         }
 
                         return CompletableFuture.failedFuture(error);
@@ -151,8 +165,15 @@ public class HttpRequestAttempt<T> {
         }
     }
 
-    private HttpClient getDelayedHttpClient() {
-        Duration retryDelay = configuration.getMinimumRetryDelay();
+    private HttpClient getDelayedHttpClient(Duration retryDelay) {
+        if (retryDelay == null || retryDelay.isZero() || retryDelay.isNegative()) {
+            // Fallback to minimum retry delay if invalid
+            retryDelay = configuration.getMinimumRetryDelay();
+            if (retryDelay == null) {
+                // Default fallback if no minimum retry delay is configured
+                retryDelay = Duration.ofMillis(100);
+            }
+        }
 
         return apiClient
                 .getHttpClientBuilder()
