@@ -2,6 +2,28 @@
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.3...HEAD)
 
+### Added
+- feat: RFC 9110 compliant Retry-After header support with exponential backoff and jitter
+- feat: Enhanced retry strategy with differentiated behavior for state-affecting operations
+- feat: Retry-After header value exposed in error objects for better observability
+
+### Changed
+- **BREAKING**: Default maximum retry count increased from 3 to 15
+- **BREAKING**: State-affecting operations (POST, PUT, PATCH, DELETE) now only retry on 5xx errors when Retry-After header is present
+- **BREAKING**: FgaError now exposes Retry-After header value via getRetryAfterHeader() method
+
+### Technical Details
+- Implements RFC 9110 compliant Retry-After header parsing (supports both integer seconds and HTTP-date formats)
+- Adds exponential backoff with jitter (base delay: 2^retryCount * 500ms, capped at 120 seconds)
+- Validates Retry-After values between 1-1800 seconds (30 minutes maximum)
+- Prioritizes Retry-After header delays over exponential backoff when present
+- Maintains backward compatibility for non-state-affecting operations (GET, HEAD, OPTIONS)
+
+**Migration Guide**: 
+- Review retry behavior for state-affecting operations - they now require Retry-After header for 5xx retries
+- Update error handling code if using FgaError properties - new getRetryAfterHeader() method available
+- Consider adjusting maxRetries configuration if relying on previous default of 3
+
 ## v0.8.3
 
 ### [0.8.3](https://github.com/openfga/java-sdk/compare/v0.8.2...v0.8.3) (2025-07-15)

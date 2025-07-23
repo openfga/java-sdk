@@ -36,6 +36,7 @@ public class Configuration implements BaseConfiguration {
     private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.8.3";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final int DEFAULT_MAX_RETRIES = 15;
 
     private String apiUrl;
     private Credentials credentials;
@@ -52,6 +53,7 @@ public class Configuration implements BaseConfiguration {
         this.userAgent = DEFAULT_USER_AGENT;
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+        this.maxRetries = DEFAULT_MAX_RETRIES;
     }
 
     /**
