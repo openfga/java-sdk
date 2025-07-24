@@ -8,6 +8,7 @@ import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.util.Retry;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.http.HttpClient;
@@ -102,7 +103,8 @@ public class HttpRequestAttempt<T> {
                         if (HttpStatusCode.isRetryable(error.getStatusCode())
                                 && retryNumber < configuration.getMaxRetries()) {
 
-                            HttpClient delayingClient = getDelayedHttpClient();
+                            Duration retryDelay = computeRetryDelay(response, retryNumber);
+                            HttpClient delayingClient = getDelayedHttpClient(retryDelay);
 
                             return attemptHttpRequest(delayingClient, retryNumber + 1, error);
                         }
@@ -151,13 +153,28 @@ public class HttpRequestAttempt<T> {
         }
     }
 
-    private HttpClient getDelayedHttpClient() {
-        Duration retryDelay = configuration.getMinimumRetryDelay();
-
+    private HttpClient getDelayedHttpClient(Duration retryDelay) {
         return apiClient
                 .getHttpClientBuilder()
                 .executor(CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
                 .build();
+    }
+
+    private Duration computeRetryDelay(HttpResponse<String> response, int retryNumber) {
+        Duration retryAfter = response.headers()
+                .firstValue("Retry-After")
+                .map(Retry::parseRetryAfter)
+                .orElse(null);
+
+        if (retryAfter != null) {
+            return retryAfter;
+        }
+
+        Duration baseDelay = configuration.getMinimumRetryDelay();
+        if (baseDelay == null) {
+            baseDelay = Duration.ofMillis(100);
+        }
+        return Retry.computeExponentialDelay(baseDelay, retryNumber);
     }
 
     private static class BodyLogger implements Flow.Subscriber<ByteBuffer> {

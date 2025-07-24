@@ -965,9 +965,11 @@ fgaClient.writeAssertions(assertions, options).get();
 
 ### Retries
 
-If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 3 times with a minimum wait time of 100 milliseconds between each attempt.
+If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 3 times.
+When the response includes a `Retry-After` header, the delay specified by the header will be used (up to 30 minutes).
+Otherwise the wait time follows an exponential backoff with jitter starting at 100 milliseconds and capped at 120 seconds.
 
-To customize this behavior, call `maxRetries` and `minimumRetryDelay` on the `ClientConfiguration` builder. `maxRetries` determines the maximum number of retries (up to 15), while `minimumRetryDelay` sets the minimum wait time between retries in milliseconds.
+To customize this behavior, call `maxRetries` and `minimumRetryDelay` on the `ClientConfiguration` builder. `maxRetries` determines the maximum number of retries (up to 15), while `minimumRetryDelay` sets the base delay used to calculate the exponential backoff.
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
