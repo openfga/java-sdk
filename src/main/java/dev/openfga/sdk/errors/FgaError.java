@@ -4,6 +4,7 @@ import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.util.Retry;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -17,6 +18,7 @@ public class FgaError extends ApiException {
     private String grantType = null;
     private String requestId = null;
     private String apiErrorCode = null;
+    private Long retryAfterSeconds = null;
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
@@ -56,6 +58,10 @@ public class FgaError extends ApiException {
         } else {
             error = new FgaError(name, previousError, status, headers, body);
         }
+
+        headers.firstValue("Retry-After")
+                .flatMap(value -> Optional.ofNullable(Retry.parseRetryAfterSeconds(value)))
+                .ifPresent(error::setRetryAfterSeconds);
 
         error.setMethod(request.method());
         error.setRequestUrl(configuration.getApiUrl());
@@ -125,5 +131,13 @@ public class FgaError extends ApiException {
 
     public String getApiErrorCode() {
         return apiErrorCode;
+    }
+
+    public void setRetryAfterSeconds(Long retryAfterSeconds) {
+        this.retryAfterSeconds = retryAfterSeconds;
+    }
+
+    public Long getRetryAfterSeconds() {
+        return retryAfterSeconds;
     }
 }
