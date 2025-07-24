@@ -19,13 +19,13 @@ import java.util.Random;
  * Utility class for calculating exponential backoff delays with jitter.
  *
  * Implements the retry strategy specified in GitHub issue #155:
- * - Base delay: 2^retryCount * 500ms
+ * - Base delay: 2^retryCount * 100ms
  * - Jitter: Random value between base and 2 * base
- * - Maximum delay: 120 seconds (capped after 8th retry)
+ * - Maximum delay: 120 seconds (capped after 10th retry)
  */
 public class ExponentialBackoff {
 
-    private static final int BASE_DELAY_MS = 500;
+    private static final int BASE_DELAY_MS = 100;
     private static final int MAX_DELAY_SECONDS = 120;
     private static final Random RANDOM = new Random();
 
