@@ -224,8 +224,8 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount);
 
         // Then
-        // For retry count 1: 2^1 * 500ms = 1000ms base, with jitter between 1000ms and 2000ms
-        assertThat(result.toMillis()).isBetween(1000L, 2000L);
+        // For retry count 1: 2^1 * 100ms = 200ms base, with jitter between 200ms and 400ms
+        assertThat(result.toMillis()).isBetween(200L, 400L);
     }
 
     @Test
@@ -238,8 +238,8 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount);
 
         // Then
-        // For retry count 0: 2^0 * 500ms = 500ms base, with jitter between 500ms and 1000ms
-        assertThat(result.toMillis()).isBetween(500L, 1000L);
+        // For retry count 0: 2^0 * 100ms = 100ms base, with jitter between 100ms and 200ms
+        assertThat(result.toMillis()).isBetween(100L, 200L);
     }
 
     @Test

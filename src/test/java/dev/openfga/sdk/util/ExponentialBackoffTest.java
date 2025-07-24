@@ -30,9 +30,9 @@ class ExponentialBackoffTest {
         Duration result = ExponentialBackoff.calculateDelay(retryCount, fixedRandom);
 
         // Then
-        // For retry count 0: 2^0 * 500ms = 500ms base
-        // With jitter: between 500ms and 1000ms
-        assertThat(result.toMillis()).isBetween(500L, 1000L);
+        // For retry count 0: 2^0 * 100ms = 100ms base
+        // With jitter: between 100ms and 200ms
+        assertThat(result.toMillis()).isBetween(100L, 200L);
     }
 
     @Test
@@ -45,9 +45,9 @@ class ExponentialBackoffTest {
         Duration result = ExponentialBackoff.calculateDelay(retryCount, fixedRandom);
 
         // Then
-        // For retry count 1: 2^1 * 500ms = 1000ms base
-        // With jitter: between 1000ms and 2000ms
-        assertThat(result.toMillis()).isBetween(1000L, 2000L);
+        // For retry count 1: 2^1 * 100ms = 200ms base
+        // With jitter: between 200ms and 400ms
+        assertThat(result.toMillis()).isBetween(200L, 400L);
     }
 
     @Test
@@ -60,15 +60,15 @@ class ExponentialBackoffTest {
         Duration result = ExponentialBackoff.calculateDelay(retryCount, fixedRandom);
 
         // Then
-        // For retry count 2: 2^2 * 500ms = 2000ms base
-        // With jitter: between 2000ms and 4000ms
-        assertThat(result.toMillis()).isBetween(2000L, 4000L);
+        // For retry count 2: 2^2 * 100ms = 400ms base
+        // With jitter: between 400ms and 800ms
+        assertThat(result.toMillis()).isBetween(400L, 800L);
     }
 
     @Test
     void calculateDelay_withHighRetryCount_shouldCapAtMaximum() {
         // Given
-        int retryCount = 10; // This would normally result in 2^10 * 500ms = 512000ms
+        int retryCount = 10; // This would normally result in 2^10 * 100ms = 102400ms
         Random fixedRandom = new Random(42); // Fixed seed for deterministic testing
 
         // When
@@ -100,9 +100,9 @@ class ExponentialBackoffTest {
         Duration result = ExponentialBackoff.calculateDelay(retryCount);
 
         // Then
-        // For retry count 1: 2^1 * 500ms = 1000ms base
-        // With jitter: between 1000ms and 2000ms
-        assertThat(result.toMillis()).isBetween(1000L, 2000L);
+        // For retry count 1: 2^1 * 100ms = 200ms base
+        // With jitter: between 200ms and 400ms
+        assertThat(result.toMillis()).isBetween(200L, 400L);
     }
 
     @Test
@@ -116,9 +116,9 @@ class ExponentialBackoffTest {
         Duration result3 = ExponentialBackoff.calculateDelay(retryCount);
 
         // Then - all should be in valid range but likely different
-        assertThat(result1.toMillis()).isBetween(1000L, 2000L);
-        assertThat(result2.toMillis()).isBetween(1000L, 2000L);
-        assertThat(result3.toMillis()).isBetween(1000L, 2000L);
+        assertThat(result1.toMillis()).isBetween(200L, 400L);
+        assertThat(result2.toMillis()).isBetween(200L, 400L);
+        assertThat(result3.toMillis()).isBetween(200L, 400L);
     }
 
     @Test
@@ -146,7 +146,7 @@ class ExponentialBackoffTest {
             // Reset the random seed for consistent results across iterations
             fixedRandom.setSeed(42);
             Duration delay = ExponentialBackoff.calculateDelay(i, fixedRandom);
-            long expectedBaseMs = (long) Math.pow(2, i) * 500;
+            long expectedBaseMs = (long) Math.pow(2, i) * 100;
             long expectedMaxMs = Math.min(expectedBaseMs * 2, 120000);
 
             assertThat(delay.toMillis())
@@ -159,7 +159,7 @@ class ExponentialBackoffTest {
     @Test
     void calculateDelay_atCapThreshold_shouldCapCorrectly() {
         // Given - retry count that would exceed 120s base delay
-        int retryCount = 8; // 2^8 * 500ms = 128000ms > 120000ms
+        int retryCount = 11; // 2^11 * 100ms = 204800ms > 120000ms
         Random fixedRandom = new Random(42);
 
         // When
