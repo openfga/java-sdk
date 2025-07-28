@@ -40,28 +40,7 @@ public class ExponentialBackoff {
      * @return Duration representing the delay before the next retry
      */
     public static Duration calculateDelay(int retryCount) {
-        if (retryCount < 0) {
-            return Duration.ZERO;
-        }
-
-        // Calculate base delay: 2^retryCount * 100ms
-        long baseDelayMs = (long) Math.pow(2, retryCount) * BASE_DELAY_MS;
-
-        // Cap at maximum delay
-        long maxDelayMs = MAX_DELAY_SECONDS * 1000L;
-        if (baseDelayMs > maxDelayMs) {
-            baseDelayMs = maxDelayMs;
-        }
-
-        // Add jitter: random value between baseDelay and 2 * baseDelay
-        long minDelayMs = baseDelayMs;
-        long maxDelayMsWithJitter = Math.min(baseDelayMs * 2, maxDelayMs);
-
-        // Generate random delay within the jitter range
-        long jitterRange = maxDelayMsWithJitter - minDelayMs;
-        long actualDelayMs = minDelayMs + (jitterRange > 0 ? (long) (RANDOM.nextDouble() * (jitterRange + 1)) : 0);
-
-        return Duration.ofMillis(actualDelayMs);
+        return calculateDelay(retryCount, RANDOM);
     }
 
     /**
