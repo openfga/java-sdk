@@ -8,7 +8,7 @@
 - feat: Retry-After header value exposed in error objects for better observability
 
 ### Changed
-- **BREAKING**: Default maximum retry count increased from 3 to 15
+- **BREAKING**: Maximum allowable retry count is now enforced at 15 (default remains 3)
 - **BREAKING**: State-affecting operations (POST, PUT, PATCH, DELETE) now only retry on 5xx errors when Retry-After header is present
 - **BREAKING**: FgaError now exposes Retry-After header value via getRetryAfterHeader() method
 
@@ -22,7 +22,7 @@
 **Migration Guide**: 
 - Review retry behavior for state-affecting operations - they now require Retry-After header for 5xx retries
 - Update error handling code if using FgaError properties - new getRetryAfterHeader() method available
-- Consider adjusting maxRetries configuration if relying on previous default of 3
+- Note: Maximum allowable retries is now enforced at 15 (validation added to prevent exceeding this limit)
 
 ## v0.8.3
 
