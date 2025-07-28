@@ -44,7 +44,7 @@ public class ExponentialBackoff {
             return Duration.ZERO;
         }
 
-        // Calculate base delay: 2^retryCount * 500ms
+        // Calculate base delay: 2^retryCount * 100ms
         long baseDelayMs = (long) Math.pow(2, retryCount) * BASE_DELAY_MS;
 
         // Cap at maximum delay
@@ -77,7 +77,7 @@ public class ExponentialBackoff {
             return Duration.ZERO;
         }
 
-        // Calculate base delay: 2^retryCount * 500ms
+        // Calculate base delay: 2^retryCount * 100ms
         long baseDelayMs = (long) Math.pow(2, retryCount) * BASE_DELAY_MS;
 
         // Cap at maximum delay
