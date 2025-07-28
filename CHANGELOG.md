@@ -14,7 +14,7 @@
 
 ### Technical Details
 - Implements RFC 9110 compliant Retry-After header parsing (supports both integer seconds and HTTP-date formats)
-- Adds exponential backoff with jitter (base delay: 2^retryCount * 500ms, capped at 120 seconds)
+- Adds exponential backoff with jitter (base delay: 2^retryCount * 100ms, capped at 120 seconds)
 - Validates Retry-After values between 1-1800 seconds (30 minutes maximum)
 - Prioritizes Retry-After header delays over exponential backoff when present
 - Maintains backward compatibility for non-state-affecting operations (GET, HEAD, OPTIONS)
