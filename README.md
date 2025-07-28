@@ -125,7 +125,7 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.8.3"
 
 We strongly recommend you initialize the `OpenFgaClient` only once and then re-use it throughout your app, otherwise you will incur the cost of having to re-initialize multiple times or at every request, the cost of reduced connection pooling and re-use, and would be particularly costly in the client credentials flow, as that flow will be preformed on every request.
 
-> The `Client` will by default retry API requests up to 3 times on 429 and 5xx errors.
+> The `Client` will by default retry API requests up to 3 times. Rate limiting (429) errors are always retried. Server errors (5xx) are retried for read operations, but write operations only retry when the server provides a `Retry-After` header.
 
 #### No Credentials
 
@@ -714,7 +714,7 @@ response.getResult() = [{
 
 If you are using an OpenFGA version less than 1.8.0, you can use `clientBatchCheck`, 
 which calls `check` in parallel. It will return `allowed: false` if it encounters an error, and will return the error in the body.
-If 429s or 5xxs are encountered, the underlying check will retry up to 3 times before giving up.
+If 429s are encountered, the underlying check will retry up to 3 times. For 5xx errors, retries depend on whether the server provides a `Retry-After` header.
 
 ```
 var request = List.of(
