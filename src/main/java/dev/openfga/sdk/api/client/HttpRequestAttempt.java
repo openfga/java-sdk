@@ -94,7 +94,28 @@ public class HttpRequestAttempt<T> {
             HttpClient httpClient, int retryNumber, Throwable previousError) {
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenCompose(response -> {
+                .handle((response, throwable) -> {
+                    if (throwable != null) {
+                        // Handle network errors (no HTTP response received)
+                        if (retryNumber < configuration.getMaxRetries()) {
+                            // Network errors should be retried with exponential backoff (no Retry-After header available)
+                            Duration retryDelay = RetryStrategy.calculateRetryDelay(Optional.empty(), retryNumber);
+                            HttpClient delayingClient = getDelayedHttpClient(retryDelay);
+                            return attemptHttpRequest(delayingClient, retryNumber + 1, throwable);
+                        } else {
+                            // Max retries exceeded, fail with the network error
+                            return CompletableFuture.<ApiResponse<T>>failedFuture(new ApiException(throwable));
+                        }
+                    }
+                    // No network error, proceed with normal HTTP response handling
+                    return processHttpResponse(response, retryNumber, previousError);
+                })
+                .thenCompose(future -> future);
+    }
+
+    private CompletableFuture<ApiResponse<T>> processHttpResponse(
+            HttpResponse<String> response, int retryNumber, Throwable previousError) {
+        return CompletableFuture.completedFuture(response).thenCompose(httpResponse -> {
                     Optional<FgaError> fgaError =
                             FgaError.getError(name, request, configuration, response, previousError);
 

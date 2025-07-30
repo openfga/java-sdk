@@ -19,52 +19,41 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Utility class for determining retry behavior based on HTTP methods and status codes.
+ * Utility class for determining retry behavior based on HTTP status codes.
  *
- * Implements RFC 9110 compliant retry logic with differentiated behavior for state-affecting operations.
- * State-affecting operations (POST, PUT, PATCH, DELETE) are more conservative about retries on 5xx errors.
+ * Implements simplified retry logic per GitHub issue #155:
+ * - Retry on 429s for all requests
+ * - Retry on 5xx errors (except 501) for all requests
+ * - Honor Retry-After header when present, fallback to exponential backoff
  */
 public class RetryStrategy {
-
-    // HTTP methods that affect server state and should be more conservative about retries
-    private static final Set<String> STATE_AFFECTING_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
 
     private RetryStrategy() {
         // Utility class - no instantiation
     }
 
     /**
-     * Determines if a request should be retried based on the HTTP method, status code, and presence of Retry-After header.
+     * Determines if a request should be retried based on the status code.
      *
-     * Retry Logic:
-     * - 429 (Too Many Requests): Always retry regardless of method
-     * - 5xx errors (except 501):
-     *   - State-affecting operations: Only retry if Retry-After header is present
-     *   - Non-state-affecting operations: Always retry
+     * Simplified Retry Logic per GitHub issue #155:
+     * - 429 (Too Many Requests): Always retry for all requests
+     * - 5xx errors (except 501): Always retry for all requests
      * - All other status codes: Do not retry
      *
-     * @param request The HTTP request
+     * @param request The HTTP request (kept for API compatibility)
      * @param statusCode The HTTP response status code
-     * @param hasRetryAfterHeader Whether the response contains a valid Retry-After header
+     * @param hasRetryAfterHeader Whether the response contains a valid Retry-After header (kept for API compatibility)
      * @return true if the request should be retried, false otherwise
      */
     public static boolean shouldRetry(HttpRequest request, int statusCode, boolean hasRetryAfterHeader) {
-        String method = request.method().toUpperCase();
-
-        // Always retry 429 (Too Many Requests) regardless of method
+        // Always retry 429 (Too Many Requests) for all requests
         if (statusCode == HttpStatusCode.TOO_MANY_REQUESTS) {
             return true;
         }
 
-        // For 5xx errors (except 501 Not Implemented)
+        // Always retry 5xx errors (except 501 Not Implemented) for all requests
         if (HttpStatusCode.isServerError(statusCode) && statusCode != HttpStatusCode.NOT_IMPLEMENTED) {
-            if (isStateAffectingMethod(method)) {
-                // For state-affecting operations: only retry 5xx if Retry-After header is present
-                return hasRetryAfterHeader;
-            } else {
-                // For non-state-affecting operations: always retry 5xx
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -87,14 +76,5 @@ public class RetryStrategy {
         return ExponentialBackoff.calculateDelay(retryCount);
     }
 
-    /**
-     * Determines if an HTTP method is state-affecting (modifies server state).
-     * State-affecting methods should be more conservative about retries.
-     *
-     * @param method The HTTP method (case-insensitive)
-     * @return true if the method is state-affecting, false otherwise
-     */
-    private static boolean isStateAffectingMethod(String method) {
-        return STATE_AFFECTING_METHODS.contains(method.toUpperCase());
-    }
+
 }

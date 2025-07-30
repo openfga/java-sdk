@@ -4,12 +4,11 @@
 
 ### Added
 - feat: RFC 9110 compliant Retry-After header support with exponential backoff and jitter
-- feat: Enhanced retry strategy with differentiated behavior for state-affecting operations
+- feat: Enhanced retry strategy with intelligent delay calculation
 - feat: Retry-After header value exposed in error objects for better observability
 
 ### Changed
 - **BREAKING**: Maximum allowable retry count is now enforced at 15 (default remains 3)
-- **BREAKING**: State-affecting operations (POST, PUT, PATCH, DELETE) now only retry on 5xx errors when Retry-After header is present
 - **BREAKING**: FgaError now exposes Retry-After header value via getRetryAfterHeader() method
 
 ### Technical Details
@@ -17,10 +16,9 @@
 - Adds exponential backoff with jitter (base delay: 2^retryCount * 100ms, capped at 120 seconds)
 - Validates Retry-After values between 1-1800 seconds (30 minutes maximum)
 - Prioritizes Retry-After header delays over exponential backoff when present
-- Maintains backward compatibility for non-state-affecting operations (GET, HEAD, OPTIONS)
+- Unified retry behavior: All requests retry on 429s and 5xx errors (except 501 Not Implemented)
 
 **Migration Guide**: 
-- Review retry behavior for state-affecting operations - they now require Retry-After header for 5xx retries
 - Update error handling code if using FgaError properties - new getRetryAfterHeader() method available
 - Note: Maximum allowable retries is now enforced at 15 (validation added to prevent exceeding this limit)
 
