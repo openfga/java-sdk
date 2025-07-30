@@ -51,7 +51,7 @@ public class ExponentialBackoff {
      * @param random Random instance to use for jitter calculation
      * @return Duration representing the delay before the next retry
      */
-    public static Duration calculateDelay(int retryCount, Random random) {
+    static Duration calculateDelay(int retryCount, Random random) {
         if (retryCount < 0) {
             return Duration.ZERO;
         }
