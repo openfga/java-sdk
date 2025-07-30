@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaError;
 import java.net.http.HttpRequest;
 import java.time.Duration;
@@ -125,8 +126,8 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldNotRetryWith500WithoutRetryAfterHeaderForPostRequest() throws Exception {
-        // Given - Breaking change: POST requests should NOT retry on 5xx without Retry-After
+    void shouldRetryWith500WithoutRetryAfterHeaderForPostRequest() throws Exception {
+        // Given - Simplified logic: POST requests should retry on 5xx errors
         wireMockServer.stubFor(post(urlEqualTo("/test"))
                 .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"server error\"}")));
 
@@ -146,8 +147,9 @@ class HttpRequestAttemptRetryTest {
         FgaError error = (FgaError) exception.getCause();
         assertThat(error.getStatusCode()).isEqualTo(500);
 
-        // Verify only one request was made (no retry for state-affecting operations without Retry-After)
-        wireMockServer.verify(1, postRequestedFor(urlEqualTo("/test")));
+        // Verify multiple requests were made (POST requests now retry on 5xx without Retry-After)
+        // Default max retries is 3, so expect 4 total requests (1 initial + 3 retries)
+        wireMockServer.verify(4, postRequestedFor(urlEqualTo("/test")));
     }
 
     @Test
@@ -315,5 +317,99 @@ class HttpRequestAttemptRetryTest {
 
         // Verify both requests were made (should fall back to exponential backoff)
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
+    }
+
+    @Test
+    void shouldRetryOnConnectionTimeout() throws Exception {
+        // Given - Capture port before stopping server
+        int serverPort = wireMockServer.port();
+        wireMockServer.stop();
+        
+        // Create configuration with shorter timeout for faster test
+        ClientConfiguration timeoutConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + serverPort)
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofMillis(10));
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
+                .GET()
+                .timeout(Duration.ofMillis(100)) // Short timeout
+                .build();
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, timeoutConfig);
+
+        // When & Then
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        // Should fail after retries with network error
+        assertThat(exception.getCause()).isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception.getCause();
+        assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
+    }
+
+    @Test
+    void shouldRetryOnUnknownHost() throws Exception {
+        // Given - Use invalid hostname to simulate DNS failure
+        ClientConfiguration dnsConfig = new ClientConfiguration()
+                .apiUrl("http://invalid-hostname-that-does-not-exist.local")
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofMillis(10));
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://invalid-hostname-that-does-not-exist.local/test"))
+                .GET()
+                .timeout(Duration.ofMillis(1000))
+                .build();
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
+
+        // When & Then
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        // Should fail after retries with network error (DNS resolution failure)
+        assertThat(exception.getCause()).isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception.getCause();
+        assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
+    }
+
+    @Test
+    void shouldRetryNetworkErrorsWithExponentialBackoff() throws Exception {
+        // Given - Capture port before stopping server
+        int serverPort = wireMockServer.port();
+        wireMockServer.stop();
+        
+        long startTime = System.currentTimeMillis();
+        
+        ClientConfiguration networkConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + serverPort)
+                .maxRetries(3)
+                .minimumRetryDelay(Duration.ofMillis(50)); // Longer delay to measure timing
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
+                .GET()
+                .timeout(Duration.ofMillis(100))
+                .build();
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
+
+        // When & Then
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        // Verify timing shows exponential backoff was used for network errors
+        long duration = System.currentTimeMillis() - startTime;
+        assertThat(duration).isGreaterThan(100); // Should take time due to retries + backoff
+
+        // Should fail with network error after all retries
+        assertThat(exception.getCause()).isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception.getCause();
+        assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
     }
 }

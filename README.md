@@ -125,7 +125,7 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.8.3"
 
 We strongly recommend you initialize the `OpenFgaClient` only once and then re-use it throughout your app, otherwise you will incur the cost of having to re-initialize multiple times or at every request, the cost of reduced connection pooling and re-use, and would be particularly costly in the client credentials flow, as that flow will be preformed on every request.
 
-> The `Client` will by default retry API requests up to 3 times. Rate limiting (429) errors are always retried. Server errors (5xx) are retried for read operations, but write operations only retry when the server provides a `Retry-After` header.
+> The `Client` will by default retry API requests up to 3 times. Rate limiting (429) errors are always retried. Server errors (5xx) are retried for all operations, with intelligent delay calculation using `Retry-After` headers when provided or exponential backoff as fallback.
 
 #### No Credentials
 
@@ -714,7 +714,7 @@ response.getResult() = [{
 
 If you are using an OpenFGA version less than 1.8.0, you can use `clientBatchCheck`, 
 which calls `check` in parallel. It will return `allowed: false` if it encounters an error, and will return the error in the body.
-If 429s are encountered, the underlying check will retry up to 3 times. For 5xx errors, retries depend on whether the server provides a `Retry-After` header.
+If 429s are encountered, the underlying check will retry up to 3 times. For 5xx errors, all requests will retry with intelligent delay calculation using `Retry-After` headers when provided or exponential backoff as fallback.
 
 ```
 var request = List.of(
@@ -971,9 +971,8 @@ The SDK implements RFC 9110 compliant retry behavior with support for the `Retry
 
 **Rate Limiting (429 errors):** Always retried regardless of HTTP method.
 
-**Server Errors (5xx):** Retry behavior depends on the HTTP method:
-- **Read operations** (GET, HEAD, OPTIONS): Always retried on 5xx errors
-- **Write operations** (POST, PUT, PATCH, DELETE): Only retried on 5xx errors when the server provides a `Retry-After` header
+**Server Errors (5xx):** All requests are retried on 5xx errors (except 501 Not Implemented) regardless of HTTP method:
+- **All operations** (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS): Always retried on 5xx errors with intelligent delay calculation
 
 #### Delay Calculation
 
@@ -986,7 +985,6 @@ The SDK implements RFC 9110 compliant retry behavior with support for the `Retry
 Customize retry behavior using the `ClientConfiguration` builder. The SDK enforces a maximum of 15 retries to prevent accidental server overload:
 
 **⚠️ Breaking Changes:**
-- State-affecting operations (POST, PUT, PATCH, DELETE) now only retry 5xx errors when a `Retry-After` header is present
 - Configuration validation now prevents setting `maxRetries` above 15
 - `FgaError` now exposes the `Retry-After` header value via `getRetryAfterHeader()`
 

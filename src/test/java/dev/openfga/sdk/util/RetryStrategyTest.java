@@ -65,9 +65,9 @@ class RetryStrategyTest {
                 .POST(HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Breaking change: POST requests should NOT retry on 5xx without Retry-After header
+        // Simplified logic: POST requests should retry on 5xx errors
         boolean result = RetryStrategy.shouldRetry(request, 500, false);
-        assertThat(result).isFalse();
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -88,9 +88,9 @@ class RetryStrategyTest {
                 .PUT(HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Breaking change: PUT requests should NOT retry on 5xx without Retry-After header
+        // Simplified logic: PUT requests should retry on 5xx errors
         boolean result = RetryStrategy.shouldRetry(request, 502, false);
-        assertThat(result).isFalse();
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -100,9 +100,9 @@ class RetryStrategyTest {
                 .method("PATCH", HttpRequest.BodyPublishers.ofString("{}"))
                 .build();
 
-        // Breaking change: PATCH requests should NOT retry on 5xx without Retry-After header
+        // Simplified logic: PATCH requests should retry on 5xx errors
         boolean result = RetryStrategy.shouldRetry(request, 503, false);
-        assertThat(result).isFalse();
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -112,9 +112,9 @@ class RetryStrategyTest {
                 .DELETE()
                 .build();
 
-        // Breaking change: DELETE requests should NOT retry on 5xx without Retry-After header
+        // Simplified logic: DELETE requests should retry on 5xx errors
         boolean result = RetryStrategy.shouldRetry(request, 504, false);
-        assertThat(result).isFalse();
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -244,19 +244,18 @@ class RetryStrategyTest {
 
     @Test
     void shouldRetry_withCaseInsensitiveMethods_shouldWorkCorrectly() {
-        // Given
+        // Given - method case doesn't matter in simplified logic, but test for consistency
         HttpRequest lowerCaseRequest = createMockRequest("post");
         HttpRequest upperCaseRequest = createMockRequest("POST");
         HttpRequest mixedCaseRequest = createMockRequest("Post");
         int statusCode = 500;
-        boolean hasRetryAfterHeader = true;
 
-        // When & Then
-        assertThat(RetryStrategy.shouldRetry(lowerCaseRequest, statusCode, hasRetryAfterHeader))
+        // When & Then - all should retry on 5xx regardless of method case or Retry-After header
+        assertThat(RetryStrategy.shouldRetry(lowerCaseRequest, statusCode, false))
                 .isTrue();
-        assertThat(RetryStrategy.shouldRetry(upperCaseRequest, statusCode, hasRetryAfterHeader))
+        assertThat(RetryStrategy.shouldRetry(upperCaseRequest, statusCode, false))
                 .isTrue();
-        assertThat(RetryStrategy.shouldRetry(mixedCaseRequest, statusCode, hasRetryAfterHeader))
+        assertThat(RetryStrategy.shouldRetry(mixedCaseRequest, statusCode, true))
                 .isTrue();
     }
 
