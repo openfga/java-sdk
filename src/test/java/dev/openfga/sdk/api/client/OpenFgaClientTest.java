@@ -1216,8 +1216,10 @@ public class OpenFgaClientTest {
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
                 .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
-        ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(2);
+        ClientWriteOptions options = new ClientWriteOptions()
+                .disableTransactions(true)
+                .transactionChunkSize(2)
+                .maxParallelRequests(1);
 
         // When
         var response = fga.write(request, options).get();
@@ -1284,8 +1286,10 @@ public class OpenFgaClientTest {
                                 .user(user)
                                 .condition(DEFAULT_CONDITION))
                         .collect(Collectors.toList()));
-        ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+        ClientWriteOptions options = new ClientWriteOptions()
+                .disableTransactions(true)
+                .transactionChunkSize(1)
+                .maxParallelRequests(1);
 
         // When
         var execException = assertThrows(
@@ -2005,7 +2009,8 @@ public class OpenFgaClientTest {
                 .correlationId("cor-3");
         ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item1, item2, item3));
 
-        ClientBatchCheckOptions options = new ClientBatchCheckOptions().maxBatchSize(2);
+        ClientBatchCheckOptions options =
+                new ClientBatchCheckOptions().maxBatchSize(2).maxParallelRequests(1);
 
         // When
         ClientBatchCheckResponse response = fga.batchCheck(request, options).join();
