@@ -21,6 +21,7 @@ import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -424,29 +425,123 @@ public class OpenFgaClient {
                 .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
 
         int chunkSize = options.getTransactionChunkSize();
-        var writeTransactions = chunksOf(chunkSize, request.getWrites()).map(ClientWriteRequest::ofWrites);
-        var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
+        
+        // Separate write and delete operations for individual processing
+        List<List<ClientTupleKey>> writeChunks = request.getWrites() != null 
+            ? chunksOf(chunkSize, request.getWrites()).collect(Collectors.toList())
+            : Collections.emptyList();
+        
+        List<List<ClientTupleKeyWithoutCondition>> deleteChunks = request.getDeletes() != null 
+            ? chunksOf(chunkSize, request.getDeletes()).collect(Collectors.toList())
+            : Collections.emptyList();
 
-        var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
-
-        if (transactions.isEmpty()) {
-            var emptyTransaction = new ClientWriteRequest().writes(null).deletes(null);
-            return this.writeTransactions(storeId, emptyTransaction, writeOptions);
+        // Handle empty request case
+        if (writeChunks.isEmpty() && deleteChunks.isEmpty()) {
+            return CompletableFuture.completedFuture(new ClientWriteResponse(
+                200, Collections.emptyMap(), "", 
+                Collections.emptyList(), Collections.emptyList()));
         }
 
-        var futureResponse = this.writeTransactions(storeId, transactions.get(0), options);
+        // Process write chunks independently
+        List<CompletableFuture<List<ClientWriteSingleResponse>>> writeFutures = writeChunks.stream()
+            .map(chunk -> processWriteChunk(storeId, chunk, options))
+            .collect(Collectors.toList());
 
-        for (int i = 1; i < transactions.size(); i++) {
-            final int index = i; // Must be final in this scope for closure.
+        // Process delete chunks independently  
+        List<CompletableFuture<List<ClientWriteSingleResponse>>> deleteFutures = deleteChunks.stream()
+            .map(chunk -> processDeleteChunk(storeId, chunk, options))
+            .collect(Collectors.toList());
 
-            // The resulting completable future of this chain will result in either:
-            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
-            // 2. The final successful ClientWriteResponse.
-            futureResponse = futureResponse.thenCompose(
-                    _response -> this.writeTransactions(storeId, transactions.get(index), options));
-        }
+        // Combine all futures and collect results
+        CompletableFuture<List<ClientWriteSingleResponse>> allWritesFuture = 
+            writeFutures.isEmpty() 
+                ? CompletableFuture.completedFuture(Collections.emptyList())
+                : CompletableFuture.allOf(writeFutures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> writeFutures.stream()
+                        .flatMap(future -> future.join().stream())
+                        .collect(Collectors.toList()));
 
-        return futureResponse;
+        CompletableFuture<List<ClientWriteSingleResponse>> allDeletesFuture = 
+            deleteFutures.isEmpty()
+                ? CompletableFuture.completedFuture(Collections.emptyList())
+                : CompletableFuture.allOf(deleteFutures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> deleteFutures.stream()
+                        .flatMap(future -> future.join().stream())
+                        .collect(Collectors.toList()));
+
+        // Combine write and delete results into final response
+        return CompletableFuture.allOf(allWritesFuture, allDeletesFuture)
+            .thenApply(v -> {
+                List<ClientWriteSingleResponse> writeResults = allWritesFuture.join();
+                List<ClientWriteSingleResponse> deleteResults = allDeletesFuture.join();
+                
+                // Determine overall status code (200 if any succeeded, appropriate error code if all failed)
+                int statusCode = (writeResults.stream().anyMatch(r -> r.getStatus() == ClientWriteStatus.SUCCESS) ||
+                                 deleteResults.stream().anyMatch(r -> r.getStatus() == ClientWriteStatus.SUCCESS)) 
+                                 ? 200 : 400;
+                
+                return new ClientWriteResponse(statusCode, Collections.emptyMap(), "", 
+                                             writeResults, deleteResults);
+            });
+    }
+
+    /**
+     * Process a chunk of write operations and handle individual failures
+     */
+    private CompletableFuture<List<ClientWriteSingleResponse>> processWriteChunk(
+            String storeId, List<ClientTupleKey> chunk, ClientWriteOptions options) {
+        
+        ClientWriteRequest chunkRequest = ClientWriteRequest.ofWrites(chunk);
+        
+        return this.writeTransactions(storeId, chunkRequest, options)
+            .thenApply(response -> {
+                // If successful, mark all tuples as SUCCESS
+                return chunk.stream()
+                    .map(tuple -> new ClientWriteSingleResponse(tuple, ClientWriteStatus.SUCCESS))
+                    .collect(Collectors.toList());
+            })
+            .exceptionally(throwable -> {
+                // If failed, mark all tuples in this chunk as FAILURE
+                return chunk.stream()
+                    .map(tuple -> new ClientWriteSingleResponse(tuple, ClientWriteStatus.FAILURE, throwable))
+                    .collect(Collectors.toList());
+            });
+    }
+
+    /**
+     * Process a chunk of delete operations and handle individual failures
+     */
+    private CompletableFuture<List<ClientWriteSingleResponse>> processDeleteChunk(
+            String storeId, List<ClientTupleKeyWithoutCondition> chunk, ClientWriteOptions options) {
+        
+        ClientWriteRequest chunkRequest = ClientWriteRequest.ofDeletes(chunk);
+        
+        return this.writeTransactions(storeId, chunkRequest, options)
+            .thenApply(response -> {
+                // If successful, mark all tuples as SUCCESS
+                // Convert ClientTupleKeyWithoutCondition to ClientTupleKey for response
+                return chunk.stream()
+                    .map(tuple -> {
+                        ClientTupleKey tupleKey = new ClientTupleKey()
+                            .user(tuple.getUser())
+                            .relation(tuple.getRelation())
+                            ._object(tuple.getObject());
+                        return new ClientWriteSingleResponse(tupleKey, ClientWriteStatus.SUCCESS);
+                    })
+                    .collect(Collectors.toList());
+            })
+            .exceptionally(throwable -> {
+                // If failed, mark all tuples in this chunk as FAILURE
+                return chunk.stream()
+                    .map(tuple -> {
+                        ClientTupleKey tupleKey = new ClientTupleKey()
+                            .user(tuple.getUser())
+                            .relation(tuple.getRelation())
+                            ._object(tuple.getObject());
+                        return new ClientWriteSingleResponse(tupleKey, ClientWriteStatus.FAILURE, throwable);
+                    })
+                    .collect(Collectors.toList());
+            });
     }
 
     private <T> Stream<List<T>> chunksOf(int chunkSize, List<T> list) {

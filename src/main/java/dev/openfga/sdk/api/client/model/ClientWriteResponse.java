@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.client.model;
 
 import dev.openfga.sdk.api.client.ApiResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,11 +21,36 @@ public class ClientWriteResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
+    
+    // New fields for non-transactional write results
+    private final List<ClientWriteSingleResponse> writes;
+    private final List<ClientWriteSingleResponse> deletes;
 
+    /**
+     * Constructor for transactional writes (backward compatibility)
+     */
     public ClientWriteResponse(ApiResponse<Object> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
+        this.writes = Collections.emptyList();
+        this.deletes = Collections.emptyList();
+    }
+
+    /**
+     * Constructor for non-transactional writes with detailed per-tuple results
+     */
+    public ClientWriteResponse(
+            int statusCode,
+            Map<String, List<String>> headers,
+            String rawResponse,
+            List<ClientWriteSingleResponse> writes,
+            List<ClientWriteSingleResponse> deletes) {
+        this.statusCode = statusCode;
+        this.headers = headers != null ? headers : Collections.emptyMap();
+        this.rawResponse = rawResponse;
+        this.writes = writes != null ? writes : Collections.emptyList();
+        this.deletes = deletes != null ? deletes : Collections.emptyList();
     }
 
     public int getStatusCode() {
@@ -37,5 +63,29 @@ public class ClientWriteResponse {
 
     public String getRawResponse() {
         return rawResponse;
+    }
+
+    /**
+     * Get detailed results for write operations in non-transactional mode
+     * @return List of individual write operation results, empty for transactional writes
+     */
+    public List<ClientWriteSingleResponse> getWrites() {
+        return writes;
+    }
+
+    /**
+     * Get detailed results for delete operations in non-transactional mode
+     * @return List of individual delete operation results, empty for transactional writes
+     */
+    public List<ClientWriteSingleResponse> getDeletes() {
+        return deletes;
+    }
+
+    /**
+     * Check if this response contains detailed per-tuple results
+     * @return true if this is a non-transactional write response with detailed results
+     */
+    public boolean hasDetailedResults() {
+        return !writes.isEmpty() || !deletes.isEmpty();
     }
 }
