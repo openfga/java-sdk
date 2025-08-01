@@ -324,13 +324,13 @@ class HttpRequestAttemptRetryTest {
         // Given - Capture port before stopping server
         int serverPort = wireMockServer.port();
         wireMockServer.stop();
-        
+
         // Create configuration with shorter timeout for faster test
         ClientConfiguration timeoutConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + serverPort)
                 .maxRetries(2)
                 .minimumRetryDelay(Duration.ofMillis(10));
-        
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
                 .GET()
@@ -357,15 +357,14 @@ class HttpRequestAttemptRetryTest {
                 .apiUrl("http://invalid-hostname-that-does-not-exist.local")
                 .maxRetries(2)
                 .minimumRetryDelay(Duration.ofMillis(10));
-        
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://invalid-hostname-that-does-not-exist.local/test"))
                 .GET()
                 .timeout(Duration.ofMillis(1000))
                 .build();
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
 
         // When & Then
         ExecutionException exception = assertThrows(
@@ -382,14 +381,14 @@ class HttpRequestAttemptRetryTest {
         // Given - Capture port before stopping server
         int serverPort = wireMockServer.port();
         wireMockServer.stop();
-        
+
         long startTime = System.currentTimeMillis();
-        
+
         ClientConfiguration networkConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + serverPort)
                 .maxRetries(3)
                 .minimumRetryDelay(Duration.ofMillis(50)); // Longer delay to measure timing
-        
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
                 .GET()
@@ -411,5 +410,13 @@ class HttpRequestAttemptRetryTest {
         assertThat(exception.getCause()).isInstanceOf(ApiException.class);
         ApiException apiException = (ApiException) exception.getCause();
         assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
+
+        // Verify telemetry attributes were set for network error retries
+        assertThat(attempt.getTelemetryAttributes())
+                .containsKey(dev.openfga.sdk.telemetry.Attributes.HTTP_REQUEST_RESEND_COUNT);
+        String resendCount =
+                attempt.getTelemetryAttributes().get(dev.openfga.sdk.telemetry.Attributes.HTTP_REQUEST_RESEND_COUNT);
+        assertThat(resendCount).isNotNull();
+        assertThat(Integer.parseInt(resendCount)).isGreaterThan(0); // Should have retry count > 0
     }
 }
