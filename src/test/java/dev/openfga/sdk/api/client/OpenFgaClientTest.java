@@ -386,7 +386,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post("https://api.fga.example/stores").called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post("https://api.fga.example/stores").called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -572,7 +573,8 @@ public class OpenFgaClientTest {
                 assertThrows(ExecutionException.class, () -> fga.deleteStore().get());
 
         // Then
-        mockHttpClient.verify().delete(deleteUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: DELETE requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().delete(deleteUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -855,7 +857,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1124,7 +1127,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1551,7 +1555,8 @@ public class OpenFgaClientTest {
                 assertThrows(ExecutionException.class, () -> fga.write(request).get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1668,7 +1673,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1864,7 +1870,8 @@ public class OpenFgaClientTest {
                 .join();
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
@@ -2090,6 +2097,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.batchCheck(request).get());
 
         // Then
+        // 429 errors should still retry regardless of HTTP method (not affected by breaking changes)
         mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
         var exception = assertInstanceOf(FgaApiRateLimitExceededError.class, execException.getCause());
         assertEquals(429, exception.getStatusCode());
@@ -2207,7 +2215,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -2313,7 +2322,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -2559,7 +2569,8 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).withBody(is(expectedBody)).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -2897,7 +2908,8 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.writeAssertions(List.of()).get());
 
         // Then
-        mockHttpClient.verify().put(putUrl).called(1 + DEFAULT_MAX_RETRIES);
+        // Simplified logic: PUT requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().put(putUrl).called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
