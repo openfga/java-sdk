@@ -16,7 +16,6 @@ import dev.openfga.sdk.errors.HttpStatusCode;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Utility class for determining retry behavior based on HTTP status codes.
@@ -75,6 +74,4 @@ public class RetryStrategy {
         // Otherwise, use exponential backoff with jitter
         return ExponentialBackoff.calculateDelay(retryCount);
     }
-
-
 }
