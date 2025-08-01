@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.3...HEAD)
+- fix: allow configuring maxParallelRequests for non-transaction writes (#187)
 
 ## v0.8.3
 
