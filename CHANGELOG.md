@@ -4,7 +4,7 @@
 
 ### Added
 - feat: RFC 9110 compliant Retry-After header support with exponential backoff and jitter
-- feat: Enhanced retry strategy with intelligent delay calculation
+- feat: Enhanced retry strategy with delay calculation
 - feat: Retry-After header value exposed in error objects for better observability
 
 ### Changed
