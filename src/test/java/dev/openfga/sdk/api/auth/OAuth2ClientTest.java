@@ -140,7 +140,7 @@ class OAuth2ClientTest {
                 .willReturn(jsonResponse("rate_limited", 429))
                 .willSetStateTo("rate limited once"));
 
-        // Then return 500 with Retry-After header (breaking change: POST requests need Retry-After for 5xx retries)
+        // Then return 500 with Retry-After header
         stubFor(post(urlEqualTo("/oauth/token"))
                 .inScenario("retries")
                 .whenScenarioStateIs("rate limited once")
