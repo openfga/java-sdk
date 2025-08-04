@@ -1928,4 +1928,27 @@ public class OpenFgaApiTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
+
+    @Test
+    public void writeAssertions_networkError() throws Exception {
+        // Given - Mock network failure by throwing IOException
+        String putUrl =
+                "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/assertions/01G5JAVJ41T49E9TT3SKVS7X1J";
+
+        // Configure mock to throw IOException to simulate network error (connection timeout, DNS failure, etc.)
+        mockHttpClient.onPut(putUrl).doThrowException(new java.io.IOException("Connection timeout"));
+
+        // When
+        ExecutionException execException = assertThrows(ExecutionException.class, () -> fga.writeAssertions(
+                        DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID, new WriteAssertionsRequest())
+                .get());
+
+        // Then
+        // Network errors should be retried (1 initial + 3 retries = 4 total attempts)
+        mockHttpClient.verify().put(putUrl).called(4);
+        var exception = assertInstanceOf(ApiException.class, execException.getCause());
+        assertNotNull(exception.getCause()); // Should have underlying network error
+        assertTrue(exception.getCause() instanceof java.io.IOException);
+        assertEquals("Connection timeout", exception.getCause().getMessage());
+    }
 }
