@@ -145,10 +145,8 @@ public class HttpRequestAttempt<T> {
                 Optional<Duration> retryAfterDelay =
                         response.headers().firstValue("retry-after").flatMap(RetryAfterHeaderParser::parseRetryAfter);
 
-                boolean hasValidRetryAfter = retryAfterDelay.isPresent();
-
                 // Check if we should retry based on the new strategy
-                if (RetryStrategy.shouldRetry(request, statusCode, hasValidRetryAfter)) {
+                if (RetryStrategy.shouldRetry(statusCode)) {
                     return handleHttpErrorRetry(retryAfterDelay, retryNumber, error);
                 } else {
                 }

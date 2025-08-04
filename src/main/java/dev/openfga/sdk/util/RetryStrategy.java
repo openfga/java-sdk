@@ -13,7 +13,6 @@
 package dev.openfga.sdk.util;
 
 import dev.openfga.sdk.errors.HttpStatusCode;
-import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -39,12 +38,10 @@ public class RetryStrategy {
      * - 5xx errors (except 501): Always retry for all requests
      * - All other status codes: Do not retry
      *
-     * @param request The HTTP request (kept for API compatibility)
      * @param statusCode The HTTP response status code
-     * @param hasRetryAfterHeader Whether the response contains a valid Retry-After header (kept for API compatibility)
      * @return true if the request should be retried, false otherwise
      */
-    public static boolean shouldRetry(HttpRequest request, int statusCode, boolean hasRetryAfterHeader) {
+    public static boolean shouldRetry(int statusCode) {
         // Always retry 429 (Too Many Requests) for all requests
         if (statusCode == HttpStatusCode.TOO_MANY_REQUESTS) {
             return true;
