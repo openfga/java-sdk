@@ -289,18 +289,26 @@ public class Configuration implements BaseConfiguration {
     /**
      * Sets the minimum delay to wait before retrying a failed request.
      *
-     * @param minimumRetryDelay The minimum delay. Must be non-negative.
+     * @param minimumRetryDelay The minimum delay. Must be non-null and non-negative.
      * @return This Configuration instance for method chaining.
-     * @throws IllegalArgumentException if minimumRetryDelay is negative.
+     * @throws IllegalArgumentException if minimumRetryDelay is null or negative.
      */
     public Configuration minimumRetryDelay(Duration minimumRetryDelay) {
-        if (minimumRetryDelay != null && minimumRetryDelay.isNegative()) {
+        if (minimumRetryDelay == null) {
+            throw new IllegalArgumentException("minimumRetryDelay cannot be null");
+        }
+        if (minimumRetryDelay.isNegative()) {
             throw new IllegalArgumentException("minimumRetryDelay cannot be negative");
         }
         this.minimumRetryDelay = minimumRetryDelay;
         return this;
     }
 
+    /**
+     * Gets the minimum delay to wait before retrying a failed request.
+     *
+     * @return The minimum retry delay. Never null.
+     */
     @Override
     public Duration getMinimumRetryDelay() {
         return minimumRetryDelay;

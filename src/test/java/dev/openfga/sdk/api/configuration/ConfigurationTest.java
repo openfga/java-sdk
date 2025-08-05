@@ -295,12 +295,12 @@ class ConfigurationTest {
         // Given
         Configuration config = new Configuration();
 
-        // When
-        Configuration result = config.minimumRetryDelay(null);
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            config.minimumRetryDelay(null);
+        });
 
-        // Then
-        assertNull(result.getMinimumRetryDelay());
-        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+        assertEquals("minimumRetryDelay cannot be null", exception.getMessage());
     }
 
     @Test

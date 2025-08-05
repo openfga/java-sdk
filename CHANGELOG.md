@@ -6,10 +6,13 @@
 - feat: RFC 9110 compliant Retry-After header support with exponential backoff and jitter
 - feat: Enhanced retry strategy with delay calculation
 - feat: Retry-After header value exposed in error objects for better observability
+- feat: Input validation for Configuration.minimumRetryDelay() to prevent negative values
+- feat: Default value (100ms) now explicitly set for minimumRetryDelay configuration
 
 ### Changed
 - **BREAKING**: Maximum allowable retry count is now enforced at 15 (default remains 3)
 - **BREAKING**: FgaError now exposes Retry-After header value via getRetryAfterHeader() method
+- **BREAKING**: Configuration.minimumRetryDelay() now requires non-null values and validates input, throwing IllegalArgumentException for null or negative values
 
 ### Technical Details
 - Implements RFC 9110 compliant Retry-After header parsing (supports both integer seconds and HTTP-date formats)
@@ -21,6 +24,7 @@
 **Migration Guide**: 
 - Update error handling code if using FgaError properties - new getRetryAfterHeader() method available
 - Note: Maximum allowable retries is now enforced at 15 (validation added to prevent exceeding this limit)
+- **IMPORTANT**: Configuration.minimumRetryDelay() now requires non-null values and validates input - ensure you're not passing null or negative Duration values, as this will now throw IllegalArgumentException. Previously null values were silently accepted and would fall back to default behavior at runtime.
 
 ## v0.8.3
 
