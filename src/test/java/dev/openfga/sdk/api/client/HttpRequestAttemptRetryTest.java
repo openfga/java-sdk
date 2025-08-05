@@ -552,7 +552,8 @@ class HttpRequestAttemptRetryTest {
         // Then
         // Should have respected the Retry-After header (2 seconds) over minimum delay (500ms)
         // Note: Using generous bounds due to timing variability in test environments
-        assertThat(totalTime.toMillis()).isGreaterThan(1200); // Should be at least ~2 seconds (with larger CI tolerance)
+        assertThat(totalTime.toMillis())
+                .isGreaterThan(1200); // Should be at least ~2 seconds (with larger CI tolerance)
         assertThat(totalTime.toMillis()).isLessThan(10000); // But not excessive
 
         // Verify both requests were made
