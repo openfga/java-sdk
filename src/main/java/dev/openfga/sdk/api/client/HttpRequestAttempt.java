@@ -108,7 +108,8 @@ public class HttpRequestAttempt<T> {
     private CompletableFuture<ApiResponse<T>> handleNetworkError(Throwable throwable, int retryNumber) {
         if (retryNumber < configuration.getMaxRetries()) {
             // Network errors should be retried with exponential backoff (no Retry-After header available)
-            Duration retryDelay = RetryStrategy.calculateRetryDelay(Optional.empty(), retryNumber);
+            Duration retryDelay = RetryStrategy.calculateRetryDelay(
+                    Optional.empty(), retryNumber, configuration.getMinimumRetryDelay());
 
             // Add telemetry for network error retry
             addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber + 1));
@@ -125,7 +126,8 @@ public class HttpRequestAttempt<T> {
     private CompletableFuture<ApiResponse<T>> handleHttpErrorRetry(
             Optional<Duration> retryAfterDelay, int retryNumber, FgaError error) {
         // Calculate appropriate delay
-        Duration retryDelay = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber);
+        Duration retryDelay =
+                RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber, configuration.getMinimumRetryDelay());
 
         // Create delayed client and retry asynchronously without blocking
         HttpClient delayingClient = getDelayedHttpClient(retryDelay);

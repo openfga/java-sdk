@@ -60,15 +60,26 @@ public class RetryStrategy {
      *
      * @param retryAfterDelay Optional delay from Retry-After header
      * @param retryCount Current retry attempt (0-based)
+     * @param minimumRetryDelay Minimum delay to enforce (can be null)
      * @return Duration representing the delay before the next retry
      */
-    public static Duration calculateRetryDelay(Optional<Duration> retryAfterDelay, int retryCount) {
+    public static Duration calculateRetryDelay(
+            Optional<Duration> retryAfterDelay, int retryCount, Duration minimumRetryDelay) {
         // If Retry-After header is present and valid, use it
         if (retryAfterDelay.isPresent()) {
-            return retryAfterDelay.get();
+            Duration retryAfterValue = retryAfterDelay.get();
+            // Honor minimum retry delay if configured and greater than Retry-After value
+            if (minimumRetryDelay != null && minimumRetryDelay.compareTo(retryAfterValue) > 0) {
+                return minimumRetryDelay;
+            }
+            return retryAfterValue;
         }
 
-        // Otherwise, use exponential backoff with jitter
-        return ExponentialBackoff.calculateDelay(retryCount);
+        // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
+        Duration exponentialDelay = ExponentialBackoff.calculateDelay(retryCount);
+        if (minimumRetryDelay != null && minimumRetryDelay.compareTo(exponentialDelay) > 0) {
+            return minimumRetryDelay;
+        }
+        return exponentialDelay;
     }
 }

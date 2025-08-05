@@ -14,15 +14,19 @@ package dev.openfga.sdk.api.client;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.errors.FgaApiInternalError;
 import dev.openfga.sdk.errors.FgaError;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -418,5 +422,307 @@ class HttpRequestAttemptRetryTest {
                 attempt.getTelemetryAttributes().get(dev.openfga.sdk.telemetry.Attributes.HTTP_REQUEST_RESEND_COUNT);
         assertThat(resendCount).isNotNull();
         assertThat(Integer.parseInt(resendCount)).isGreaterThan(0); // Should have retry count > 0
+    }
+
+    @Test
+    void shouldRespectGlobalMinimumRetryDelayWithExponentialBackoff() throws Exception {
+        // Given - Server responds with 500 errors (no Retry-After header)
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"server error\"}")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Use global configuration with larger minimum retry delay
+        ClientConfiguration globalConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + wireMockServer.port())
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofSeconds(2)); // Should act as floor for exponential backoff
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        assertInstanceOf(FgaApiInternalError.class, exception.getCause());
+
+        // Verify that it retried the expected number of times
+        wireMockServer.verify(1 + globalConfig.getMaxRetries(), getRequestedFor(urlEqualTo("/test")));
+
+        // With 2 retries and minimum 2-second delays, total time should be at least 4 seconds
+        assertThat(totalTime.toMillis()).isGreaterThan(3500); // Should be at least ~4 seconds
+    }
+
+    @Test
+    void shouldRespectGlobalMinimumRetryDelayWhenRetryAfterIsSmaller() throws Exception {
+        // Given - Server responds with Retry-After header smaller than minimum delay
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-global-1")
+                .whenScenarioStateIs("Started")
+                .willReturn(aResponse()
+                        .withStatus(429)
+                        .withHeader("Retry-After", "1") // 1 second
+                        .withBody("{\"error\":\"rate limited\"}"))
+                .willSetStateTo("After-First-Request"));
+
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-global-1")
+                .whenScenarioStateIs("After-First-Request")
+                .willReturn(aResponse().withStatus(200).withBody("")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Use global configuration with larger minimum retry delay (should take precedence over Retry-After)
+        ClientConfiguration globalConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + wireMockServer.port())
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofSeconds(3)); // Should override Retry-After: 1
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        attempt.attemptHttpRequest().get(); // Should succeed after retry
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        // Should have respected the minimum retry delay (3 seconds) instead of Retry-After (1 second)
+        assertThat(totalTime.toMillis()).isGreaterThan(2800); // Should be at least ~3 seconds
+
+        // Verify both requests were made
+        wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
+    }
+
+    @Test
+    void shouldUseRetryAfterWhenLargerThanGlobalMinimumDelay() throws Exception {
+        // Given - Server responds with Retry-After header larger than minimum delay
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-global-2")
+                .whenScenarioStateIs("Started")
+                .willReturn(aResponse()
+                        .withStatus(429)
+                        .withHeader("Retry-After", "2") // 2 seconds
+                        .withBody("{\"error\":\"rate limited\"}"))
+                .willSetStateTo("After-First-Request"));
+
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-global-2")
+                .whenScenarioStateIs("After-First-Request")
+                .willReturn(aResponse().withStatus(200).withBody("")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Use global configuration with smaller minimum retry delay
+        ClientConfiguration globalConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + wireMockServer.port())
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofMillis(500)); // Should NOT override Retry-After: 2
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        attempt.attemptHttpRequest().get(); // Should succeed after retry
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        // Should have respected the Retry-After header (2 seconds) over minimum delay (500ms)
+        // Note: Using generous bounds due to timing variability in test environments
+        assertThat(totalTime.toMillis()).isGreaterThan(1800); // Should be at least ~2 seconds
+        assertThat(totalTime.toMillis()).isLessThan(10000); // But not excessive
+
+        // Verify both requests were made
+        wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
+    }
+
+    @Test
+    void shouldRespectPerRequestMinimumRetryDelayOverride() throws Exception {
+        // Given - Server responds with 500 errors (no Retry-After header)
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"server error\"}")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Override with larger minimum retry delay using per-request configuration
+        dev.openfga.sdk.api.configuration.Configuration overriddenConfig = configuration.override(
+                new dev.openfga.sdk.api.configuration.ConfigurationOverride().minimumRetryDelay(Duration.ofSeconds(2)));
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        assertInstanceOf(FgaApiInternalError.class, exception.getCause());
+
+        // Verify that it retried the expected number of times
+        wireMockServer.verify(1 + overriddenConfig.getMaxRetries(), getRequestedFor(urlEqualTo("/test")));
+
+        // With 3 retries and minimum 2-second delays, total time should be at least 6 seconds
+        assertThat(totalTime.toMillis()).isGreaterThan(5500); // Should be at least ~6 seconds
+    }
+
+    @Test
+    void shouldRespectPerRequestMaxRetriesOverride() throws Exception {
+        // Given - Server always responds with 500 errors
+        wireMockServer.stubFor(post(urlEqualTo("/stores/test-store/check"))
+                .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"server error\"}")));
+
+        // Override with different max retries using per-request configuration
+        dev.openfga.sdk.api.configuration.ConfigurationOverride override =
+                new dev.openfga.sdk.api.configuration.ConfigurationOverride()
+                        .maxRetries(5)
+                        .minimumRetryDelay(Duration.ofMillis(10)); // Fast for testing
+
+        // When
+        ExecutionException exception = assertThrows(ExecutionException.class, () -> {
+            // Simulate the API call with override
+            dev.openfga.sdk.api.configuration.Configuration effectiveConfig = configuration.override(override);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/stores/test-store/check"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                    .build();
+
+            HttpRequestAttempt<Void> attempt =
+                    new HttpRequestAttempt<>(request, "check", Void.class, apiClient, effectiveConfig);
+            attempt.attemptHttpRequest().get();
+        });
+
+        // Then
+        assertInstanceOf(FgaApiInternalError.class, exception.getCause());
+
+        // Should have made 1 initial + 5 retries = 6 total requests
+        wireMockServer.verify(6, postRequestedFor(urlEqualTo("/stores/test-store/check")));
+    }
+
+    @Test
+    void shouldRespectPerRequestMinimumRetryDelayWhenRetryAfterIsSmaller() throws Exception {
+        // Given - Server responds with Retry-After header smaller than minimum delay
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-per-request-1")
+                .whenScenarioStateIs("Started")
+                .willReturn(aResponse()
+                        .withStatus(429)
+                        .withHeader("Retry-After", "1") // 1 second
+                        .withBody("{\"error\":\"rate limited\"}"))
+                .willSetStateTo("After-First-Request"));
+
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-per-request-1")
+                .whenScenarioStateIs("After-First-Request")
+                .willReturn(aResponse().withStatus(200).withBody("")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Override with larger minimum retry delay (should take precedence over Retry-After)
+        dev.openfga.sdk.api.configuration.Configuration overriddenConfig = configuration.override(
+                new dev.openfga.sdk.api.configuration.ConfigurationOverride().minimumRetryDelay(Duration.ofSeconds(3)));
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        attempt.attemptHttpRequest().get(); // Should succeed after retry
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        // Should have respected the minimum retry delay (3 seconds) instead of Retry-After (1 second)
+        assertThat(totalTime.toMillis()).isGreaterThan(2800); // Should be at least ~3 seconds
+
+        // Verify both requests were made
+        wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
+    }
+
+    @Test
+    void shouldNotOverrideRetryAfterWhenItIsLargerThanMinimumDelayPerRequest() throws Exception {
+        // Given - Server responds with success after first retry to limit test time
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-per-request-2")
+                .whenScenarioStateIs("Started")
+                .willReturn(aResponse()
+                        .withStatus(429)
+                        .withHeader("Retry-After", "1") // 1 second delay
+                        .withBody("{\"error\":\"rate limited\"}"))
+                .willSetStateTo("retry-attempted"));
+
+        wireMockServer.stubFor(get(urlEqualTo("/test"))
+                .inScenario("retry-scenario-per-request-2")
+                .whenScenarioStateIs("retry-attempted")
+                .willReturn(aResponse().withStatus(200).withBody("{\"success\":true}")));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
+                .GET()
+                .build();
+
+        // Override with smaller minimum retry delay (should NOT take precedence over Retry-After)
+        dev.openfga.sdk.api.configuration.Configuration overriddenConfig =
+                configuration.override(new dev.openfga.sdk.api.configuration.ConfigurationOverride()
+                        .minimumRetryDelay(Duration.ofMillis(500)));
+
+        // Verify the override took effect
+        assertEquals(Duration.ofMillis(500), overriddenConfig.getMinimumRetryDelay());
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+
+        Instant startTime = Instant.now();
+
+        // When - This will succeed after 1 retry
+        attempt.attemptHttpRequest().get();
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        // Should have respected the Retry-After header (1 second) for the single retry
+        // Note: actual timing may vary in test environments, so we use generous bounds
+        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
+        assertThat(totalTime.toMillis()).isLessThan(10000); // But not excessive (was sometimes 4x in CI)
+
+        // Verify initial request + 1 retry = 2 total requests
+        wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
     }
 }
