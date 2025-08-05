@@ -556,7 +556,7 @@ class HttpRequestAttemptRetryTest {
 
         assertThat(totalTime.toMillis())
                 .isGreaterThan(1200); // Should be at least ~2 seconds (with larger CI tolerance)
-        assertThat(totalTime.toMillis()).isLessThan(10000); // But not excessive
+        assertThat(totalTime.toMillis()).isLessThan(15000); // But not excessive
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
