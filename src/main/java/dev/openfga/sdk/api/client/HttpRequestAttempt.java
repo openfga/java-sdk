@@ -145,7 +145,7 @@ public class HttpRequestAttempt<T> {
             if (retryNumber < configuration.getMaxRetries()) {
                 // Parse Retry-After header if present
                 Optional<Duration> retryAfterDelay =
-                        response.headers().firstValue("retry-after").flatMap(RetryAfterHeaderParser::parseRetryAfter);
+                        response.headers().firstValue("Retry-After").flatMap(RetryAfterHeaderParser::parseRetryAfter);
 
                 // Check if we should retry based on the new strategy
                 if (RetryStrategy.shouldRetry(statusCode)) {
