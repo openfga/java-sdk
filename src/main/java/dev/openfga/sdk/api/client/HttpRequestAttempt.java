@@ -200,10 +200,6 @@ public class HttpRequestAttempt<T> {
         if (retryDelay == null || retryDelay.isZero() || retryDelay.isNegative()) {
             // Fallback to minimum retry delay if invalid
             retryDelay = configuration.getMinimumRetryDelay();
-            if (retryDelay == null) {
-                // Default fallback if no minimum retry delay is configured
-                retryDelay = Duration.ofMillis(100);
-            }
         }
 
         return apiClient

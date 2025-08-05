@@ -37,6 +37,7 @@ public class Configuration implements BaseConfiguration {
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final Duration DEFAULT_MINIMUM_RETRY_DELAY = Duration.ofMillis(100);
     private static final int MAX_ALLOWABLE_RETRIES = 15;
 
     private String apiUrl;
@@ -55,6 +56,7 @@ public class Configuration implements BaseConfiguration {
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
         this.maxRetries = DEFAULT_MAX_RETRIES;
+        this.minimumRetryDelay = DEFAULT_MINIMUM_RETRY_DELAY;
     }
 
     /**
@@ -284,7 +286,17 @@ public class Configuration implements BaseConfiguration {
         return maxRetries;
     }
 
+    /**
+     * Sets the minimum delay to wait before retrying a failed request.
+     *
+     * @param minimumRetryDelay The minimum delay. Must be non-negative.
+     * @return This Configuration instance for method chaining.
+     * @throws IllegalArgumentException if minimumRetryDelay is negative.
+     */
     public Configuration minimumRetryDelay(Duration minimumRetryDelay) {
+        if (minimumRetryDelay != null && minimumRetryDelay.isNegative()) {
+            throw new IllegalArgumentException("minimumRetryDelay cannot be negative");
+        }
         this.minimumRetryDelay = minimumRetryDelay;
         return this;
     }
