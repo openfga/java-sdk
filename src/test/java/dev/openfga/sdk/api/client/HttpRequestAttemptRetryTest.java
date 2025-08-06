@@ -283,9 +283,10 @@ class HttpRequestAttemptRetryTest {
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
 
-        // Verify some delay occurred (exponential backoff should add at least 100ms for first retry)
+        // Verify some delay occurred (exponential backoff with 10ms minimum delay)
         // Note: Using a generous range due to test timing variability
-        assertThat(endTime - startTime).isGreaterThan(400L);
+        // With minimumRetryDelay=10ms, first retry should be at least 10ms
+        assertThat(endTime - startTime).isGreaterThan(8L);
     }
 
     @Test

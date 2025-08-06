@@ -37,8 +37,13 @@ public class Configuration implements BaseConfiguration {
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final int DEFAULT_MAX_RETRIES = 3;
-    private static final Duration DEFAULT_MINIMUM_RETRY_DELAY = Duration.ofMillis(100);
     private static final int MAX_ALLOWABLE_RETRIES = 15;
+
+    /**
+     * Default minimum retry delay of 100ms.
+     * This value is also used as the default base delay for exponential backoff calculations.
+     */
+    public static final Duration DEFAULT_MINIMUM_RETRY_DELAY = Duration.ofMillis(100);
 
     private String apiUrl;
     private Credentials credentials;

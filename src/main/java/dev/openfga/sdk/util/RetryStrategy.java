@@ -12,6 +12,7 @@
 
 package dev.openfga.sdk.util;
 
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.HttpStatusCode;
 import java.time.Duration;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class RetryStrategy {
      *
      * @param retryAfterDelay Optional delay from Retry-After header
      * @param retryCount Current retry attempt (0-based)
-     * @param minimumRetryDelay Minimum delay to enforce (can be null)
+     * @param minimumRetryDelay Minimum delay to enforce (also used as base delay for exponential backoff)
      * @return Duration representing the delay before the next retry
      */
     public static Duration calculateRetryDelay(
@@ -75,11 +76,8 @@ public class RetryStrategy {
             return retryAfterValue;
         }
 
-        // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
-        Duration exponentialDelay = ExponentialBackoff.calculateDelay(retryCount);
-        if (minimumRetryDelay != null && minimumRetryDelay.compareTo(exponentialDelay) > 0) {
-            return minimumRetryDelay;
-        }
-        return exponentialDelay;
+    // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
+        Duration baseDelay = minimumRetryDelay != null ? minimumRetryDelay : Configuration.DEFAULT_MINIMUM_RETRY_DELAY;
+        return ExponentialBackoff.calculateDelay(retryCount, baseDelay);
     }
 }

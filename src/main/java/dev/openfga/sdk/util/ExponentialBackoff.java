@@ -19,13 +19,12 @@ import java.util.Random;
  * Utility class for calculating exponential backoff delays with jitter.
  *
  * Implements the retry strategy specified in GitHub issue #155:
- * - Base delay: 2^retryCount * 100ms
+ * - Base delay: 2^retryCount * baseDelay (configurable)
  * - Jitter: Random value between base and 2 * base
  * - Maximum delay: 120 seconds (capped after 10th retry)
  */
 public class ExponentialBackoff {
 
-    private static final int BASE_DELAY_MS = 100;
     private static final int MAX_DELAY_SECONDS = 120;
     private static final Random RANDOM = new Random();
 
@@ -37,10 +36,11 @@ public class ExponentialBackoff {
      * Calculates the exponential backoff delay with jitter for a given retry attempt.
      *
      * @param retryCount The current retry attempt (0-based, so first retry is 0)
+     * @param baseDelay The base delay to use for exponential calculation
      * @return Duration representing the delay before the next retry
      */
-    public static Duration calculateDelay(int retryCount) {
-        return calculateDelay(retryCount, RANDOM);
+    public static Duration calculateDelay(int retryCount, Duration baseDelay) {
+        return calculateDelay(retryCount, baseDelay, RANDOM);
     }
 
     /**
@@ -48,26 +48,33 @@ public class ExponentialBackoff {
      * This method is primarily for testing purposes to ensure deterministic behavior.
      *
      * @param retryCount The current retry attempt (0-based, so first retry is 0)
+     * @param baseDelay The base delay to use for exponential calculation
      * @param random Random instance to use for jitter calculation
      * @return Duration representing the delay before the next retry
      */
-    static Duration calculateDelay(int retryCount, Random random) {
+    static Duration calculateDelay(int retryCount, Duration baseDelay, Random random) {
         if (retryCount < 0) {
             return Duration.ZERO;
         }
 
-        // Calculate base delay: 2^retryCount * 100ms
-        long baseDelayMs = (long) Math.pow(2, retryCount) * BASE_DELAY_MS;
+        // Use provided base delay (caller must provide a valid value)
+        if (baseDelay == null) {
+            throw new IllegalArgumentException("baseDelay cannot be null");
+        }
+        long baseDelayMs = baseDelay.toMillis();
+
+        // Calculate exponential delay: 2^retryCount * baseDelay
+        long exponentialDelayMs = (long) Math.pow(2, retryCount) * baseDelayMs;
 
         // Cap at maximum delay
         long maxDelayMs = MAX_DELAY_SECONDS * 1000L;
-        if (baseDelayMs > maxDelayMs) {
-            baseDelayMs = maxDelayMs;
+        if (exponentialDelayMs > maxDelayMs) {
+            exponentialDelayMs = maxDelayMs;
         }
 
-        // Add jitter: random value between baseDelay and 2 * baseDelay
-        long minDelayMs = baseDelayMs;
-        long maxDelayMsWithJitter = Math.min(baseDelayMs * 2, maxDelayMs);
+        // Add jitter: random value between exponentialDelay and 2 * exponentialDelay
+        long minDelayMs = exponentialDelayMs;
+        long maxDelayMsWithJitter = Math.min(exponentialDelayMs * 2, maxDelayMs);
 
         // Generate random delay within the jitter range
         long jitterRange = maxDelayMsWithJitter - minDelayMs;
