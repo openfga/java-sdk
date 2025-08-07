@@ -41,7 +41,7 @@ public class Configuration implements BaseConfiguration {
 
     /**
      * Default minimum retry delay of 100ms.
-     * This value is also used as the default base delay for exponential backoff calculations.
+     * This value is used as the default base delay for exponential backoff calculations.
      */
     public static final Duration DEFAULT_MINIMUM_RETRY_DELAY = Duration.ofMillis(100);
 
