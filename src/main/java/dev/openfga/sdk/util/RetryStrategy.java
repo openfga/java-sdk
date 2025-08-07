@@ -61,7 +61,7 @@ public class RetryStrategy {
      *
      * @param retryAfterDelay Optional delay from Retry-After header
      * @param retryCount Current retry attempt (0-based)
-     * @param minimumRetryDelay Minimum delay to enforce (also used as base delay for exponential backoff)
+     * @param minimumRetryDelay Base delay for exponential backoff
      * @return Duration representing the delay before the next retry
      */
     public static Duration calculateRetryDelay(
