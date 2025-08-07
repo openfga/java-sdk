@@ -76,7 +76,7 @@ public class RetryStrategy {
             return retryAfterValue;
         }
 
-    // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
+        // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
         Duration baseDelay = minimumRetryDelay != null ? minimumRetryDelay : Configuration.DEFAULT_MINIMUM_RETRY_DELAY;
         return ExponentialBackoff.calculateDelay(retryCount, baseDelay);
     }
