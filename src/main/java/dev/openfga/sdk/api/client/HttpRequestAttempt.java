@@ -8,6 +8,8 @@ import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.util.RetryAfterHeaderParser;
+import dev.openfga.sdk.util.RetryStrategy;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.http.HttpClient;
@@ -92,49 +94,92 @@ public class HttpRequestAttempt<T> {
             HttpClient httpClient, int retryNumber, Throwable previousError) {
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenCompose(response -> {
-                    Optional<FgaError> fgaError =
-                            FgaError.getError(name, request, configuration, response, previousError);
-
-                    if (fgaError.isPresent()) {
-                        FgaError error = fgaError.get();
-
-                        if (HttpStatusCode.isRetryable(error.getStatusCode())
-                                && retryNumber < configuration.getMaxRetries()) {
-
-                            HttpClient delayingClient = getDelayedHttpClient();
-
-                            return attemptHttpRequest(delayingClient, retryNumber + 1, error);
-                        }
-
-                        return CompletableFuture.failedFuture(error);
+                .handle((response, throwable) -> {
+                    if (throwable != null) {
+                        // Handle network errors (no HTTP response received)
+                        return handleNetworkError(throwable, retryNumber);
                     }
+                    // No network error, proceed with normal HTTP response handling
+                    return processHttpResponse(response, retryNumber, previousError);
+                })
+                .thenCompose(future -> future);
+    }
 
-                    addTelemetryAttributes(Attributes.fromHttpResponse(response, this.configuration.getCredentials()));
+    private CompletableFuture<ApiResponse<T>> handleNetworkError(Throwable throwable, int retryNumber) {
+        if (retryNumber < configuration.getMaxRetries()) {
+            // Network errors should be retried with exponential backoff (no Retry-After header available)
+            Duration retryDelay = RetryStrategy.calculateRetryDelay(
+                    Optional.empty(), retryNumber, configuration.getMinimumRetryDelay());
 
-                    if (retryNumber > 0) {
-                        addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber));
-                    }
+            // Add telemetry for network error retry
+            addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber + 1));
 
-                    if (response.headers().firstValue("fga-query-duration-ms").isPresent()) {
-                        String queryDuration = response.headers()
-                                .firstValue("fga-query-duration-ms")
-                                .orElse(null);
+            // Create delayed client and retry asynchronously without blocking
+            HttpClient delayingClient = getDelayedHttpClient(retryDelay);
+            return attemptHttpRequest(delayingClient, retryNumber + 1, throwable);
+        } else {
+            // Max retries exceeded, fail with the network error
+            return CompletableFuture.failedFuture(new ApiException(throwable));
+        }
+    }
 
-                        if (!isNullOrWhitespace(queryDuration)) {
-                            double queryDurationDouble = Double.parseDouble(queryDuration);
-                            telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
-                        }
-                    }
+    private CompletableFuture<ApiResponse<T>> handleHttpErrorRetry(
+            Optional<Duration> retryAfterDelay, int retryNumber, FgaError error) {
+        // Calculate appropriate delay
+        Duration retryDelay =
+                RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber, configuration.getMinimumRetryDelay());
 
-                    Double requestDuration = (double) (System.currentTimeMillis() - requestStarted);
+        // Create delayed client and retry asynchronously without blocking
+        HttpClient delayingClient = getDelayedHttpClient(retryDelay);
+        return attemptHttpRequest(delayingClient, retryNumber + 1, error);
+    }
 
-                    telemetry.metrics().requestDuration(requestDuration, this.getTelemetryAttributes());
+    private CompletableFuture<ApiResponse<T>> processHttpResponse(
+            HttpResponse<String> response, int retryNumber, Throwable previousError) {
+        Optional<FgaError> fgaError = FgaError.getError(name, request, configuration, response, previousError);
 
-                    return deserializeResponse(response)
-                            .thenApply(modeledResponse -> new ApiResponse<>(
-                                    response.statusCode(), response.headers().map(), response.body(), modeledResponse));
-                });
+        if (fgaError.isPresent()) {
+            FgaError error = fgaError.get();
+            int statusCode = error.getStatusCode();
+
+            if (retryNumber < configuration.getMaxRetries()) {
+                // Parse Retry-After header if present
+                Optional<Duration> retryAfterDelay =
+                        response.headers().firstValue("Retry-After").flatMap(RetryAfterHeaderParser::parseRetryAfter);
+
+                // Check if we should retry based on the new strategy
+                if (RetryStrategy.shouldRetry(statusCode)) {
+                    return handleHttpErrorRetry(retryAfterDelay, retryNumber, error);
+                } else {
+                }
+            }
+
+            return CompletableFuture.failedFuture(error);
+        }
+
+        addTelemetryAttributes(Attributes.fromHttpResponse(response, this.configuration.getCredentials()));
+
+        if (retryNumber > 0) {
+            addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber));
+        }
+
+        if (response.headers().firstValue("fga-query-duration-ms").isPresent()) {
+            String queryDuration =
+                    response.headers().firstValue("fga-query-duration-ms").orElse(null);
+
+            if (!isNullOrWhitespace(queryDuration)) {
+                double queryDurationDouble = Double.parseDouble(queryDuration);
+                telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
+            }
+        }
+
+        Double requestDuration = (double) (System.currentTimeMillis() - requestStarted);
+
+        telemetry.metrics().requestDuration(requestDuration, this.getTelemetryAttributes());
+
+        return deserializeResponse(response)
+                .thenApply(modeledResponse -> new ApiResponse<>(
+                        response.statusCode(), response.headers().map(), response.body(), modeledResponse));
     }
 
     private CompletableFuture<T> deserializeResponse(HttpResponse<String> response) {
@@ -151,8 +196,11 @@ public class HttpRequestAttempt<T> {
         }
     }
 
-    private HttpClient getDelayedHttpClient() {
-        Duration retryDelay = configuration.getMinimumRetryDelay();
+    private HttpClient getDelayedHttpClient(Duration retryDelay) {
+        if (retryDelay == null || retryDelay.isZero() || retryDelay.isNegative()) {
+            // Fallback to minimum retry delay if invalid
+            retryDelay = configuration.getMinimumRetryDelay();
+        }
 
         return apiClient
                 .getHttpClientBuilder()

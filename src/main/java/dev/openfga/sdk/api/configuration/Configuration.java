@@ -36,6 +36,14 @@ public class Configuration implements BaseConfiguration {
     private static final String DEFAULT_USER_AGENT = "openfga-sdk java/0.8.3";
     private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final int MAX_ALLOWABLE_RETRIES = 15;
+
+    /**
+     * Default minimum retry delay of 100ms.
+     * This value is used as the default base delay for exponential backoff calculations.
+     */
+    public static final Duration DEFAULT_MINIMUM_RETRY_DELAY = Duration.ofMillis(100);
 
     private String apiUrl;
     private Credentials credentials;
@@ -52,6 +60,8 @@ public class Configuration implements BaseConfiguration {
         this.userAgent = DEFAULT_USER_AGENT;
         this.readTimeout = DEFAULT_READ_TIMEOUT;
         this.connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+        this.maxRetries = DEFAULT_MAX_RETRIES;
+        this.minimumRetryDelay = DEFAULT_MINIMUM_RETRY_DELAY;
     }
 
     /**
@@ -265,6 +275,13 @@ public class Configuration implements BaseConfiguration {
     }
 
     public Configuration maxRetries(int maxRetries) {
+        if (maxRetries < 0) {
+            throw new IllegalArgumentException("maxRetries must be non-negative");
+        }
+        if (maxRetries > MAX_ALLOWABLE_RETRIES) {
+            throw new IllegalArgumentException(
+                    "maxRetries cannot exceed " + MAX_ALLOWABLE_RETRIES + " (maximum allowable retries)");
+        }
         this.maxRetries = maxRetries;
         return this;
     }
@@ -274,11 +291,29 @@ public class Configuration implements BaseConfiguration {
         return maxRetries;
     }
 
+    /**
+     * Sets the minimum delay to wait before retrying a failed request.
+     *
+     * @param minimumRetryDelay The minimum delay. Must be non-null and non-negative.
+     * @return This Configuration instance for method chaining.
+     * @throws IllegalArgumentException if minimumRetryDelay is null or negative.
+     */
     public Configuration minimumRetryDelay(Duration minimumRetryDelay) {
+        if (minimumRetryDelay == null) {
+            throw new IllegalArgumentException("minimumRetryDelay cannot be null");
+        }
+        if (minimumRetryDelay.isNegative()) {
+            throw new IllegalArgumentException("minimumRetryDelay cannot be negative");
+        }
         this.minimumRetryDelay = minimumRetryDelay;
         return this;
     }
 
+    /**
+     * Gets the minimum delay to wait before retrying a failed request.
+     *
+     * @return The minimum retry delay. Never null.
+     */
     @Override
     public Duration getMinimumRetryDelay() {
         return minimumRetryDelay;

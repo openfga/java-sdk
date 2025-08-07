@@ -275,4 +275,73 @@ class ConfigurationTest {
                 original.getConnectTimeout(),
                 "The Configuration's default connectTimeout should be unmodified.");
     }
+
+    @Test
+    void minimumRetryDelay_validDuration() {
+        // Given
+        Configuration config = new Configuration();
+        Duration validDelay = Duration.ofMillis(500);
+
+        // When
+        Configuration result = config.minimumRetryDelay(validDelay);
+
+        // Then
+        assertEquals(validDelay, result.getMinimumRetryDelay());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void minimumRetryDelay_nullValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            config.minimumRetryDelay(null);
+        });
+
+        assertEquals("minimumRetryDelay cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void minimumRetryDelay_zeroDuration() {
+        // Given
+        Configuration config = new Configuration();
+        Duration zeroDuration = Duration.ZERO;
+
+        // When
+        Configuration result = config.minimumRetryDelay(zeroDuration);
+
+        // Then
+        assertEquals(zeroDuration, result.getMinimumRetryDelay());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void minimumRetryDelay_negativeDuration_throwsException() {
+        // Given
+        Configuration config = new Configuration();
+        Duration negativeDuration = Duration.ofMillis(-100);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> config.minimumRetryDelay(negativeDuration),
+                "Should throw IllegalArgumentException for negative duration");
+
+        assertEquals("minimumRetryDelay cannot be negative", exception.getMessage());
+    }
+
+    @Test
+    void minimumRetryDelay_hasDefaultValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        Duration defaultDelay = config.getMinimumRetryDelay();
+
+        // Then
+        assertNotNull(defaultDelay, "minimumRetryDelay should have a default value");
+        assertEquals(Duration.ofMillis(100), defaultDelay, "Default minimumRetryDelay should be 100ms");
+    }
 }

@@ -125,7 +125,7 @@ libraryDependencies += "dev.openfga" % "openfga-sdk" % "0.8.3"
 
 We strongly recommend you initialize the `OpenFgaClient` only once and then re-use it throughout your app, otherwise you will incur the cost of having to re-initialize multiple times or at every request, the cost of reduced connection pooling and re-use, and would be particularly costly in the client credentials flow, as that flow will be preformed on every request.
 
-> The `Client` will by default retry API requests up to 3 times on 429 and 5xx errors.
+> The `Client` will by default retry API requests up to 3 times. Rate limiting (429) errors are always retried. Server errors (5xx) are retried for all operations, with delay calculation using `Retry-After` headers when provided or exponential backoff as fallback.
 
 #### No Credentials
 
@@ -714,7 +714,7 @@ response.getResult() = [{
 
 If you are using an OpenFGA version less than 1.8.0, you can use `clientBatchCheck`, 
 which calls `check` in parallel. It will return `allowed: false` if it encounters an error, and will return the error in the body.
-If 429s or 5xxs are encountered, the underlying check will retry up to 3 times before giving up.
+If 429s are encountered, the underlying check will retry up to 3 times. For 5xx errors, all requests will retry with delay calculation using `Retry-After` headers when provided or exponential backoff as fallback.
 
 ```
 var request = List.of(
@@ -965,9 +965,28 @@ fgaClient.writeAssertions(assertions, options).get();
 
 ### Retries
 
-If a network request fails with a 429 or 5xx error from the server, the SDK will automatically retry the request up to 3 times with a minimum wait time of 100 milliseconds between each attempt.
+The SDK implements RFC 9110 compliant retry behavior with support for the `Retry-After` header. By default, the SDK will automatically retry failed requests up to **3 times** with delay calculation (maximum allowable: 15 retries).
 
-To customize this behavior, call `maxRetries` and `minimumRetryDelay` on the `ClientConfiguration` builder. `maxRetries` determines the maximum number of retries (up to 15), while `minimumRetryDelay` sets the minimum wait time between retries in milliseconds.
+#### Retry Behavior
+
+**Rate Limiting (429 errors):** Always retried regardless of HTTP method.
+
+**Server Errors (5xx):** All requests are retried on 5xx errors (except 501 Not Implemented) regardless of HTTP method:
+- **All operations** (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS): Always retried on 5xx errors with delay calculation
+
+#### Delay Calculation
+
+1. **Retry-After header present**: Uses the server-specified delay (supports both integer seconds and HTTP-date formats)
+2. **No Retry-After header**: Uses exponential backoff with jitter (base delay: 2^retryCount * 100ms, capped at 120 seconds)
+3. **Minimum delay**: Respects the configured `minimumRetryDelay` as a floor value
+
+#### Configuration
+
+Customize retry behavior using the `ClientConfiguration` builder. The SDK enforces a maximum of 15 retries to prevent accidental server overload:
+
+**⚠️ Breaking Changes:**
+- Configuration validation now prevents setting `maxRetries` above 15
+- `FgaError` now exposes the `Retry-After` header value via `getRetryAfterHeader()`
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -981,11 +1000,33 @@ public class Example {
                 .apiUrl(System.getenv("FGA_API_URL")) // If not specified, will default to "http://localhost:8080"
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
-                .maxRetries(3) // retry up to 3 times on API requests
-                .minimumRetryDelay(250); // wait a minimum of 250 milliseconds between requests
+                .maxRetries(3) // retry up to 3 times on API requests (default: 3, maximum: 15)
+                .minimumRetryDelay(100); // minimum wait time between retries in milliseconds (default: 100ms)
 
         var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
+    }
+}
+```
+
+#### Error Handling with Retry Information
+
+When handling errors, you can access the `Retry-After` header value for debugging or custom retry logic:
+
+```java
+try {
+    var response = fgaClient.check(request).get();
+} catch (ExecutionException e) {
+    if (e.getCause() instanceof FgaError) {
+        FgaError error = (FgaError) e.getCause();
+        
+        // Access Retry-After header if present
+        String retryAfter = error.getRetryAfterHeader();
+        if (retryAfter != null) {
+            System.out.println("Server requested retry after: " + retryAfter + " seconds");
+        }
+        
+        System.out.println("Error: " + error.getMessage());
     }
 }
 ```
