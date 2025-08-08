@@ -80,10 +80,10 @@ public class HttpRequestAttempt<T> {
         addTelemetryAttribute(Attributes.HTTP_REQUEST_METHOD, request.method());
         addTelemetryAttribute(Attributes.USER_AGENT, configuration.getUserAgent());
 
-        return attemptHttpRequest(createClient(), 0, null);
+        return attemptHttpRequest(getHttpClient(), 0, null);
     }
 
-    private HttpClient createClient() {
+    private HttpClient getHttpClient() {
         return apiClient.getHttpClient();
     }
 
@@ -140,16 +140,14 @@ public class HttpRequestAttempt<T> {
     private CompletableFuture<ApiResponse<T>> delayedRetry(
             Duration retryDelay, int nextRetryNumber, Throwable previousError) {
         // Use CompletableFuture.delayedExecutor() to delay the retry attempt itself
-        return CompletableFuture.supplyAsync(
+        return CompletableFuture.runAsync(
                         () -> {
-                            // We don't need a return value, just the delay
-                            return null;
+                            // No-op task, we only care about the delay timing
                         },
                         CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
                 .thenCompose(ignored -> {
-                    // Reuse the existing HttpClient instead of creating a new one for efficiency
-                    HttpClient reusableClient = apiClient.getHttpClient();
-                    return attemptHttpRequest(reusableClient, nextRetryNumber, previousError);
+                    // Get HttpClient when needed (just returns cached instance)
+                    return attemptHttpRequest(getHttpClient(), nextRetryNumber, previousError);
                 });
     }
 
