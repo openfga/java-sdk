@@ -120,4 +120,49 @@ class RetryStrategyTest {
     void shouldRetry_with501_shouldReturnFalse() {
         assertThat(RetryStrategy.shouldRetry(501)).isFalse();
     }
+
+    @Test
+    void calculateRetryDelay_withZeroRetryAfter_shouldEnforceMinimumDelay() {
+        // Given - Server sends Retry-After: 0 (problematic!)
+        Optional<Duration> retryAfterDelay = Optional.of(Duration.ZERO);
+        int retryCount = 1;
+        Duration minimumRetryDelay = Duration.ofMillis(100);
+
+        // When
+        Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
+
+        // Then - Should enforce minimum delay to prevent hot-loop retries
+        // Current code will FAIL this test by returning Duration.ZERO
+        assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms to prevent hot-loops
+    }
+
+    @Test
+    void calculateRetryDelay_withNegativeRetryAfter_shouldEnforceMinimumDelay() {
+        // Given - Server sends malformed negative delay (very problematic!)
+        Optional<Duration> retryAfterDelay = Optional.of(Duration.ofMillis(-500));
+        int retryCount = 1;
+        Duration minimumRetryDelay = Duration.ofMillis(100);
+
+        // When
+        Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
+
+        // Then - Should enforce minimum delay to handle malformed server responses
+        // Current code will FAIL this test by returning negative duration
+        assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms for safety
+    }
+
+    @Test
+    void calculateRetryDelay_withVerySmallRetryAfter_shouldEnforceMinimumDelay() {
+        // Given - Server sends extremely small delay (could cause near-hot-loop)
+        Optional<Duration> retryAfterDelay = Optional.of(Duration.ofNanos(500)); // 0.0005ms
+        int retryCount = 1;
+        Duration minimumRetryDelay = Duration.ofMillis(100);
+
+        // When
+        Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
+
+        // Then - Should enforce reasonable minimum delay
+        // Current code will FAIL this test by returning tiny delay
+        assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms for system stability
+    }
 }

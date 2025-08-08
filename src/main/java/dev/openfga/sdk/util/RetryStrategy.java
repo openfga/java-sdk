@@ -66,9 +66,12 @@ public class RetryStrategy {
      */
     public static Duration calculateRetryDelay(
             Optional<Duration> retryAfterDelay, int retryCount, Duration minimumRetryDelay) {
-        // If Retry-After header is present, use it (takes precedence over minimum retry delay)
+        // If Retry-After header is present, use it but enforce minimum delay floor
         if (retryAfterDelay.isPresent()) {
-            return retryAfterDelay.get();
+            Duration serverDelay = retryAfterDelay.get();
+            // Clamp to minimum 1ms to prevent hot-loop retries and handle malformed server responses
+            Duration minimumSafeDelay = Duration.ofMillis(1);
+            return serverDelay.compareTo(minimumSafeDelay) < 0 ? minimumSafeDelay : serverDelay;
         }
 
         // Otherwise, use exponential backoff with jitter, respecting minimum retry delay
