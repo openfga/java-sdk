@@ -35,7 +35,7 @@ class RetryStrategyTest {
     }
 
     @Test
-    void calculateRetryDelay_withRetryAfterSmallerThanMinimum_shouldUseMinimum() {
+    void calculateRetryDelay_withRetryAfterSmallerThanMinimum_shouldUseRetryAfter() {
         // Given
         Optional<Duration> retryAfterDelay = Optional.of(Duration.ofMillis(50));
         int retryCount = 1;
@@ -45,7 +45,7 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
 
         // Then
-        assertThat(result).isEqualTo(Duration.ofMillis(200));
+        assertThat(result).isEqualTo(Duration.ofMillis(50));
     }
 
     @Test

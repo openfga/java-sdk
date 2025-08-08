@@ -12,16 +12,13 @@ import dev.openfga.sdk.util.RetryAfterHeaderParser;
 import dev.openfga.sdk.util.RetryStrategy;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Function;
 
 public class HttpRequestAttempt<T> {
     private final ApiClient apiClient;
@@ -99,10 +96,11 @@ public class HttpRequestAttempt<T> {
                         // Handle network errors (no HTTP response received)
                         return handleNetworkError(throwable, retryNumber);
                     }
-                    // No network error, proceed with normal HTTP response handling
+
+                    // Handle HTTP response (including error status codes)
                     return processHttpResponse(response, retryNumber, previousError);
                 })
-                .thenCompose(future -> future);
+                .thenCompose(Function.identity());
     }
 
     private CompletableFuture<ApiResponse<T>> handleNetworkError(Throwable throwable, int retryNumber) {
@@ -114,9 +112,7 @@ public class HttpRequestAttempt<T> {
             // Add telemetry for network error retry
             addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber + 1));
 
-            // Create delayed client and retry asynchronously without blocking
-            HttpClient delayingClient = getDelayedHttpClient(retryDelay);
-            return attemptHttpRequest(delayingClient, retryNumber + 1, throwable);
+            return delayedRetry(retryDelay, retryNumber + 1, throwable);
         } else {
             // Max retries exceeded, fail with the network error
             return CompletableFuture.failedFuture(new ApiException(throwable));
@@ -129,9 +125,32 @@ public class HttpRequestAttempt<T> {
         Duration retryDelay =
                 RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber, configuration.getMinimumRetryDelay());
 
-        // Create delayed client and retry asynchronously without blocking
-        HttpClient delayingClient = getDelayedHttpClient(retryDelay);
-        return attemptHttpRequest(delayingClient, retryNumber + 1, error);
+        return delayedRetry(retryDelay, retryNumber + 1, error);
+    }
+
+    /**
+     * Performs a delayed retry using CompletableFuture.delayedExecutor().
+     * This method centralizes the common delay logic used by both network error and HTTP error retries.
+     *
+     * @param retryDelay The duration to wait before retrying
+     * @param nextRetryNumber The next retry attempt number (1-based)
+     * @param previousError The previous error that caused the retry
+     * @return CompletableFuture that completes after the delay with the retry attempt
+     */
+    private CompletableFuture<ApiResponse<T>> delayedRetry(
+            Duration retryDelay, int nextRetryNumber, Throwable previousError) {
+        // Use CompletableFuture.delayedExecutor() to delay the retry attempt itself
+        return CompletableFuture.supplyAsync(
+                        () -> {
+                            // We don't need a return value, just the delay
+                            return null;
+                        },
+                        CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
+                .thenCompose(ignored -> {
+                    // Reuse the existing HttpClient instead of creating a new one for efficiency
+                    HttpClient reusableClient = apiClient.getHttpClient();
+                    return attemptHttpRequest(reusableClient, nextRetryNumber, previousError);
+                });
     }
 
     private CompletableFuture<ApiResponse<T>> processHttpResponse(
@@ -150,7 +169,6 @@ public class HttpRequestAttempt<T> {
                 // Check if we should retry based on the new strategy
                 if (RetryStrategy.shouldRetry(statusCode)) {
                     return handleHttpErrorRetry(retryAfterDelay, retryNumber, error);
-                } else {
                 }
             }
 
@@ -194,18 +212,6 @@ public class HttpRequestAttempt<T> {
             // Malformed response.
             return CompletableFuture.failedFuture(new ApiException(e));
         }
-    }
-
-    private HttpClient getDelayedHttpClient(Duration retryDelay) {
-        if (retryDelay == null || retryDelay.isZero() || retryDelay.isNegative()) {
-            // Fallback to minimum retry delay if invalid
-            retryDelay = configuration.getMinimumRetryDelay();
-        }
-
-        return apiClient
-                .getHttpClientBuilder()
-                .executor(CompletableFuture.delayedExecutor(retryDelay.toNanos(), TimeUnit.NANOSECONDS))
-                .build();
     }
 
     private static class BodyLogger implements Flow.Subscriber<ByteBuffer> {

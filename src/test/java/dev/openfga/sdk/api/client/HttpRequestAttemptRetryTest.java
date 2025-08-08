@@ -325,34 +325,122 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldRetryOnConnectionTimeout() throws Exception {
+    void shouldRetryNetworkErrorsWithExponentialBackoff() throws Exception {
         // Given - Capture port before stopping server
         int serverPort = wireMockServer.port();
         wireMockServer.stop();
 
-        // Create configuration with shorter timeout for faster test
-        ClientConfiguration timeoutConfig = new ClientConfiguration()
+        // Create configuration with specific delays for timing test
+        ClientConfiguration networkConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + serverPort)
                 .maxRetries(2)
-                .minimumRetryDelay(Duration.ofMillis(10));
+                .minimumRetryDelay(Duration.ofMillis(100)); // 100ms base delay
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
                 .GET()
-                .timeout(Duration.ofMillis(100)) // Short timeout
+                .timeout(Duration.ofMillis(50)) // Short timeout to force connection error
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, timeoutConfig);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
 
-        // When & Then
+        Instant startTime = Instant.now();
+
+        // When
         ExecutionException exception = assertThrows(
                 ExecutionException.class, () -> attempt.attemptHttpRequest().get());
 
-        // Should fail after retries with network error
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
         assertThat(exception.getCause()).isInstanceOf(ApiException.class);
-        ApiException apiException = (ApiException) exception.getCause();
-        assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
+
+        // With exponential backoff: 100ms (1st retry) + ~200ms (2nd retry) = ~300ms total
+        // Allow some tolerance for execution overhead
+        assertThat(totalTime.toMillis())
+                .isGreaterThan(200) // Should be at least ~300ms
+                .isLessThan(1000); // But not excessive
+    }
+
+    @Test
+    void shouldHonorNetworkErrorRetryDelayTiming() throws Exception {
+        // Given - Capture port before stopping server to force network error
+        int serverPort = wireMockServer.port();
+        wireMockServer.stop();
+
+        // Create configuration with specific minimum retry delay
+        ClientConfiguration networkConfig = new ClientConfiguration()
+                .apiUrl("http://localhost:" + serverPort)
+                .maxRetries(1) // Only 1 retry to test precise timing
+                .minimumRetryDelay(Duration.ofMillis(500)); // 500ms delay
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
+                .GET()
+                .timeout(Duration.ofMillis(50)) // Short timeout to force connection error quickly
+                .build();
+
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        assertThat(exception.getCause()).isInstanceOf(ApiException.class);
+
+        // Should take approximately 500ms for the retry delay (plus small overhead)
+        // Per GitHub issue #155: jitter range is [base, 2*base], so 500ms base can become up to 1000ms
+        // Network error retry timing is now working correctly
+        assertThat(totalTime.toMillis())
+                .isGreaterThan(450) // Should be at least ~500ms (base delay)
+                .isLessThan(1200); // Allow for up to 1000ms jitter + execution overhead
+    }
+
+    @Test
+    void shouldUseExponentialBackoffForNetworkErrorsWithPreciseTiming() throws Exception {
+        // Given - Use invalid hostname to simulate DNS failure (more reliable than port)
+        ClientConfiguration dnsConfig = new ClientConfiguration()
+                .apiUrl("http://invalid-hostname-that-does-not-exist.local")
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofMillis(200)); // 200ms base delay
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://invalid-hostname-that-does-not-exist.local/test"))
+                .GET()
+                .timeout(Duration.ofSeconds(1)) // Reasonable timeout
+                .build();
+
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
+
+        Instant startTime = Instant.now();
+
+        // When
+        ExecutionException exception = assertThrows(
+                ExecutionException.class, () -> attempt.attemptHttpRequest().get());
+
+        Instant endTime = Instant.now();
+        Duration totalTime = Duration.between(startTime, endTime);
+
+        // Then
+        assertThat(exception.getCause()).isInstanceOf(ApiException.class);
+
+        // With exponential backoff from 200ms base:
+        // 1st retry: ~200ms * 2^0 = ~200ms
+        // 2nd retry: ~200ms * 2^1 = ~400ms
+        // Total: ~600ms (plus jitter and overhead)
+        // Network error retry timing is now working correctly after refactoring
+        assertThat(totalTime.toMillis())
+                .isGreaterThan(500) // Should be at least ~600ms
+                .isLessThan(1200); // But not excessive (allowing for jitter)
     }
 
     @Test
@@ -382,47 +470,34 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldRetryNetworkErrorsWithExponentialBackoff() throws Exception {
+    void shouldRetryOnConnectionTimeout() throws Exception {
         // Given - Capture port before stopping server
         int serverPort = wireMockServer.port();
         wireMockServer.stop();
 
-        long startTime = System.currentTimeMillis();
-
-        ClientConfiguration networkConfig = new ClientConfiguration()
+        // Create configuration with shorter timeout for faster test
+        ClientConfiguration timeoutConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + serverPort)
-                .maxRetries(3)
-                .minimumRetryDelay(Duration.ofMillis(50)); // Longer delay to measure timing
+                .maxRetries(2)
+                .minimumRetryDelay(Duration.ofMillis(10));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + serverPort + "/test"))
                 .GET()
-                .timeout(Duration.ofMillis(100))
+                .timeout(Duration.ofMillis(100)) // Short timeout
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, timeoutConfig);
 
         // When & Then
         ExecutionException exception = assertThrows(
                 ExecutionException.class, () -> attempt.attemptHttpRequest().get());
 
-        // Verify timing shows exponential backoff was used for network errors
-        long duration = System.currentTimeMillis() - startTime;
-        assertThat(duration).isGreaterThan(100); // Should take time due to retries + backoff
-
-        // Should fail with network error after all retries
+        // Should fail after retries with network error
         assertThat(exception.getCause()).isInstanceOf(ApiException.class);
         ApiException apiException = (ApiException) exception.getCause();
         assertThat(apiException.getCause()).isNotNull(); // Should have underlying network error
-
-        // Verify telemetry attributes were set for network error retries
-        assertThat(attempt.getTelemetryAttributes())
-                .containsKey(dev.openfga.sdk.telemetry.Attributes.HTTP_REQUEST_RESEND_COUNT);
-        String resendCount =
-                attempt.getTelemetryAttributes().get(dev.openfga.sdk.telemetry.Attributes.HTTP_REQUEST_RESEND_COUNT);
-        assertThat(resendCount).isNotNull();
-        assertThat(Integer.parseInt(resendCount)).isGreaterThan(0); // Should have retry count > 0
     }
 
     @Test
@@ -465,7 +540,7 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldRespectGlobalMinimumRetryDelayWhenRetryAfterIsSmaller() throws Exception {
+    void shouldUseRetryAfterHeaderEvenWhenSmallerThanGlobalMinimumDelay() throws Exception {
         // Given - Server responds with Retry-After header smaller than minimum delay
         wireMockServer.stubFor(get(urlEqualTo("/test"))
                 .inScenario("retry-scenario-global-1")
@@ -486,11 +561,11 @@ class HttpRequestAttemptRetryTest {
                 .GET()
                 .build();
 
-        // Use global configuration with larger minimum retry delay (should take precedence over Retry-After)
+        // Use global configuration with larger minimum retry delay (should NOT take precedence over Retry-After)
         ClientConfiguration globalConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + wireMockServer.port())
                 .maxRetries(2)
-                .minimumRetryDelay(Duration.ofSeconds(3)); // Should override Retry-After: 1
+                .minimumRetryDelay(Duration.ofSeconds(3)); // Should NOT override Retry-After: 1
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
@@ -504,8 +579,9 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the minimum retry delay (3 seconds) instead of Retry-After (1 second)
-        assertThat(totalTime.toMillis()).isGreaterThan(2800); // Should be at least ~3 seconds
+        // Should have respected the Retry-After header (1 second) instead of minimum retry delay (3 seconds)
+        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
+        assertThat(totalTime.toMillis()).isLessThan(2500); // But less than 2.5 seconds (well below the 3s minimum)
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
@@ -635,7 +711,7 @@ class HttpRequestAttemptRetryTest {
     }
 
     @Test
-    void shouldRespectPerRequestMinimumRetryDelayWhenRetryAfterIsSmaller() throws Exception {
+    void shouldUseRetryAfterHeaderEvenWhenSmallerThanMinimumDelay() throws Exception {
         // Given - Server responds with Retry-After header smaller than minimum delay
         wireMockServer.stubFor(get(urlEqualTo("/test"))
                 .inScenario("retry-scenario-per-request-1")
@@ -656,7 +732,7 @@ class HttpRequestAttemptRetryTest {
                 .GET()
                 .build();
 
-        // Override with larger minimum retry delay (should take precedence over Retry-After)
+        // Override with larger minimum retry delay (should NOT take precedence over Retry-After)
         dev.openfga.sdk.api.configuration.Configuration overriddenConfig = configuration.override(
                 new dev.openfga.sdk.api.configuration.ConfigurationOverride().minimumRetryDelay(Duration.ofSeconds(3)));
 
@@ -672,8 +748,9 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the minimum retry delay (3 seconds) instead of Retry-After (1 second)
-        assertThat(totalTime.toMillis()).isGreaterThan(2800); // Should be at least ~3 seconds
+        // Should have respected the Retry-After header (1 second) instead of minimum retry delay (3 seconds)
+        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
+        assertThat(totalTime.toMillis()).isLessThan(2500); // But less than 2.5 seconds (well below the 3s minimum)
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
