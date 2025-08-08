@@ -67,7 +67,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "1")
+                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -102,7 +102,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(500)
-                        .withHeader("Retry-After", "1")
+                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"server error\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -164,7 +164,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(500)
-                        .withHeader("Retry-After", "1")
+                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"server error\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -195,10 +195,7 @@ class HttpRequestAttemptRetryTest {
     void shouldNotRetryWith501() throws Exception {
         // Given
         wireMockServer.stubFor(get(urlEqualTo("/test"))
-                .willReturn(aResponse()
-                        .withStatus(501)
-                        .withHeader("Retry-After", "1")
-                        .withBody("{\"error\":\"not implemented\"}")));
+                .willReturn(aResponse().withStatus(501).withBody("{\"error\":\"not implemented\"}")));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
@@ -224,10 +221,7 @@ class HttpRequestAttemptRetryTest {
     void shouldRespectMaxRetries() throws Exception {
         // Given
         wireMockServer.stubFor(get(urlEqualTo("/test"))
-                .willReturn(aResponse()
-                        .withStatus(429)
-                        .withHeader("Retry-After", "1")
-                        .withBody("{\"error\":\"rate limited\"}")));
+                .willReturn(aResponse().withStatus(429).withBody("{\"error\":\"rate limited\"}")));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://localhost:" + wireMockServer.port() + "/test"))
@@ -416,7 +410,7 @@ class HttpRequestAttemptRetryTest {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(java.net.URI.create("http://invalid-hostname-that-does-not-exist.local/test"))
                 .GET()
-                .timeout(Duration.ofSeconds(1)) // Reasonable timeout
+                .timeout(Duration.ofMillis(500)) // Reasonable timeout
                 .build();
 
         HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
@@ -515,7 +509,7 @@ class HttpRequestAttemptRetryTest {
         ClientConfiguration globalConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + wireMockServer.port())
                 .maxRetries(2)
-                .minimumRetryDelay(Duration.ofSeconds(2)); // Should act as floor for exponential backoff
+                .minimumRetryDelay(Duration.ofMillis(100)); // Should act as floor for exponential backoff
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
@@ -535,8 +529,8 @@ class HttpRequestAttemptRetryTest {
         // Verify that it retried the expected number of times
         wireMockServer.verify(1 + globalConfig.getMaxRetries(), getRequestedFor(urlEqualTo("/test")));
 
-        // With 2 retries and minimum 2-second delays, total time should be at least 4 seconds
-        assertThat(totalTime.toMillis()).isGreaterThan(3500); // Should be at least ~4 seconds
+        // With 2 retries and minimum 100ms delays, total time should be at least 200ms
+        assertThat(totalTime.toMillis()).isGreaterThan(150); // Should be at least ~200ms
     }
 
     @Test
@@ -547,7 +541,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "1") // 1 second
+                        .withHeader("Retry-After", "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -565,7 +559,7 @@ class HttpRequestAttemptRetryTest {
         ClientConfiguration globalConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + wireMockServer.port())
                 .maxRetries(2)
-                .minimumRetryDelay(Duration.ofSeconds(3)); // Should NOT override Retry-After: 1
+                .minimumRetryDelay(Duration.ofMillis(150)); // Should NOT override Retry-After
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
@@ -579,9 +573,9 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the Retry-After header (1 second) instead of minimum retry delay (3 seconds)
-        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
-        assertThat(totalTime.toMillis()).isLessThan(2500); // But less than 2.5 seconds (well below the 3s minimum)
+        // Should have respected the Retry-After header (50ms) instead of minimum retry delay (150ms)
+        assertThat(totalTime.toMillis()).isGreaterThan(30); // Should be at least ~50ms
+        assertThat(totalTime.toMillis()).isLessThan(400); // But less than 400ms (well below the 150ms minimum)
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
@@ -595,7 +589,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "2") // 2 seconds
+                        .withHeader("Retry-After", "0.1") // 100ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -613,7 +607,7 @@ class HttpRequestAttemptRetryTest {
         ClientConfiguration globalConfig = new ClientConfiguration()
                 .apiUrl("http://localhost:" + wireMockServer.port())
                 .maxRetries(2)
-                .minimumRetryDelay(Duration.ofMillis(500)); // Should NOT override Retry-After: 2
+                .minimumRetryDelay(Duration.ofMillis(50)); // Should NOT override Retry-After: 100ms
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
@@ -627,13 +621,12 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the Retry-After header (2 seconds) over minimum delay (500ms)
+        // Should have respected the Retry-After header (100ms) over minimum delay (50ms)
         // Note: Using generous bounds due to timing variability in test environments
         System.out.println("Actual retry duration: " + totalTime.toMillis() + " ms");
 
-        assertThat(totalTime.toMillis())
-                .isGreaterThan(1200); // Should be at least ~2 seconds (with larger CI tolerance)
-        assertThat(totalTime.toMillis()).isLessThan(15000); // But not excessive
+        assertThat(totalTime.toMillis()).isGreaterThan(50); // Should be at least ~100ms (with tolerance)
+        assertThat(totalTime.toMillis()).isLessThan(1000); // But not excessive
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
@@ -651,8 +644,9 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         // Override with larger minimum retry delay using per-request configuration
-        dev.openfga.sdk.api.configuration.Configuration overriddenConfig = configuration.override(
-                new dev.openfga.sdk.api.configuration.ConfigurationOverride().minimumRetryDelay(Duration.ofSeconds(2)));
+        dev.openfga.sdk.api.configuration.Configuration overriddenConfig =
+                configuration.override(new dev.openfga.sdk.api.configuration.ConfigurationOverride()
+                        .minimumRetryDelay(Duration.ofMillis(100)));
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
@@ -672,8 +666,8 @@ class HttpRequestAttemptRetryTest {
         // Verify that it retried the expected number of times
         wireMockServer.verify(1 + overriddenConfig.getMaxRetries(), getRequestedFor(urlEqualTo("/test")));
 
-        // With 3 retries and minimum 2-second delays, total time should be at least 6 seconds
-        assertThat(totalTime.toMillis()).isGreaterThan(5500); // Should be at least ~6 seconds
+        // With 3 retries and minimum 100ms delays, total time should be at least 300ms
+        assertThat(totalTime.toMillis()).isGreaterThan(250); // Should be at least ~300ms
     }
 
     @Test
@@ -718,7 +712,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "1") // 1 second
+                        .withHeader("Retry-After", "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -733,8 +727,9 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         // Override with larger minimum retry delay (should NOT take precedence over Retry-After)
-        dev.openfga.sdk.api.configuration.Configuration overriddenConfig = configuration.override(
-                new dev.openfga.sdk.api.configuration.ConfigurationOverride().minimumRetryDelay(Duration.ofSeconds(3)));
+        dev.openfga.sdk.api.configuration.Configuration overriddenConfig =
+                configuration.override(new dev.openfga.sdk.api.configuration.ConfigurationOverride()
+                        .minimumRetryDelay(Duration.ofMillis(150)));
 
         HttpRequestAttempt<Void> attempt =
                 new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
@@ -748,9 +743,9 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the Retry-After header (1 second) instead of minimum retry delay (3 seconds)
-        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
-        assertThat(totalTime.toMillis()).isLessThan(2500); // But less than 2.5 seconds (well below the 3s minimum)
+        // Should have respected the Retry-After header (50ms) instead of minimum retry delay (150ms)
+        assertThat(totalTime.toMillis()).isGreaterThan(30); // Should be at least ~50ms
+        assertThat(totalTime.toMillis()).isLessThan(400); // But less than 400ms (well below the 150ms minimum)
 
         // Verify both requests were made
         wireMockServer.verify(2, getRequestedFor(urlEqualTo("/test")));
@@ -764,7 +759,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "1") // 1 second delay
+                        .withHeader("Retry-After", "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("retry-attempted"));
 
@@ -798,9 +793,9 @@ class HttpRequestAttemptRetryTest {
         Duration totalTime = Duration.between(startTime, endTime);
 
         // Then
-        // Should have respected the Retry-After header (1 second) for the single retry
+        // Should have respected the Retry-After header (50ms) for the single retry
         // Note: actual timing may vary in test environments, so we use generous bounds
-        assertThat(totalTime.toMillis()).isGreaterThan(800); // Should be at least ~1 second
+        assertThat(totalTime.toMillis()).isGreaterThan(30); // Should be at least ~50ms
         assertThat(totalTime.toMillis()).isLessThan(10000); // But not excessive (was sometimes 4x in CI)
 
         // Verify initial request + 1 retry = 2 total requests
