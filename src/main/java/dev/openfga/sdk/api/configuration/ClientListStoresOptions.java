@@ -18,6 +18,7 @@ public class ClientListStoresOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
     private Integer pageSize;
     private String continuationToken;
+    private String name;
 
     public ClientListStoresOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
@@ -45,5 +46,14 @@ public class ClientListStoresOptions implements AdditionalHeadersSupplier {
 
     public String getContinuationToken() {
         return continuationToken;
+    }
+
+    public ClientListStoresOptions name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getName() {
+        return name;
     }
 }
