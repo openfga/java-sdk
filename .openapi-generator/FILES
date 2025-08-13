@@ -164,6 +164,8 @@ src/main/java/dev/openfga/sdk/api/client/model/ClientWriteAssertionsResponse.jav
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteAuthorizationModelResponse.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteRequest.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientWriteSingleResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientWriteStatus.java
 src/main/java/dev/openfga/sdk/api/configuration/AdditionalHeadersSupplier.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java

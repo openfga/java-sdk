@@ -17,7 +17,6 @@ public class FgaError extends ApiException {
     private String grantType = null;
     private String requestId = null;
     private String apiErrorCode = null;
-    private String retryAfterHeader = null;
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
@@ -60,12 +59,6 @@ public class FgaError extends ApiException {
 
         error.setMethod(request.method());
         error.setRequestUrl(configuration.getApiUrl());
-
-        // Extract and set Retry-After header if present
-        Optional<String> retryAfter = headers.firstValue("Retry-After");
-        if (retryAfter.isPresent()) {
-            error.setRetryAfterHeader(retryAfter.get());
-        }
 
         var credentials = configuration.getCredentials();
         if (CredentialsMethod.CLIENT_CREDENTIALS == credentials.getCredentialsMethod()) {
@@ -132,13 +125,5 @@ public class FgaError extends ApiException {
 
     public String getApiErrorCode() {
         return apiErrorCode;
-    }
-
-    public void setRetryAfterHeader(String retryAfterHeader) {
-        this.retryAfterHeader = retryAfterHeader;
-    }
-
-    public String getRetryAfterHeader() {
-        return retryAfterHeader;
     }
 }
