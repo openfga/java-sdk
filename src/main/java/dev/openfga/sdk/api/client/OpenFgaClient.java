@@ -439,11 +439,18 @@ public class OpenFgaClient {
         for (int i = 1; i < transactions.size(); i++) {
             final int index = i; // Must be final in this scope for closure.
 
-            // The resulting completable future of this chain will result in either:
-            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
-            // 2. The final successful ClientWriteResponse.
             futureResponse = futureResponse.thenCompose(
-                    _response -> this.writeTransactions(storeId, transactions.get(index), options));
+                    _response -> this.writeTransactions(storeId, transactions.get(index), options)
+                            .exceptionally(ex -> {
+                                //handle exception
+                                Map<String, List<String>> headers = new HashMap<>();
+                                headers.put("Content-Type", List.of("application/json"));
+                                headers.put("Retry-After", List.of("30")); // in seconds
+                                headers.put("X-Debug-Info", List.of(ex.getMessage()));
+                                ApiResponse<Object> errResponse = new ApiResponse<>(500,headers, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", ex.getMessage());
+                                return new ClientWriteResponse(errResponse);
+                            })
+            );
         }
 
         return futureResponse;
