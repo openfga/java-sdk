@@ -1,203 +1,120 @@
-# OpenFGA Java SDK - No-Code OpenTelemetry Example
+# OpenTelemetry No-Code Example
 
-This example demonstrates how to use OpenTelemetry metrics with the OpenFGA Java SDK using the **no-code approach** with OpenTelemetry Java agents.
-
-## Key Benefits
-
-- **No OpenTelemetry configuration code** needed in your application
-- **Automatic instrumentation** of the OpenFGA SDK and other libraries
-- **Zero code changes** required to enable metrics
-- **Production-ready** approach used by many organizations
-
-## Important Note
-
-✅ **This example now uses the local SDK build with the OpenTelemetry bug fix!**
-
-The SDK has been fixed to use `GlobalOpenTelemetry.get()` instead of `OpenTelemetry.noop()`, enabling proper metrics export. This example demonstrates the no-code approach with the fixed SDK, performing real OpenFGA operations that generate actual metrics.
-
-## How It Works
-
-The OpenTelemetry Java agent automatically:
-1. Configures OpenTelemetry and registers it globally
-2. Instruments supported libraries (including the OpenFGA SDK)
-3. Exports metrics to your configured backend
-
-The OpenFGA SDK detects the agent-configured OpenTelemetry instance via `GlobalOpenTelemetry.get()` and automatically starts generating metrics.
+This example demonstrates how to use OpenTelemetry with the OpenFGA Java SDK using the **no-code approach** with the OpenTelemetry Java agent.
 
 ## Prerequisites
 
-1. **OpenTelemetry Collector** running (see [collector setup](https://github.com/ewanharris/opentelemetry-collector-dev-setup))
-2. **OpenTelemetry Java Agent** downloaded
-3. **OpenFGA store and authorization model** configured
+- Java 11 or higher
+- OpenFGA server running with existing store and authorization model
+- OpenTelemetry Java agent JAR file
 
 ## Setup
 
-### 1. Download OpenTelemetry Java Agent
+### 1. Clone the OpenTelemetry Collector Dev Setup
 
 ```bash
-# Download the latest OpenTelemetry Java agent
-curl -L -o opentelemetry-javaagent.jar \
-  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+git clone https://github.com/ewanharris/opentelemetry-collector-dev-setup.git otel-collector
+cd otel-collector
 ```
 
-### 2. Configure Environment
+### 2. Start the OpenTelemetry Stack
 
-Copy `.env.example` to `.env` and configure your OpenFGA settings:
+```bash
+docker-compose up -d
+```
+
+This will start:
+- **Jaeger** at http://localhost:16686 - Distributed tracing UI
+- **Zipkin** at http://localhost:9411 - Alternative tracing UI  
+- **Prometheus** at http://localhost:9090 - Metrics collection and querying
+- **Grafana** at http://localhost:3001 - Metrics visualization (admin:admin)
+
+### 3. Start OpenFGA Server (if not already running)
+
+You can use Docker to run OpenFGA locally:
+
+```bash
+docker run -p 8080:8080 openfga/openfga run
+```
+
+Or follow the [OpenFGA installation guide](https://openfga.dev/docs/getting-started/setup-openfga).
+
+### 4. Download OpenTelemetry Java Agent
+
+```bash
+wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+```
+
+### 5. Configure Environment Variables
+
+Copy `.env.example` to `.env` and update with your values:
 
 ```bash
 cp .env.example .env
-# Edit .env with your store ID, model ID, and authentication details
+# Edit .env with your actual FGA store ID, model ID, and credentials
 ```
 
-### 3. Start OpenTelemetry Collector
+The `.env` file should contain:
 
 ```bash
-# Clone and start the collector setup
-git clone https://github.com/ewanharris/opentelemetry-collector-dev-setup.git
-cd opentelemetry-collector-dev-setup
-docker-compose up -d
+# FGA Configuration (REQUIRED)
+FGA_API_URL=http://localhost:8080
+FGA_STORE_ID=your-actual-store-id
+FGA_MODEL_ID=your-actual-model-id
+
+# Authentication (optional)
+FGA_CLIENT_ID=your-client-id
+FGA_CLIENT_SECRET=your-client-secret
+FGA_API_AUDIENCE=https://api.fga.example
+FGA_API_TOKEN_ISSUER=auth.fga.example
 ```
 
 ## Running the Example
 
-### Option 1: Using Gradle Task (Recommended)
-
+### Using the runWithAgent task (Recommended)
 ```bash
-# Run with OpenTelemetry agent
 ./gradlew runWithAgent
 ```
 
-### Option 2: Manual Java Command
-
+### Using Gradle directly (if runWithAgent doesn't work)
 ```bash
-# Build the application
-./gradlew build
-
-# Run with OpenTelemetry agent
-java -javaagent:opentelemetry-javaagent.jar \
-     -Dotel.service.name=openfga-java-sdk-no-code-example \
-     -Dotel.service.version=1.0.0 \
-     -Dotel.exporter.otlp.endpoint=http://localhost:4318 \
-     -Dotel.exporter.otlp.protocol=http/protobuf \
-     -jar build/libs/openfga-sdk-opentelemetry-no-code-example.jar
+gradle run -javaagent:opentelemetry-javaagent.jar \
+  -Dotel.service.name=openfga-java-sdk-no-code-example \
+  -Dotel.service.version=1.0.0 \
+  -Dotel.exporter.otlp.endpoint=http://localhost:4317 \
+  -Dotel.exporter.otlp.protocol=grpc
 ```
 
-### Option 3: Using Environment Variables
-
+### If Gradle wrapper needs regeneration
 ```bash
-# Set OpenTelemetry configuration via environment variables
-export OTEL_SERVICE_NAME=openfga-java-sdk-no-code-example
-export OTEL_SERVICE_VERSION=1.0.0
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-
-# Run with agent
-java -javaagent:opentelemetry-javaagent.jar -jar build/libs/your-app.jar
+gradle wrapper --gradle-version 8.5
+./gradlew runWithAgent
 ```
 
-## Configuration Options
+## What It Does
 
-The OpenTelemetry Java agent can be configured via:
+The example runs continuously, performing these operations every 5 seconds:
 
-### JVM System Properties
-```bash
--Dotel.service.name=your-service-name
--Dotel.service.version=1.0.0
--Dotel.exporter.otlp.endpoint=http://localhost:4317
--Dotel.exporter.otlp.headers=api-key=your-api-key
-```
-
-### Environment Variables
-```bash
-OTEL_SERVICE_NAME=your-service-name
-OTEL_SERVICE_VERSION=1.0.0
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-OTEL_EXPORTER_OTLP_HEADERS=api-key=your-api-key
-```
-
-### Configuration File
-Create `otel.properties`:
-```properties
-otel.service.name=your-service-name
-otel.service.version=1.0.0
-otel.exporter.otlp.endpoint=http://localhost:4317
-```
-
-## Generated Metrics
-
-The example will generate the following OpenFGA SDK metrics:
-
-| Metric Name | Type | Description |
-|-------------|------|-------------|
-| `fga-client.request.duration` | Histogram | Total request time for FGA requests |
-| `fga-client.query.duration` | Histogram | Time taken by FGA server to process requests |
-| `fga-client.credentials.request` | Counter | Number of token requests (if using auth) |
+1. **Read authorization model** - Gets the existing authorization model
+2. **Read existing tuples** - Reads all tuples from the store  
+3. **Check operations** - Tests specific user permissions:
+   - `user:anne` can `viewer` `document:2021-budget`
+   - `user:beth` can `writer` `document:2021-budget` 
+   - `user:anne` can `viewer` `document:2022-budget`
+4. **Batch check** - Same checks but in a single batch request
+5. **List objects** - Lists documents that `user:anne` can view
 
 ## Viewing Metrics
 
-Once the example runs, check your observability tools:
+Metrics will be sent to the OpenTelemetry Collector at http://localhost:4317 and then forwarded to Prometheus at http://localhost:9090/metrics
 
-- **Prometheus**: http://localhost:9090
-- **Grafana**: http://localhost:3001 (admin:admin)
-- **Jaeger**: http://localhost:16686
+In Grafana (http://localhost:3001), look for metrics prefixed with `fga_client_`:
+- `fga_client_request_duration_seconds` - Total request duration
+- `fga_client_query_duration_seconds` - Server processing time  
+- `fga_client_credentials_request_total` - Authentication requests
 
-## Comparison with Manual Configuration
+## How It Works
 
-| Approach | Code Changes | Configuration | Flexibility |
-|----------|--------------|---------------|-------------|
-| **No-Code (Agent)** | None | External (JVM args/env vars) | High |
-| **Manual Configuration** | Required | In application code | Very High |
-
-## Troubleshooting
-
-### Agent Not Working
-1. Verify agent JAR path is correct
-2. Check JVM arguments are properly set
-3. Ensure collector is running and accessible
-
-### No Metrics Appearing
-1. Verify OpenTelemetry collector is running
-2. Check agent configuration (service name, endpoint)
-3. Wait 1-2 minutes for metrics export
-4. Check collector logs for errors
-
-### Agent Configuration Issues
-```bash
-# Enable agent debug logging
--Dotel.javaagent.debug=true
-
-# Enable OpenTelemetry SDK debug logging
--Dotel.java.global-autoconfigure.enabled=true
-```
-
-## Production Deployment
-
-For production use:
-
-1. **Use environment variables** instead of JVM system properties
-2. **Configure proper service names** and versions
-3. **Set up secure OTLP endpoints** with authentication
-4. **Monitor agent overhead** (typically <5% CPU/memory)
-5. **Use agent configuration files** for complex setups
-
-## AWS OpenTelemetry Agent
-
-For AWS environments, you can use the AWS Distro for OpenTelemetry:
-
-```bash
-# Download AWS OpenTelemetry Java agent
-curl -L -o aws-opentelemetry-agent.jar \
-  https://github.com/aws-observability/aws-otel-java-instrumentation/releases/latest/download/aws-opentelemetry-agent.jar
-
-# Run with AWS agent
-java -javaagent:aws-opentelemetry-agent.jar \
-     -Dotel.exporter.otlp.endpoint=https://your-aws-collector-endpoint \
-     -jar your-app.jar
-```
-
-## Next Steps
-
-- Explore [manual OpenTelemetry configuration](../opentelemetry/) for more control
-- Set up custom metrics and traces in your application
-- Configure alerting based on OpenFGA metrics
-- Integrate with your organization's observability stack
+- **No configuration code needed** - The Java agent handles all OpenTelemetry setup
+- **Automatic instrumentation** - Agent detects and configures OpenTelemetry globally
+- **SDK metrics enabled** - The FGA SDK detects the global OpenTelemetry instance

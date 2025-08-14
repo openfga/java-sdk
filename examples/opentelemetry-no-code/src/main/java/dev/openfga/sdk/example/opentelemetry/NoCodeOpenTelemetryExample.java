@@ -16,23 +16,32 @@ import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.model.*;
+import dev.openfga.sdk.telemetry.Counters;
+import dev.openfga.sdk.telemetry.Histograms;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * OpenFGA Java SDK - No-Code OpenTelemetry Example
  * 
  * This example demonstrates how to use OpenTelemetry metrics with the OpenFGA Java SDK
- * using the no-code approach with OpenTelemetry Java agents.
+ * using the no-code approach with OpenTelemetry Java agent.
  * 
  * No OpenTelemetry configuration code is needed in the application - the Java agent
  * handles all the setup automatically when you run with:
  * 
- * java -javaagent:opentelemetry-javaagent.jar -jar your-app.jar
+ * java -javaagent:opentelemetry-javaagent.jar \
+ *      -Dotel.service.name=fga-agent-example \
+ *      -Dotel.metrics.exporter=prometheus \
+ *      -Dotel.exporter.prometheus.port=9090 \
+ *      YourApp
  * 
  * The SDK will automatically detect and use the agent-configured OpenTelemetry instance.
  */
@@ -52,21 +61,35 @@ public class NoCodeOpenTelemetryExample {
         System.out.println("   The OpenTelemetry Java agent handles all setup automatically");
         System.out.println("   Run with: java -javaagent:opentelemetry-javaagent.jar -jar app.jar");
         
-        // Create OpenFGA client - no OpenTelemetry configuration needed!
+        // Create OpenFGA client
         createOpenFgaClient();
         
-        System.out.println("\n🔄 Starting continuous OpenTelemetry metrics generation...");
-        System.out.println("   Operations will run every 20 seconds until stopped (Ctrl+C)");
+        System.out.println("\n🔄 Starting continuous operations loop...");
+        System.out.println("   Operations will run every 5 seconds until stopped (Ctrl+C)");
         System.out.println("   This matches the behavior of other OpenFGA SDK examples");
         
-        // Start continuous execution
-        runContinuously();
+        // Run operations continuously in a loop like the JS example
+        int operationCount = 0;
+        while (true) {
+            try {
+                operationCount++;
+                System.out.println("\n--- Operation " + operationCount + " ---");
+                performOperations();
+                
+                // Wait 5 seconds before next iteration
+                TimeUnit.SECONDS.sleep(5);
+            } catch (Exception e) {
+                System.err.println("Error in operation " + operationCount + ": " + e.getMessage());
+                e.printStackTrace();
+                TimeUnit.SECONDS.sleep(2);
+            }
+        }
     }
 
     private static void createOpenFgaClient() throws Exception {
         System.out.println("\n🔧 Creating OpenFGA client...");
         
-        String apiUrl = dotenv.get("FGA_API_URL", "https://api.us1.fga.dev");
+        String apiUrl = dotenv.get("FGA_API_URL", "http://localhost:8080");
         String storeId = dotenv.get("FGA_STORE_ID");
         String modelId = dotenv.get("FGA_MODEL_ID");
         
@@ -78,7 +101,7 @@ public class NoCodeOpenTelemetryExample {
         System.out.println("   Store ID: " + storeId);
         System.out.println("   Model ID: " + modelId);
         
-        // Create client configuration - no telemetry configuration needed!
+        // Create client configuration; telemetry enabled by default (export is a noop if global instance not set))
         ClientConfiguration config = new ClientConfiguration()
                 .apiUrl(apiUrl)
                 .storeId(storeId)
@@ -105,215 +128,116 @@ public class NoCodeOpenTelemetryExample {
             System.out.println("   ℹ️  No authentication configured (using public API)");
         }
         
-        // Create the client - OpenTelemetry metrics will be automatically enabled
-        // if the Java agent is running
+        // Create the client
         fgaClient = new OpenFgaClient(config);
         
-        System.out.println("✅ OpenFGA client created          ");
+        System.out.println("✅ OpenFGA client created with telemetry enabled!");
         System.out.println("   📊 Metrics will be automatically collected by OpenTelemetry agent");
     }
-    
-    /**
-     * Run operations continuously every 20 seconds like the JS example
-     */
-    private static void runContinuously() {
-        // Schedule next execution in 20 seconds
-        java.util.Timer timer = new java.util.Timer("NoCodeOpenTelemetryExample", false);
-        timer.schedule(new java.util.TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    runContinuously(); // Schedule next run
-                } catch (Exception e) {
-                    System.err.println("Error scheduling next run: " + e.getMessage());
-                }
-            }
-        }, 20000); // 20 seconds
-        
-        try {
-            System.out.println("\n📊 Running operations cycle...");
-            
-            // Perform comprehensive operations to generate metrics
-            performOperations();
-            
-            System.out.println("   ✅ Operations cycle completed - next run in 20 seconds");
-            
-        } catch (Exception e) {
-            System.err.println("⚠️  Error in operations cycle: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private static void performOperations() throws Exception {
-        System.out.println("\n📊 Demonstrating OpenTelemetry metrics with no-code approach...");
+        // Read the authorization model (similar to JS SDK example)
+        System.out.println("📖 Reading authorization model...");
+        ClientReadAuthorizationModelResponse modelResponse = fgaClient.readAuthorizationModel().get();
+        System.out.println("✓ Read authorization model: " + modelResponse.getAuthorizationModel().getId());
         
-        System.out.println("\n✨ Using the FIXED SDK with OpenTelemetry bug fix!");
-        System.out.println("   The SDK now properly uses GlobalOpenTelemetry.get() instead of noop()");
-        
-        System.out.println("\n📋 How this works:");
-        System.out.println("   1. OpenTelemetry Java agent configures OpenTelemetry globally");
-        System.out.println("   2. OpenFGA SDK detects the global OpenTelemetry instance");
-        System.out.println("   3. SDK automatically generates metrics for all operations");
-        System.out.println("   4. Agent exports metrics to your configured backend");
-        
-        System.out.println("\n📊 Performing comprehensive operations to generate all metrics:");
-        
-        // Define test tuples that we'll use throughout the example
-        List<ClientTupleKey> testTuples = List.of(
-            new ClientTupleKey()
-                .user("user:alice")
-                .relation("owner")
-                ._object("document:readme"),
-            new ClientTupleKey()
-                .user("user:bob")
-                .relation("writer")
-                ._object("document:readme"),
-            new ClientTupleKey()
-                .user("user:charlie")
-                .relation("reader")
-                ._object("document:readme")
-        );
-        
+        // Write some test tuples first (to ensure we have data to check)
+        System.out.println("✍️ Writing test tuples...");
         try {
-            // 1. Write relationship tuples (generates request.duration metrics)
-            System.out.println("   📝 Writing relationship tuples...");
-            fgaClient.write(new ClientWriteRequest().writes(testTuples)).get();
-            System.out.println("   ✅ Relationship tuples written - generated request.duration metric!");
-
-            // 2. Perform check operations (generates query.duration metrics)
-            System.out.println("   🔍 Performing check operations...");
+            List<ClientTupleKey> tuples = List.of(
+                new ClientTupleKey()
+                    .user("user:anne")
+                    .relation("viewer")
+                    ._object("doc:2021-budget"),
+                new ClientTupleKey()
+                    .user("user:beth")
+                    .relation("can_write")
+                    ._object("doc:2021-budget"),
+                new ClientTupleKey()
+                    .user("user:anne")
+                    .relation("viewer")
+                    ._object("doc:2022-budget")
+            );
             
-            java.util.concurrent.CompletableFuture<ClientCheckResponse> check1 = fgaClient.check(new ClientCheckRequest()
-                .user("user:alice")
-                .relation("owner")
-                ._object("document:readme"));
-                
-            java.util.concurrent.CompletableFuture<ClientCheckResponse> check2 = fgaClient.check(new ClientCheckRequest()
-                .user("user:bob")
-                .relation("writer")
-                ._object("document:readme"));
-                
-            java.util.concurrent.CompletableFuture<ClientCheckResponse> check3 = fgaClient.check(new ClientCheckRequest()
-                .user("user:charlie")
-                .relation("reader")
-                ._object("document:readme"));
-
-            // Wait for all checks to complete
-            java.util.concurrent.CompletableFuture.allOf(check1, check2, check3).get();
-            System.out.println("   ✅ Check operations completed - generated request.duration and query.duration metrics!");
-
-            // 3. List objects operation
-            System.out.println("   📋 Listing objects...");
-            fgaClient.listObjects(new ClientListObjectsRequest()
-                .user("user:alice")
-                .relation("owner")
-                .type("document")).get();
-            System.out.println("   ✅ List objects completed - generated request.duration metric!");
-
-            // 4. Read tuples
-            System.out.println("   📖 Reading tuples...");
-            fgaClient.read(new ClientReadRequest()).get();
-            System.out.println("   ✅ Read tuples completed - generated request.duration metric!");
-
-            // 5. Batch check operations
-            System.out.println("   🔍 Performing batch check operations...");
-            fgaClient.batchCheck(new ClientBatchCheckRequest()
-                .checks(List.of(
-                    new ClientBatchCheckItem()
-                        .user("user:alice")
-                        .relation("owner")
-                        ._object("document:readme"),
-                    new ClientBatchCheckItem()
-                        .user("user:bob")
-                        .relation("writer")
-                        ._object("document:readme"),
-                    new ClientBatchCheckItem()
-                        .user("user:charlie")
-                        .relation("owner")
-                        ._object("document:readme")
-                ))).get();
-            System.out.println("   ✅ Batch check operations completed - generated request.duration metrics!");
-
-            // 6. List users operation
-            System.out.println("   👥 Listing users...");
-            fgaClient.listUsers(new ClientListUsersRequest()
-                ._object(new FgaObject().type("document").id("readme"))
-                .relation("reader")
-                .userFilters(List.of(new UserTypeFilter().type("user")))).get();
-            System.out.println("   ✅ List users completed - generated request.duration metric!");
-
-            // 7. Write and delete operations
-            System.out.println("   ✏️ Writing and deleting tuples...");
-            fgaClient.write(new ClientWriteRequest()
-                .writes(List.of(
-                    new ClientTupleKey()
-                        .user("user:dave")
-                        .relation("reader")
-                        ._object("document:readme")
-                ))
-                .deletes(List.of(
-                    new ClientTupleKeyWithoutCondition()
-                        .user("user:charlie")
-                        .relation("reader")
-                        ._object("document:readme")
-                ))).get();
-            System.out.println("   ✅ Write and delete operations completed - generated request.duration metric!");
-
-            System.out.println("   🎯 All operations completed - comprehensive metrics generated!");
-
-            // Clean up test tuples (so example can be run multiple times)
-            System.out.println("   🧹 Cleaning up test tuples...");
-            // Convert ClientTupleKey to ClientTupleKeyWithoutCondition for delete operations
-            List<ClientTupleKeyWithoutCondition> deleteTuples = testTuples.stream()
-                .map(tuple -> new ClientTupleKeyWithoutCondition()
-                    .user(tuple.getUser())
-                    .relation(tuple.getRelation())
-                    ._object(tuple.getObject()))
-                .collect(java.util.stream.Collectors.toList());
-            
-            // Also clean up the additional tuple we created
-            deleteTuples.add(new ClientTupleKeyWithoutCondition()
-                .user("user:dave")
-                .relation("reader")
-                ._object("document:readme"));
-            
-            fgaClient.write(new ClientWriteRequest().deletes(deleteTuples)).get();
-            System.out.println("   ✅ Test tuples cleaned up - generated additional request.duration metric!");
-
-        } catch (java.util.concurrent.ExecutionException e) {
-            // Handle ExecutionException which wraps the actual FGA error
-            Throwable cause = e.getCause();
-            if (cause != null && (cause.getClass().getSimpleName().contains("FgaApi") || 
-                                  cause.getMessage() != null && (cause.getMessage().contains("validation_error") || 
-                                                                cause.getMessage().contains("already exists") || 
-                                                                cause.getMessage().contains("not found") ||
-                                                                cause.getMessage().contains("write")))) {
-                System.out.println("   ⚠️  Some operations had conflicts - continuing (" + cause.getClass().getSimpleName() + ")");
-                System.out.println("   📊 Metrics were still generated for successful operations!");
-            } else {
-                throw e; // Re-throw if it's not a tuple conflict error
-            }
-        } catch (Exception e) {
-            if (e.getClass().getSimpleName().contains("FgaApi") || 
-                (e.getMessage() != null && (e.getMessage().contains("validation_error") || 
-                                           e.getMessage().contains("already exists") || 
-                                           e.getMessage().contains("not found") ||
-                                           e.getMessage().contains("write")))) {
-                System.out.println("   ⚠️  Some operations had conflicts - continuing (" + e.getClass().getSimpleName() + ")");
-                System.out.println("   📊 Metrics were still generated for successful operations!");
-            } else {
-                throw e; // Re-throw if it's not a tuple conflict error
-            }
+            ClientWriteResponse writeResponse = fgaClient.write(new ClientWriteRequest().writes(tuples)).get();
+            System.out.println("✓ Wrote " + tuples.size() + " test tuples");
+        } catch (Exception writeError) {
+            System.out.println("⚠️  Could not write tuples (may not be needed): " + writeError.getMessage());
         }
         
-        System.out.println("\n📊 Real metrics generated and exported by Java agent:");
-        System.out.println("   • fga-client.request.duration (histogram) - Total request time");
-        System.out.println("   • fga-client.query.duration (histogram) - Server processing time");
-        System.out.println("   • fga-client.credentials.request (counter) - Token requests");
+        // Read existing tuples (similar to JS SDK example)
+        System.out.println("📋 Reading existing tuples...");
+        ClientReadResponse readResponse = fgaClient.read(new ClientReadRequest()).get();
+        System.out.println("✓ Found " + readResponse.getTuples().size() + " existing tuples");
         
-        System.out.println("\n📊 Check your observability tools for real metrics:");
-        System.out.println("   • Prometheus: http://localhost:9090");
-        System.out.println("   • Grafana: http://localhost:3001");
-        System.out.println("   • Jaeger: http://localhost:16686");
+        // Perform check requests (matching JS SDK example patterns)
+        System.out.println("🔍 Performing check operations...");
+        
+        // Check: user:anne can view doc:2021-budget
+        ClientCheckRequest check1 = new ClientCheckRequest()
+            .user("user:anne")
+            .relation("viewer")
+            ._object("doc:2021-budget");
+        ClientCheckResponse checkResponse1 = fgaClient.check(check1).get();
+        System.out.println("✓ Check user:anne can view doc:2021-budget: " + checkResponse1.getAllowed());
+        
+        // Check: user:beth can writer doc:2021-budget
+        ClientCheckRequest check2 = new ClientCheckRequest()
+            .user("user:beth")
+            .relation("can_write")
+            ._object("doc:2021-budget");
+        ClientCheckResponse checkResponse2 = fgaClient.check(check2).get();
+        System.out.println("✓ Check user:beth can write doc:2021-budget: " + checkResponse2.getAllowed());
+        
+        // Check: user:anne can view doc:2022-budget
+        ClientCheckRequest check3 = new ClientCheckRequest()
+            .user("user:anne")
+            .relation("viewer")
+            ._object("doc:2022-budget");
+        ClientCheckResponse checkResponse3 = fgaClient.check(check3).get();
+        System.out.println("✓ Check user:anne can view doc:2022-budget: " + checkResponse3.getAllowed());
+
+        // Batch check operations (matching JS SDK example)
+        System.out.println("🔍 Performing batch check operations...");
+        List<ClientCheckRequest> batchChecks = List.of(
+            new ClientCheckRequest()
+                .user("user:anne")
+                .relation("viewer")
+                ._object("doc:2021-budget"),
+            new ClientCheckRequest()
+                .user("user:beth")
+                .relation("can_write")
+                ._object("doc:2021-budget"),
+            new ClientCheckRequest()
+                .user("user:anne")
+                .relation("viewer")
+                ._object("doc:2022-budget")
+        );
+
+        List<ClientBatchCheckClientResponse> batchResponse = fgaClient.clientBatchCheck(batchChecks).get();
+        System.out.println("✓ Batch check completed with " + batchResponse.size() + " results:");
+        
+        for (int i = 0; i < batchResponse.size(); i++) {
+            ClientBatchCheckClientResponse response = batchResponse.get(i);
+            String correlationId = "check-" + (i + 1);
+            if (response.getThrowable() == null) {
+                System.out.println("  - " + correlationId + ": " + response.getAllowed());
+            } else {
+                System.out.println("  - " + correlationId + ": ERROR - " + response.getThrowable().getMessage());
+            }
+        }
+
+        // List objects operation (similar to JS SDK)
+        System.out.println("📋 Listing objects user:anne can view...");
+        ClientListObjectsRequest listRequest = new ClientListObjectsRequest()
+            .user("user:anne")
+            .relation("viewer")
+            .type("doc");
+        
+        ClientListObjectsResponse listResponse = fgaClient.listObjects(listRequest).get();
+        System.out.println("✓ user:anne can view " + listResponse.getObjects().size() + " documents: " + 
+            String.join(", ", listResponse.getObjects()));
+
+        System.out.println("📊 All operations completed - metrics generated!");
+        System.out.println("📊 Generated metrics: request.duration, query.duration, credentials.request");
     }
 }
