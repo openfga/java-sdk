@@ -1,65 +1,56 @@
 plugins {
-    id 'java'
     id 'application'
+    id 'com.diffplug.spotless' version '7.2.1'
 }
 
-// java {
-//     toolchain {
-//         languageVersion = JavaLanguageVersion.of(11)
-//     }
-// }
+application {
+    mainClass = 'dev.openfga.sdk.example.opentelemetry.OpenTelemetryExample'
+    applicationDefaultJvmArgs = [
+        '-Dcom.sun.net.ssl.checkRevocation=false',
+        '-Dtrust_all_cert=true'
+    ]
+}
 
 repositories {
     mavenCentral()
 }
 
+ext {
+    jacksonVersion = "2.19.2"
+    openTelemetryVersion = "1.32.0"
+    openTelemetryAlphaVersion = "1.32.0-alpha"
+}
+
 dependencies {
-    // OpenFGA SDK - use the local build
-    implementation files('../../build/libs/openfga-sdk-0.8.3.jar')
-    
-    // Required transitive dependencies for OpenFGA SDK
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.2'
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation 'io.opentelemetry:opentelemetry-api:1.32.0'
-    
-    // OpenTelemetry dependencies
-    implementation 'io.opentelemetry:opentelemetry-sdk:1.32.0'
+    // implementation("dev.openfga:openfga-sdk:0.8.3")
+    implementation("dev.openfga:openfga-sdk")
+
+    // Serialization
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+
+    // OpenTelemetry SDK for manual configuration
+    implementation("io.opentelemetry:opentelemetry-sdk:$openTelemetryVersion")
+    implementation("io.opentelemetry:opentelemetry-exporter-prometheus:$openTelemetryAlphaVersion")
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.32.0'
     implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.32.0'
     implementation 'io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha'
-    
-    // Environment variable support
-    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
-    
-    // Jackson JsonNullable (required by OpenFGA SDK)
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
-    
-    // Logging
-    implementation 'org.slf4j:slf4j-simple:2.0.9'
+
+    // Environment variables
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 }
 
-application {
-    mainClass = 'dev.openfga.sdk.example.opentelemetry.OpenTelemetryExample'
-}
-
-// Fix SSL/TLS initialization issues on macOS
-run {
-    jvmArgs = [
-        '-Djava.security.egd=file:/dev/./urandom',
-        '-Dcom.sun.net.ssl.checkRevocation=false',
-        '-Dtrust_all_cert=true',
-        '--add-opens=java.base/sun.security.ssl=ALL-UNNAMED',
-        '--add-opens=java.base/sun.nio.fs=ALL-UNNAMED'
-    ]
-}
-
-tasks.named('run') {
-    // Allow passing system properties to the application
-    systemProperties System.getProperties()
+// Use spotless plugin to automatically format code
+spotless {
+    enforceCheck false
+    java {
+        palantirJavaFormat()
+        removeUnusedImports()
+        importOrder()
+    }
 }
 
 

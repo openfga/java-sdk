@@ -274,3 +274,92 @@ docker-compose down
 - [OpenFGA Java SDK Documentation](../../README.md)
 - [OpenTelemetry Java Documentation](https://opentelemetry.io/docs/languages/java/)
 - [OpenFGA Telemetry Documentation](../../docs/OpenTelemetry.md)
+
+# OpenTelemetry Manual Configuration Example
+
+This example demonstrates how to use OpenTelemetry with the OpenFGA Java SDK using **manual configuration** with code-based setup.
+
+## Prerequisites
+
+- Java 11 or higher
+- OpenFGA server running with existing store and authorization model
+
+## Setup
+
+### Configure Environment Variables
+
+Copy `.env.example` to `.env` and update with your values:
+
+```bash
+cp .env.example .env
+# Edit .env with your actual FGA store ID, model ID, and credentials
+```
+
+The `.env` file should contain:
+
+```bash
+# FGA Configuration (REQUIRED)
+FGA_API_URL=http://localhost:8080
+FGA_STORE_ID=your-actual-store-id
+FGA_MODEL_ID=your-actual-model-id
+
+# Authentication (optional)
+FGA_CLIENT_ID=your-client-id
+FGA_CLIENT_SECRET=your-client-secret
+FGA_API_AUDIENCE=https://api.fga.example
+FGA_API_TOKEN_ISSUER=auth.fga.example
+```
+
+## Running the Example
+
+### Option 1: Using Gradle Wrapper (if available)
+```bash
+./gradlew run
+```
+
+### Option 2: Using Gradle directly
+```bash
+gradle run
+```
+
+### Option 3: Regenerate Gradle Wrapper (if needed)
+```bash
+gradle wrapper --gradle-version 8.5
+./gradlew run
+```
+
+## What It Does
+
+The example runs continuously, performing these operations every 5 seconds:
+
+1. **Manual OpenTelemetry setup** - Configures OpenTelemetry SDK with Prometheus exporter
+2. **Read authorization model** - Gets the existing authorization model
+3. **Read existing tuples** - Reads all tuples from the store  
+4. **Check operations** - Tests specific user permissions:
+   - `user:anne` can `viewer` `document:2021-budget`
+   - `user:beth` can `writer` `document:2021-budget` 
+   - `user:anne` can `viewer` `document:2022-budget`
+5. **Batch check** - Same checks but in a single batch request
+6. **List objects** - Lists documents that `user:anne` can view
+
+## Viewing Metrics
+
+The example starts a Prometheus metrics server on port 9090. Metrics will be available at:
+http://localhost:9090/metrics
+
+Look for metrics prefixed with `fga_client_`:
+- `fga_client_request_duration_seconds` - Total request duration
+- `fga_client_query_duration_seconds` - Server processing time  
+- `fga_client_credentials_request_total` - Authentication requests
+
+## How It Works
+
+- **Code-based configuration** - OpenTelemetry is configured programmatically in the application
+- **Prometheus exporter** - Metrics are exported via HTTP server on port 9090
+- **SDK metrics enabled** - The FGA SDK uses the configured OpenTelemetry instance
+
+## Comparison with No-Code Example
+
+- **Manual**: Requires explicit OpenTelemetry configuration in code, full control
+- **No-Code**: Uses Java agent, no configuration code needed
+- **Both**: Same FGA operations, same metrics generated, same authentication support
