@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.8.3...HEAD)
+- fix: allow configuring maxParallelRequests for non-transaction writes (#187)
 
 ### Added
 - feat: RFC 9110 compliant Retry-After header support with exponential backoff and jitter

@@ -542,7 +542,7 @@ Convenience `WriteTuples` and `DeleteTuples` methods are also available.
 
 ###### Non-transaction mode
 
-The SDK will split the writes into separate requests and send them sequentially to avoid violating rate limits.
+The SDK will split the writes into smaller transactions and send them with limited parallelization to avoid violating rate limits.
 
 > Passing `ClientWriteOptions` with `.disableTransactions(true)` is required to use non-transaction mode.
 > All other fields of `ClientWriteOptions` are optional.
@@ -570,7 +570,8 @@ var options = new ClientWriteOptions()
     // You can rely on the model id set in the configuration or override it for this specific request
     .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
     .disableTransactions(true)
-    .transactionChunkSize(5); // Maximum number of requests to be sent in a transaction in a particular chunk
+    .transactionChunkSize(5) // Maximum number of requests per transaction chunk, defaults to 1
+    .maxParallelRequests(5); // Max number of requests to issue in parallel, defaults to 10
 
 var response = fgaClient.write(request, options).get();
 ```

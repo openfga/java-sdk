@@ -19,6 +19,7 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
     private String authorizationModelId;
     private Boolean disableTransactions = false;
     private int transactionChunkSize;
+    private Integer maxParallelRequests;
 
     public ClientWriteOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
@@ -55,5 +56,14 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
 
     public int getTransactionChunkSize() {
         return transactionChunkSize > 0 ? transactionChunkSize : 1;
+    }
+
+    public ClientWriteOptions maxParallelRequests(Integer maxParallelRequests) {
+        this.maxParallelRequests = maxParallelRequests;
+        return this;
+    }
+
+    public Integer getMaxParallelRequests() {
+        return maxParallelRequests;
     }
 }

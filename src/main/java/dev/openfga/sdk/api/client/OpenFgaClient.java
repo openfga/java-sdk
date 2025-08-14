@@ -414,7 +414,9 @@ public class OpenFgaClient {
 
         var options = writeOptions != null
                 ? writeOptions
-                : new ClientWriteOptions().transactionChunkSize(DEFAULT_MAX_METHOD_PARALLEL_REQS);
+                : new ClientWriteOptions()
+                        .transactionChunkSize(1)
+                        .maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
 
         if (options.getAdditionalHeaders() == null) {
             options.additionalHeaders(new HashMap<>());
@@ -434,19 +436,50 @@ public class OpenFgaClient {
             return this.writeTransactions(storeId, emptyTransaction, writeOptions);
         }
 
-        var futureResponse = this.writeTransactions(storeId, transactions.get(0), options);
+        int maxParallelRequests = options.getMaxParallelRequests() != null
+                ? options.getMaxParallelRequests()
+                : DEFAULT_MAX_METHOD_PARALLEL_REQS;
 
-        for (int i = 1; i < transactions.size(); i++) {
-            final int index = i; // Must be final in this scope for closure.
-
-            // The resulting completable future of this chain will result in either:
-            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
-            // 2. The final successful ClientWriteResponse.
-            futureResponse = futureResponse.thenCompose(
-                    _response -> this.writeTransactions(storeId, transactions.get(index), options));
+        if (maxParallelRequests <= 1) {
+            var futureResponse = this.writeTransactions(storeId, transactions.get(0), options);
+            for (int i = 1; i < transactions.size(); i++) {
+                final int index = i;
+                futureResponse = futureResponse.thenCompose(
+                        _response -> this.writeTransactions(storeId, transactions.get(index), options));
+            }
+            return futureResponse;
         }
 
-        return futureResponse;
+        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
+        var latch = new CountDownLatch(transactions.size());
+        var failure = new AtomicReference<Throwable>();
+        var lastResponse = new AtomicReference<ClientWriteResponse>();
+
+        Consumer<ClientWriteRequest> singleWriteRequest =
+                tx -> this.writeTransactions(storeId, tx, options).whenComplete((response, throwable) -> {
+                    try {
+                        if (throwable != null) {
+                            failure.compareAndSet(null, throwable);
+                        } else {
+                            lastResponse.set(response);
+                        }
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+
+        try {
+            transactions.forEach(tx -> executor.execute(() -> singleWriteRequest.accept(tx)));
+            latch.await();
+            if (failure.get() != null) {
+                return CompletableFuture.failedFuture(failure.get());
+            }
+            return CompletableFuture.completedFuture(lastResponse.get());
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        } finally {
+            executor.shutdown();
+        }
     }
 
     private <T> Stream<List<T>> chunksOf(int chunkSize, List<T> list) {
