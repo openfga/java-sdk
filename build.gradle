@@ -65,7 +65,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
     implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.52.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.53.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -74,7 +74,7 @@ testing {
         test {
             useJUnitJupiter()
             dependencies {
-                implementation 'org.assertj:assertj-core:3.27.3'
+                implementation 'org.assertj:assertj-core:3.27.4'
                 implementation 'org.mockito:mockito-core:5.18.0'
                 implementation 'org.junit.jupiter:junit-jupiter:5.13.4'
                 implementation 'org.wiremock:wiremock:3.13.1'
