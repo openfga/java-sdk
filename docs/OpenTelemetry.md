@@ -2,7 +2,9 @@
 
 This SDK produces [metrics](https://opentelemetry.io/docs/concepts/signals/metrics/) using [OpenTelemetry](https://opentelemetry.io/) that allow you to view data such as request timings. These metrics also include attributes for the model and store ID, as well as the API called to allow you to build reporting.
 
-When an OpenTelemetry SDK instance is configured, the metrics will be exported and sent to the collector configured as part of your applications configuration. If you are not using OpenTelemetry, the metric functionality is a no-op and the events are never sent.
+When an OpenTelemetry SDK instance is configured and **registered globally**, the metrics will be exported and sent to the collector configured as part of your applications configuration. If you are not using OpenTelemetry, the metric functionality is a no-op and the events are never sent.
+
+> **Important**: The SDK uses `GlobalOpenTelemetry.get()` to access the OpenTelemetry instance. You must call `.buildAndRegisterGlobal()` when configuring your OpenTelemetry SDK for metrics to be exported. See the [setup examples](#usage) below.
 
 In cases when metrics events are sent, they will not be viewable outside of infrastructure configured in your application, and are never available to the OpenFGA team or contributors.
 
@@ -177,4 +179,51 @@ public class Example {
         otel = openTelemetry;
     }
 }
+```## Troubleshooting
+
+If metrics are not appearing in your OpenTelemetry collector, Prometheus, or Grafana:
+
+### 1. Verify Global Registration
+
+Ensure you're calling `.buildAndRegisterGlobal()` when setting up OpenTelemetry:
+
+```java
+OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+    .setMeterProvider(sdkMeterProvider)
+    .buildAndRegisterGlobal(); // This is critical!
+```
+
+### 2. Check Setup Order
+
+Configure OpenTelemetry **before** creating the OpenFGA client:
+
+```java
+// 1. Configure OpenTelemetry first
+configureOpenTelemetry();
+
+// 2. Then create the OpenFGA client
+OpenFgaClient fgaClient = new OpenFgaClient(config);
+```
+
+### 3. Verify Collector Configuration
+
+Ensure your OpenTelemetry collector is:
+- Running and accessible at the configured endpoint
+- Properly configured to receive OTLP metrics
+- Forwarding metrics to your observability backend (Prometheus, etc.)
+
+### 4. Check Metric Export Timing
+
+Metrics are exported periodically (default: every 60 seconds). For testing:
+- Wait at least 1-2 minutes after operations
+- Or force immediate export: `meterProvider.forceFlush()`
+- Consider using a shorter export interval for development
+
+### 5. Enable Debug Logging
+
+Add OpenTelemetry debug logging to see if metrics are being generated:
+
+```java
+System.setProperty("otel.java.global-autoconfigure.enabled", "true");
+System.setProperty("otel.logs.exporter", "logging");
 ```

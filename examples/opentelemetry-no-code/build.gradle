@@ -1,0 +1,76 @@
+plugins {
+    id 'application'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use the local OpenFGA SDK build with the OpenTelemetry fix
+    // This demonstrates the no-code approach with the fixed SDK
+    implementation files('../../build/libs/openfga-sdk-0.8.3.jar')
+    
+    // Required transitive dependencies for OpenFGA SDK
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.2'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'io.opentelemetry:opentelemetry-api:1.32.0'
+    
+    // Environment variable loading
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+    
+    // Jackson JsonNullable (required by OpenFGA SDK)
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+    
+    // Note: No OpenTelemetry SDK dependencies needed!
+    // The Java agent provides all OpenTelemetry functionality automatically
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+application {
+    mainClass = 'dev.openfga.sdk.example.opentelemetry.NoCodeOpenTelemetryExample'
+}
+
+// Task to run the example with OpenTelemetry Java agent
+task runWithAgent(type: JavaExec) {
+    group = 'application'
+    description = 'Run the no-code OpenTelemetry example with Java agent'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.openfga.sdk.example.opentelemetry.NoCodeOpenTelemetryExample'
+    
+    // Add JVM arguments for OpenTelemetry agent
+    // Users should download the agent JAR and update the path
+    jvmArgs = [
+        '-javaagent:opentelemetry-javaagent.jar',
+        '-Dotel.service.name=openfga-java-sdk-no-code-example',
+        '-Dotel.service.version=1.0.0',
+        '-Dotel.exporter.otlp.endpoint=http://localhost:4318',  // Use HTTP port 4318
+        '-Dotel.exporter.otlp.protocol=http/protobuf'  // Explicitly set protocol
+    ]
+    
+    doFirst {
+        println "Running with OpenTelemetry Java agent..."
+        println "Make sure you have downloaded opentelemetry-javaagent.jar"
+        println "Metrics will be exported to: http://localhost:4317"
+    }
+}
+
+// Regular run task without agent (for comparison)
+run {
+    doFirst {
+        println "Running WITHOUT OpenTelemetry agent - no metrics will be exported"
+        println "Use 'gradle runWithAgent' to run with OpenTelemetry metrics"
+    }
+}

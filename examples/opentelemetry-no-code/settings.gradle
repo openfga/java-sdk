@@ -1,0 +1,3 @@
+rootProject.name = 'openfga-sdk-opentelemetry-no-code-example'
+
+includeBuild '../../'

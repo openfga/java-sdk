@@ -30,3 +30,6 @@ VERSION.txt
 
 # VSCode IDE
 /.vscode
+
+# Environment files
+.env
