@@ -18,9 +18,9 @@ class Example1 {
         if (System.getenv("FGA_CLIENT_ID") != null) {
             credentials = new Credentials(new ClientCredentials()
                     .apiAudience(System.getenv("FGA_API_AUDIENCE"))
-                    .apiTokenIssuer(System.getenv("FGA_TOKEN_ISSUER"))
-                    .clientId("FGA_CLIENT_ID")
-                    .clientSecret("FGA_CLIENT_SECRET"));
+                    .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
+                    .clientId(System.getenv("FGA_CLIENT_ID"))
+                    .clientSecret(System.getenv("FGA_CLIENT_SECRET")));
         } else {
             System.out.println("Proceeding with no credentials (expecting localhost)");
         }
@@ -102,10 +102,20 @@ class Example1 {
         fgaClient
                 .write(
                         new ClientWriteRequest()
-                                .writes(List.of(new ClientTupleKey()
-                                        .user("user:anne")
-                                        .relation("writer")
-                                        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"))),
+                                .writes(List.of(
+                                        new ClientTupleKey()
+                                                .user("user:anne")
+                                                .relation("writer")
+                                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"),
+                                        new ClientTupleKey()
+                                                .user("user:anne")
+                                                .relation("writer")
+                                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a"), // duplicate
+                                        new ClientTupleKey()
+                                                .user("user:anne")
+                                                .relation("owner")
+                                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a") // different relation
+                                )),
                         new ClientWriteOptions()
                                 .disableTransactions(true)
                                 .authorizationModelId(authorizationModel.getAuthorizationModelId()))

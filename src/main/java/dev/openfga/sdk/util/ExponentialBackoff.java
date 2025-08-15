@@ -14,6 +14,7 @@ package dev.openfga.sdk.util;
 
 import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Utility class for calculating exponential backoff delays with jitter.
@@ -26,7 +27,6 @@ import java.util.Random;
 public class ExponentialBackoff {
 
     private static final int MAX_DELAY_SECONDS = 120;
-    private static final Random RANDOM = new Random();
 
     private ExponentialBackoff() {
         // Utility class - no instantiation
@@ -40,7 +40,7 @@ public class ExponentialBackoff {
      * @return Duration representing the delay before the next retry
      */
     public static Duration calculateDelay(int retryCount, Duration baseDelay) {
-        return calculateDelay(retryCount, baseDelay, RANDOM);
+        return calculateDelay(retryCount, baseDelay, ThreadLocalRandom.current());
     }
 
     /**
@@ -60,6 +60,12 @@ public class ExponentialBackoff {
         // Use provided base delay (caller must provide a valid value)
         if (baseDelay == null) {
             throw new IllegalArgumentException("baseDelay cannot be null");
+        }
+        if (baseDelay.isNegative()) {
+            throw new IllegalArgumentException("baseDelay cannot be negative");
+        }
+        if (baseDelay.isZero()) {
+            throw new IllegalArgumentException("baseDelay cannot be zero");
         }
         long baseDelayMs = baseDelay.toMillis();
 

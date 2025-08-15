@@ -14,7 +14,7 @@ package dev.openfga.sdk.telemetry;
 
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -35,7 +35,7 @@ public class Metrics {
     }
 
     public Metrics(Configuration configuration) {
-        this.meter = OpenTelemetry.noop().getMeterProvider().get("openfga-sdk");
+        this.meter = GlobalOpenTelemetry.get().getMeterProvider().get("openfga-sdk");
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = configuration;
