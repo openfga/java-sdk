@@ -21,7 +21,7 @@ import dev.openfga.sdk.api.configuration.Configuration;
  */
 public class TelemetryManager {
     private static final TelemetryManager INSTANCE = new TelemetryManager();
-    
+
     // Global singleton telemetry instance - created lazily on first access
     private volatile Telemetry globalTelemetry;
 
@@ -59,7 +59,7 @@ public class TelemetryManager {
                 }
             }
         }
-        
+
         return globalTelemetry;
     }
 
