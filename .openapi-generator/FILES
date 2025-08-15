@@ -164,6 +164,8 @@ src/main/java/dev/openfga/sdk/api/client/model/ClientWriteAssertionsResponse.jav
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteAuthorizationModelResponse.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteRequest.java
 src/main/java/dev/openfga/sdk/api/client/model/ClientWriteResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientWriteSingleResponse.java
+src/main/java/dev/openfga/sdk/api/client/model/ClientWriteStatus.java
 src/main/java/dev/openfga/sdk/api/configuration/AdditionalHeadersSupplier.java
 src/main/java/dev/openfga/sdk/api/configuration/ApiToken.java
 src/main/java/dev/openfga/sdk/api/configuration/BaseConfiguration.java
@@ -302,7 +304,10 @@ src/main/java/dev/openfga/sdk/telemetry/Histograms.java
 src/main/java/dev/openfga/sdk/telemetry/Metric.java
 src/main/java/dev/openfga/sdk/telemetry/Metrics.java
 src/main/java/dev/openfga/sdk/telemetry/Telemetry.java
+src/main/java/dev/openfga/sdk/util/ExponentialBackoff.java
 src/main/java/dev/openfga/sdk/util/Pair.java
+src/main/java/dev/openfga/sdk/util/RetryAfterHeaderParser.java
+src/main/java/dev/openfga/sdk/util/RetryStrategy.java
 src/main/java/dev/openfga/sdk/util/StringUtil.java
 src/main/java/dev/openfga/sdk/util/Validation.java
 src/test-integration/java/dev/openfga/sdk/api/OpenFgaApiIntegrationTest.java
@@ -317,6 +322,7 @@ src/test/java/dev/openfga/sdk/api/OpenFgaApiTest.java
 src/test/java/dev/openfga/sdk/api/auth/AccessTokenTest.java
 src/test/java/dev/openfga/sdk/api/auth/OAuth2ClientTest.java
 src/test/java/dev/openfga/sdk/api/client/ApiClientTest.java
+src/test/java/dev/openfga/sdk/api/client/HttpRequestAttemptRetryTest.java
 src/test/java/dev/openfga/sdk/api/client/OpenFgaClientTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ClientCredentialsTest.java
 src/test/java/dev/openfga/sdk/api/configuration/ConfigurationTest.java
@@ -330,6 +336,9 @@ src/test/java/dev/openfga/sdk/telemetry/HistogramsTest.java
 src/test/java/dev/openfga/sdk/telemetry/MetricTest.java
 src/test/java/dev/openfga/sdk/telemetry/MetricsTest.java
 src/test/java/dev/openfga/sdk/telemetry/TelemetryTest.java
+src/test/java/dev/openfga/sdk/util/ExponentialBackoffTest.java
 src/test/java/dev/openfga/sdk/util/PairTest.java
+src/test/java/dev/openfga/sdk/util/RetryAfterHeaderParserTest.java
+src/test/java/dev/openfga/sdk/util/RetryStrategyTest.java
 src/test/java/dev/openfga/sdk/util/StringUtilTest.java
 src/test/java/dev/openfga/sdk/util/ValidationTest.java

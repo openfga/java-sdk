@@ -14,6 +14,7 @@ package dev.openfga.sdk.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.Random;
@@ -192,6 +193,44 @@ class ExponentialBackoffTest {
         // For retry count 1 with 500ms base: 2^1 * 500ms = 1000ms base
         // With jitter: between 1000ms and 2000ms
         assertThat(result.toMillis()).isBetween(1000L, 2000L);
+    }
+
+    @Test
+    void calculateDelay_withNegativeBaseDelay_shouldThrowException() {
+        // Given
+        int retryCount = 1;
+        Duration negativeBaseDelay = Duration.ofMillis(-100);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ExponentialBackoff.calculateDelay(retryCount, negativeBaseDelay));
+        assertThat(exception.getMessage()).isEqualTo("baseDelay cannot be negative");
+    }
+
+    @Test
+    void calculateDelay_withNegativeBaseDuration_shouldThrowException() {
+        // Given
+        int retryCount = 2;
+        Duration negativeBaseDuration = Duration.ofSeconds(-1);
+        Random random = new Random(42);
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ExponentialBackoff.calculateDelay(retryCount, negativeBaseDuration, random));
+        assertThat(exception.getMessage()).isEqualTo("baseDelay cannot be negative");
+    }
+
+    @Test
+    void calculateDelay_withZeroBaseDelay_shouldThrowException() {
+        // Given
+        int retryCount = 1;
+        Duration zeroBaseDelay = Duration.ZERO;
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ExponentialBackoff.calculateDelay(retryCount, zeroBaseDelay));
+        assertThat(exception.getMessage()).isEqualTo("baseDelay cannot be zero");
     }
 
     @Test

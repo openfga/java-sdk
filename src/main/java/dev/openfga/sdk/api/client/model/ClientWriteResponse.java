@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.client.model;
 
 import dev.openfga.sdk.api.client.ApiResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,11 +21,23 @@ public class ClientWriteResponse {
     private final int statusCode;
     private final Map<String, List<String>> headers;
     private final String rawResponse;
+    private final List<ClientWriteSingleResponse> writes;
+    private final List<ClientWriteSingleResponse> deletes;
 
     public ClientWriteResponse(ApiResponse<Object> apiResponse) {
         this.statusCode = apiResponse.getStatusCode();
         this.headers = apiResponse.getHeaders();
         this.rawResponse = apiResponse.getRawResponse();
+        this.writes = Collections.emptyList();
+        this.deletes = Collections.emptyList();
+    }
+
+    public ClientWriteResponse(List<ClientWriteSingleResponse> writes, List<ClientWriteSingleResponse> deletes) {
+        this.statusCode = 200;
+        this.headers = Collections.emptyMap();
+        this.rawResponse = "";
+        this.writes = writes != null ? writes : Collections.emptyList();
+        this.deletes = deletes != null ? deletes : Collections.emptyList();
     }
 
     public int getStatusCode() {
@@ -37,5 +50,13 @@ public class ClientWriteResponse {
 
     public String getRawResponse() {
         return rawResponse;
+    }
+
+    public List<ClientWriteSingleResponse> getWrites() {
+        return writes;
+    }
+
+    public List<ClientWriteSingleResponse> getDeletes() {
+        return deletes;
     }
 }
