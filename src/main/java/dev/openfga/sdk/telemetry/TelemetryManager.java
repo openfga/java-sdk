@@ -13,18 +13,17 @@
 package dev.openfga.sdk.telemetry;
 
 import dev.openfga.sdk.api.configuration.Configuration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
- * TelemetryManager provides singleton management of Telemetry instances per SDK configuration.
- * This ensures that only one Telemetry/Metrics instance is created per unique configuration,
- * preventing object proliferation and memory leaks.
+ * TelemetryManager provides a global singleton Telemetry instance for the entire SDK.
+ * This ensures only one Telemetry/Metrics instance is created across all SDK usage,
+ * preventing object proliferation and memory leaks while simplifying the architecture.
  */
 public class TelemetryManager {
     private static final TelemetryManager INSTANCE = new TelemetryManager();
-
-    private final ConcurrentMap<ConfigurationKey, Telemetry> telemetryInstances = new ConcurrentHashMap<>();
+    
+    // Global singleton telemetry instance - created lazily on first access
+    private volatile Telemetry globalTelemetry;
 
     private TelemetryManager() {
         // Private constructor for singleton
@@ -40,83 +39,47 @@ public class TelemetryManager {
     }
 
     /**
-     * Gets or creates a Telemetry instance for the given configuration.
-     * If a Telemetry instance already exists for this configuration, returns the existing instance.
-     * Otherwise, creates a new instance and caches it for future use.
+     * Gets the global singleton Telemetry instance. The configuration parameter is accepted
+     * for backward compatibility but only the first configuration passed will be used to
+     * initialize the global instance.
      *
-     * @param configuration The configuration to get telemetry for
-     * @return A shared Telemetry instance for this configuration
+     * @param configuration The configuration (used only for first initialization)
+     * @return The global shared Telemetry instance
      */
     public Telemetry getTelemetry(Configuration configuration) {
         if (configuration == null) {
             throw new IllegalArgumentException("Configuration cannot be null");
         }
 
-        ConfigurationKey key = new ConfigurationKey(configuration);
-        return telemetryInstances.computeIfAbsent(key, k -> new Telemetry(configuration));
+        // Double-checked locking pattern for thread-safe lazy initialization
+        if (globalTelemetry == null) {
+            synchronized (this) {
+                if (globalTelemetry == null) {
+                    globalTelemetry = new Telemetry(configuration);
+                }
+            }
+        }
+        
+        return globalTelemetry;
     }
 
     /**
-     * Clears all cached telemetry instances. This is primarily intended for testing
+     * Clears the global telemetry instance. This is primarily intended for testing
      * and should not be used in production code.
      */
     void clearCache() {
-        telemetryInstances.clear();
+        synchronized (this) {
+            globalTelemetry = null;
+        }
     }
 
     /**
-     * Returns the number of cached telemetry instances. This is primarily intended
-     * for testing and monitoring purposes.
+     * Returns 1 if the global telemetry instance exists, 0 otherwise.
+     * This is primarily intended for testing and monitoring purposes.
      *
-     * @return The number of cached telemetry instances
+     * @return 1 if telemetry instance exists, 0 otherwise
      */
     int getCacheSize() {
-        return telemetryInstances.size();
-    }
-
-    /**
-     * ConfigurationKey represents the unique aspects of a Configuration that affect telemetry behavior.
-     * This is used as a key for caching Telemetry instances.
-     */
-    private static class ConfigurationKey {
-        private final String apiUrl;
-        private final String userAgent;
-        private final Object telemetryConfiguration;
-        private final int hashCode;
-
-        ConfigurationKey(Configuration config) {
-            this.apiUrl = config.getApiUrl();
-            this.userAgent = config.getUserAgent();
-            this.telemetryConfiguration = config.getTelemetryConfiguration();
-
-            // Pre-compute hash code for performance
-            this.hashCode = computeHashCode();
-        }
-
-        private int computeHashCode() {
-            int result = apiUrl != null ? apiUrl.hashCode() : 0;
-            result = 31 * result + (userAgent != null ? userAgent.hashCode() : 0);
-            result = 31 * result + (telemetryConfiguration != null ? telemetryConfiguration.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-
-            ConfigurationKey that = (ConfigurationKey) obj;
-
-            if (apiUrl != null ? !apiUrl.equals(that.apiUrl) : that.apiUrl != null) return false;
-            if (userAgent != null ? !userAgent.equals(that.userAgent) : that.userAgent != null) return false;
-            return telemetryConfiguration != null
-                    ? telemetryConfiguration.equals(that.telemetryConfiguration)
-                    : that.telemetryConfiguration == null;
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
-        }
+        return globalTelemetry != null ? 1 : 0;
     }
 }

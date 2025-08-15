@@ -174,10 +174,10 @@ class TelemetryObjectProliferationTest {
         OpenFgaApi api1 = new OpenFgaApi(config1, apiClient);
         OpenFgaApi api2 = new OpenFgaApi(config2, apiClient);
 
-        // Should create separate telemetry instances for different configurations
+        // With global singleton approach, all configurations share the same telemetry instance
         assertEquals(
-                2,
+                1,
                 telemetryManager.getCacheSize(),
-                "Different configurations should create separate Telemetry instances");
+                "Global singleton approach means all configurations share one Telemetry instance");
     }
 }

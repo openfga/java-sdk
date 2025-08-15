@@ -64,26 +64,20 @@ class TelemetryManagerTest {
         Telemetry telemetry1 = telemetryManager.getTelemetry(config1);
         Telemetry telemetry2 = telemetryManager.getTelemetry(config2);
 
-        assertNotSame(telemetry1, telemetry2, "Different configurations should return different Telemetry instances");
-        assertEquals(2, telemetryManager.getCacheSize(), "Cache should contain exactly two entries");
+        assertSame(telemetry1, telemetry2, "All configurations should return the same global Telemetry instance");
+        assertEquals(1, telemetryManager.getCacheSize(), "Cache should contain exactly one global instance");
     }
 
     @Test
     void testGetTelemetryWithDifferentTelemetryConfigurations() {
-        TelemetryConfiguration telemetryConfig1 = new TelemetryConfiguration();
-        TelemetryConfiguration telemetryConfig2 = new TelemetryConfiguration();
-
-        Configuration config1 = new Configuration().telemetryConfiguration(telemetryConfig1);
-        Configuration config2 = new Configuration().telemetryConfiguration(telemetryConfig2);
+        Configuration config1 = new Configuration().telemetryConfiguration(new TelemetryConfiguration());
+        Configuration config2 = new Configuration().telemetryConfiguration(new TelemetryConfiguration());
 
         Telemetry telemetry1 = telemetryManager.getTelemetry(config1);
         Telemetry telemetry2 = telemetryManager.getTelemetry(config2);
 
-        assertNotSame(
-                telemetry1,
-                telemetry2,
-                "Different telemetry configurations should return different Telemetry instances");
-        assertEquals(2, telemetryManager.getCacheSize(), "Cache should contain exactly two entries");
+        assertSame(telemetry1, telemetry2, "All configurations should return the same global Telemetry instance");
+        assertEquals(1, telemetryManager.getCacheSize(), "Cache should contain exactly one global instance");
     }
 
     @Test
@@ -118,8 +112,8 @@ class TelemetryManagerTest {
         Telemetry telemetry1 = telemetryManager.getTelemetry(config1);
         Telemetry telemetry2 = telemetryManager.getTelemetry(config2);
 
-        assertNotSame(telemetry1, telemetry2, "Different user agents should return different Telemetry instances");
-        assertEquals(2, telemetryManager.getCacheSize(), "Cache should contain exactly two entries");
+        assertSame(telemetry1, telemetry2, "All configurations should return the same global Telemetry instance");
+        assertEquals(1, telemetryManager.getCacheSize(), "Cache should contain exactly one global instance");
     }
 
     @Test
@@ -129,7 +123,7 @@ class TelemetryManagerTest {
 
         telemetryManager.getTelemetry(config1);
         telemetryManager.getTelemetry(config2);
-        assertEquals(2, telemetryManager.getCacheSize(), "Cache should contain two entries before clear");
+        assertEquals(1, telemetryManager.getCacheSize(), "Cache should contain one global instance before clear");
 
         telemetryManager.clearCache();
         assertEquals(0, telemetryManager.getCacheSize(), "Cache should be empty after clear");
