@@ -1158,6 +1158,13 @@ public class OpenFgaClientTest {
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
         assertEquals(200, response.getStatusCode());
+
+        // Verify new response structure for transaction-based writes
+        assertEquals(1, response.getWrites().size());
+        assertEquals(0, response.getDeletes().size());
+        assertEquals(ClientWriteStatus.SUCCESS, response.getWrites().get(0).getStatus());
+        assertEquals(DEFAULT_USER, response.getWrites().get(0).getTupleKey().getUser());
+        assertNull(response.getWrites().get(0).getError());
     }
 
     /**
@@ -1259,18 +1266,18 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void writeTest_nonTransactionsWithFailure() {
+    public void writeTest_nonTransactionsWithFailure() throws Exception {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String firstUser = "user:first";
         String failedUser = "user:SECOND";
-        String skippedUser = "user:third";
+        String thirdUser = "user:third";
         Function<String, String> writeBody = user -> String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 user, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
-                .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(skippedUser)))
+                .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(thirdUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, EMPTY_RESPONSE_BODY);
@@ -1281,7 +1288,7 @@ public class OpenFgaClientTest {
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
-                .writes(Stream.of(firstUser, failedUser, skippedUser)
+                .writes(Stream.of(firstUser, failedUser, thirdUser)
                         .map(user -> new ClientTupleKey()
                                 ._object(DEFAULT_OBJECT)
                                 .relation(DEFAULT_RELATION)
@@ -1292,8 +1299,7 @@ public class OpenFgaClientTest {
                 new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
 
         // When
-        var execException = assertThrows(
-                ExecutionException.class, () -> fga.write(request, options).get());
+        ClientWriteResponse response = fga.write(request, options).get();
 
         // Then
         mockHttpClient
@@ -1313,12 +1319,28 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .verify()
                 .post(postPath)
-                .withBody(is(writeBody.apply(skippedUser)))
+                .withBody(is(writeBody.apply(thirdUser)))
                 .withHeader(CLIENT_METHOD_HEADER, "Write")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
-                .called(0);
-        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
-        assertEquals(400, exception.getStatusCode());
+                .called(1);
+
+        // Verify response structure
+        assertEquals(3, response.getWrites().size());
+        assertEquals(0, response.getDeletes().size());
+
+        // Check individual tuple statuses
+        var writes = response.getWrites();
+        assertEquals(ClientWriteStatus.SUCCESS, writes.get(0).getStatus());
+        assertEquals(firstUser, writes.get(0).getTupleKey().getUser());
+        assertNull(writes.get(0).getError());
+
+        assertEquals(ClientWriteStatus.FAILURE, writes.get(1).getStatus());
+        assertEquals(failedUser, writes.get(1).getTupleKey().getUser());
+        assertNotNull(writes.get(1).getError());
+
+        assertEquals(ClientWriteStatus.SUCCESS, writes.get(2).getStatus());
+        assertEquals(thirdUser, writes.get(2).getTupleKey().getUser());
+        assertNull(writes.get(2).getError());
     }
 
     @Test
@@ -1984,7 +2006,7 @@ public class OpenFgaClientTest {
                                 WireMock.aResponse()
                                         .withStatus(200)
                                         .withBody(
-                                                "{\"result\": {\"cor-3\": {\"allowed\": false, \"error\": {\"input_error\": \"relation_not_found\", \"message\": \"relation not found\"}}}}}")));
+                                                "{\"result\": {\"cor-3\": {\"allowed\": false, \"error\": {\"input_error\": \"relation_not_found\", \"message\": \"relation not found\"}}}}")));
 
         ClientBatchCheckItem item1 = new ClientBatchCheckItem()
                 .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")

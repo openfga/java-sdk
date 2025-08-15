@@ -358,6 +358,50 @@ public class OpenFgaClient {
     /**
      * Write - Create or delete relationship tuples
      *
+     * <p>This method can operate in two modes depending on the options provided:</p>
+     *
+     * <h3>Transactional Mode (default)</h3>
+     * <p>When {@code options.disableTransactions()} is false or not set:</p>
+     * <ul>
+     *   <li>All writes and deletes are executed as a single atomic transaction</li>
+     *   <li>If any tuple fails, the entire operation fails and no changes are made</li>
+     *   <li>On success: All tuples in the response have {@code ClientWriteStatus.SUCCESS}</li>
+     *   <li>On failure: The method throws an exception (no partial results)</li>
+     * </ul>
+     *
+     * <h3>Non-Transactional Mode</h3>
+     * <p>When {@code options.disableTransactions()} is true:</p>
+     * <ul>
+     *   <li>Tuples are processed in chunks (size controlled by {@code transactionChunkSize})</li>
+     *   <li>Each chunk is processed independently - some may succeed while others fail</li>
+     *   <li>The method always returns a response (never throws for tuple-level failures)</li>
+     *   <li>Individual tuple results are indicated by {@code ClientWriteStatus} in the response</li>
+     * </ul>
+     *
+     * <h4>Non-Transactional Success Scenarios:</h4>
+     * <ul>
+     *   <li>All tuples succeed: All responses have {@code status = SUCCESS, error = null}</li>
+     *   <li>Mixed results: Some responses have {@code status = SUCCESS}, others have {@code status = FAILURE} with error details</li>
+     *   <li>All tuples fail: All responses have {@code status = FAILURE} with individual error details</li>
+     * </ul>
+     *
+     * <h4>Non-Transactional Exception Scenarios:</h4>
+     * <ul>
+     *   <li>Authentication errors: Method throws immediately (no partial processing)</li>
+     *   <li>Configuration errors: Method throws before processing any tuples</li>
+     *   <li>Network/infrastructure errors: Method may throw depending on the specific error</li>
+     * </ul>
+     *
+     * <h4>Caller Responsibilities:</h4>
+     * <ul>
+     *   <li>For transactional mode: Handle exceptions for any failures</li>
+     *   <li>For non-transactional mode: Check {@code status} field of each tuple in the response</li>
+     *   <li>For non-transactional mode: Implement retry logic for failed tuples if needed</li>
+     *   <li>For non-transactional mode: Handle partial success scenarios appropriately</li>
+     * </ul>
+     *
+     * @param request The write request containing tuples to create or delete
+     * @return A CompletableFuture containing the write response with individual tuple results
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ClientWriteResponse> write(ClientWriteRequest request)
@@ -368,6 +412,51 @@ public class OpenFgaClient {
     /**
      * Write - Create or delete relationship tuples
      *
+     * <p>This method can operate in two modes depending on the options provided:</p>
+     *
+     * <h3>Transactional Mode (default)</h3>
+     * <p>When {@code options.disableTransactions()} is false or not set:</p>
+     * <ul>
+     *   <li>All writes and deletes are executed as a single atomic transaction</li>
+     *   <li>If any tuple fails, the entire operation fails and no changes are made</li>
+     *   <li>On success: All tuples in the response have {@code ClientWriteStatus.SUCCESS}</li>
+     *   <li>On failure: The method throws an exception (no partial results)</li>
+     * </ul>
+     *
+     * <h3>Non-Transactional Mode</h3>
+     * <p>When {@code options.disableTransactions()} is true:</p>
+     * <ul>
+     *   <li>Tuples are processed in chunks (size controlled by {@code transactionChunkSize})</li>
+     *   <li>Each chunk is processed independently - some may succeed while others fail</li>
+     *   <li>The method always returns a response (never throws for tuple-level failures)</li>
+     *   <li>Individual tuple results are indicated by {@code ClientWriteStatus} in the response</li>
+     * </ul>
+     *
+     * <h4>Non-Transactional Success Scenarios:</h4>
+     * <ul>
+     *   <li>All tuples succeed: All responses have {@code status = SUCCESS, error = null}</li>
+     *   <li>Mixed results: Some responses have {@code status = SUCCESS}, others have {@code status = FAILURE} with error details</li>
+     *   <li>All tuples fail: All responses have {@code status = FAILURE} with individual error details</li>
+     * </ul>
+     *
+     * <h4>Non-Transactional Exception Scenarios:</h4>
+     * <ul>
+     *   <li>Authentication errors: Method throws immediately (no partial processing)</li>
+     *   <li>Configuration errors: Method throws before processing any tuples</li>
+     *   <li>Network/infrastructure errors: Method may throw depending on the specific error</li>
+     * </ul>
+     *
+     * <h4>Caller Responsibilities:</h4>
+     * <ul>
+     *   <li>For transactional mode: Handle exceptions for any failures</li>
+     *   <li>For non-transactional mode: Check {@code status} field of each tuple in the response</li>
+     *   <li>For non-transactional mode: Implement retry logic for failed tuples if needed</li>
+     *   <li>For non-transactional mode: Handle partial success scenarios appropriately</li>
+     * </ul>
+     *
+     * @param request The write request containing tuples to create or delete
+     * @param options Write options including transaction mode and chunk size settings
+     * @return A CompletableFuture containing the write response with individual tuple results
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
      */
     public CompletableFuture<ClientWriteResponse> write(ClientWriteRequest request, ClientWriteOptions options)
@@ -406,9 +495,56 @@ public class OpenFgaClient {
 
         var overrides = new ConfigurationOverride().addHeaders(options);
 
-        return call(() -> api.write(storeId, body, overrides)).thenApply(ClientWriteResponse::new);
+        return call(() -> api.write(storeId, body, overrides)).thenApply(apiResponse -> {
+            // For transaction-based writes, all tuples are successful if the call succeeds
+            List<ClientWriteSingleResponse> writeResponses = writeTuples != null
+                    ? writeTuples.stream()
+                            .map(tuple -> new ClientWriteSingleResponse(tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
+                            .collect(Collectors.toList())
+                    : new ArrayList<>();
+
+            List<ClientWriteSingleResponse> deleteResponses = deleteTuples != null
+                    ? deleteTuples.stream()
+                            .map(tuple -> new ClientWriteSingleResponse(
+                                    new TupleKey()
+                                            .user(tuple.getUser())
+                                            .relation(tuple.getRelation())
+                                            ._object(tuple.getObject()),
+                                    ClientWriteStatus.SUCCESS))
+                            .collect(Collectors.toList())
+                    : new ArrayList<>();
+
+            return new ClientWriteResponse(writeResponses, deleteResponses);
+        });
     }
 
+    /**
+     * Non-transactional write implementation that processes tuples in parallel chunks.
+     *
+     * <p>This method implements the error isolation behavior where individual chunk failures
+     * do not prevent other chunks from being processed. It performs the following steps:</p>
+     *
+     * <ol>
+     *   <li>Splits writes and deletes into chunks based on {@code transactionChunkSize}</li>
+     *   <li>Processes each chunk as an independent transaction in parallel</li>
+     *   <li>Collects results from all chunks, marking individual tuples as SUCCESS or FAILURE</li>
+     *   <li>Re-throws authentication errors immediately to stop all processing</li>
+     *   <li>Converts other errors to FAILURE status for affected tuples</li>
+     * </ol>
+     *
+     * <p>The method guarantees that:</p>
+     * <ul>
+     *   <li>Authentication errors are never swallowed (they stop all processing)</li>
+     *   <li>Other errors are isolated to their respective chunks</li>
+     *   <li>The response always contains a result for every input tuple</li>
+     *   <li>The order of results matches the order of input tuples</li>
+     * </ul>
+     *
+     * @param storeId The store ID to write to
+     * @param request The write request containing tuples to process
+     * @param writeOptions Options including chunk size and headers
+     * @return CompletableFuture with results for all tuples, marking each as SUCCESS or FAILURE
+     */
     private CompletableFuture<ClientWriteResponse> writeNonTransaction(
             String storeId, ClientWriteRequest request, ClientWriteOptions writeOptions) {
 
@@ -424,29 +560,106 @@ public class OpenFgaClient {
                 .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
 
         int chunkSize = options.getTransactionChunkSize();
-        var writeTransactions = chunksOf(chunkSize, request.getWrites()).map(ClientWriteRequest::ofWrites);
-        var deleteTransactions = chunksOf(chunkSize, request.getDeletes()).map(ClientWriteRequest::ofDeletes);
 
-        var transactions = Stream.concat(writeTransactions, deleteTransactions).collect(Collectors.toList());
+        List<CompletableFuture<List<ClientWriteSingleResponse>>> writeFutures = new ArrayList<>();
+        List<CompletableFuture<List<ClientWriteSingleResponse>>> deleteFutures = new ArrayList<>();
 
-        if (transactions.isEmpty()) {
-            var emptyTransaction = new ClientWriteRequest().writes(null).deletes(null);
-            return this.writeTransactions(storeId, emptyTransaction, writeOptions);
+        // Handle writes
+        if (request.getWrites() != null && !request.getWrites().isEmpty()) {
+            var writeChunks = chunksOf(chunkSize, request.getWrites()).collect(Collectors.toList());
+
+            for (List<ClientTupleKey> chunk : writeChunks) {
+                CompletableFuture<List<ClientWriteSingleResponse>> chunkFuture = this.writeTransactions(
+                                storeId, ClientWriteRequest.ofWrites(chunk), options)
+                        .thenApply(response -> {
+                            // On success, mark all tuples in this chunk as successful
+                            return chunk.stream()
+                                    .map(tuple -> new ClientWriteSingleResponse(
+                                            tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
+                                    .collect(Collectors.toList());
+                        })
+                        .exceptionally(exception -> {
+                            // Re-throw authentication errors to stop all processing
+                            Throwable cause =
+                                    exception instanceof CompletionException ? exception.getCause() : exception;
+                            if (cause instanceof FgaApiAuthenticationError) {
+                                throw new CompletionException(cause);
+                            }
+
+                            // On failure, mark all tuples in this chunk as failed, but continue processing other chunks
+                            return chunk.stream()
+                                    .map(tuple -> new ClientWriteSingleResponse(
+                                            tuple.asTupleKey(),
+                                            ClientWriteStatus.FAILURE,
+                                            cause instanceof Exception ? (Exception) cause : new Exception(cause)))
+                                    .collect(Collectors.toList());
+                        });
+
+                writeFutures.add(chunkFuture);
+            }
         }
 
-        var futureResponse = this.writeTransactions(storeId, transactions.get(0), options);
+        // Handle deletes
+        if (request.getDeletes() != null && !request.getDeletes().isEmpty()) {
+            var deleteChunks = chunksOf(chunkSize, request.getDeletes()).collect(Collectors.toList());
 
-        for (int i = 1; i < transactions.size(); i++) {
-            final int index = i; // Must be final in this scope for closure.
+            for (List<ClientTupleKeyWithoutCondition> chunk : deleteChunks) {
+                CompletableFuture<List<ClientWriteSingleResponse>> chunkFuture = this.writeTransactions(
+                                storeId, ClientWriteRequest.ofDeletes(chunk), options)
+                        .thenApply(response -> {
+                            // On success, mark all tuples in this chunk as successful
+                            return chunk.stream()
+                                    .map(tuple -> new ClientWriteSingleResponse(
+                                            new TupleKey()
+                                                    .user(tuple.getUser())
+                                                    .relation(tuple.getRelation())
+                                                    ._object(tuple.getObject()),
+                                            ClientWriteStatus.SUCCESS))
+                                    .collect(Collectors.toList());
+                        })
+                        .exceptionally(exception -> {
+                            // Re-throw authentication errors to stop all processing
+                            Throwable cause =
+                                    exception instanceof CompletionException ? exception.getCause() : exception;
+                            if (cause instanceof FgaApiAuthenticationError) {
+                                throw new CompletionException(cause);
+                            }
 
-            // The resulting completable future of this chain will result in either:
-            // 1. The first exception thrown in a failed completion. Other thenCompose() will not be evaluated.
-            // 2. The final successful ClientWriteResponse.
-            futureResponse = futureResponse.thenCompose(
-                    _response -> this.writeTransactions(storeId, transactions.get(index), options));
+                            // On failure, mark all tuples in this chunk as failed, but continue processing other chunks
+                            return chunk.stream()
+                                    .map(tuple -> new ClientWriteSingleResponse(
+                                            new TupleKey()
+                                                    .user(tuple.getUser())
+                                                    .relation(tuple.getRelation())
+                                                    ._object(tuple.getObject()),
+                                            ClientWriteStatus.FAILURE,
+                                            cause instanceof Exception ? (Exception) cause : new Exception(cause)))
+                                    .collect(Collectors.toList());
+                        });
+
+                deleteFutures.add(chunkFuture);
+            }
         }
 
-        return futureResponse;
+        // Combine all futures
+        CompletableFuture<List<ClientWriteSingleResponse>> allWritesFuture = writeFutures.isEmpty()
+                ? CompletableFuture.completedFuture(new ArrayList<>())
+                : CompletableFuture.allOf(writeFutures.toArray(new CompletableFuture[0]))
+                        .thenApply(v -> writeFutures.stream()
+                                .map(CompletableFuture::join)
+                                .flatMap(List::stream)
+                                .collect(Collectors.toList()));
+
+        CompletableFuture<List<ClientWriteSingleResponse>> allDeletesFuture = deleteFutures.isEmpty()
+                ? CompletableFuture.completedFuture(new ArrayList<>())
+                : CompletableFuture.allOf(deleteFutures.toArray(new CompletableFuture[0]))
+                        .thenApply(v -> deleteFutures.stream()
+                                .map(CompletableFuture::join)
+                                .flatMap(List::stream)
+                                .collect(Collectors.toList()));
+
+        return CompletableFuture.allOf(allWritesFuture, allDeletesFuture)
+                .thenApply(v -> new ClientWriteResponse(allWritesFuture.join(), allDeletesFuture.join()));
     }
 
     private <T> Stream<List<T>> chunksOf(int chunkSize, List<T> list) {
@@ -498,7 +711,12 @@ public class OpenFgaClient {
 
         var overrides = new ConfigurationOverride().addHeaders(options);
 
-        return call(() -> api.write(storeId, body, overrides)).thenApply(ClientWriteResponse::new);
+        return call(() -> api.write(storeId, body, overrides)).thenApply(apiResponse -> {
+            List<ClientWriteSingleResponse> writeResponses = tupleKeys.stream()
+                    .map(tuple -> new ClientWriteSingleResponse(tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
+                    .collect(Collectors.toList());
+            return new ClientWriteResponse(writeResponses, new ArrayList<>());
+        });
     }
 
     /**
@@ -533,7 +751,17 @@ public class OpenFgaClient {
 
         var overrides = new ConfigurationOverride().addHeaders(options);
 
-        return call(() -> api.write(storeId, body, overrides)).thenApply(ClientWriteResponse::new);
+        return call(() -> api.write(storeId, body, overrides)).thenApply(apiResponse -> {
+            List<ClientWriteSingleResponse> deleteResponses = tupleKeys.stream()
+                    .map(tuple -> new ClientWriteSingleResponse(
+                            new TupleKey()
+                                    .user(tuple.getUser())
+                                    .relation(tuple.getRelation())
+                                    ._object(tuple.getObject()),
+                            ClientWriteStatus.SUCCESS))
+                    .collect(Collectors.toList());
+            return new ClientWriteResponse(new ArrayList<>(), deleteResponses);
+        });
     }
 
     /* **********************

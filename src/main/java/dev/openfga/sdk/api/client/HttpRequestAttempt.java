@@ -125,6 +125,9 @@ public class HttpRequestAttempt<T> {
         Duration retryDelay =
                 RetryStrategy.calculateRetryDelay(retryAfterDelay, retryNumber, configuration.getMinimumRetryDelay());
 
+        // Add telemetry for HTTP error retry
+        addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber + 1));
+
         return delayedRetry(retryDelay, retryNumber + 1, error);
     }
 
@@ -184,8 +187,13 @@ public class HttpRequestAttempt<T> {
                     response.headers().firstValue("fga-query-duration-ms").orElse(null);
 
             if (!isNullOrWhitespace(queryDuration)) {
-                double queryDurationDouble = Double.parseDouble(queryDuration);
-                telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
+                try {
+                    double queryDurationDouble = Double.parseDouble(queryDuration);
+                    telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
+                } catch (NumberFormatException e) {
+                    // Ignore malformed fga-query-duration-ms header values to prevent exceptions
+                    // on otherwise valid responses. The telemetry metric will simply not be recorded.
+                }
             }
         }
 
