@@ -8,6 +8,7 @@ import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.telemetry.TelemetryManager;
 import dev.openfga.sdk.util.RetryAfterHeaderParser;
 import dev.openfga.sdk.util.RetryStrategy;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class HttpRequestAttempt<T> {
         this.name = name;
         this.request = request;
         this.clazz = clazz;
-        this.telemetry = new Telemetry(configuration);
+        this.telemetry = TelemetryManager.getInstance().getTelemetry(configuration);
         this.telemetryAttributes = new HashMap<>();
     }
 

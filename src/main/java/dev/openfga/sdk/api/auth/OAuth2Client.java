@@ -18,6 +18,7 @@ import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.telemetry.TelemetryManager;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Instant;
@@ -53,7 +54,7 @@ public class OAuth2Client {
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay())
                 .telemetryConfiguration(configuration.getTelemetryConfiguration());
-        this.telemetry = new Telemetry(this.config);
+        this.telemetry = TelemetryManager.getInstance().getTelemetry(this.config);
     }
 
     /**

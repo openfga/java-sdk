@@ -46,6 +46,7 @@ import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
+import dev.openfga.sdk.telemetry.TelemetryManager;
 import dev.openfga.sdk.util.Pair;
 import dev.openfga.sdk.util.StringUtil;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class OpenFgaApi {
     public OpenFgaApi(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         this.apiClient = apiClient;
         this.configuration = configuration;
-        this.telemetry = new Telemetry(this.configuration);
+        this.telemetry = TelemetryManager.getInstance().getTelemetry(this.configuration);
 
         if (configuration.getCredentials().getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
             this.oAuth2Client = new OAuth2Client(configuration, apiClient);
