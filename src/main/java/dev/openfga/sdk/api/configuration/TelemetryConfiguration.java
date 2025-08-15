@@ -5,7 +5,6 @@ import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Counters;
 import dev.openfga.sdk.telemetry.Histograms;
 import dev.openfga.sdk.telemetry.Metric;
-import io.opentelemetry.api.OpenTelemetry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +14,6 @@ import java.util.Optional;
  */
 public class TelemetryConfiguration {
     private Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
-    private OpenTelemetry openTelemetry; // Custom OpenTelemetry instance
 
     private static final Map<Attribute, Optional<Object>> defaultAttributes = Map.ofEntries(
             Map.entry(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID, Optional.empty()),
@@ -70,26 +68,5 @@ public class TelemetryConfiguration {
      */
     public static Map<Attribute, Optional<Object>> defaultAttributes() {
         return defaultAttributes;
-    }
-
-    /**
-     * Sets a custom OpenTelemetry instance to use for this configuration.
-     * If not set, the global OpenTelemetry instance will be used.
-     *
-     * @param openTelemetry the OpenTelemetry instance to use
-     * @return this TelemetryConfiguration object
-     */
-    public TelemetryConfiguration openTelemetry(OpenTelemetry openTelemetry) {
-        this.openTelemetry = openTelemetry;
-        return this;
-    }
-
-    /**
-     * Gets the custom OpenTelemetry instance, if set.
-     *
-     * @return the custom OpenTelemetry instance, or null if not set
-     */
-    public OpenTelemetry getOpenTelemetry() {
-        return openTelemetry;
     }
 }
