@@ -1001,7 +1001,7 @@ public class Example {
                 .storeId(System.getenv("FGA_STORE_ID")) // Not required when calling createStore() or listStores()
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .maxRetries(3) // retry up to 3 times on API requests (default: 3, maximum: 15)
-                .minimumRetryDelay(100); // minimum wait time between retries in milliseconds (default: 100ms)
+                .minimumRetryDelay(Duration.ofMillis(100)); // minimum wait time between retries in milliseconds (default: 100ms)
 
         var fgaClient = new OpenFgaClient(config);
         var response = fgaClient.readAuthorizationModels().get();
