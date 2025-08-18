@@ -71,14 +71,14 @@ public class OpenTelemetryExample {
         System.out.println("🚀 OpenFGA Java SDK - OpenTelemetry Example");
         System.out.println("===========================================");
         
+        // Determine OpenTelemetry mode from command line arguments
+        boolean isAgentMode = determineOpenTelemetryMode(args);
+        
         // Load environment variables
         dotenv = Dotenv.configure().ignoreIfMissing().load();
         
-        // Detect if running with Java agent or manual configuration
-        boolean usingAgent = isRunningWithAgent();
-        
-        if (usingAgent) {
-            System.out.println("🤖 Java Agent Mode Detected");
+        if (isAgentMode) {
+            System.out.println("🤖 Java Agent Mode");
             System.out.println("   The OpenTelemetry Java agent handles all setup automatically");
             System.out.println("   No configuration code needed in your application");
         } else {
@@ -116,18 +116,28 @@ public class OpenTelemetryExample {
     }
 
     /**
-     * Detects if the application is running with the OpenTelemetry Java agent
+     * Determine the OpenTelemetry mode from command line arguments
+     * @param args Command line arguments
+     * @return true if agent mode, false if manual configuration mode
      */
-    private static boolean isRunningWithAgent() {
-        // Check if OpenTelemetry agent is present by looking for the agent system property
-        String javaagent = System.getProperty("java.class.path");
-        boolean agentDetected = javaagent != null && javaagent.contains("opentelemetry-javaagent");
+    private static boolean determineOpenTelemetryMode(String[] args) {
+        System.out.println("🔧 Parsing arguments: " + java.util.Arrays.toString(args));
         
-        // Also check for OTEL system properties that are typically set by the agent
-        boolean otelPropsDetected = System.getProperty("otel.service.name") != null ||
-                                  System.getProperty("otel.exporter.otlp.endpoint") != null;
+        for (String arg : args) {
+            if ("--mode=agent".equals(arg)) {
+                System.out.println("✓ Agent mode detected from arguments");
+                return true;
+            } else if ("--mode=manual".equals(arg)) {
+                System.out.println("✓ Manual mode detected from arguments");
+                return false;
+            }
+        }
         
-        return agentDetected || otelPropsDetected;
+        // Default to manual mode if no argument provided
+        if (args.length == 0) {
+            System.out.println("ℹ️  No mode specified, defaulting to manual configuration");
+        }
+        return false;
     }
 
     /**

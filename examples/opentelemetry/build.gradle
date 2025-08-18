@@ -7,6 +7,11 @@ application {
     mainClass = 'dev.openfga.sdk.example.opentelemetry.OpenTelemetryExample'
 }
 
+// Override the default run task to pass manual config flag
+run {
+    args = ['--mode=manual']
+}
+
 // Task to download OpenTelemetry Java agent if not present
 task downloadAgent {
     group = 'setup'
@@ -43,6 +48,9 @@ task runWithAgent(type: JavaExec) {
         '-Dotel.exporter.otlp.endpoint=http://localhost:4317',
         '-Dotel.exporter.otlp.protocol=grpc'
     ]
+    
+    // Pass agent mode flag to the application
+    args = ['--mode=agent']
     
     doFirst {
         println "🤖 Running with OpenTelemetry Java agent (no-code approach)..."
