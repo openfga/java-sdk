@@ -23,6 +23,9 @@ import dev.openfga.sdk.telemetry.Counters;
 import dev.openfga.sdk.telemetry.Histograms;
 import dev.openfga.sdk.telemetry.Metric;
 import io.github.cdimascio.dotenv.Dotenv;
+
+// OpenTelemetry imports - ONLY NEEDED FOR MANUAL CONFIGURATION (./gradlew run)
+// When using the Java agent (./gradlew runWithAgent), these are not required
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -40,45 +43,64 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * OpenFGA Java SDK - Manual OpenTelemetry Configuration Example
+ * OpenFGA Java SDK - Combined OpenTelemetry Example
  * 
- * This example demonstrates how to use OpenTelemetry metrics with the OpenFGA Java SDK
- * using manual code-based configuration.
+ * This example demonstrates two approaches for using OpenTelemetry metrics with the OpenFGA Java SDK:
  * 
- * This approach shows how to configure OpenTelemetry programmatically in your application
- * without requiring the Java agent. The example sets up:
- * - Prometheus metrics exporter on port 9090
- * - OpenFGA SDK telemetry configuration
- * - Continuous operation loop to generate metrics
+ * 1. MANUAL CONFIGURATION (./gradlew run):
+ *    - Uses code-based OpenTelemetry setup
+ *    - Requires OpenTelemetry SDK dependencies
+ *    - Full control over configuration
+ * 
+ * 2. JAVA AGENT (./gradlew runWithAgent):
+ *    - Uses OpenTelemetry Java agent for automatic instrumentation
+ *    - No OpenTelemetry dependencies required in your application
+ *    - Zero-code configuration approach
+ * 
+ * Both approaches generate the same metrics:
+ * - fga-client.request.duration - Total request time for FGA requests
+ * - fga-client.query.duration - Time taken by FGA server to process requests  
+ * - fga-client.credentials.request - Number of token requests (if using client credentials)
  */
 public class OpenTelemetryExample {
 
     private static Dotenv dotenv;
     private static OpenFgaClient fgaClient;
+    
+    // ONLY NEEDED FOR MANUAL CONFIGURATION - not used with agent
     private static SdkMeterProvider globalMeterProvider;
 
     public static void main(String[] args) throws Exception {
-        System.out.println("🚀 OpenFGA Java SDK - Manual OpenTelemetry Example");
-        System.out.println("===================================================");
+        System.out.println("🚀 OpenFGA Java SDK - OpenTelemetry Example");
+        System.out.println("===========================================");
         
         // Load environment variables
         dotenv = Dotenv.configure().ignoreIfMissing().load();
         
-        System.out.println("🔧 Manual OpenTelemetry configuration");
-        System.out.println("   This example shows code-based OpenTelemetry setup");
-        System.out.println("   No Java agent required - everything configured in code");
+        // Detect if running with Java agent or manual configuration
+        boolean usingAgent = isRunningWithAgent();
         
-        // Configure OpenTelemetry manually
-        configureOpenTelemetry();
+        if (usingAgent) {
+            System.out.println("🤖 Java Agent Mode Detected");
+            System.out.println("   The OpenTelemetry Java agent handles all setup automatically");
+            System.out.println("   No configuration code needed in your application");
+        } else {
+            System.out.println("🔧 Manual Configuration Mode");
+            System.out.println("   This example shows code-based OpenTelemetry setup");
+            System.out.println("   Requires OpenTelemetry SDK dependencies");
+            
+            // Configure OpenTelemetry manually - ONLY NEEDED FOR MANUAL MODE
+            configureOpenTelemetryManually();
+        }
         
-        // Create OpenFGA client
+        // Create OpenFGA client (works the same for both modes)
         createOpenFgaClient();
         
         System.out.println("\n🔄 Starting continuous operations loop...");
         System.out.println("   Operations will run every 5 seconds until stopped (Ctrl+C)");
         System.out.println("   This matches the behavior of other OpenFGA SDK examples");
         
-        // Run operations continuously in a loop like the JS example
+        // Run operations continuously
         int operationCount = 0;
         while (true) {
             try {
@@ -96,7 +118,26 @@ public class OpenTelemetryExample {
         }
     }
 
-    private static void configureOpenTelemetry() {
+    /**
+     * Detects if the application is running with the OpenTelemetry Java agent
+     */
+    private static boolean isRunningWithAgent() {
+        // Check if OpenTelemetry agent is present by looking for the agent system property
+        String javaagent = System.getProperty("java.class.path");
+        boolean agentDetected = javaagent != null && javaagent.contains("opentelemetry-javaagent");
+        
+        // Also check for OTEL system properties that are typically set by the agent
+        boolean otelPropsDetected = System.getProperty("otel.service.name") != null ||
+                                  System.getProperty("otel.exporter.otlp.endpoint") != null;
+        
+        return agentDetected || otelPropsDetected;
+    }
+
+    /**
+     * MANUAL CONFIGURATION ONLY - configures OpenTelemetry programmatically
+     * This method is only called when NOT using the Java agent
+     */
+    private static void configureOpenTelemetryManually() {
         System.out.println("\n⚙️ Configuring OpenTelemetry manually...");
         
         String otlpEndpoint = dotenv.get("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317");
@@ -113,7 +154,7 @@ public class OpenTelemetryExample {
             .put(ResourceAttributes.SERVICE_VERSION, serviceVersion)
             .build();
 
-        // Configure OTLP metric exporter (disable TLS to avoid SSL issues)
+        // Configure OTLP metric exporter
         OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
             .setEndpoint(otlpEndpoint)
             .build();
@@ -155,8 +196,10 @@ public class OpenTelemetryExample {
         System.out.println("   Store ID: " + storeId);
         System.out.println("   Model ID: " + modelId);
         
-        // Create client configuration WITHOUT explicit telemetry configuration
-        // Use default telemetry configuration (all metrics enabled with default attributes)
+        // Create client configuration with default telemetry
+        // The SDK will automatically detect and use either:
+        // - The globally registered OpenTelemetry instance (manual config)
+        // - The OpenTelemetry agent instance (agent mode)
         ClientConfiguration config = new ClientConfiguration()
                 .apiUrl(apiUrl)
                 .storeId(storeId)
@@ -186,49 +229,73 @@ public class OpenTelemetryExample {
         // Create the client
         fgaClient = new OpenFgaClient(config);
         
-        System.out.println("✅ OpenFGA client created with default telemetry!");
-        System.out.println("   📊 Metrics will be exported to OTLP collector");
+        System.out.println("✅ OpenFGA client created with telemetry enabled!");
+        System.out.println("   📊 Metrics will be automatically collected and exported");
     }
 
     private static void performOperations() throws Exception {
-        // Read the authorization model (similar to JS SDK example)
+        // Read the authorization model
         System.out.println("📖 Reading authorization model...");
         ClientReadAuthorizationModelResponse modelResponse = fgaClient.readAuthorizationModel().get();
         System.out.println("✓ Read authorization model: " + modelResponse.getAuthorizationModel().getId());
         
-        // Read existing tuples (similar to JS SDK example)
+        // Write some test tuples first (to ensure we have data to check)
+        System.out.println("✍️ Writing test tuples...");
+        try {
+            List<ClientTupleKey> tuples = List.of(
+                new ClientTupleKey()
+                    .user("user:anne")
+                    .relation("viewer")
+                    ._object("doc:2021-budget"),
+                new ClientTupleKey()
+                    .user("user:beth")
+                    .relation("can_write")
+                    ._object("doc:2021-budget"),
+                new ClientTupleKey()
+                    .user("user:anne")
+                    .relation("viewer")
+                    ._object("doc:2022-budget")
+            );
+            
+            ClientWriteResponse writeResponse = fgaClient.write(new ClientWriteRequest().writes(tuples)).get();
+            System.out.println("✓ Wrote " + tuples.size() + " test tuples");
+        } catch (Exception writeError) {
+            System.out.println("⚠️  Could not write tuples (may not be needed): " + writeError.getMessage());
+        }
+        
+        // Read existing tuples
         System.out.println("📋 Reading existing tuples...");
         ClientReadResponse readResponse = fgaClient.read(new ClientReadRequest()).get();
         System.out.println("✓ Found " + readResponse.getTuples().size() + " existing tuples");
         
-        // Perform check requests (matching JS SDK example patterns)
+        // Perform check requests
         System.out.println("🔍 Performing check operations...");
         
-        // Check: user:anne can viewer doc:2021-budget
+        // Check: user:anne can view doc:2021-budget
         ClientCheckRequest check1 = new ClientCheckRequest()
             .user("user:anne")
             .relation("viewer")
             ._object("doc:2021-budget");
         ClientCheckResponse checkResponse1 = fgaClient.check(check1).get();
-        System.out.println("✓ Check user:anne can viewer doc:2021-budget: " + checkResponse1.getAllowed());
+        System.out.println("✓ Check user:anne can view doc:2021-budget: " + checkResponse1.getAllowed());
         
-        // Check: user:beth can writer doc:2021-budget
+        // Check: user:beth can write doc:2021-budget
         ClientCheckRequest check2 = new ClientCheckRequest()
             .user("user:beth")
             .relation("can_write")
             ._object("doc:2021-budget");
         ClientCheckResponse checkResponse2 = fgaClient.check(check2).get();
-        System.out.println("✓ Check user:beth can writer doc:2021-budget: " + checkResponse2.getAllowed());
+        System.out.println("✓ Check user:beth can write doc:2021-budget: " + checkResponse2.getAllowed());
         
-        // Check: user:anne can viewer doc:2022-budget
+        // Check: user:anne can view doc:2022-budget
         ClientCheckRequest check3 = new ClientCheckRequest()
             .user("user:anne")
             .relation("viewer")
             ._object("doc:2022-budget");
         ClientCheckResponse checkResponse3 = fgaClient.check(check3).get();
-        System.out.println("✓ Check user:anne can viewer doc:2022-budget: " + checkResponse3.getAllowed());
+        System.out.println("✓ Check user:anne can view doc:2022-budget: " + checkResponse3.getAllowed());
 
-        // Batch check operations (matching JS SDK example)
+        // Batch check operations
         System.out.println("🔍 Performing batch check operations...");
         List<ClientCheckRequest> batchChecks = List.of(
             new ClientCheckRequest()
@@ -258,7 +325,7 @@ public class OpenTelemetryExample {
             }
         }
 
-        // List objects operation (similar to JS SDK)
+        // List objects operation
         System.out.println("📋 Listing objects user:anne can view...");
         ClientListObjectsRequest listRequest = new ClientListObjectsRequest()
             .user("user:anne")
@@ -266,13 +333,13 @@ public class OpenTelemetryExample {
             .type("doc");
         
         ClientListObjectsResponse listResponse = fgaClient.listObjects(listRequest).get();
-        System.out.println("✓ user:anne can view " + listResponse.getObjects().size() + " docs: " +
+        System.out.println("✓ user:anne can view " + listResponse.getObjects().size() + " documents: " + 
             String.join(", ", listResponse.getObjects()));
 
         System.out.println("📊 All operations completed - metrics generated!");
         System.out.println("📊 Generated metrics: request.duration, query.duration, credentials.request");
         
-        // Manually flush metrics to ensure they're exported to OTLP collector
+        // MANUAL CONFIGURATION ONLY - flush metrics to ensure they're exported
         if (globalMeterProvider != null) {
             System.out.println("📊 Flushing metrics to OTLP collector...");
             globalMeterProvider.forceFlush().join(5, java.util.concurrent.TimeUnit.SECONDS);
