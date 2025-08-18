@@ -7,14 +7,35 @@ application {
     mainClass = 'dev.openfga.sdk.example.opentelemetry.NoCodeOpenTelemetryExample'
 }
 
-// Task to run with OpenTelemetry agent (matching yesterday's working config)
+// Task to download OpenTelemetry Java agent if not present
+task downloadAgent {
+    group = 'setup'
+    description = 'Download OpenTelemetry Java agent if not present'
+    
+    doLast {
+        def agentFile = file('opentelemetry-javaagent.jar')
+        if (!agentFile.exists()) {
+            println "Downloading OpenTelemetry Java agent..."
+            def agentUrl = 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar'
+            new URL(agentUrl).withInputStream { i ->
+                agentFile.withOutputStream { it << i }
+            }
+            println "Downloaded opentelemetry-javaagent.jar"
+        } else {
+            println "OpenTelemetry agent already exists"
+        }
+    }
+}
+
+// Task to run with OpenTelemetry agent using hard-coded configuration
 task runWithAgent(type: JavaExec) {
     group = 'application'
     description = 'Run the no-code OpenTelemetry example with Java agent'
+    dependsOn downloadAgent
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'dev.openfga.sdk.example.opentelemetry.NoCodeOpenTelemetryExample'
     
-    // Add JVM arguments for OpenTelemetry agent
+    // Add JVM arguments for OpenTelemetry agent with configuration
     jvmArgs = [
         '-javaagent:opentelemetry-javaagent.jar',
         '-Dotel.service.name=openfga-java-sdk-no-code-example',
@@ -25,8 +46,12 @@ task runWithAgent(type: JavaExec) {
     
     doFirst {
         println "Running with OpenTelemetry Java agent..."
-        println "Make sure you have downloaded opentelemetry-javaagent.jar"
-        println "Metrics will be exported to OTLP collector at: http://localhost:4317"
+        println "Service Name: openfga-java-sdk-no-code-example"
+        println "Service Version: 1.0.0"
+        println "Exporter Endpoint: http://localhost:4317"
+        println "Exporter Protocol: grpc"
+        println ""
+        println "Make sure you have an OTLP collector running on localhost:4317"
     }
 }
 

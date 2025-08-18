@@ -14,7 +14,7 @@ package dev.openfga.sdk.telemetry;
 
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -35,27 +35,13 @@ public class Metrics {
     }
 
     public Metrics(Configuration configuration) {
-        // Use custom OpenTelemetry instance if provided, otherwise use global instance
-        OpenTelemetry openTelemetry = getOpenTelemetryInstance(configuration);
-        this.meter = openTelemetry.getMeterProvider().get("openfga-sdk");
+        this.meter = GlobalOpenTelemetry.get().getMeterProvider().get("openfga-sdk");
         this.counters = new HashMap<>();
         this.histograms = new HashMap<>();
         this.configuration = configuration;
         if (this.configuration.getTelemetryConfiguration() == null) {
             this.configuration.telemetryConfiguration(new TelemetryConfiguration());
         }
-    }
-
-    /**
-     * Gets the OpenTelemetry instance to use, either from configuration or global instance.
-     */
-    private OpenTelemetry getOpenTelemetryInstance(Configuration configuration) {
-        if (configuration.getTelemetryConfiguration() != null
-                && configuration.getTelemetryConfiguration().getOpenTelemetry() != null) {
-            return configuration.getTelemetryConfiguration().getOpenTelemetry();
-        }
-        // Fall back to global instance
-        return io.opentelemetry.api.GlobalOpenTelemetry.get();
     }
 
     /**
