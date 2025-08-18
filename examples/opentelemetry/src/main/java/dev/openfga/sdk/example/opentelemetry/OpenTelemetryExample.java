@@ -67,9 +67,6 @@ public class OpenTelemetryExample {
     private static Dotenv dotenv;
     private static OpenFgaClient fgaClient;
     
-    // ONLY NEEDED FOR MANUAL CONFIGURATION - not used with agent
-    private static SdkMeterProvider globalMeterProvider;
-
     public static void main(String[] args) throws Exception {
         System.out.println("🚀 OpenFGA Java SDK - OpenTelemetry Example");
         System.out.println("===========================================");
@@ -173,9 +170,6 @@ public class OpenTelemetryExample {
         OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
             .setMeterProvider(meterProvider)
             .buildAndRegisterGlobal();
-
-        // Store reference to meter provider for manual flushing
-        globalMeterProvider = meterProvider;
 
         System.out.println("   ✅ OpenTelemetry SDK configured with OTLP exporter");
         System.out.println("   📊 Metrics will be exported to OTLP endpoint: " + otlpEndpoint);
@@ -338,11 +332,5 @@ public class OpenTelemetryExample {
 
         System.out.println("📊 All operations completed - metrics generated!");
         System.out.println("📊 Generated metrics: request.duration, query.duration, credentials.request");
-        
-        // MANUAL CONFIGURATION ONLY - flush metrics to ensure they're exported
-        if (globalMeterProvider != null) {
-            System.out.println("📊 Flushing metrics to OTLP collector...");
-            globalMeterProvider.forceFlush().join(5, java.util.concurrent.TimeUnit.SECONDS);
-        }
     }
 }
