@@ -20,6 +20,15 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: "gradle"
+    directory: "/examples/opentelemetry"
+    schedule:
+      interval: "monthly"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
