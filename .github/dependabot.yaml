@@ -12,7 +12,7 @@ updates:
           - "*"
 
   - package-ecosystem: "gradle"
-    directory: "/example/example1"
+    directory: "/examples/basic-examples"
     schedule:
       interval: "monthly"
     groups:
