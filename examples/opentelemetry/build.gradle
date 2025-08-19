@@ -22,8 +22,14 @@ task downloadAgent {
         if (!agentFile.exists()) {
             println "Downloading OpenTelemetry Java agent..."
             def agentUrl = 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar'
-            new URL(agentUrl).withInputStream { i ->
-                agentFile.withOutputStream { it << i }
+            def agentUrl = 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar'
+            try {
+                new URL(agentUrl).withInputStream { i ->
+                    agentFile.withOutputStream { it << i }
+                }
+                println "Downloaded opentelemetry-javaagent.jar"
+            } catch (Exception e) {
+                throw new GradleException("Failed to download OpenTelemetry agent: ${e.message}", e)
             }
             println "Downloaded opentelemetry-javaagent.jar"
         } else {
