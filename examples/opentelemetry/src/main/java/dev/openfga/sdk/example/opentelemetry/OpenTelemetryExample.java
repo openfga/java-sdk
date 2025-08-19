@@ -19,6 +19,8 @@ import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.model.*;
+import dev.openfga.sdk.telemetry.Attribute;
+import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Counters;
 import dev.openfga.sdk.telemetry.Histograms;
 import dev.openfga.sdk.telemetry.Metric;
@@ -37,8 +39,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -58,9 +62,16 @@ import java.util.concurrent.TimeUnit;
  *    - Zero-code configuration approach
  * 
  * Both approaches generate the same metrics:
- * - fga-client.request.duration - Total request time for FGA requests
- * - fga-client.query.duration - Time taken by FGA server to process requests  
- * - fga-client.credentials.request - Number of token requests (if using client credentials)
+ * - fga-client.request.duration (histogram) - Total request time including network latency
+ * - fga-client.query.duration (histogram) - FGA server processing time only
+ * - fga-client.credentials.request (counter) - Number of authentication token requests
+ * 
+ * The example also demonstrates:
+ * - Comprehensive telemetry configuration with ALL available SDK attributes (14 total)
+ * - Clear distinction between default attributes (12) and additional ones (2)
+ * - Privacy and performance considerations for telemetry attribute selection
+ * - Proper OpenTelemetry setup for both manual and agent modes
+ * - Real-world FGA operations that generate meaningful telemetry data
  */
 public class OpenTelemetryExample {
 
@@ -185,6 +196,61 @@ public class OpenTelemetryExample {
         System.out.println("   📊 Metrics will be exported to OTLP endpoint: " + otlpEndpoint);
     }
 
+    /**
+     * Create a comprehensive telemetry configuration showing all available attributes
+     * This demonstrates how to customize which telemetry data the SDK collects
+     */
+    private static TelemetryConfiguration createTelemetryConfiguration() {
+        System.out.println("\n📊 Configuring comprehensive telemetry attributes...");
+        
+        // Create a comprehensive attribute map that includes ALL available attributes
+        // This goes beyond the default configuration to show every telemetry option
+        Map<Attribute, Optional<Object>> allAttributes = new HashMap<>();
+        
+        // ✅ DEFAULT ATTRIBUTES - These are enabled by default in TelemetryConfiguration()
+        allAttributes.put(Attributes.FGA_CLIENT_REQUEST_CLIENT_ID, Optional.empty());
+        allAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, Optional.empty());
+        allAttributes.put(Attributes.FGA_CLIENT_REQUEST_MODEL_ID, Optional.empty());
+        allAttributes.put(Attributes.FGA_CLIENT_REQUEST_STORE_ID, Optional.empty());
+        allAttributes.put(Attributes.FGA_CLIENT_RESPONSE_MODEL_ID, Optional.empty());
+        allAttributes.put(Attributes.HTTP_HOST, Optional.empty());
+        allAttributes.put(Attributes.HTTP_REQUEST_METHOD, Optional.empty());
+        allAttributes.put(Attributes.HTTP_REQUEST_RESEND_COUNT, Optional.empty());
+        allAttributes.put(Attributes.HTTP_RESPONSE_STATUS_CODE, Optional.empty());
+        allAttributes.put(Attributes.URL_FULL, Optional.empty());
+        allAttributes.put(Attributes.URL_SCHEME, Optional.empty());
+        allAttributes.put(Attributes.USER_AGENT, Optional.empty());
+        
+        // 🔧 ADDITIONAL ATTRIBUTES - These are NOT enabled by default
+        // Adding these shows developers what extra telemetry data is available
+        
+        // Batch check size - not enabled by default because it only applies to batch operations
+        // and could add noise to telemetry for non-batch requests
+        allAttributes.put(Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE, Optional.empty());
+        
+        // User field - not enabled by default for privacy/security reasons
+        // as it may contain PII (personally identifiable information)
+        allAttributes.put(Attributes.FGA_CLIENT_USER, Optional.empty());
+
+        // Create metrics configuration with all attributes
+        Map<Metric, Map<Attribute, Optional<Object>>> comprehensiveMetrics = new HashMap<>();
+        comprehensiveMetrics.put(Histograms.REQUEST_DURATION, allAttributes);
+        comprehensiveMetrics.put(Histograms.QUERY_DURATION, allAttributes);
+        comprehensiveMetrics.put(Counters.CREDENTIALS_REQUEST, allAttributes);
+        
+        TelemetryConfiguration telemetryConfig = new TelemetryConfiguration(comprehensiveMetrics);
+
+        System.out.println("   ✅ Enabled all 14 available attributes (12 default + 2 additional):");
+        System.out.println("      DEFAULT: client_id, method, model_id, store_id, response.model_id");
+        System.out.println("      DEFAULT: host, request.method, resend_count, status_code");
+        System.out.println("      DEFAULT: url.full, url.scheme, user_agent");
+        System.out.println("      ADDITIONAL: batch_check_size (batch operations only)");
+        System.out.println("      ADDITIONAL: user (disabled by default for privacy)");
+        System.out.println("   📊 All SDK metrics: REQUEST_DURATION, QUERY_DURATION, CREDENTIALS_REQUEST");
+        
+        return telemetryConfig;
+    }
+
     private static void createOpenFgaClient() throws Exception {
         System.out.println("\n🔧 Creating OpenFGA client...");
         
@@ -207,7 +273,8 @@ public class OpenTelemetryExample {
         ClientConfiguration config = new ClientConfiguration()
                 .apiUrl(apiUrl)
                 .storeId(storeId)
-                .authorizationModelId(modelId);
+                .authorizationModelId(modelId)
+                .telemetryConfiguration(createTelemetryConfiguration());
         
         // Configure authentication if credentials are provided
         String clientId = dotenv.get("FGA_CLIENT_ID");
