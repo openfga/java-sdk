@@ -28,8 +28,7 @@ class Example1 {
         var configuration = new ClientConfiguration()
                 .apiUrl(apiUrl) // required, e.g. https://api.fga.example
                 .storeId(System.getenv("FGA_STORE_ID")) // not needed when calling `CreateStore` or `ListStores`
-                .authorizationModelId(
-                        System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
+                .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(credentials);
         var fgaClient = new OpenFgaClient(configuration);
 
@@ -114,8 +113,9 @@ class Example1 {
                                         new ClientTupleKey()
                                                 .user("user:anne")
                                                 .relation("owner")
-                                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a") // different relation
-                                )),
+                                                ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a") // different
+                                        // relation
+                                        )),
                         new ClientWriteOptions()
                                 .disableTransactions(true)
                                 .authorizationModelId(authorizationModel.getAuthorizationModelId()))
