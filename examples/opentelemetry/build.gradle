@@ -69,13 +69,20 @@ repositories {
 }
 
 ext {
+    fgaSdkVersion = "0.9.0"
     openTelemetryVersion = "1.32.0"
     openTelemetryAlphaVersion = "1.32.0-alpha"
 }
 
 dependencies {
     // Core FGA SDK (always required)
-    implementation("dev.openfga:openfga-sdk")
+    // By default, uses the published SDK from Maven Central
+    implementation("dev.openfga:openfga-sdk:$fgaSdkVersion")
+    
+    // For local development using the SDK source code:
+    // 1. Uncomment the includeBuild line in settings.gradle
+    // 2. Comment out the line above and uncomment the line below:
+    // implementation("dev.openfga:openfga-sdk")
 
     // OpenTelemetry SDK dependencies - ONLY NEEDED FOR MANUAL CONFIGURATION (./gradlew run)
     // When using the Java agent (./gradlew runWithAgent), these dependencies are not required
