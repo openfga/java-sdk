@@ -1,0 +1,103 @@
+plugins {
+    id 'application'
+    id 'com.diffplug.spotless' version '7.2.1'
+}
+
+application {
+    mainClass = 'dev.openfga.sdk.example.opentelemetry.OpenTelemetryExample'
+}
+
+// Override the default run task to pass manual config flag
+run {
+    args = ['--mode=manual']
+}
+
+// Task to download OpenTelemetry Java agent if not present
+task downloadAgent {
+    group = 'setup'
+    description = 'Download OpenTelemetry Java agent if not present'
+    
+    doLast {
+        def agentFile = file('opentelemetry-javaagent.jar')
+        if (!agentFile.exists()) {
+            println "Downloading OpenTelemetry Java agent..."
+            def agentUrl = 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar'
+            new URL(agentUrl).withInputStream { i ->
+                agentFile.withOutputStream { it << i }
+            }
+            println "Downloaded opentelemetry-javaagent.jar"
+        } else {
+            println "OpenTelemetry agent already exists"
+        }
+    }
+}
+
+// Task to run with OpenTelemetry agent (no-code approach)
+task runWithAgent(type: JavaExec) {
+    group = 'application'
+    description = 'Run the OpenTelemetry example with Java agent (no-code approach)'
+    dependsOn downloadAgent
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.openfga.sdk.example.opentelemetry.OpenTelemetryExample'
+    
+    // Add JVM arguments for OpenTelemetry agent with configuration
+    jvmArgs = [
+        '-javaagent:opentelemetry-javaagent.jar',
+        '-Dotel.service.name=openfga-java-sdk-agent-example',
+        '-Dotel.service.version=1.0.0',
+        '-Dotel.exporter.otlp.endpoint=http://localhost:4317',
+        '-Dotel.exporter.otlp.protocol=grpc'
+    ]
+    
+    // Pass agent mode flag to the application
+    args = ['--mode=agent']
+    
+    doFirst {
+        println "🤖 Running with OpenTelemetry Java agent (no-code approach)..."
+        println "Service Name: openfga-java-sdk-agent-example"
+        println "Service Version: 1.0.0"
+        println "Exporter Endpoint: http://localhost:4317"
+        println "Exporter Protocol: grpc"
+        println ""
+        println "Make sure you have an OTLP collector running on localhost:4317"
+        println "The agent automatically instruments the application - no code changes needed!"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    openTelemetryVersion = "1.32.0"
+    openTelemetryAlphaVersion = "1.32.0-alpha"
+}
+
+dependencies {
+    // Core FGA SDK (always required)
+    implementation("dev.openfga:openfga-sdk")
+
+    // OpenTelemetry SDK dependencies - ONLY NEEDED FOR MANUAL CONFIGURATION (./gradlew run)
+    // When using the Java agent (./gradlew runWithAgent), these dependencies are not required
+    // The agent provides all OpenTelemetry functionality automatically
+    implementation("io.opentelemetry:opentelemetry-sdk:$openTelemetryVersion")
+    implementation("io.opentelemetry:opentelemetry-exporter-prometheus:$openTelemetryAlphaVersion")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:$openTelemetryVersion")
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$openTelemetryVersion")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha")
+
+    // Environment variables for this example
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
+}
+
+// Use spotless plugin to automatically format code
+spotless {
+    enforceCheck false
+    java {
+        palantirJavaFormat()
+        removeUnusedImports()
+        importOrder()
+    }
+}
+
+

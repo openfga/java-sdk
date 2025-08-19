@@ -1,0 +1,4 @@
+rootProject.name = 'opentelemetry-example'
+
+// Include the main SDK project as a dependency
+includeBuild '../..'
