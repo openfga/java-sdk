@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -65,11 +65,11 @@ public class OpenTelemetryExample {
     private static final int OPERATION_LOOP_INTERVAL_SECONDS = 20;
     private static final int ERROR_RETRY_INTERVAL_SECONDS = 2;
     private static final int METRICS_EXPORT_INTERVAL_SECONDS = 10;
-    
+
     // Command Line Arguments
     private static final String ARG_MODE_AGENT = "--mode=agent";
     private static final String ARG_MODE_MANUAL = "--mode=manual";
-    
+
     // Environment Variable Names
     private static final String ENV_OTEL_EXPORTER_OTLP_ENDPOINT = "OTEL_EXPORTER_OTLP_ENDPOINT";
     private static final String ENV_OTEL_SERVICE_NAME = "OTEL_SERVICE_NAME";
@@ -81,7 +81,7 @@ public class OpenTelemetryExample {
     private static final String ENV_FGA_CLIENT_SECRET = "FGA_CLIENT_SECRET";
     private static final String ENV_FGA_API_AUDIENCE = "FGA_API_AUDIENCE";
     private static final String ENV_FGA_API_TOKEN_ISSUER = "FGA_API_TOKEN_ISSUER";
-    
+
     // Default Values
     private static final String DEFAULT_OTLP_ENDPOINT = "http://localhost:4317";
     private static final String DEFAULT_SERVICE_NAME = "openfga-java-sdk-example";
@@ -89,7 +89,7 @@ public class OpenTelemetryExample {
     private static final String DEFAULT_FGA_API_URL = "http://localhost:8080";
     private static final String DEFAULT_API_AUDIENCE = "https://api.fga.example";
     private static final String DEFAULT_API_TOKEN_ISSUER = "auth.fga.example";
-    
+
     private static Dotenv dotenv;
     private static OpenFgaClient fgaClient;
 
@@ -120,7 +120,8 @@ public class OpenTelemetryExample {
         createOpenFgaClient();
 
         System.out.println("\n🔄 Starting continuous operations loop...");
-        System.out.println("   Operations will run every " + OPERATION_LOOP_INTERVAL_SECONDS + " seconds until stopped (Ctrl+C)");
+        System.out.println(
+                "   Operations will run every " + OPERATION_LOOP_INTERVAL_SECONDS + " seconds until stopped (Ctrl+C)");
         System.out.println("   This matches the behavior of other OpenFGA SDK examples");
 
         // Run operations continuously
@@ -183,8 +184,8 @@ public class OpenTelemetryExample {
 
         // Create resource with service information
         Resource resource = Resource.getDefault().toBuilder()
-                .put(ResourceAttributes.SERVICE_NAME, serviceName)
-                .put(ResourceAttributes.SERVICE_VERSION, serviceVersion)
+                .put(ServiceAttributes.SERVICE_NAME, serviceName)
+                .put(ServiceAttributes.SERVICE_VERSION, serviceVersion)
                 .build();
 
         // Configure OTLP metric exporter
@@ -194,7 +195,8 @@ public class OpenTelemetryExample {
         // Create meter provider with OTLP exporter
         SdkMeterProvider meterProvider = SdkMeterProvider.builder()
                 .registerMetricReader(PeriodicMetricReader.builder(metricExporter)
-                        .setInterval(Duration.ofSeconds(METRICS_EXPORT_INTERVAL_SECONDS)) // Export metrics every 10 seconds
+                        .setInterval(
+                                Duration.ofSeconds(METRICS_EXPORT_INTERVAL_SECONDS)) // Export metrics every 10 seconds
                         .build())
                 .setResource(resource)
                 .build();
@@ -257,7 +259,8 @@ public class OpenTelemetryExample {
         String modelId = dotenv.get(ENV_FGA_MODEL_ID);
 
         if (storeId == null || modelId == null) {
-            throw new IllegalStateException(ENV_FGA_STORE_ID + " and " + ENV_FGA_MODEL_ID + " must be configured in .env file");
+            throw new IllegalStateException(
+                    ENV_FGA_STORE_ID + " and " + ENV_FGA_MODEL_ID + " must be configured in .env file");
         }
 
         System.out.println("   API URL: " + apiUrl);
