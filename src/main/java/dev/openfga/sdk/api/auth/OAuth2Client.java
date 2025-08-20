@@ -40,6 +40,17 @@ public class OAuth2Client {
      * @param configuration Configuration, including credentials, that can be used to retrieve an access tokens
      */
     public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
+        this(configuration, apiClient, configuration.getTelemetry());
+    }
+
+    /**
+     * Initializes a new instance of the {@link OAuth2Client} class
+     *
+     * @param configuration Configuration, including credentials, that can be used to retrieve an access tokens
+     * @param apiClient The API client to use for HTTP requests
+     * @param telemetry The shared telemetry instance to use
+     */
+    public OAuth2Client(Configuration configuration, ApiClient apiClient, Telemetry telemetry) throws FgaInvalidParameterException {
         var clientCredentials = configuration.getCredentials().getClientCredentials();
 
         this.apiClient = apiClient;
@@ -53,7 +64,7 @@ public class OAuth2Client {
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay())
                 .telemetryConfiguration(configuration.getTelemetryConfiguration());
-        this.telemetry = new Telemetry(this.config);
+        this.telemetry = telemetry;
     }
 
     /**
@@ -90,7 +101,7 @@ public class OAuth2Client {
                 ApiClient.formRequestBuilder("POST", "", this.authRequest.buildFormRequestBody(), config);
         HttpRequest request = requestBuilder.build();
 
-        return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config)
+        return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config, telemetry)
                 .attemptHttpRequest()
                 .thenApply(ApiResponse::getData);
     }

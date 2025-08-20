@@ -16,6 +16,7 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -54,6 +55,7 @@ public class Configuration implements BaseConfiguration {
     private Duration minimumRetryDelay;
     private Map<String, String> defaultHeaders;
     private TelemetryConfiguration telemetryConfiguration;
+    private Telemetry telemetry;
 
     public Configuration() {
         this.apiUrl = DEFAULT_API_URL;
@@ -138,6 +140,9 @@ public class Configuration implements BaseConfiguration {
         TelemetryConfiguration overrideTelemetryConfiguration = configurationOverride.getTelemetryConfiguration();
         result.telemetryConfiguration =
                 overrideTelemetryConfiguration != null ? overrideTelemetryConfiguration : telemetryConfiguration;
+
+        // Don't copy the telemetry instance - let it be lazily initialized for the new configuration
+        result.telemetry = null;
 
         return result;
     }
@@ -338,5 +343,18 @@ public class Configuration implements BaseConfiguration {
     public Configuration telemetryConfiguration(TelemetryConfiguration telemetryConfiguration) {
         this.telemetryConfiguration = telemetryConfiguration;
         return this;
+    }
+
+    /**
+     * Get the shared Telemetry instance for this configuration.
+     * Creates the instance lazily if it hasn't been created yet.
+     *
+     * @return The shared Telemetry instance.
+     */
+    public Telemetry getTelemetry() {
+        if (telemetry == null) {
+            telemetry = new Telemetry(this);
+        }
+        return telemetry;
     }
 }
