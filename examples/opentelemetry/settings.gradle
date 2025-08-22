@@ -1,0 +1,10 @@
+rootProject.name = 'opentelemetry-example'
+
+// By default, this example uses the published SDK from Maven Central.
+// To use the local SDK source code instead:
+// 1. Uncomment the includeBuild line below
+// 2. Remove the version number from the SDK dependency in build.gradle
+
+// includeBuild '../..'
+
+
