@@ -2993,6 +2993,65 @@ public class OpenFgaClientTest {
                         + "If this behavior ever changes, it could be a subtle breaking change.");
     }
 
+    @Test
+    public void getAccessToken_withClientCredentials() throws Exception {
+        // Given
+        String accessToken = "client-test-token-67890";
+        String tokenResponse = String.format("{\"access_token\":\"%s\",\"token_type\":\"Bearer\",\"expires_in\":3600}", accessToken);
+        
+        // Mock the token endpoint
+        mockHttpClient.onPost("https://auth.fga.example/oauth/token").doReturn(200, tokenResponse);
+        
+        ClientCredentials clientCredentials = new ClientCredentials()
+                .clientId("test-client-id")
+                .clientSecret("test-client-secret")
+                .apiTokenIssuer("https://auth.fga.example")
+                .apiAudience("https://api.fga.example");
+                
+        ClientConfiguration clientConfiguration = new ClientConfiguration()
+                .apiUrl("https://api.fga.example")
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(clientCredentials));
+                
+        var mockApiClient = mock(ApiClient.class);
+        when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        when(mockApiClient.getHttpClientBuilder()).thenReturn(mock(HttpClient.Builder.class));
+                
+        OpenFgaClient client = new OpenFgaClient(clientConfiguration, mockApiClient);
+
+        // When
+        String result = client.getAccessToken().get();
+
+        // Then
+        assertEquals(accessToken, result);
+        mockHttpClient.verify().post("https://auth.fga.example/oauth/token").called();
+    }
+
+    @Test
+    public void getAccessToken_withApiToken() throws Exception {
+        // Given - API token configuration
+        ApiToken apiToken = new ApiToken("static-api-token-client");
+        ClientConfiguration clientConfiguration = new ClientConfiguration()
+                .apiUrl("https://api.fga.example")
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(apiToken));
+                
+        var mockApiClient = mock(ApiClient.class);
+        when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        when(mockApiClient.getHttpClientBuilder()).thenReturn(mock(HttpClient.Builder.class));
+                
+        OpenFgaClient client = new OpenFgaClient(clientConfiguration, mockApiClient);
+
+        // When & Then - The exception is thrown directly, not wrapped in ExecutionException
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            client.getAccessToken();
+        });
+        
+        assertEquals("getAccessToken() is only available when using CLIENT_CREDENTIALS authentication method", exception.getMessage());
+    }
+
     private Matcher<String> anyValidUUID() {
         return new UUIDMatcher();
     }
