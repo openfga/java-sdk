@@ -96,7 +96,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-exporter-prometheus:$openTelemetryAlphaVersion")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp:$openTelemetryVersion")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$openTelemetryVersion")
-    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.34.0")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.36.0")
 
     // Environment variables for this example
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
