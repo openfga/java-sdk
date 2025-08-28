@@ -145,7 +145,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "batchCheck", BatchCheckResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "batchCheck", BatchCheckResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -201,7 +201,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "check", CheckResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "check", CheckResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -251,7 +251,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "createStore", CreateStoreResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "createStore", CreateStoreResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -300,7 +300,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("DELETE", path, configuration);
-            return new HttpRequestAttempt<>(request, "deleteStore", Void.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "deleteStore", Void.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -356,7 +356,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "expand", ExpandResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "expand", ExpandResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -406,7 +406,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
-            return new HttpRequestAttempt<>(request, "getStore", GetStoreResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "getStore", GetStoreResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -462,7 +462,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "listObjects", ListObjectsResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "listObjects", ListObjectsResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -513,7 +513,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
-            return new HttpRequestAttempt<>(request, "listStores", ListStoresResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "listStores", ListStoresResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -569,7 +569,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "listUsers", ListUsersResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "listUsers", ListUsersResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -625,7 +625,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "read", ReadResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "read", ReadResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -684,7 +684,7 @@ public class OpenFgaApi {
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
-                            request, "readAssertions", ReadAssertionsResponse.class, apiClient, configuration, this.telemetry)
+                    request, "readAssertions", ReadAssertionsResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -742,12 +742,12 @@ public class OpenFgaApi {
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
-                            request,
-                            "readAuthorizationModel",
-                            ReadAuthorizationModelResponse.class,
-                            apiClient,
-                            configuration,
-                            this.telemetry)
+                    request,
+                    "readAuthorizationModel",
+                    ReadAuthorizationModelResponse.class,
+                    apiClient,
+                    configuration,
+                    configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -807,12 +807,12 @@ public class OpenFgaApi {
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(
-                            request,
-                            "readAuthorizationModels",
-                            ReadAuthorizationModelsResponse.class,
-                            apiClient,
-                            configuration,
-                            this.telemetry)
+                    request,
+                    "readAuthorizationModels",
+                    ReadAuthorizationModelsResponse.class,
+                    apiClient,
+                    configuration,
+                    configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -898,7 +898,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
-            return new HttpRequestAttempt<>(request, "readChanges", ReadChangesResponse.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "readChanges", ReadChangesResponse.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -953,7 +953,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "write", Object.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "write", Object.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -1020,7 +1020,7 @@ public class OpenFgaApi {
 
         try {
             HttpRequest request = buildHttpRequest("PUT", path, body, configuration);
-            return new HttpRequestAttempt<>(request, "writeAssertions", Void.class, apiClient, configuration, this.telemetry)
+            return new HttpRequestAttempt<>(request, "writeAssertions", Void.class, apiClient, configuration, configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
@@ -1078,12 +1078,12 @@ public class OpenFgaApi {
         try {
             HttpRequest request = buildHttpRequest("POST", path, body, configuration);
             return new HttpRequestAttempt<>(
-                            request,
-                            "writeAuthorizationModel",
-                            WriteAuthorizationModelResponse.class,
-                            apiClient,
-                            configuration,
-                            this.telemetry)
+                    request,
+                    "writeAuthorizationModel",
+                    WriteAuthorizationModelResponse.class,
+                    apiClient,
+                    configuration,
+                    configuration.getTelemetry())
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {
