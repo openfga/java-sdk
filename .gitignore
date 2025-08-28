@@ -30,3 +30,9 @@ VERSION.txt
 
 # VSCode IDE
 /.vscode
+
+# env files
+.env
+
+# mac
+.DS_Store
