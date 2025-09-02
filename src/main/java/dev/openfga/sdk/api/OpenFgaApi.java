@@ -480,7 +480,21 @@ public class OpenFgaApi {
      */
     public CompletableFuture<ApiResponse<ListStoresResponse>> listStores(Integer pageSize, String continuationToken)
             throws ApiException, FgaInvalidParameterException {
-        return listStores(pageSize, continuationToken, this.configuration);
+        return listStores(pageSize, continuationToken, null, this.configuration);
+    }
+
+    /**
+     * List all stores
+     * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
+     * @param pageSize  (optional)
+     * @param continuationToken  (optional)
+     * @param name  (optional)
+     * @return CompletableFuture&lt;ApiResponse&lt;ListStoresResponse&gt;&gt;
+     * @throws ApiException if fails to make API call
+     */
+    public CompletableFuture<ApiResponse<ListStoresResponse>> listStores(
+            Integer pageSize, String continuationToken, String name) throws ApiException, FgaInvalidParameterException {
+        return listStores(pageSize, continuationToken, name, this.configuration);
     }
 
     /**
@@ -495,15 +509,31 @@ public class OpenFgaApi {
     public CompletableFuture<ApiResponse<ListStoresResponse>> listStores(
             Integer pageSize, String continuationToken, ConfigurationOverride configurationOverride)
             throws ApiException, FgaInvalidParameterException {
-        return listStores(pageSize, continuationToken, this.configuration.override(configurationOverride));
+        return listStores(pageSize, continuationToken, null, this.configuration.override(configurationOverride));
+    }
+
+    /**
+     * List all stores
+     * Returns a paginated list of OpenFGA stores and a continuation token to get additional stores. The continuation token will be empty if there are no more stores.
+     * @param pageSize  (optional)
+     * @param continuationToken  (optional)
+     * @param name  (optional)
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
+     * @return CompletableFuture&lt;ApiResponse&lt;ListStoresResponse&gt;&gt;
+     * @throws ApiException if fails to make API call
+     */
+    public CompletableFuture<ApiResponse<ListStoresResponse>> listStores(
+            Integer pageSize, String continuationToken, String name, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return listStores(pageSize, continuationToken, name, this.configuration.override(configurationOverride));
     }
 
     private CompletableFuture<ApiResponse<ListStoresResponse>> listStores(
-            Integer pageSize, String continuationToken, Configuration configuration)
+            Integer pageSize, String continuationToken, String name, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
 
         String path = "/stores";
-        path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken);
+        path = pathWithParams(path, "page_size", pageSize, "continuation_token", continuationToken, "name", name);
 
         Map<String, Object> methodParameters = new HashMap<>();
 
