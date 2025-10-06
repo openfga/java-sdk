@@ -6,6 +6,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+        versions: [">=0.8.0"]
     groups:
       dependencies:
         patterns:
@@ -15,6 +18,9 @@ updates:
     directory: "/examples/basic-examples"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+        versions: [">=0.8.0"]
     groups:
       dependencies:
         patterns:
@@ -24,6 +30,9 @@ updates:
     directory: "/examples/opentelemetry"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+        versions: [">=0.8.0"]
     groups:
       dependencies:
         patterns:
