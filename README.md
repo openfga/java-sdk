@@ -236,6 +236,67 @@ public class Example {
 }
 ```
 
+### Custom Headers
+
+#### Default Headers
+
+You can set default headers to be sent with every request by using the `defaultHeaders` property of the `ClientConfiguration` class.
+
+```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+
+import java.net.http.HttpClient;
+import java.util.Map;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var config = new ClientConfiguration()
+                .apiUrl(System.getenv("FGA_API_URL"))
+                .storeId(System.getenv("FGA_STORE_ID"))
+                .authorizationModelId(System.getenv("FGA_MODEL_ID"))
+                .defaultHeaders(Map.of(
+                        "X-Custom-Header", "default-value",
+                        "X-Request-Source", "my-app"
+                ));
+
+        var fgaClient = new OpenFgaClient(config);
+    }
+}
+```
+
+#### Per-request Headers
+
+You can set custom headers to be sent with a specific request by using the `additionalHeaders` property of the options classes (e.g. `ClientReadOptions`, `ClientWriteOptions`, etc.).
+
+```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import java.net.http.HttpClient;
+
+public class Example {
+    public static void main(String[] args) throws Exception {
+        var config = new ClientConfiguration()
+                .apiUrl(System.getenv("FGA_API_URL"))
+                .storeId(System.getenv("FGA_STORE_ID"))
+                .authorizationModelId(System.getenv("FGA_MODEL_ID"))
+                .defaultHeaders(Map.of(
+                        "X-Custom-Header", "default-value",
+                        "X-Request-Source", "my-app"
+                ));
+
+        var fgaClient = new OpenFgaClient(config);
+        var options = new ClientReadOptions()
+                    .additionalHeaders(Map.of(
+                            "X-Request-Id", "123e4567-e89b-12d3-a456-426614174000",
+                            "X-Custom-Header", "overridden-value" // this will override the default value for this request only
+                    )
+                );
+    }
+}
+```
 
 ### Get your Store ID
 
