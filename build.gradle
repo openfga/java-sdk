@@ -60,11 +60,16 @@ ext {
 
 dependencies {
     implementation "com.google.code.findbugs:jsr305:3.0.2"
-    implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+
+    // ---- Jackson ----
+    implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "org.openapitools:jackson-databind-nullable:0.2.7"
+
+    // ---- OpenTelemetry ----
     implementation platform("io.opentelemetry:opentelemetry-bom:1.53.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
@@ -104,8 +109,11 @@ testing {
             useJUnitJupiter()
 
             dependencies {
-                implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
-                implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+                // --- Jackson ---
+                implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
+                implementation "com.fasterxml.jackson.core:jackson-core"
+                implementation "com.fasterxml.jackson.core:jackson-databind"
+
                 implementation "org.testcontainers:junit-jupiter:1.21.3"
                 implementation "org.testcontainers:openfga:1.21.3"
                 implementation project()
