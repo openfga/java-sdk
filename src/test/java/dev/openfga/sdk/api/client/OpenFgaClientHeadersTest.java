@@ -516,9 +516,8 @@ public class OpenFgaClientHeadersTest {
                 ._object(DEFAULT_OBJECT)
                 .relation(DEFAULT_RELATION)
                 .user(DEFAULT_USER);
-        Map<String, String> headers = new java.util.HashMap<>();
-        headers.put("test-header", "test-value-per-call");
-        ClientBatchCheckClientOptions options = new ClientBatchCheckClientOptions().additionalHeaders(headers);
+        ClientBatchCheckClientOptions options =
+                new ClientBatchCheckClientOptions().additionalHeaders(Map.of("test-header", "test-value-per-call"));
 
         // When
         List<ClientBatchCheckClientResponse> response =
@@ -748,10 +747,8 @@ public class OpenFgaClientHeadersTest {
                 .relations(List.of(DEFAULT_RELATION))
                 .user(DEFAULT_USER)
                 ._object(DEFAULT_OBJECT);
-        // Use HashMap instead of Map.of() to create a mutable map
-        Map<String, String> headers = new java.util.HashMap<>();
-        headers.put("test-header", "test-value-per-call");
-        ClientListRelationsOptions options = new ClientListRelationsOptions().additionalHeaders(headers);
+        ClientListRelationsOptions options =
+                new ClientListRelationsOptions().additionalHeaders(Map.of("test-header", "test-value-per-call"));
 
         // When
         ClientListRelationsResponse response =

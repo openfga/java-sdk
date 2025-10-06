@@ -838,12 +838,13 @@ public class OpenFgaClient {
         var options = batchCheckOptions != null
                 ? batchCheckOptions
                 : new ClientBatchCheckClientOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "ClientBatchCheck");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "ClientBatchCheck");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
@@ -1130,12 +1131,13 @@ public class OpenFgaClient {
         var options = listRelationsOptions != null
                 ? listRelationsOptions
                 : new ClientListRelationsOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "ListRelations");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.put(CLIENT_METHOD_HEADER, "ListRelations");
+        headers.put(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         var batchCheckRequests = request.getRelations().stream()
                 .map(relation -> new ClientCheckRequest()
