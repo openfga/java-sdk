@@ -140,4 +140,10 @@ public class ClientConfiguration extends Configuration {
         super.telemetryConfiguration(telemetryConfiguration);
         return this;
     }
+
+    @Override
+    public ClientConfiguration defaultHeaders(java.util.Map<String, String> defaultHeaders) {
+        super.defaultHeaders(defaultHeaders);
+        return this;
+    }
 }
