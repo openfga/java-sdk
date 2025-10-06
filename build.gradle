@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.19.2"
+    jackson_version = "2.20.0"
 }
 
 dependencies {
@@ -70,7 +70,7 @@ dependencies {
     implementation "org.openapitools:jackson-databind-nullable:0.2.7"
 
     // ---- OpenTelemetry ----
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.53.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.54.1")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -79,9 +79,9 @@ testing {
         test {
             useJUnitJupiter()
             dependencies {
-                implementation 'org.assertj:assertj-core:3.27.4'
-                implementation 'org.mockito:mockito-core:5.19.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+                implementation 'org.assertj:assertj-core:3.27.6'
+                implementation 'org.mockito:mockito-core:5.20.0'
+                implementation 'org.junit.jupiter:junit-jupiter:5.14.0'
                 implementation 'org.wiremock:wiremock:3.13.1'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
