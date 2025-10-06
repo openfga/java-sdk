@@ -500,6 +500,42 @@ public class OpenFgaClientHeadersTest {
     }
 
     @Test
+    public void clientBatchCheck_withHeaders() throws Exception {
+        // Given
+        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value-per-call")
+                .doReturn(200, "{\"allowed\":true}");
+        ClientCheckRequest request = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        Map<String, String> headers = new java.util.HashMap<>();
+        headers.put("test-header", "test-value-per-call");
+        ClientBatchCheckClientOptions options = new ClientBatchCheckClientOptions().additionalHeaders(headers);
+
+        // When
+        List<ClientBatchCheckClientResponse> response =
+                fga.clientBatchCheck(List.of(request), options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value-per-call")
+                .called(1);
+        assertEquals(Boolean.TRUE, response.get(0).getAllowed());
+    }
+
+    @Test
     public void expand_withHeaders() throws Exception {
         // Given
         String postPath = String.format("https://api.fga.example/stores/%s/expand", DEFAULT_STORE_ID);
@@ -721,12 +757,82 @@ public class OpenFgaClientHeadersTest {
         ClientListRelationsResponse response =
                 fga.listRelations(request, options).get();
 
+        // Then
         mockHttpClient
                 .verify()
                 .post(postUrl)
                 .withHeader("another-header", "another-value")
                 .withHeader("test-header", "test-value-per-call")
                 .called(1);
+    }
+
+    @Test
+    public void listRelations_withNullHeaders() throws Exception {
+        // Given
+        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value")
+                .doReturn(200, "{\"allowed\":true}");
+
+        ClientListRelationsRequest request = new ClientListRelationsRequest()
+                .relations(List.of(DEFAULT_RELATION))
+                .user(DEFAULT_USER)
+                ._object(DEFAULT_OBJECT);
+        ClientListRelationsOptions options = new ClientListRelationsOptions().additionalHeaders(null);
+
+        // When - this should not throw even though additionalHeaders is null
+        ClientListRelationsResponse response =
+                fga.listRelations(request, options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postUrl)
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value")
+                .called(1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void clientBatchCheck_withNullHeaders() throws Exception {
+        // Given
+        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value")
+                .doReturn(200, "{\"allowed\":true}");
+        ClientCheckRequest request = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientBatchCheckClientOptions options = new ClientBatchCheckClientOptions().additionalHeaders(null);
+
+        // When - this should not throw even though additionalHeaders is null
+        List<ClientBatchCheckClientResponse> response =
+                fga.clientBatchCheck(List.of(request), options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postUrl)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value")
+                .called(1);
+        assertEquals(Boolean.TRUE, response.get(0).getAllowed());
     }
 
     /**
