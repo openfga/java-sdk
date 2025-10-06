@@ -429,6 +429,41 @@ public class OpenFgaClientHeadersTest {
     }
 
     @Test
+    public void writeNonTransaction_withHeaders() throws Exception {
+        // Given
+        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(is(expectedBody))
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value-per-call")
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
+        ClientWriteOptions options = new ClientWriteOptions()
+                .additionalHeaders(Map.of("test-header", "test-value-per-call"))
+                .disableTransactions(true);
+
+        // When
+        ClientWriteResponse response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .post(postPath)
+                .withHeader("another-header", "another-value")
+                .withHeader("test-header", "test-value-per-call")
+                .called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
     public void check_withHeaders() throws Exception {
         // Given
         String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
@@ -480,10 +515,8 @@ public class OpenFgaClientHeadersTest {
                 ._object(DEFAULT_OBJECT)
                 .correlationId("cor-1");
         ClientBatchCheckRequest request = new ClientBatchCheckRequest().checks(List.of(item));
-        // Use HashMap instead of Map.of() to create a mutable map
-        Map<String, String> headers = new java.util.HashMap<>();
-        headers.put("test-header", "test-value-per-call");
-        ClientBatchCheckOptions options = new ClientBatchCheckOptions().additionalHeaders(headers);
+        ClientBatchCheckOptions options =
+                new ClientBatchCheckOptions().additionalHeaders(Map.of("test-header", "test-value-per-call"));
 
         // When
         ClientBatchCheckResponse response = fga.batchCheck(request, options).join();

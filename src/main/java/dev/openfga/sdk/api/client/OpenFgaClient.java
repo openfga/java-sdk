@@ -558,12 +558,12 @@ public class OpenFgaClient {
                 ? writeOptions
                 : new ClientWriteOptions().transactionChunkSize(DEFAULT_MAX_METHOD_PARALLEL_REQS);
 
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "Write");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "Write");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         int chunkSize = options.getTransactionChunkSize();
 
@@ -899,12 +899,13 @@ public class OpenFgaClient {
                 : new ClientBatchCheckOptions()
                         .maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS)
                         .maxBatchSize(DEFAULT_MAX_BATCH_SIZE);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         Map<String, ClientBatchCheckItem> correlationIdToCheck = new HashMap<>();
 
@@ -1135,8 +1136,8 @@ public class OpenFgaClient {
         HashMap<String, String> headers = options.getAdditionalHeaders() != null
                 ? new HashMap<>(options.getAdditionalHeaders())
                 : new HashMap<>();
-        headers.put(CLIENT_METHOD_HEADER, "ListRelations");
-        headers.put(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "ListRelations");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
         options.additionalHeaders(headers);
 
         var batchCheckRequests = request.getRelations().stream()
