@@ -248,11 +248,13 @@ public class OpenFgaClient {
             ClientReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        // Set authorizationModelId from options if available; otherwise, use the default from configuration
-        String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
-                ? options.getAuthorizationModelIdChecked()
-                : configuration.getAuthorizationModelId();
-
+        // Set authorizationModelId from options if available; otherwise, require a valid configuration value
+        String authorizationModelId;
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            authorizationModelId = options.getAuthorizationModelIdChecked();
+        } else {
+            authorizationModelId = configuration.getAuthorizationModelIdChecked();
+        }
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readAuthorizationModel(storeId, authorizationModelId, overrides))
                 .thenApply(ClientReadAuthorizationModelResponse::new);
