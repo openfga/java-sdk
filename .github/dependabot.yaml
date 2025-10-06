@@ -7,8 +7,10 @@ updates:
     schedule:
       interval: "monthly"
     ignore:
-      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+      - dependency-name: "com.diffplug.spotless"
         versions: [">=8.0.0"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        versions: [ ">=6.0.0" ]
     groups:
       dependencies:
         patterns:
@@ -19,8 +21,10 @@ updates:
     schedule:
       interval: "monthly"
     ignore:
-      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+      - dependency-name: "com.diffplug.spotless"
         versions: [">=8.0.0"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        versions: [ ">=6.0.0" ]
     groups:
       dependencies:
         patterns:
@@ -31,8 +35,10 @@ updates:
     schedule:
       interval: "monthly"
     ignore:
-      - dependency-name: "com.diffplug.spotless:spotless-plugin-gradle"
+      - dependency-name: "com.diffplug.spotless"
         versions: [">=8.0.0"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        versions: [ ">=6.0.0" ]
     groups:
       dependencies:
         patterns:
