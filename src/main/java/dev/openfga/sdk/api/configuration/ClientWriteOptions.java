@@ -12,6 +12,8 @@
 
 package dev.openfga.sdk.api.configuration;
 
+import dev.openfga.sdk.api.model.WriteRequestDeletes;
+import dev.openfga.sdk.api.model.WriteRequestWrites;
 import java.util.Map;
 
 public class ClientWriteOptions implements AdditionalHeadersSupplier {
@@ -19,6 +21,8 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
     private String authorizationModelId;
     private Boolean disableTransactions = false;
     private int transactionChunkSize;
+    private WriteRequestWrites.OnDuplicateEnum onDuplicate;
+    private WriteRequestDeletes.OnMissingEnum onMissing;
 
     public ClientWriteOptions additionalHeaders(Map<String, String> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
@@ -55,5 +59,23 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
 
     public int getTransactionChunkSize() {
         return transactionChunkSize > 0 ? transactionChunkSize : 1;
+    }
+
+    public ClientWriteOptions onDuplicate(WriteRequestWrites.OnDuplicateEnum onDuplicate) {
+        this.onDuplicate = onDuplicate;
+        return this;
+    }
+
+    public WriteRequestWrites.OnDuplicateEnum getOnDuplicate() {
+        return onDuplicate;
+    }
+
+    public ClientWriteOptions onMissing(WriteRequestDeletes.OnMissingEnum onMissing) {
+        this.onMissing = onMissing;
+        return this;
+    }
+
+    public WriteRequestDeletes.OnMissingEnum getOnMissing() {
+        return onMissing;
     }
 }

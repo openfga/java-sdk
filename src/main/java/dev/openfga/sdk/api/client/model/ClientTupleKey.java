@@ -46,8 +46,17 @@ public class ClientTupleKey extends ClientTupleKeyWithoutCondition {
     }
 
     public static WriteRequestWrites asWriteRequestWrites(Collection<ClientTupleKey> tupleKeys) {
-        return new WriteRequestWrites()
+        return asWriteRequestWrites(tupleKeys, null);
+    }
+
+    public static WriteRequestWrites asWriteRequestWrites(
+            Collection<ClientTupleKey> tupleKeys, WriteRequestWrites.OnDuplicateEnum onDuplicate) {
+        WriteRequestWrites writes = new WriteRequestWrites()
                 .tupleKeys(tupleKeys.stream().map(ClientTupleKey::asTupleKey).collect(Collectors.toList()));
+        if (onDuplicate != null) {
+            writes.onDuplicate(onDuplicate);
+        }
+        return writes;
     }
 
     /* Overrides for correct typing */

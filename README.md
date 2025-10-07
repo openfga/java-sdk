@@ -641,6 +641,76 @@ var options = new ClientWriteOptions()
 var response = fgaClient.write(request, options).get();
 ```
 
+###### Conflict options for write operations
+
+Write conflict handling can be controlled using the `onDuplicate` option for writes and the `onMissing` option for deletes.
+
+> Note: this requires OpenFGA [v1.10.0](https://github.com/openfga/openfga/releases/tag/v1.10.0) or later.
+
+- `onDuplicate`: Controls behavior when attempting to create a tuple that already exists
+  - `WriteRequestWrites.OnDuplicateEnum.ERROR` (default): Return an error
+  - `WriteRequestWrites.OnDuplicateEnum.IGNORE`: Skip the duplicate tuple and continue
+  
+- `onMissing`: Controls behavior when attempting to delete a tuple that doesn't exist
+  - `WriteRequestDeletes.OnMissingEnum.ERROR` (default): Return an error
+  - `WriteRequestDeletes.OnMissingEnum.IGNORE`: Skip the missing tuple and continue
+
+**Using conflict options with the `write()` method:**
+
+```java
+var request = new ClientWriteRequest()
+    .writes(List.of(
+        new ClientTupleKey()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("viewer")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+    ))
+    .deletes(List.of(
+        new ClientTupleKeyWithoutCondition()
+            .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+            .relation("writer")
+            ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+    ));
+
+var options = new ClientWriteOptions()
+    .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE)
+    .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+var response = fgaClient.write(request, options).get();
+```
+
+**Using conflict options with the `writeTuples()` convenience method:**
+
+```java
+var tuples = List.of(
+    new ClientTupleKey()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("viewer")
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+);
+
+var options = new ClientWriteTuplesOptions()
+    .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE);
+
+var response = fgaClient.writeTuples(tuples, options).get();
+```
+
+**Using conflict options with the `deleteTuples()` convenience method:**
+
+```java
+var tuples = List.of(
+    new ClientTupleKeyWithoutCondition()
+        .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
+        .relation("writer")
+        ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
+);
+
+var options = new ClientDeleteTuplesOptions()
+    .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+var response = fgaClient.deleteTuples(tuples, options).get();
+```
+
 #### Relationship Queries
 
 ##### Check

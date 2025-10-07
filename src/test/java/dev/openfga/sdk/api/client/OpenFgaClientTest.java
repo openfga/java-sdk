@@ -1143,7 +1143,7 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
@@ -1175,7 +1175,7 @@ public class OpenFgaClientTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
@@ -1204,19 +1204,19 @@ public class OpenFgaClientTest {
                 .user(DEFAULT_USER);
         ClientTupleKey writeTuple = tuple.condition(DEFAULT_CONDITION);
         String write2Body = String.format(
-                "{\"writes\":{\"tuple_keys\":[%s,%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[%s,%s],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 writeTupleBody, writeTupleBody, DEFAULT_AUTH_MODEL_ID);
         String write1Body = String.format(
-                "{\"writes\":{\"tuple_keys\":[%s]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[%s],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 writeTupleBody, DEFAULT_AUTH_MODEL_ID);
         String deleteTupleBody = String.format(
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String delete2Body = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s,%s]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s,%s],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 deleteTupleBody, deleteTupleBody, DEFAULT_AUTH_MODEL_ID);
         String delete1Body = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[%s],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 deleteTupleBody, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
@@ -1273,7 +1273,7 @@ public class OpenFgaClientTest {
         String failedUser = "user:SECOND";
         String thirdUser = "user:third";
         Function<String, String> writeBody = user -> String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 user, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
@@ -1354,7 +1354,7 @@ public class OpenFgaClientTest {
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s],\"on_duplicate\":\"error\"},\"deletes\":{\"tuple_keys\":[%s,%s,%s],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 writeTupleBody,
                 writeTupleBody,
                 writeTupleBody,
@@ -1394,7 +1394,7 @@ public class OpenFgaClientTest {
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[%s,%s,%s]},\"deletes\":{\"tuple_keys\":[%s,%s,%s]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[%s,%s,%s],\"on_duplicate\":\"error\"},\"deletes\":{\"tuple_keys\":[%s,%s,%s],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 writeTupleBody,
                 writeTupleBody,
                 writeTupleBody,
@@ -1433,7 +1433,7 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},"
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}],\"on_duplicate\":\"error\"},"
                         + "\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
@@ -1456,7 +1456,7 @@ public class OpenFgaClientTest {
         // Given
         String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         List<ClientTupleKeyWithoutCondition> tuples = List.of(new ClientTupleKeyWithoutCondition()
@@ -1469,6 +1469,172 @@ public class OpenFgaClientTest {
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_withOnDuplicateIgnore() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"ignore\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
+        ClientWriteOptions options = new ClientWriteOptions().onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_withOnMissingIgnore() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .deletes(List.of(new ClientTupleKeyWithoutCondition()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)));
+        ClientWriteOptions options = new ClientWriteOptions().onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_withBothConflictOptions() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"ignore\"},\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"writer\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_USER, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        ClientWriteRequest request = new ClientWriteRequest()
+                .writes(List.of(new ClientTupleKey()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)))
+                .deletes(List.of(new ClientTupleKeyWithoutCondition()
+                        ._object(DEFAULT_OBJECT)
+                        .relation("writer")
+                        .user(DEFAULT_USER)));
+        ClientWriteOptions options = new ClientWriteOptions()
+                .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE)
+                .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTuplesTest_withOnDuplicateIgnore() throws Exception {
+        // Given
+        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}],\"on_duplicate\":\"ignore\"},"
+                        + "\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        List<ClientTupleKey> tuples = List.of(new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .condition(DEFAULT_CONDITION));
+        ClientWriteTuplesOptions options =
+                new ClientWriteTuplesOptions().onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.writeTuples(tuples, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void deleteTuplesTest_withOnMissingIgnore() throws Exception {
+        // Given
+        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        List<ClientTupleKeyWithoutCondition> tuples = List.of(new ClientTupleKeyWithoutCondition()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER));
+        ClientDeleteTuplesOptions options =
+                new ClientDeleteTuplesOptions().onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.deleteTuples(tuples, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void writeTest_nonTransaction_withConflictOptions() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        ClientTupleKey writeTuple = new ClientTupleKey()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientTupleKeyWithoutCondition deleteTuple = new ClientTupleKeyWithoutCondition()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // Expect requests with conflict options in non-transaction mode
+        String writeBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"ignore\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        String deleteBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+
+        mockHttpClient
+                .onPost(postPath)
+                .withBody(isOneOf(writeBody, deleteBody))
+                .withHeader(CLIENT_METHOD_HEADER, "Write")
+                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .doReturn(200, EMPTY_RESPONSE_BODY);
+
+        ClientWriteRequest request =
+                new ClientWriteRequest().writes(List.of(writeTuple)).deletes(List.of(deleteTuple));
+        ClientWriteOptions options = new ClientWriteOptions()
+                .disableTransactions(true)
+                .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE)
+                .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
+
+        // When
+        ClientWriteResponse response = fga.write(request, options).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).called(2); // One for writes, one for deletes
         assertEquals(200, response.getStatusCode());
     }
 
