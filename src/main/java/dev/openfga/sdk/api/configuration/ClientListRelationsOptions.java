@@ -13,6 +13,7 @@
 package dev.openfga.sdk.api.configuration;
 
 import dev.openfga.sdk.api.model.ConsistencyPreference;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
@@ -61,6 +62,7 @@ public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
     public ClientBatchCheckClientOptions asClientBatchCheckClientOptions() {
         return new ClientBatchCheckClientOptions()
                 .authorizationModelId(authorizationModelId)
+                .additionalHeaders(additionalHeaders != null ? new HashMap<>(additionalHeaders) : null)
                 .maxParallelRequests(maxParallelRequests)
                 .consistency(consistency);
     }

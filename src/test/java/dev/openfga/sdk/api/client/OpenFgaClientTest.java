@@ -2389,7 +2389,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2409,7 +2409,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
@@ -2428,7 +2428,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2447,7 +2447,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
@@ -2616,7 +2616,7 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
@@ -2640,7 +2640,7 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
                 .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
