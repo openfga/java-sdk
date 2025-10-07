@@ -94,7 +94,8 @@ public class OpenFgaClient {
             throws FgaInvalidParameterException {
         configuration.assertValid();
         var overrides = new ConfigurationOverride().addHeaders(options);
-        return call(() -> api.listStores(options.getPageSize(), options.getContinuationToken(), overrides))
+        return call(() -> api.listStores(
+                        options.getPageSize(), options.getContinuationToken(), options.getName(), overrides))
                 .thenApply(ClientListStoresResponse::new);
     }
 

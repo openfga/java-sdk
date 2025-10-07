@@ -294,6 +294,55 @@ public class OpenFgaClientTest {
         assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
     }
 
+    @Test
+    public void listStoresTest_withNameFilter() throws Exception {
+        // Given
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        String storeName = "test-store";
+        String getUrl = String.format("https://api.fga.example/stores?name=%s", storeName);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+        ClientListStoresOptions options = new ClientListStoresOptions().name(storeName);
+
+        // When
+        ClientListStoresResponse response = fga.listStores(options).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getStores());
+        assertEquals(1, response.getStores().size());
+        assertEquals(DEFAULT_STORE_ID, response.getStores().get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
+    }
+
+    @Test
+    public void listStoresTest_withAllParameters() throws Exception {
+        // Given
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        int pageSize = 10;
+        String continuationToken = "continuationToken";
+        String storeName = "test-store";
+        String getUrl = String.format(
+                "https://api.fga.example/stores?page_size=%d&continuation_token=%s&name=%s",
+                pageSize, continuationToken, storeName);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+        ClientListStoresOptions options = new ClientListStoresOptions()
+                .pageSize(pageSize)
+                .continuationToken(continuationToken)
+                .name(storeName);
+
+        // When
+        ClientListStoresResponse response = fga.listStores(options).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getStores());
+        assertEquals(1, response.getStores().size());
+        assertEquals(DEFAULT_STORE_ID, response.getStores().get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, response.getStores().get(0).getName());
+    }
+
     /**
      * Create a store.
      */
