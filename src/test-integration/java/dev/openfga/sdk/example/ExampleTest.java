@@ -8,7 +8,7 @@ import org.testcontainers.openfga.OpenFGAContainer;
 @Testcontainers
 public class ExampleTest {
     @Container
-    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.5.1");
+    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.10.2");
 
     private final Example1 example1 = new Example1();
 

@@ -27,10 +27,19 @@ public class ClientTupleKeyWithoutCondition {
     }
 
     public static WriteRequestDeletes asWriteRequestDeletes(Collection<ClientTupleKeyWithoutCondition> tupleKeys) {
-        return new WriteRequestDeletes()
+        return asWriteRequestDeletes(tupleKeys, null);
+    }
+
+    public static WriteRequestDeletes asWriteRequestDeletes(
+            Collection<ClientTupleKeyWithoutCondition> tupleKeys, WriteRequestDeletes.OnMissingEnum onMissing) {
+        WriteRequestDeletes deletes = new WriteRequestDeletes()
                 .tupleKeys(tupleKeys.stream()
                         .map(ClientTupleKeyWithoutCondition::asTupleKeyWithoutCondition)
                         .collect(Collectors.toList()));
+        if (onMissing != null) {
+            deletes.onMissing(onMissing);
+        }
+        return deletes;
     }
 
     public ClientTupleKeyWithoutCondition _object(String _object) {

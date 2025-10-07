@@ -484,12 +484,14 @@ public class OpenFgaClient {
 
         var writeTuples = request.getWrites();
         if (writeTuples != null && !writeTuples.isEmpty()) {
-            body.writes(ClientTupleKey.asWriteRequestWrites(writeTuples));
+            var onDuplicate = options != null ? options.getOnDuplicate() : null;
+            body.writes(ClientTupleKey.asWriteRequestWrites(writeTuples, onDuplicate));
         }
 
         var deleteTuples = request.getDeletes();
         if (deleteTuples != null && !deleteTuples.isEmpty()) {
-            body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(deleteTuples));
+            var onMissing = options != null ? options.getOnMissing() : null;
+            body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(deleteTuples, onMissing));
         }
 
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
@@ -708,7 +710,8 @@ public class OpenFgaClient {
 
         var body = new WriteRequest();
 
-        body.writes(ClientTupleKey.asWriteRequestWrites(tupleKeys));
+        var onDuplicate = options != null ? options.getOnDuplicate() : null;
+        body.writes(ClientTupleKey.asWriteRequestWrites(tupleKeys, onDuplicate));
 
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {
@@ -748,7 +751,8 @@ public class OpenFgaClient {
 
         var body = new WriteRequest();
 
-        body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(tupleKeys));
+        var onMissing = options != null ? options.getOnMissing() : null;
+        body.deletes(ClientTupleKeyWithoutCondition.asWriteRequestDeletes(tupleKeys, onMissing));
 
         String authorizationModelId = configuration.getAuthorizationModelId();
         if (!isNullOrWhitespace(authorizationModelId)) {

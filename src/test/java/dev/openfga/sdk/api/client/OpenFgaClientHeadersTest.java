@@ -399,7 +399,7 @@ public class OpenFgaClientHeadersTest {
         // Given
         String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
@@ -905,7 +905,7 @@ public class OpenFgaClientHeadersTest {
         // Given
         String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPost(postPath)
