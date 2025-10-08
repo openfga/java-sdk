@@ -22,6 +22,7 @@ import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.errors.*;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -74,6 +75,7 @@ public class OpenFgaApiTest {
         when(mockConfiguration.getMaxRetries()).thenReturn(DEFAULT_MAX_RETRIES);
         when(mockConfiguration.getMinimumRetryDelay()).thenReturn(DEFAULT_RETRY_DELAY);
         when(mockConfiguration.getTelemetryConfiguration()).thenReturn(DEFAULT_TELEMETRY_CONFIG);
+        when(mockConfiguration.getTelemetry()).thenReturn(new Telemetry(mockConfiguration));
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getObjectMapper()).thenReturn(mapper);
