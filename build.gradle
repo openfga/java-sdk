@@ -19,7 +19,7 @@ plugins {
 apply from: 'publish.gradle'
 
 group = 'dev.openfga'
-version = '0.9.0'
+version = '0.9.1'
 
 repositories {
     mavenCentral()
@@ -55,17 +55,22 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.19.2"
+    jackson_version = "2.20.0"
 }
 
 dependencies {
     implementation "com.google.code.findbugs:jsr305:3.0.2"
-    implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
-    implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.53.0")
+
+    // ---- Jackson ----
+    implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+    implementation "org.openapitools:jackson-databind-nullable:0.2.7"
+
+    // ---- OpenTelemetry ----
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.54.1")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -74,9 +79,9 @@ testing {
         test {
             useJUnitJupiter()
             dependencies {
-                implementation 'org.assertj:assertj-core:3.27.4'
-                implementation 'org.mockito:mockito-core:5.19.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+                implementation 'org.assertj:assertj-core:3.27.6'
+                implementation 'org.mockito:mockito-core:5.20.0'
+                implementation 'org.junit.jupiter:junit-jupiter:5.14.0'
                 implementation 'org.wiremock:wiremock:3.13.1'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -104,8 +109,11 @@ testing {
             useJUnitJupiter()
 
             dependencies {
-                implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
-                implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+                // --- Jackson ---
+                implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
+                implementation "com.fasterxml.jackson.core:jackson-core"
+                implementation "com.fasterxml.jackson.core:jackson-databind"
+
                 implementation "org.testcontainers:junit-jupiter:1.21.3"
                 implementation "org.testcontainers:openfga:1.21.3"
                 implementation project()

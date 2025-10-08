@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.0...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.1...HEAD)
+
+## v0.9.1
+
+### [0.9.1](https://github.com/openfga/java-sdk/compare/v0.9.0...v0.9.1) (2025-10-07)
+
+### Fixed
+
+- Override `defaultHeaders` in `ClientConfiguration` to return correct type when using method (#226)
+- Correctly handle options with no modelID set in `readAuthorizationModel` (#226)
+- Include headers when converting from `ClientListRelationsOptions` to `ClientBatchCheckOptions` (#226)
 
 ## v0.9.0
 

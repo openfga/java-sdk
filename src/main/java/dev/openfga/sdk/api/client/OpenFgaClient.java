@@ -248,7 +248,13 @@ public class OpenFgaClient {
             ClientReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
-        String authorizationModelId = options.getAuthorizationModelIdChecked();
+        // Set authorizationModelId from options if available; otherwise, require a valid configuration value
+        String authorizationModelId;
+        if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
+            authorizationModelId = options.getAuthorizationModelIdChecked();
+        } else {
+            authorizationModelId = configuration.getAuthorizationModelIdChecked();
+        }
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readAuthorizationModel(storeId, authorizationModelId, overrides))
                 .thenApply(ClientReadAuthorizationModelResponse::new);
@@ -552,12 +558,12 @@ public class OpenFgaClient {
                 ? writeOptions
                 : new ClientWriteOptions().transactionChunkSize(DEFAULT_MAX_METHOD_PARALLEL_REQS);
 
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "Write");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "Write");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         int chunkSize = options.getTransactionChunkSize();
 
@@ -832,12 +838,13 @@ public class OpenFgaClient {
         var options = batchCheckOptions != null
                 ? batchCheckOptions
                 : new ClientBatchCheckClientOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "ClientBatchCheck");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "ClientBatchCheck");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
@@ -892,12 +899,13 @@ public class OpenFgaClient {
                 : new ClientBatchCheckOptions()
                         .maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS)
                         .maxBatchSize(DEFAULT_MAX_BATCH_SIZE);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "BatchCheck");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         Map<String, ClientBatchCheckItem> correlationIdToCheck = new HashMap<>();
 
@@ -1124,12 +1132,13 @@ public class OpenFgaClient {
         var options = listRelationsOptions != null
                 ? listRelationsOptions
                 : new ClientListRelationsOptions().maxParallelRequests(DEFAULT_MAX_METHOD_PARALLEL_REQS);
-        if (options.getAdditionalHeaders() == null) {
-            options.additionalHeaders(new HashMap<>());
-        }
-        options.getAdditionalHeaders().putIfAbsent(CLIENT_METHOD_HEADER, "ListRelations");
-        options.getAdditionalHeaders()
-                .putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+
+        HashMap<String, String> headers = options.getAdditionalHeaders() != null
+                ? new HashMap<>(options.getAdditionalHeaders())
+                : new HashMap<>();
+        headers.putIfAbsent(CLIENT_METHOD_HEADER, "ListRelations");
+        headers.putIfAbsent(CLIENT_BULK_REQUEST_ID_HEADER, randomUUID().toString());
+        options.additionalHeaders(headers);
 
         var batchCheckRequests = request.getRelations().stream()
                 .map(relation -> new ClientCheckRequest()
