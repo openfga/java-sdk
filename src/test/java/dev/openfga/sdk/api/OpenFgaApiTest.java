@@ -96,7 +96,7 @@ public class OpenFgaApiTest {
         String continuationToken = null; // Input is optional
 
         // When
-        var response = fga.listStores(pageSize, continuationToken).get();
+        var response = fga.listStores(pageSize, continuationToken, null).get();
 
         // Then
         mockHttpClient.verify().get("https://api.fga.example/stores").called(1);
@@ -106,6 +106,32 @@ public class OpenFgaApiTest {
         assertEquals(1, stores.size());
         assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
         assertEquals(DEFAULT_STORE_NAME, stores.get(0).getName());
+    }
+
+    @Test
+    public void listStoresTest_withNameFilter() throws Exception {
+        // Given
+        String storeName = "test-store-name";
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, storeName);
+        mockHttpClient.onGet("https://api.fga.example/stores?name=" + storeName).doReturn(200, responseBody);
+        Integer pageSize = null; // Input is optional
+        String continuationToken = null; // Input is optional
+
+        // When
+        var response = fga.listStores(pageSize, continuationToken, storeName).get();
+
+        // Then
+        mockHttpClient
+                .verify()
+                .get("https://api.fga.example/stores?name=" + storeName)
+                .called(1);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getStores());
+        var stores = response.getData().getStores();
+        assertEquals(1, stores.size());
+        assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
+        assertEquals(storeName, stores.get(0).getName());
     }
 
     @Test
@@ -119,7 +145,7 @@ public class OpenFgaApiTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken)
+                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken, null)
                         .get());
 
         // Then
@@ -142,7 +168,7 @@ public class OpenFgaApiTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken)
+                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken, null)
                         .get());
 
         // Then
@@ -164,7 +190,7 @@ public class OpenFgaApiTest {
 
         // When
         ExecutionException execException =
-                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken)
+                assertThrows(ExecutionException.class, () -> fga.listStores(pageSize, continuationToken, null)
                         .get());
 
         // Then

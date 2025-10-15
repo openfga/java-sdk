@@ -84,7 +84,7 @@ public class OpenFgaApiIntegrationTest {
         api.deleteStore(storeId).get();
 
         // Then
-        ListStoresResponse response = api.listStores(100, null).get().getData();
+        ListStoresResponse response = api.listStores(100, null, null).get().getData();
         boolean itWasDeleted = response.getStores().stream().map(Store::getId).noneMatch(storeId::equals);
         assertTrue(itWasDeleted, String.format("No stores should remain with the id %s.", storeId));
     }
@@ -115,7 +115,7 @@ public class OpenFgaApiIntegrationTest {
         }
 
         // When
-        ListStoresResponse response = api.listStores(100, null).get().getData();
+        ListStoresResponse response = api.listStores(100, null, null).get().getData();
 
         // Then
         for (String store : stores) {
