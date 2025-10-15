@@ -36,7 +36,7 @@ import org.testcontainers.openfga.OpenFGAContainer;
 public class OpenFgaApiIntegrationTest {
 
     @Container
-    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.5.1");
+    private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.10.2");
 
     private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";

@@ -12,9 +12,13 @@
 
 package dev.openfga.sdk.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +27,50 @@ import java.util.StringJoiner;
 /**
  * WriteRequestDeletes
  */
-@JsonPropertyOrder({WriteRequestDeletes.JSON_PROPERTY_TUPLE_KEYS})
+@JsonPropertyOrder({WriteRequestDeletes.JSON_PROPERTY_TUPLE_KEYS, WriteRequestDeletes.JSON_PROPERTY_ON_MISSING})
 public class WriteRequestDeletes {
     public static final String JSON_PROPERTY_TUPLE_KEYS = "tuple_keys";
     private List<TupleKeyWithoutCondition> tupleKeys = new ArrayList<>();
+
+    /**
+     * On &#39;error&#39;, the API returns an error when deleting a tuple that does not exist. On &#39;ignore&#39;, deletes of non-existent tuples are treated as no-ops.
+     */
+    public enum OnMissingEnum {
+        ERROR("error"),
+
+        IGNORE("ignore"),
+
+        UNKNOWN_DEFAULT_OPEN_API("unknown_default_open_api");
+
+        private String value;
+
+        OnMissingEnum(String value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @JsonCreator
+        public static OnMissingEnum fromValue(String value) {
+            for (OnMissingEnum b : OnMissingEnum.values()) {
+                if (b.value.equals(value)) {
+                    return b;
+                }
+            }
+            return UNKNOWN_DEFAULT_OPEN_API;
+        }
+    }
+
+    public static final String JSON_PROPERTY_ON_MISSING = "on_missing";
+    private OnMissingEnum onMissing = OnMissingEnum.ERROR;
 
     public WriteRequestDeletes() {}
 
@@ -60,6 +104,28 @@ public class WriteRequestDeletes {
         this.tupleKeys = tupleKeys;
     }
 
+    public WriteRequestDeletes onMissing(OnMissingEnum onMissing) {
+        this.onMissing = onMissing;
+        return this;
+    }
+
+    /**
+     * On &#39;error&#39;, the API returns an error when deleting a tuple that does not exist. On &#39;ignore&#39;, deletes of non-existent tuples are treated as no-ops.
+     * @return onMissing
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_ON_MISSING)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public OnMissingEnum getOnMissing() {
+        return onMissing;
+    }
+
+    @JsonProperty(JSON_PROPERTY_ON_MISSING)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setOnMissing(OnMissingEnum onMissing) {
+        this.onMissing = onMissing;
+    }
+
     /**
      * Return true if this WriteRequestDeletes object is equal to o.
      */
@@ -72,12 +138,13 @@ public class WriteRequestDeletes {
             return false;
         }
         WriteRequestDeletes writeRequestDeletes = (WriteRequestDeletes) o;
-        return Objects.equals(this.tupleKeys, writeRequestDeletes.tupleKeys);
+        return Objects.equals(this.tupleKeys, writeRequestDeletes.tupleKeys)
+                && Objects.equals(this.onMissing, writeRequestDeletes.onMissing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKeys);
+        return Objects.hash(tupleKeys, onMissing);
     }
 
     @Override
@@ -85,6 +152,7 @@ public class WriteRequestDeletes {
         StringBuilder sb = new StringBuilder();
         sb.append("class WriteRequestDeletes {\n");
         sb.append("    tupleKeys: ").append(toIndentedString(tupleKeys)).append("\n");
+        sb.append("    onMissing: ").append(toIndentedString(onMissing)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -147,6 +215,16 @@ public class WriteRequestDeletes {
                                             : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
                 }
             }
+        }
+
+        // add `on_missing` to the URL query string
+        if (getOnMissing() != null) {
+            joiner.add(String.format(
+                    "%son_missing%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getOnMissing()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
         }
 
         return joiner.toString();

@@ -12,9 +12,13 @@
 
 package dev.openfga.sdk.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +27,50 @@ import java.util.StringJoiner;
 /**
  * WriteRequestWrites
  */
-@JsonPropertyOrder({WriteRequestWrites.JSON_PROPERTY_TUPLE_KEYS})
+@JsonPropertyOrder({WriteRequestWrites.JSON_PROPERTY_TUPLE_KEYS, WriteRequestWrites.JSON_PROPERTY_ON_DUPLICATE})
 public class WriteRequestWrites {
     public static final String JSON_PROPERTY_TUPLE_KEYS = "tuple_keys";
     private List<TupleKey> tupleKeys = new ArrayList<>();
+
+    /**
+     * On &#39;error&#39; ( or unspecified ), the API returns an error if an identical tuple already exists. On &#39;ignore&#39;, identical writes are treated as no-ops (matching on user, relation, object, and RelationshipCondition).
+     */
+    public enum OnDuplicateEnum {
+        ERROR("error"),
+
+        IGNORE("ignore"),
+
+        UNKNOWN_DEFAULT_OPEN_API("unknown_default_open_api");
+
+        private String value;
+
+        OnDuplicateEnum(String value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @JsonCreator
+        public static OnDuplicateEnum fromValue(String value) {
+            for (OnDuplicateEnum b : OnDuplicateEnum.values()) {
+                if (b.value.equals(value)) {
+                    return b;
+                }
+            }
+            return UNKNOWN_DEFAULT_OPEN_API;
+        }
+    }
+
+    public static final String JSON_PROPERTY_ON_DUPLICATE = "on_duplicate";
+    private OnDuplicateEnum onDuplicate = OnDuplicateEnum.ERROR;
 
     public WriteRequestWrites() {}
 
@@ -60,6 +104,28 @@ public class WriteRequestWrites {
         this.tupleKeys = tupleKeys;
     }
 
+    public WriteRequestWrites onDuplicate(OnDuplicateEnum onDuplicate) {
+        this.onDuplicate = onDuplicate;
+        return this;
+    }
+
+    /**
+     * On &#39;error&#39; ( or unspecified ), the API returns an error if an identical tuple already exists. On &#39;ignore&#39;, identical writes are treated as no-ops (matching on user, relation, object, and RelationshipCondition).
+     * @return onDuplicate
+     **/
+    @javax.annotation.Nullable
+    @JsonProperty(JSON_PROPERTY_ON_DUPLICATE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public OnDuplicateEnum getOnDuplicate() {
+        return onDuplicate;
+    }
+
+    @JsonProperty(JSON_PROPERTY_ON_DUPLICATE)
+    @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+    public void setOnDuplicate(OnDuplicateEnum onDuplicate) {
+        this.onDuplicate = onDuplicate;
+    }
+
     /**
      * Return true if this WriteRequestWrites object is equal to o.
      */
@@ -72,12 +138,13 @@ public class WriteRequestWrites {
             return false;
         }
         WriteRequestWrites writeRequestWrites = (WriteRequestWrites) o;
-        return Objects.equals(this.tupleKeys, writeRequestWrites.tupleKeys);
+        return Objects.equals(this.tupleKeys, writeRequestWrites.tupleKeys)
+                && Objects.equals(this.onDuplicate, writeRequestWrites.onDuplicate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tupleKeys);
+        return Objects.hash(tupleKeys, onDuplicate);
     }
 
     @Override
@@ -85,6 +152,7 @@ public class WriteRequestWrites {
         StringBuilder sb = new StringBuilder();
         sb.append("class WriteRequestWrites {\n");
         sb.append("    tupleKeys: ").append(toIndentedString(tupleKeys)).append("\n");
+        sb.append("    onDuplicate: ").append(toIndentedString(onDuplicate)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -147,6 +215,16 @@ public class WriteRequestWrites {
                                             : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
                 }
             }
+        }
+
+        // add `on_duplicate` to the URL query string
+        if (getOnDuplicate() != null) {
+            joiner.add(String.format(
+                    "%son_duplicate%s=%s",
+                    prefix,
+                    suffix,
+                    URLEncoder.encode(String.valueOf(getOnDuplicate()), StandardCharsets.UTF_8)
+                            .replaceAll("\\+", "%20")));
         }
 
         return joiner.toString();

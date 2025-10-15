@@ -1098,7 +1098,7 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteRequest request = new WriteRequest()
@@ -1124,7 +1124,7 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}]},\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         WriteRequest request = new WriteRequest()
@@ -1147,7 +1147,7 @@ public class OpenFgaApiTest {
         // Given
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"banana\",\"list\":[],\"obj\":{}}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"banana\",\"list\":[],\"obj\":{}}}}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
         var context = new LinkedHashMap<>();
@@ -1179,7 +1179,7 @@ public class OpenFgaApiTest {
 
         String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
-                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"apple\",\"list\":[2,\"banana\",[],{\"num\":3,\"str\":\"cupcake\",\"list\":null,\"obj\":null}],\"obj\":{\"num\":4,\"str\":\"dolphin\",\"list\":null,\"obj\":null}}}}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"conditionName\",\"context\":{\"num\":1,\"str\":\"apple\",\"list\":[2,\"banana\",[],{\"num\":3,\"str\":\"cupcake\",\"list\":null,\"obj\":null}],\"obj\":{\"num\":4,\"str\":\"dolphin\",\"list\":null,\"obj\":null}}}}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
 
@@ -1318,6 +1318,147 @@ public class OpenFgaApiTest {
         assertEquals(500, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    /**
+     * Test write with onDuplicate option set to IGNORE.
+     */
+    @Test
+    public void writeTest_writes_withOnDuplicateIgnore() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"ignore\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .writes(new WriteRequestWrites()
+                        .tupleKeys(List.of(new TupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)))
+                        .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    /**
+     * Test write with onDuplicate option set to ERROR (default).
+     */
+    @Test
+    public void writeTest_writes_withOnDuplicateError() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .writes(new WriteRequestWrites()
+                        .tupleKeys(List.of(new TupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)))
+                        .onDuplicate(WriteRequestWrites.OnDuplicateEnum.ERROR));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    /**
+     * Test write with onMissing option set to IGNORE.
+     */
+    @Test
+    public void writeTest_deletes_withOnMissingIgnore() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .deletes(new WriteRequestDeletes()
+                        .tupleKeys(List.of(new TupleKeyWithoutCondition()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)))
+                        .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    /**
+     * Test write with onMissing option set to ERROR (default).
+     */
+    @Test
+    public void writeTest_deletes_withOnMissingError() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .deletes(new WriteRequestDeletes()
+                        .tupleKeys(List.of(new TupleKeyWithoutCondition()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)))
+                        .onMissing(WriteRequestDeletes.OnMissingEnum.ERROR));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+    }
+
+    /**
+     * Test write with both onDuplicate and onMissing options.
+     */
+    @Test
+    public void writeTest_withBothConflictOptions() throws Exception {
+        // Given
+        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String expectedBody = String.format(
+                "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"ignore\"},\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"writer\",\"object\":\"%s\"}],\"on_missing\":\"ignore\"},\"authorization_model_id\":\"%s\"}",
+                DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_USER, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
+        WriteRequest request = new WriteRequest()
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .writes(new WriteRequestWrites()
+                        .tupleKeys(List.of(new TupleKey()
+                                ._object(DEFAULT_OBJECT)
+                                .relation(DEFAULT_RELATION)
+                                .user(DEFAULT_USER)))
+                        .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE))
+                .deletes(new WriteRequestDeletes()
+                        .tupleKeys(List.of(new TupleKeyWithoutCondition()
+                                ._object(DEFAULT_OBJECT)
+                                .relation("writer")
+                                .user(DEFAULT_USER)))
+                        .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE));
+
+        // When
+        fga.write(DEFAULT_STORE_ID, request).get();
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
     }
 
     /**
