@@ -142,6 +142,32 @@ public class OpenFgaClientIntegrationTest {
     }
 
     @Test
+    public void listStoresWithNameFilter() throws Exception {
+        // Given
+        String testName = thisTestName();
+        String targetStore = testName + "-target";
+        String otherStore1 = testName + "-other-1";
+        String otherStore2 = testName + "-other-2";
+
+        // Create multiple stores
+        createStore(targetStore);
+        createStore(otherStore1);
+        createStore(otherStore2);
+
+        ClientListStoresOptions options = new ClientListStoresOptions().name(targetStore);
+
+        // When - Filter by name using client options
+        ClientListStoresResponse response = fga.listStores(options).get();
+
+        // Then - Should only return the target store
+        assertNotNull(response.getStores());
+        List<String> storeNames =
+                response.getStores().stream().map(Store::getName).collect(java.util.stream.Collectors.toList());
+        assertTrue(storeNames.contains(targetStore), "Target store should be in the filtered response");
+        assertEquals(1, storeNames.size(), "Should return only one store when filtering by exact name");
+    }
+
+    @Test
     public void readAuthModel() throws Exception {
         // Given
         String storeName = thisTestName();

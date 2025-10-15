@@ -1156,7 +1156,7 @@ No authorization required
 
 ## listStores
 
-> CompletableFuture<ListStoresResponse> listStores(pageSize, continuationToken)
+> CompletableFuture<ListStoresResponse> listStores(pageSize, continuationToken, name)
 
 List all stores
 
@@ -1181,8 +1181,9 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
+        String name = "name_example"; // String | The name parameter instructs the API to only include results that match that name.Multiple results may be returned. Only exact matches will be returned; substring matches and regexes will not be evaluated
         try {
-            CompletableFuture<ListStoresResponse> result = apiInstance.listStores(pageSize, continuationToken);
+            CompletableFuture<ListStoresResponse> result = apiInstance.listStores(pageSize, continuationToken, name);
             System.out.println(result.get());
         } catch (ApiException e) {
             System.err.println("Exception when calling OpenFgaApi#listStores");
@@ -1202,6 +1203,7 @@ public class Example {
 |------------- | ------------- | ------------- | -------------|
 | **pageSize** | **Integer**|  | [optional] |
 | **continuationToken** | **String**|  | [optional] |
+| **name** | **String**| The name parameter instructs the API to only include results that match that name.Multiple results may be returned. Only exact matches will be returned; substring matches and regexes will not be evaluated | [optional] |
 
 ### Return type
 
@@ -1231,7 +1233,7 @@ No authorization required
 
 ## listStoresWithHttpInfo
 
-> CompletableFuture<ApiResponse<ListStoresResponse>> listStores listStoresWithHttpInfo(pageSize, continuationToken)
+> CompletableFuture<ApiResponse<ListStoresResponse>> listStores listStoresWithHttpInfo(pageSize, continuationToken, name)
 
 List all stores
 
@@ -1257,8 +1259,9 @@ public class Example {
         OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
         Integer pageSize = 56; // Integer | 
         String continuationToken = "continuationToken_example"; // String | 
+        String name = "name_example"; // String | The name parameter instructs the API to only include results that match that name.Multiple results may be returned. Only exact matches will be returned; substring matches and regexes will not be evaluated
         try {
-            CompletableFuture<ApiResponse<ListStoresResponse>> response = apiInstance.listStoresWithHttpInfo(pageSize, continuationToken);
+            CompletableFuture<ApiResponse<ListStoresResponse>> response = apiInstance.listStoresWithHttpInfo(pageSize, continuationToken, name);
             System.out.println("Status code: " + response.get().getStatusCode());
             System.out.println("Response headers: " + response.get().getHeaders());
             System.out.println("Response body: " + response.get().getData());
@@ -1287,6 +1290,7 @@ public class Example {
 |------------- | ------------- | ------------- | -------------|
 | **pageSize** | **Integer**|  | [optional] |
 | **continuationToken** | **String**|  | [optional] |
+| **name** | **String**| The name parameter instructs the API to only include results that match that name.Multiple results may be returned. Only exact matches will be returned; substring matches and regexes will not be evaluated | [optional] |
 
 ### Return type
 

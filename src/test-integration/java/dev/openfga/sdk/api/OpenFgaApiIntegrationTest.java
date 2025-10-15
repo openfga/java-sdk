@@ -84,7 +84,7 @@ public class OpenFgaApiIntegrationTest {
         api.deleteStore(storeId).get();
 
         // Then
-        ListStoresResponse response = api.listStores(100, null).get().getData();
+        ListStoresResponse response = api.listStores(100, null, null).get().getData();
         boolean itWasDeleted = response.getStores().stream().map(Store::getId).noneMatch(storeId::equals);
         assertTrue(itWasDeleted, String.format("No stores should remain with the id %s.", storeId));
     }
@@ -115,13 +115,37 @@ public class OpenFgaApiIntegrationTest {
         }
 
         // When
-        ListStoresResponse response = api.listStores(100, null).get().getData();
+        ListStoresResponse response = api.listStores(100, null, null).get().getData();
 
         // Then
         for (String store : stores) {
             boolean exists = response.getStores().stream().map(Store::getName).anyMatch(store::equals);
             assertTrue(exists, String.format("Store %s should be in listStores response", store));
         }
+    }
+
+    @Test
+    public void listStoresWithNameFilter() throws Exception {
+        // Given
+        String testName = thisTestName();
+        String targetStore = testName + "-target-store";
+        String otherStore1 = testName + "-other-store-1";
+        String otherStore2 = testName + "-other-store-2";
+
+        // Create multiple stores
+        createStore(targetStore);
+        createStore(otherStore1);
+        createStore(otherStore2);
+
+        // When - Filter by name
+        ListStoresResponse response =
+                api.listStores(100, null, targetStore).get().getData();
+
+        // Then - Should only return the target store
+        List<String> storeNames =
+                response.getStores().stream().map(Store::getName).collect(java.util.stream.Collectors.toList());
+        assertTrue(storeNames.contains(targetStore), "Target store should be in the filtered response");
+        assertEquals(1, storeNames.size(), "Should return only one store when filtering by exact name");
     }
 
     @Test
