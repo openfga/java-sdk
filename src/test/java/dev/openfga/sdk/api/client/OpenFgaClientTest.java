@@ -27,6 +27,7 @@ import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
+import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -68,10 +69,6 @@ public class OpenFgaClientTest {
     private static final String EMPTY_RESPONSE_BODY = "{}";
     private static final ClientRelationshipCondition DEFAULT_CONDITION =
             new ClientRelationshipCondition().name("condition").context(Map.of("some", "context"));
-    private static final int DEFAULT_MAX_RETRIES = 3;
-    private static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(100);
-    private static final String CLIENT_METHOD_HEADER = "X-OpenFGA-Client-Method";
-    private static final String CLIENT_BULK_REQUEST_ID_HEADER = "X-OpenFGA-Client-Bulk-Request-Id";
 
     private OpenFgaClient fga;
     private ClientConfiguration clientConfiguration;
@@ -91,11 +88,11 @@ public class OpenFgaClientTest {
         clientConfiguration = new ClientConfiguration()
                 .storeId(DEFAULT_STORE_ID)
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                .apiUrl("https://api.fga.example")
+                .apiUrl(FgaConstants.TEST_API_URL)
                 .credentials(new Credentials())
                 .readTimeout(Duration.ofMillis(250))
-                .maxRetries(DEFAULT_MAX_RETRIES)
-                .minimumRetryDelay(DEFAULT_RETRY_DELAY);
+                .maxRetries(FgaConstants.DEFAULT_MAX_RETRY)
+                .minimumRetryDelay(FgaConstants.DEFAULT_MIN_WAIT_IN_MS);
 
         var mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
@@ -117,7 +114,7 @@ public class OpenFgaClientTest {
         String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
         String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .doReturn(201, requestBody);
@@ -129,7 +126,7 @@ public class OpenFgaClientTest {
         // Then
         mockHttpClient
                 .verify()
-                .post("https://api.fga.example/stores")
+                .post(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .called(1);
@@ -163,7 +160,7 @@ public class OpenFgaClientTest {
                         containsString(String.format("grant_type=%s", "client_credentials"))))
                 .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":\"%s\"}", apiToken, 3600));
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .doReturn(201, requestBody);
@@ -183,7 +180,7 @@ public class OpenFgaClientTest {
         // OpenFGA server should be called 2 times.
         mockHttpClient
                 .verify()
-                .post("https://api.fga.example/stores")
+                .post(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .called(2);
@@ -219,7 +216,7 @@ public class OpenFgaClientTest {
                         containsString(String.format("grant_type=%s", "client_credentials"))))
                 .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":\"%s\"}", apiToken, 1));
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .doReturn(201, requestBody);
@@ -239,7 +236,7 @@ public class OpenFgaClientTest {
         // OpenFGA server should be called 2 times.
         mockHttpClient
                 .verify()
-                .post("https://api.fga.example/stores")
+                .post(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .withHeader("Authorization", String.format("Bearer %s", apiToken))
                 .called(2);
@@ -257,13 +254,13 @@ public class OpenFgaClientTest {
         // Given
         String responseBody =
                 String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
-        mockHttpClient.onGet("https://api.fga.example/stores").doReturn(200, responseBody);
+        mockHttpClient.onGet(FgaConstants.TEST_API_URL + "/stores").doReturn(200, responseBody);
 
         // When
         ClientListStoresResponse response = fga.listStores().get();
 
         // Then
-        mockHttpClient.verify().get("https://api.fga.example/stores").called(1);
+        mockHttpClient.verify().get(FgaConstants.TEST_API_URL + "/stores").called(1);
         assertNotNull(response.getStores());
         assertEquals(1, response.getStores().size());
         assertEquals(DEFAULT_STORE_ID, response.getStores().get(0).getId());
@@ -278,7 +275,7 @@ public class OpenFgaClientTest {
         int pageSize = 10;
         String continuationToken = "continuationToken";
         String getUrl = String.format(
-                "https://api.fga.example/stores?page_size=%d&continuation_token=%s", pageSize, continuationToken);
+                "%s/stores?page_size=%d&continuation_token=%s", FgaConstants.TEST_API_URL, pageSize, continuationToken);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
         ClientListStoresOptions options =
                 new ClientListStoresOptions().pageSize(pageSize).continuationToken(continuationToken);
@@ -303,7 +300,7 @@ public class OpenFgaClientTest {
         String expectedBody = String.format("{\"name\":\"%s\"}", DEFAULT_STORE_NAME);
         String requestBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .doReturn(201, requestBody);
         CreateStoreRequest request = new CreateStoreRequest().name(DEFAULT_STORE_NAME);
@@ -314,7 +311,7 @@ public class OpenFgaClientTest {
         // Then
         mockHttpClient
                 .verify()
-                .post("https://api.fga.example/stores")
+                .post(FgaConstants.TEST_API_URL + "/stores")
                 .withBody(is(expectedBody))
                 .called(1);
         assertEquals(DEFAULT_STORE_ID, response.getId());
@@ -336,7 +333,7 @@ public class OpenFgaClientTest {
     public void createStore_400() throws Exception {
         // Given
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
 
         // When
@@ -345,7 +342,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post("https://api.fga.example/stores").called(1);
+        mockHttpClient.verify().post(FgaConstants.TEST_API_URL + "/stores").called(1);
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
         assertEquals(400, exception.getStatusCode());
         assertEquals(
@@ -357,7 +354,7 @@ public class OpenFgaClientTest {
     public void createStore_404() throws Exception {
         // Given
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
 
         // When
@@ -366,7 +363,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().post("https://api.fga.example/stores").called(1);
+        mockHttpClient.verify().post(FgaConstants.TEST_API_URL + "/stores").called(1);
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
         assertEquals(404, exception.getStatusCode());
         assertEquals(
@@ -377,7 +374,7 @@ public class OpenFgaClientTest {
     public void createStore_500() throws Exception {
         // Given
         mockHttpClient
-                .onPost("https://api.fga.example/stores")
+                .onPost(FgaConstants.TEST_API_URL + "/stores")
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
 
         // When
@@ -387,7 +384,7 @@ public class OpenFgaClientTest {
 
         // Then
         // Simplified logic: POST requests now retry on 5xx errors (1 initial + 3 retries = 4 total)
-        mockHttpClient.verify().post("https://api.fga.example/stores").called(4);
+        mockHttpClient.verify().post(FgaConstants.TEST_API_URL + "/stores").called(4);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -400,7 +397,7 @@ public class OpenFgaClientTest {
     @Test
     public void getStoreTest() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String responseBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
@@ -430,7 +427,7 @@ public class OpenFgaClientTest {
     @Test
     public void getStore_400() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -451,7 +448,7 @@ public class OpenFgaClientTest {
     @Test
     public void getStore_404() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -471,7 +468,7 @@ public class OpenFgaClientTest {
     @Test
     public void getStore_500() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -481,7 +478,7 @@ public class OpenFgaClientTest {
                 assertThrows(ExecutionException.class, () -> fga.getStore().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
+        mockHttpClient.verify().get(getUrl).called(1 + FgaConstants.DEFAULT_MAX_RETRY);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -494,7 +491,7 @@ public class OpenFgaClientTest {
     @Test
     public void deleteStoreTest() throws Exception {
         // Given
-        String deleteUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String deleteUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient.onDelete(deleteUrl).doReturn(204, EMPTY_RESPONSE_BODY);
 
         // When
@@ -522,7 +519,7 @@ public class OpenFgaClientTest {
     @Test
     public void deleteStore_400() {
         // Given
-        String deleteUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String deleteUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onDelete(deleteUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -543,7 +540,7 @@ public class OpenFgaClientTest {
     @Test
     public void deleteStore_404() {
         // Given
-        String deleteUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String deleteUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onDelete(deleteUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -563,7 +560,7 @@ public class OpenFgaClientTest {
     @Test
     public void deleteStore_500() {
         // Given
-        String deleteUrl = String.format("https://api.fga.example/stores/%s", DEFAULT_STORE_ID);
+        String deleteUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onDelete(deleteUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -587,7 +584,7 @@ public class OpenFgaClientTest {
     @Test
     public void readAuthorizationModelsTest() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         var options = new ClientReadAuthorizationModelsOptions();
         String responseBody = String.format(
                 "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
@@ -625,7 +622,7 @@ public class OpenFgaClientTest {
     @Test
     public void readAuthorizationModels_400() {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
@@ -648,7 +645,7 @@ public class OpenFgaClientTest {
     @Test
     public void readAuthorizationModels_404() {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
@@ -670,7 +667,7 @@ public class OpenFgaClientTest {
     @Test
     public void readAuthorizationModels_500() throws Exception {
         // Given
-        String getUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         var options = new ClientReadAuthorizationModelsOptions();
         mockHttpClient
                 .onGet(getUrl)
@@ -682,7 +679,7 @@ public class OpenFgaClientTest {
                         .get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
+        mockHttpClient.verify().get(getUrl).called(1 + FgaConstants.DEFAULT_MAX_RETRY);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -692,8 +689,8 @@ public class OpenFgaClientTest {
     @Test
     public void readLatestAuthorizationModelTest() throws Exception {
         // Given
-        String getUrl =
-                String.format("https://api.fga.example/stores/%s/authorization-models?page_size=1", DEFAULT_STORE_ID);
+        String getUrl = String.format(
+                "%s/stores/%s/authorization-models?page_size=1", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String responseBody = String.format(
                 "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
@@ -725,7 +722,7 @@ public class OpenFgaClientTest {
         ClientReadChangesRequest request =
                 new ClientReadChangesRequest().type(changeType).startTime(startTime);
         String getUrl =
-                String.format("https://api.fga.example/stores/%s/changes?type=%s", DEFAULT_STORE_ID, changeType);
+                String.format("%s/stores/%s/changes?type=%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID, changeType);
         String responseBody = String.format(
                 "{\"changes\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"operation\":\"TUPLE_OPERATION_WRITE\"}],\"continuation_token\":\"%s\"}",
                 user, relation, object, continuationToken);
@@ -754,7 +751,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeAuthorizationModelTest() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
         String expectedBody =
                 "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\",\"conditions\":{}}";
         String responseBody = String.format("{\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
@@ -803,7 +800,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeAuthorizationModel_400() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -825,7 +822,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeAuthorizationModel_404() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -846,7 +843,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeAuthorizationModel_500() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -872,7 +869,9 @@ public class OpenFgaClientTest {
     public void readAuthorizationModelTest() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models/%s",
+                DEFAULT_STORE_ID,
+                DEFAULT_AUTH_MODEL_ID);
         String getResponse = String.format(
                 "{\"authorization_model\":{\"id\":\"%s\",\"schema_version\":\"%s\"}}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
@@ -896,7 +895,9 @@ public class OpenFgaClientTest {
         ClientReadAuthorizationModelOptions options =
                 new ClientReadAuthorizationModelOptions().authorizationModelId(authorizationModelId);
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, authorizationModelId);
+                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models/%s",
+                DEFAULT_STORE_ID,
+                authorizationModelId);
         String getResponse = String.format(
                 "{\"authorization_model\":{\"id\":\"%s\",\"schema_version\":\"%s\"}}",
                 authorizationModelId, DEFAULT_SCHEMA_VERSION);
@@ -946,7 +947,9 @@ public class OpenFgaClientTest {
     public void readAuthorizationModel_400() {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models/%s",
+                DEFAULT_STORE_ID,
+                DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -968,7 +971,9 @@ public class OpenFgaClientTest {
     public void readAuthorizationModel_404() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models/%s",
+                DEFAULT_STORE_ID,
+                DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -989,7 +994,9 @@ public class OpenFgaClientTest {
     public void readAuthorizationModel_500() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models/%s",
+                DEFAULT_STORE_ID,
+                DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -999,7 +1006,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.readAuthorizationModel().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
+        mockHttpClient.verify().get(getUrl).called(1 + FgaConstants.DEFAULT_MAX_RETRY);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -1012,7 +1019,7 @@ public class OpenFgaClientTest {
     @Test
     public void readTest() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.MINIMIZE_LATENCY);
@@ -1043,7 +1050,7 @@ public class OpenFgaClientTest {
     @Test
     public void read_emptyRequestSendsNoTupleKey() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
         String expectedBody =
                 "{\"tuple_key\":null,\"page_size\":null,\"continuation_token\":null,\"consistency\":\"UNSPECIFIED\"}";
         mockHttpClient.onPost(postUrl).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
@@ -1073,7 +1080,7 @@ public class OpenFgaClientTest {
     @Test
     public void read_400() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -1095,7 +1102,7 @@ public class OpenFgaClientTest {
     @Test
     public void read_404() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -1116,7 +1123,7 @@ public class OpenFgaClientTest {
     @Test
     public void read_500() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -1141,7 +1148,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_writes() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -1173,7 +1180,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_deletes() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String expectedBody = String.format(
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -1194,7 +1201,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_nonTransaction() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -1221,8 +1228,8 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postPath)
                 .withBody(isOneOf(write2Body, write1Body, delete2Body, delete1Body))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, EMPTY_RESPONSE_BODY);
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
@@ -1238,29 +1245,29 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postPath)
                 .withBody(is(write2Body))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(2);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(write1Body))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(delete2Body))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(2);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(delete1Body))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(200, response.getStatusCode());
     }
@@ -1268,7 +1275,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_nonTransactionsWithFailure() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String firstUser = "user:first";
         String failedUser = "user:SECOND";
         String thirdUser = "user:third";
@@ -1278,14 +1285,14 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postPath)
                 .withBody(isOneOf(writeBody.apply(firstUser), writeBody.apply(thirdUser)))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, EMPTY_RESPONSE_BODY);
         mockHttpClient
                 .onPost(postPath)
                 .withBody(is(writeBody.apply(failedUser)))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
         ClientWriteRequest request = new ClientWriteRequest()
                 .writes(Stream.of(firstUser, failedUser, thirdUser)
@@ -1306,22 +1313,22 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postPath)
                 .withBody(is(writeBody.apply(firstUser)))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(writeBody.apply(failedUser)))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         mockHttpClient
                 .verify()
                 .post(postPath)
                 .withBody(is(writeBody.apply(thirdUser)))
-                .withHeader(CLIENT_METHOD_HEADER, "Write")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "Write")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
 
         // Verify response structure
@@ -1346,7 +1353,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_transaction() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -1386,7 +1393,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTest_transactionWithFailure() {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         String writeTupleBody = String.format(
                 "{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -1431,7 +1438,7 @@ public class OpenFgaClientTest {
     @Test
     public void writeTuplesTest() throws Exception {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}],\"on_duplicate\":\"error\"},"
                         + "\"deletes\":null,\"authorization_model_id\":\"%s\"}",
@@ -1454,7 +1461,7 @@ public class OpenFgaClientTest {
     @Test
     public void deleteTuplesTest() throws Exception {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":null,\"deletes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"}],\"on_missing\":\"error\"},\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -1642,7 +1649,7 @@ public class OpenFgaClientTest {
     public void write_nothingSentWhenWritesAndDeletesAreEmpty()
             throws FgaInvalidParameterException, ExecutionException, InterruptedException {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":null,\"deletes\":null,\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
         mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, EMPTY_RESPONSE_BODY);
@@ -1674,7 +1681,7 @@ public class OpenFgaClientTest {
     @Test
     public void write_400() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -1701,7 +1708,7 @@ public class OpenFgaClientTest {
     @Test
     public void write_404() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -1727,7 +1734,7 @@ public class OpenFgaClientTest {
     @Test
     public void write_500() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/write";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -1757,7 +1764,7 @@ public class OpenFgaClientTest {
     @Test
     public void check() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},"
                         + "\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"owner\",\"object\":\"%s\",\"condition\":{\"name\":\"condition\",\"context\":{\"some\":\"context\"}}}]},"
@@ -1807,7 +1814,7 @@ public class OpenFgaClientTest {
     @Test
     public void check_400() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -1829,7 +1836,7 @@ public class OpenFgaClientTest {
     @Test
     public void check_404() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -1850,7 +1857,7 @@ public class OpenFgaClientTest {
     @Test
     public void check_500() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -1875,15 +1882,15 @@ public class OpenFgaClientTest {
     @Test
     public void clientBatchCheck() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.MINIMIZE_LATENCY);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientCheckRequest request = new ClientCheckRequest()
                 ._object(DEFAULT_OBJECT)
@@ -1902,8 +1909,8 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertEquals(Boolean.TRUE, response.get(0).getAllowed());
     }
@@ -1946,15 +1953,15 @@ public class OpenFgaClientTest {
     @Test
     public void clientBatchCheck_twentyTimes() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_CONSISTENCY);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         List<ClientCheckRequest> requests = IntStream.range(0, 20)
                 .mapToObj(ignored -> new ClientCheckRequest()
@@ -1973,8 +1980,8 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ClientBatchCheck")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ClientBatchCheck")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(20);
     }
 
@@ -1996,7 +2003,7 @@ public class OpenFgaClientTest {
     @Test
     public void clientBatchCheck_400() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -2022,7 +2029,7 @@ public class OpenFgaClientTest {
     @Test
     public void clientBatchCheck_404() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -2047,7 +2054,7 @@ public class OpenFgaClientTest {
     @Test
     public void clientBatchCheck_500() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -2109,7 +2116,7 @@ public class OpenFgaClientTest {
     @Test
     public void shouldHandleSingleBatchSuccessfully() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/batch-check", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(
@@ -2238,7 +2245,7 @@ public class OpenFgaClientTest {
     @Test
     public void batchCheck_withOptions() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/batch-check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"checks\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"context\":null,\"correlation_id\":\"cor-1\"}],\"authorization_model_id\":\"%s\",\"consistency\":\"%s\"}",
                 DEFAULT_USER,
@@ -2270,7 +2277,7 @@ public class OpenFgaClientTest {
     @Test
     public void batchCheck_rateLimited() {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/batch-check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/batch-check", DEFAULT_STORE_ID);
         mockHttpClient.onPost(postUrl).doReturn(429, "{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}");
 
         ClientBatchCheckItem item = new ClientBatchCheckItem()
@@ -2286,7 +2293,7 @@ public class OpenFgaClientTest {
 
         // Then
         // 429 errors should still retry regardless of HTTP method (not affected by breaking changes)
-        mockHttpClient.verify().post(postUrl).called(1 + DEFAULT_MAX_RETRIES);
+        mockHttpClient.verify().post(postUrl).called(1 + FgaConstants.DEFAULT_MAX_RETRY);
         var exception = assertInstanceOf(FgaApiRateLimitExceededError.class, execException.getCause());
         assertEquals(429, exception.getStatusCode());
         assertEquals("{\"code\":\"rate_limited\",\"message\":\"Too Many Requests\"}", exception.getResponseData());
@@ -2299,7 +2306,7 @@ public class OpenFgaClientTest {
     @Test
     public void expandTest() throws Exception {
         // Given
-        String postPath = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
+        String postPath = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\",\"consistency\":\"%s\",\"contextual_tuples\":null}",
                 DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID, ConsistencyPreference.HIGHER_CONSISTENCY);
@@ -2349,7 +2356,7 @@ public class OpenFgaClientTest {
     @Test
     public void expand_400() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -2371,7 +2378,7 @@ public class OpenFgaClientTest {
     @Test
     public void expand_404() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -2392,7 +2399,7 @@ public class OpenFgaClientTest {
     @Test
     public void expand_500() throws Exception {
         // Given
-        String postUrl = "https://api.fga.example/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
+        String postUrl = FgaConstants.TEST_API_URL + "/stores/01YCP46JKYM8FJCQ37NMBYHE5X/expand";
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -2417,7 +2424,7 @@ public class OpenFgaClientTest {
     @Test
     public void listObjectsTest() throws Exception {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER, ConsistencyPreference.HIGHER_CONSISTENCY);
@@ -2456,7 +2463,7 @@ public class OpenFgaClientTest {
     @Test
     public void listObjects_400() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -2478,7 +2485,7 @@ public class OpenFgaClientTest {
     @Test
     public void listObjects_404() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -2499,7 +2506,7 @@ public class OpenFgaClientTest {
     @Test
     public void listObjects_500() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
         mockHttpClient
                 .onPost(postUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -2521,7 +2528,7 @@ public class OpenFgaClientTest {
     @Test
     public void listObjectsWithContextTest() throws Exception {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":{\"some\":\"context\"},\"consistency\":\"%s\"}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_CONSISTENCY);
@@ -2548,15 +2555,15 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, ConsistencyPreference.MINIMIZE_LATENCY);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":true}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of(DEFAULT_RELATION))
@@ -2575,8 +2582,8 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
         assertNotNull(response.getRelations());
@@ -2587,15 +2594,15 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations_deny() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, "owner", DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID, DEFAULT_CONSISTENCY);
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of("owner"))
@@ -2613,8 +2620,8 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
         assertNotNull(response.getRelations());
@@ -2679,7 +2686,7 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations_400() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_CONSISTENCY);
@@ -2709,7 +2716,7 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations_404() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_CONSISTENCY);
@@ -2738,7 +2745,7 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations_500() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"01G5JAVJ41T49E9TT3SKVS7X1J\",\"trace\":null,\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_CONSISTENCY);
@@ -2768,7 +2775,7 @@ public class OpenFgaClientTest {
     @Test
     public void listRelations_contextAndContextualTuples() throws Exception {
         // Given
-        String postUrl = String.format("https://api.fga.example/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":{\"some\":\"context\"},\"consistency\":\"%s\"}",
                 DEFAULT_USER,
@@ -2782,8 +2789,8 @@ public class OpenFgaClientTest {
         mockHttpClient
                 .onPost(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .doReturn(200, "{\"allowed\":false}");
         ClientListRelationsRequest request = new ClientListRelationsRequest()
                 .relations(List.of("owner"))
@@ -2806,8 +2813,8 @@ public class OpenFgaClientTest {
                 .verify()
                 .post(postUrl)
                 .withBody(is(expectedBody))
-                .withHeader(CLIENT_METHOD_HEADER, "ListRelations")
-                .withHeader(CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
+                .withHeader(FgaConstants.CLIENT_METHOD_HEADER, "ListRelations")
+                .withHeader(FgaConstants.CLIENT_BULK_REQUEST_ID_HEADER, anyValidUUID())
                 .called(1);
         assertNotNull(response);
         assertNotNull(response.getRelations());
@@ -2820,7 +2827,7 @@ public class OpenFgaClientTest {
     @Test
     public void listUsersTest() throws Exception {
         // Given
-        String postPath = String.format("https://api.fga.example/stores/%s/list-users", DEFAULT_STORE_ID);
+        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-users", DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"authorization_model_id\":\"%s\",\"object\":{\"type\":\"%s\",\"id\":\"%s\"},\"relation\":\"%s\",\"user_filters\":[{\"type\":\"user\",\"relation\":null},{\"type\":\"team\",\"relation\":\"member\"}],\"contextual_tuples\":[],\"context\":null,\"consistency\":\"%s\"}",
                 DEFAULT_AUTH_MODEL_ID,
@@ -2870,7 +2877,7 @@ public class OpenFgaClientTest {
     public void readAssertionsTest() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
                 "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -2924,7 +2931,7 @@ public class OpenFgaClientTest {
     public void readAssertions_400() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -2946,7 +2953,7 @@ public class OpenFgaClientTest {
     public void readAssertions_404() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -2967,7 +2974,7 @@ public class OpenFgaClientTest {
     public void readAssertions_500() throws Exception {
         // Given
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onGet(getUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -2977,7 +2984,7 @@ public class OpenFgaClientTest {
                 ExecutionException.class, () -> fga.readAssertions().get());
 
         // Then
-        mockHttpClient.verify().get(getUrl).called(1 + DEFAULT_MAX_RETRIES);
+        mockHttpClient.verify().get(getUrl).called(1 + FgaConstants.DEFAULT_MAX_RETRY);
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
@@ -2991,7 +2998,7 @@ public class OpenFgaClientTest {
     public void writeAssertionsTest() throws Exception {
         // Given
         String putUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String expectedBody = String.format(
                 "{\"assertions\":[{\"tuple_key\":{\"object\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\"},\"expectation\":true,\"contextual_tuples\":[],\"context\":null}]}",
                 DEFAULT_OBJECT, DEFAULT_RELATION, DEFAULT_USER);
@@ -3043,7 +3050,7 @@ public class OpenFgaClientTest {
     public void writeAssertions_400() throws Exception {
         // Given
         String putUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPut(putUrl)
                 .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
@@ -3065,7 +3072,7 @@ public class OpenFgaClientTest {
     public void writeAssertions_404() throws Exception {
         // Given
         String putUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPut(putUrl)
                 .doReturn(404, "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}");
@@ -3086,7 +3093,7 @@ public class OpenFgaClientTest {
     public void writeAssertions_500() throws Exception {
         // Given
         String putUrl = String.format(
-                "https://api.fga.example/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
+                FgaConstants.TEST_API_URL + "/stores/%s/assertions/%s", DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         mockHttpClient
                 .onPut(putUrl)
                 .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
@@ -3112,7 +3119,7 @@ public class OpenFgaClientTest {
         // Given
         String alternateStoreId = "A_UNIQUE_ID";
         fga.setStoreId(alternateStoreId);
-        String getUrl = String.format("https://api.fga.example/stores/%s", alternateStoreId);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, alternateStoreId);
         String responseBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", alternateStoreId, DEFAULT_STORE_NAME);
         mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
 
@@ -3136,8 +3143,8 @@ public class OpenFgaClientTest {
         String alternateAuthorizationModelId = "A_UNIQUE_ID";
         fga.setAuthorizationModelId(alternateAuthorizationModelId);
         String getUrl = String.format(
-                "https://api.fga.example/stores/%s/authorization-models/%s",
-                DEFAULT_STORE_ID, alternateAuthorizationModelId);
+                "%s/stores/%s/authorization-models/%s",
+                FgaConstants.TEST_API_URL, DEFAULT_STORE_ID, alternateAuthorizationModelId);
         String getResponse = String.format(
                 "{\"authorization_model\":{\"id\":\"%s\",\"schema_version\":\"%s\"}}",
                 alternateAuthorizationModelId, DEFAULT_SCHEMA_VERSION);

@@ -4,6 +4,7 @@ import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.constants.FgaConstants;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -62,7 +63,7 @@ public class FgaError extends ApiException {
         error.setRequestUrl(configuration.getApiUrl());
 
         // Extract and set Retry-After header if present
-        Optional<String> retryAfter = headers.firstValue("Retry-After");
+        Optional<String> retryAfter = headers.firstValue(FgaConstants.RETRY_AFTER_HEADER_NAME);
         if (retryAfter.isPresent()) {
             error.setRetryAfterHeader(retryAfter.get());
         }
