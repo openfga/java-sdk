@@ -204,7 +204,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void getStore_withHeaders() throws Exception {
         // Given
-        String getUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String responseBody = String.format("{\"id\":\"%s\",\"name\":\"%s\"}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
         mockHttpClient
                 .onGet(getUrl)
@@ -230,7 +230,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void deleteStore_withHeaders() throws Exception {
         // Given
-        String deleteUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s", DEFAULT_STORE_ID);
+        String deleteUrl = String.format("%s/stores/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         mockHttpClient
                 .onDelete(deleteUrl)
                 .withHeader("another-header", "another-value")
@@ -255,7 +255,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void readAuthorizationModels_withHeaders() throws Exception {
         // Given
-        String getUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String getUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String responseBody = String.format(
                 "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
@@ -285,7 +285,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void writeAuthorizationModel_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/authorization-models", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody =
                 "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\",\"conditions\":{}}";
         String responseBody = String.format("{\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);
@@ -351,7 +351,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void read_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/read", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/read", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"page_size\":null,\"continuation_token\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);
@@ -388,7 +388,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void write_withHeaders() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/write", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -422,7 +422,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void writeNonTransaction_withHeaders() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/write", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}]},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -457,7 +457,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void check_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -490,7 +490,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void batchCheck_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/batch-check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/batch-check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"checks\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"context\":null,\"correlation_id\":\"cor-1\"}],\"authorization_model_id\":\"%s\",\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -526,7 +526,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void clientBatchCheck_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -561,7 +561,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void expand_withHeaders() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/expand", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/expand", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"relation\":\"%s\",\"object\":\"%s\"},\"authorization_model_id\":\"%s\",\"consistency\":\"UNSPECIFIED\",\"contextual_tuples\":null}",
                 DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -595,7 +595,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void listObjects_withHeaders() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-objects", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/list-objects", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"authorization_model_id\":\"%s\",\"type\":null,\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_RELATION, DEFAULT_USER);
@@ -626,7 +626,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void listUsers_withHeaders() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/list-users", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/list-users", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"authorization_model_id\":\"%s\",\"object\":{\"type\":\"%s\",\"id\":\"%s\"},\"relation\":\"%s\",\"user_filters\":null,\"contextual_tuples\":[],\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_TYPE, DEFAULT_ID, DEFAULT_RELATION);
@@ -755,7 +755,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void listRelations_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -790,7 +790,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void listRelations_withNullHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -825,7 +825,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void clientBatchCheck_withNullHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -894,7 +894,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void write_multipleOverrides() throws Exception {
         // Given
-        String postPath = String.format(FgaConstants.TEST_API_URL + "/stores/%s/write", DEFAULT_STORE_ID);
+        String postPath = String.format("%s/stores/%s/write", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"writes\":{\"tuple_keys\":[{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\",\"condition\":null}],\"on_duplicate\":\"error\"},\"deletes\":null,\"authorization_model_id\":\"%s\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
@@ -931,7 +931,7 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void check_withSpecialCharactersInHeaders() throws Exception {
         // Given
-        String postUrl = String.format(FgaConstants.TEST_API_URL + "/stores/%s/check", DEFAULT_STORE_ID);
+        String postUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody = String.format(
                 "{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"contextual_tuples\":null,\"authorization_model_id\":\"%s\",\"trace\":null,\"context\":null,\"consistency\":\"UNSPECIFIED\"}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT, DEFAULT_AUTH_MODEL_ID);
