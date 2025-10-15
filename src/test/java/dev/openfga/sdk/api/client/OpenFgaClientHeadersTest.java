@@ -285,7 +285,8 @@ public class OpenFgaClientHeadersTest {
     @Test
     public void writeAuthorizationModel_withHeaders() throws Exception {
         // Given
-        String postUrl = String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        String postUrl =
+                String.format("%s/stores/%s/authorization-models", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String expectedBody =
                 "{\"type_definitions\":[{\"type\":\"document\",\"relations\":{},\"metadata\":null}],\"schema_version\":\"1.1\",\"conditions\":{}}";
         String responseBody = String.format("{\"authorization_model_id\":\"%s\"}", DEFAULT_AUTH_MODEL_ID);

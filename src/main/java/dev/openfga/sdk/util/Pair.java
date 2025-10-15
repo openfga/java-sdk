@@ -47,4 +47,3 @@ public class Pair {
         return Optional.of(new Pair(name, value.toString()));
     }
 }
-
