@@ -12,6 +12,7 @@
 
 package dev.openfga.sdk.util;
 
+import dev.openfga.sdk.constants.FgaConstants;
 import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ExponentialBackoff {
 
-    private static final int MAX_DELAY_SECONDS = 120;
+    private static final int MAX_DELAY_SECONDS = FgaConstants.MAX_BACKOFF_TIME_IN_SEC;
 
     private ExponentialBackoff() {
         // Utility class - no instantiation

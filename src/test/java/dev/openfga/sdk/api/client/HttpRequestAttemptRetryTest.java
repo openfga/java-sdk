@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaApiInternalError;
 import dev.openfga.sdk.errors.FgaError;
@@ -67,7 +68,9 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
+                        .withHeader(
+                                FgaConstants.RETRY_AFTER_HEADER_NAME,
+                                "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -102,7 +105,9 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(500)
-                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
+                        .withHeader(
+                                FgaConstants.RETRY_AFTER_HEADER_NAME,
+                                "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"server error\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -164,7 +169,9 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(500)
-                        .withHeader("Retry-After", "0.05") // Fast retry for test performance - timing not verified
+                        .withHeader(
+                                FgaConstants.RETRY_AFTER_HEADER_NAME,
+                                "0.05") // Fast retry for test performance - timing not verified
                         .withBody("{\"error\":\"server error\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -291,7 +298,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "invalid-value")
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "invalid-value")
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("First Retry"));
 
@@ -541,7 +548,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "0.05") // 50ms
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -589,7 +596,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "0.1") // 100ms
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "0.1") // 100ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -712,7 +719,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "0.05") // 50ms
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("After-First-Request"));
 
@@ -759,7 +766,7 @@ class HttpRequestAttemptRetryTest {
                 .whenScenarioStateIs("Started")
                 .willReturn(aResponse()
                         .withStatus(429)
-                        .withHeader("Retry-After", "0.05") // 50ms
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "0.05") // 50ms
                         .withBody("{\"error\":\"rate limited\"}"))
                 .willSetStateTo("retry-attempted"));
 

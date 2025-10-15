@@ -25,6 +25,7 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.configuration.*;
+import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -137,14 +138,15 @@ class OAuth2ClientTest {
         stubFor(post(urlEqualTo("/oauth/token"))
                 .inScenario("retries")
                 .whenScenarioStateIs(Scenario.STARTED)
-                .willReturn(jsonResponse("rate_limited", 429))
+                .willReturn(jsonResponse("{\"code\":\"rate_limited\"}", 429))
                 .willSetStateTo("rate limited once"));
 
         // Then return 500 with Retry-After header
         stubFor(post(urlEqualTo("/oauth/token"))
                 .inScenario("retries")
                 .whenScenarioStateIs("rate limited once")
-                .willReturn(jsonResponse("rate_limited", 500).withHeader("Retry-After", "1"))
+                .willReturn(jsonResponse("{\"code\":\"rate_limited\"}", 500)
+                        .withHeader(FgaConstants.RETRY_AFTER_HEADER_NAME, "1"))
                 .willSetStateTo("rate limited twice"));
 
         // Finally return 200
@@ -163,7 +165,7 @@ class OAuth2ClientTest {
 
     @Test
     public void exchangeOAuth2TokenWithRetriesFailure(WireMockRuntimeInfo wm) throws Exception {
-        stubFor(post(urlEqualTo("/oauth/token")).willReturn(jsonResponse("error", 429)));
+        stubFor(post(urlEqualTo("/oauth/token")).willReturn(jsonResponse("{\"code\":\"rate_limited\"}", 429)));
 
         OAuth2Client auth0 = newOAuth2Client(wm.getHttpBaseUrl(), false);
 

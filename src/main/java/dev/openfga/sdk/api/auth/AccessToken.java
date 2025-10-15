@@ -14,14 +14,15 @@ package dev.openfga.sdk.api.auth;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
+import dev.openfga.sdk.constants.FgaConstants;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 class AccessToken {
-    private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = 300;
-    private static final int TOKEN_EXPIRY_JITTER_IN_SEC =
-            300; // We add some jitter so that token refreshes are less likely to collide
+    private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = FgaConstants.TOKEN_EXPIRY_THRESHOLD_BUFFER_IN_SEC;
+    // We add some jitter so that token refreshes are less likely to collide
+    private static final int TOKEN_EXPIRY_JITTER_IN_SEC = FgaConstants.TOKEN_EXPIRY_JITTER_IN_SEC;
 
     private Instant expiresAt;
 
