@@ -19,10 +19,10 @@ import java.time.Duration;
 public final class FgaConstants {
 
     /** Version of the OpenFGA Java SDK. */
-    public static final String SDK_VERSION = "0.9.1";
+    public static final String SDK_VERSION = "0.9.2";
 
     /** User agent used in HTTP requests. */
-    public static final String USER_AGENT = "openfga-sdk java/0.9.1";
+    public static final String USER_AGENT = "openfga-sdk java/0.9.2";
 
     /** Example API domain for documentation/tests. */
     public static final String SAMPLE_BASE_DOMAIN = "fga.example";
