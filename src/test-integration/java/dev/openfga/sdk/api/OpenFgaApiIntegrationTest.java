@@ -125,6 +125,30 @@ public class OpenFgaApiIntegrationTest {
     }
 
     @Test
+    public void listStoresWithNameFilter() throws Exception {
+        // Given
+        String testName = thisTestName();
+        String targetStore = testName + "-target-store";
+        String otherStore1 = testName + "-other-store-1";
+        String otherStore2 = testName + "-other-store-2";
+
+        // Create multiple stores
+        createStore(targetStore);
+        createStore(otherStore1);
+        createStore(otherStore2);
+
+        // When - Filter by name
+        ListStoresResponse response =
+                api.listStores(100, null, targetStore).get().getData();
+
+        // Then - Should only return the target store
+        List<String> storeNames =
+                response.getStores().stream().map(Store::getName).collect(java.util.stream.Collectors.toList());
+        assertTrue(storeNames.contains(targetStore), "Target store should be in the filtered response");
+        assertEquals(1, storeNames.size(), "Should return only one store when filtering by exact name");
+    }
+
+    @Test
     public void readAuthModel() throws Exception {
         // Given
         String storeName = thisTestName();

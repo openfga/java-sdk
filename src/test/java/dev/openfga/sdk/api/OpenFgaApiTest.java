@@ -14,6 +14,7 @@ package dev.openfga.sdk.api;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * API tests for OpenFgaApi.
@@ -74,6 +76,9 @@ public class OpenFgaApiTest {
         when(mockConfiguration.getMaxRetries()).thenReturn(DEFAULT_MAX_RETRIES);
         when(mockConfiguration.getMinimumRetryDelay()).thenReturn(DEFAULT_RETRY_DELAY);
         when(mockConfiguration.getTelemetryConfiguration()).thenReturn(DEFAULT_TELEMETRY_CONFIG);
+        when(mockConfiguration.override(ArgumentMatchers.any(ConfigurationOverride.class)))
+                .thenReturn(mockConfiguration);
+        doNothing().when(mockConfiguration).assertValid();
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getObjectMapper()).thenReturn(mapper);
@@ -132,6 +137,57 @@ public class OpenFgaApiTest {
         assertEquals(1, stores.size());
         assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
         assertEquals(storeName, stores.get(0).getName());
+    }
+
+    @Test
+    public void listStoresTest_withNameOnly() throws Exception {
+        // Given
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        String storeName = "test-store";
+        String getUrl = String.format("https://api.fga.example/stores?name=%s", storeName);
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+        Integer pageSize = null; // Input is optional
+        String continuationToken = null; // Input is optional
+
+        // When - This covers the specific line: return listStores(pageSize, continuationToken, name,
+        // this.configuration);
+        var response = fga.listStores(pageSize, continuationToken, storeName).get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getStores());
+        var stores = response.getData().getStores();
+        assertEquals(1, stores.size());
+        assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, stores.get(0).getName());
+    }
+
+    @Test
+    public void listStoresTest_withConfigurationOverride() throws Exception {
+        // Given
+        String responseBody =
+                String.format("{\"stores\":[{\"id\":\"%s\",\"name\":\"%s\"}]}", DEFAULT_STORE_ID, DEFAULT_STORE_NAME);
+        mockHttpClient.onGet("https://api.fga.example/stores").doReturn(200, responseBody);
+        Integer pageSize = null; // Input is optional
+        String continuationToken = null; // Input is optional
+        String name = null;
+        ConfigurationOverride configOverride = new ConfigurationOverride();
+
+        // When - This covers the specific line: return listStores(pageSize, continuationToken, null,
+        // this.configuration.override(configurationOverride));
+        var response = fga.listStores(pageSize, continuationToken, name, configOverride)
+                .get();
+
+        // Then
+        mockHttpClient.verify().get("https://api.fga.example/stores").called(1);
+        assertNotNull(response.getData());
+        assertNotNull(response.getData().getStores());
+        var stores = response.getData().getStores();
+        assertEquals(1, stores.size());
+        assertEquals(DEFAULT_STORE_ID, stores.get(0).getId());
+        assertEquals(DEFAULT_STORE_NAME, stores.get(0).getName());
     }
 
     @Test
