@@ -11,6 +11,7 @@
 - Add support for write conflict options (#234)
   - The SDK now supports setting a `onDuplicate` for writing tuples (`ClientWriteOptions` or `ClientWriteTuplesOptions`) and `onMissing` (`ClientWriteOptions` or `ClientDeleteTuplesOptions`) for deleting tuples. See the [documentation](https://github.com/openfga/java-sdk#conflict-options-for-write-operations) for more details.
 - Add support for `name` filter on `ListStores` (#237)
+  - Thanks to @Oscmage and @varkart for their work on this!
 
 ## v0.9.1
 
