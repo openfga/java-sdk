@@ -2913,8 +2913,8 @@ public class OpenFgaClientTest {
     @Test
     public void readAssertionsTest() throws Exception {
         // Given
-        String getUrl = String.format(String.format(
-                "%s/stores/%s/assertions/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID));
+        String getUrl = String.format(
+                "%s/stores/%s/assertions/%s", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID, DEFAULT_AUTH_MODEL_ID);
         String responseBody = String.format(
                 "{\"assertions\":[{\"tuple_key\":{\"user\":\"%s\",\"relation\":\"%s\",\"object\":\"%s\"},\"expectation\":true}]}",
                 DEFAULT_USER, DEFAULT_RELATION, DEFAULT_OBJECT);

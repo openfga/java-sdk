@@ -44,7 +44,7 @@ public class Configuration implements BaseConfiguration {
         this.userAgent = FgaConstants.USER_AGENT;
         this.readTimeout = FgaConstants.DEFAULT_REQUEST_TIMEOUT_IN_MS;
         this.connectTimeout = FgaConstants.DEFAULT_CONNECTION_TIMEOUT_IN_MS;
-        this.maxRetries = FgaConstants.RETRY_MAX_ALLOWED_NUMBER;
+        this.maxRetries = FgaConstants.DEFAULT_MAX_RETRY;
         this.minimumRetryDelay = FgaConstants.DEFAULT_MIN_WAIT_IN_MS;
     }
 

@@ -726,7 +726,7 @@ public class OpenFgaClientHeadersTest {
     public void readLatestAuthorizationModel_withHeaders() throws Exception {
         // Given
         String getUrl = String.format(
-                FgaConstants.TEST_API_URL + "/stores/%s/authorization-models?page_size=1", DEFAULT_STORE_ID);
+                "%s/stores/%s/authorization-models?page_size=1", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
         String responseBody = String.format(
                 "{\"authorization_models\":[{\"id\":\"%s\",\"schema_version\":\"%s\"}]}",
                 DEFAULT_AUTH_MODEL_ID, DEFAULT_SCHEMA_VERSION);
