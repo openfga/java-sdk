@@ -4,6 +4,7 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
@@ -164,8 +165,9 @@ public class HttpRequestAttempt<T> {
 
             if (retryNumber < configuration.getMaxRetries()) {
                 // Parse Retry-After header if present
-                Optional<Duration> retryAfterDelay =
-                        response.headers().firstValue("Retry-After").flatMap(RetryAfterHeaderParser::parseRetryAfter);
+                Optional<Duration> retryAfterDelay = response.headers()
+                        .firstValue(FgaConstants.RETRY_AFTER_HEADER_NAME)
+                        .flatMap(RetryAfterHeaderParser::parseRetryAfter);
 
                 // Check if we should retry based on the new strategy
                 if (RetryStrategy.shouldRetry(statusCode)) {
@@ -182,9 +184,12 @@ public class HttpRequestAttempt<T> {
             addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber));
         }
 
-        if (response.headers().firstValue("fga-query-duration-ms").isPresent()) {
-            String queryDuration =
-                    response.headers().firstValue("fga-query-duration-ms").orElse(null);
+        if (response.headers()
+                .firstValue(FgaConstants.QUERY_DURATION_HEADER_NAME)
+                .isPresent()) {
+            String queryDuration = response.headers()
+                    .firstValue(FgaConstants.QUERY_DURATION_HEADER_NAME)
+                    .orElse(null);
 
             if (!isNullOrWhitespace(queryDuration)) {
                 try {
