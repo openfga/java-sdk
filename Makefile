@@ -23,3 +23,12 @@ lint:
 # Auto-format code using Spotless
 fmt:
 	./gradlew spotlessApply
+
+
+# Clean build artifacts
+clean:
+	./gradlew clean
+
+# Run all tests
+all: test lint
+	@echo "All checks completed"
