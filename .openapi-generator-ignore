@@ -17,3 +17,17 @@ git_push.sh
 
 # Model tests intentionally ignored
 **/test/**/model/*
+
+# Gradle
+build.gradle
+api/openapi.yaml
+gradle.properties
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
+settings.gradle
+
+# No need to generate
+src/main/java/dev/openfga/sdk/api/client/ApiClient.java
+src/main/java/dev/openfga/sdk/api/client/ApiResponse.java
