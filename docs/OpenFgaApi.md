@@ -32,6 +32,8 @@ All URIs are relative to *http://localhost*
 | [**readAuthorizationModelsWithHttpInfo**](OpenFgaApi.md#readAuthorizationModelsWithHttpInfo) | **GET** /stores/{store_id}/authorization-models | Return all the authorization models for a particular store |
 | [**readChanges**](OpenFgaApi.md#readChanges) | **GET** /stores/{store_id}/changes | Return a list of all the tuple changes |
 | [**readChangesWithHttpInfo**](OpenFgaApi.md#readChangesWithHttpInfo) | **GET** /stores/{store_id}/changes | Return a list of all the tuple changes |
+| [**streamedListObjects**](OpenFgaApi.md#streamedListObjects) | **POST** /stores/{store_id}/streamed-list-objects | Stream all objects of the given type that the user has a relation with |
+| [**streamedListObjectsWithHttpInfo**](OpenFgaApi.md#streamedListObjectsWithHttpInfo) | **POST** /stores/{store_id}/streamed-list-objects | Stream all objects of the given type that the user has a relation with |
 | [**write**](OpenFgaApi.md#write) | **POST** /stores/{store_id}/write | Add or delete tuples from the store |
 | [**writeWithHttpInfo**](OpenFgaApi.md#writeWithHttpInfo) | **POST** /stores/{store_id}/write | Add or delete tuples from the store |
 | [**writeAssertions**](OpenFgaApi.md#writeAssertions) | **PUT** /stores/{store_id}/assertions/{authorization_model_id} | Upsert assertions for an authorization model ID |
@@ -2292,6 +2294,167 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | A successful response. |  -  |
+| **400** | Request failed due to invalid input. |  -  |
+| **401** | Not authenticated. |  -  |
+| **403** | Forbidden. |  -  |
+| **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
+| **500** | Request failed due to internal server error. |  -  |
+
+
+## streamedListObjects
+
+> CompletableFuture<StreamResultOfStreamedListObjectsResponse> streamedListObjects(storeId, body)
+
+Stream all objects of the given type that the user has a relation with
+
+The Streamed ListObjects API is very similar to the the ListObjects API, with two differences:  1. Instead of collecting all objects before returning a response, it streams them to the client as they are collected.  2. The number of results returned is only limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE.  
+
+### Example
+
+```java
+// Import classes:
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.client.models.*;
+import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost");
+
+        OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
+        String storeId = "storeId_example"; // String | 
+        ListObjectsRequest body = new ListObjectsRequest(); // ListObjectsRequest | 
+        try {
+            CompletableFuture<StreamResultOfStreamedListObjectsResponse> result = apiInstance.streamedListObjects(storeId, body);
+            System.out.println(result.get());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling OpenFgaApi#streamedListObjects");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storeId** | **String**|  | |
+| **body** | [**ListObjectsRequest**](ListObjectsRequest.md)|  | |
+
+### Return type
+
+CompletableFuture<[**StreamResultOfStreamedListObjectsResponse**](StreamResultOfStreamedListObjectsResponse.md)>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | A successful response.(streaming responses) |  -  |
+| **400** | Request failed due to invalid input. |  -  |
+| **401** | Not authenticated. |  -  |
+| **403** | Forbidden. |  -  |
+| **404** | Request failed due to incorrect path. |  -  |
+| **409** | Request was aborted due a transaction conflict. |  -  |
+| **422** | Request timed out due to excessive request throttling. |  -  |
+| **500** | Request failed due to internal server error. |  -  |
+
+## streamedListObjectsWithHttpInfo
+
+> CompletableFuture<ApiResponse<StreamResultOfStreamedListObjectsResponse>> streamedListObjects streamedListObjectsWithHttpInfo(storeId, body)
+
+Stream all objects of the given type that the user has a relation with
+
+The Streamed ListObjects API is very similar to the the ListObjects API, with two differences:  1. Instead of collecting all objects before returning a response, it streams them to the client as they are collected.  2. The number of results returned is only limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE.  
+
+### Example
+
+```java
+// Import classes:
+import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.ApiException;
+import dev.openfga.sdk.api.client.ApiResponse;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.client.models.*;
+import dev.openfga.sdk.api.OpenFgaApi;
+import java.util.concurrent.CompletableFuture;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost");
+
+        OpenFgaApi apiInstance = new OpenFgaApi(defaultClient);
+        String storeId = "storeId_example"; // String | 
+        ListObjectsRequest body = new ListObjectsRequest(); // ListObjectsRequest | 
+        try {
+            CompletableFuture<ApiResponse<StreamResultOfStreamedListObjectsResponse>> response = apiInstance.streamedListObjectsWithHttpInfo(storeId, body);
+            System.out.println("Status code: " + response.get().getStatusCode());
+            System.out.println("Response headers: " + response.get().getHeaders());
+            System.out.println("Response body: " + response.get().getData());
+        } catch (InterruptedException | ExecutionException e) {
+            ApiException apiException = (ApiException)e.getCause();
+            System.err.println("Exception when calling OpenFgaApi#streamedListObjects");
+            System.err.println("Status code: " + apiException.getCode());
+            System.err.println("Response headers: " + apiException.getResponseHeaders());
+            System.err.println("Reason: " + apiException.getResponseBody());
+            e.printStackTrace();
+        } catch (ApiException e) {
+            System.err.println("Exception when calling OpenFgaApi#streamedListObjects");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storeId** | **String**|  | |
+| **body** | [**ListObjectsRequest**](ListObjectsRequest.md)|  | |
+
+### Return type
+
+CompletableFuture<ApiResponse<[**StreamResultOfStreamedListObjectsResponse**](StreamResultOfStreamedListObjectsResponse.md)>>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | A successful response.(streaming responses) |  -  |
 | **400** | Request failed due to invalid input. |  -  |
 | **401** | Not authenticated. |  -  |
 | **403** | Forbidden. |  -  |
