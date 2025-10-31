@@ -2587,6 +2587,133 @@ public class OpenFgaClientTest {
     }
 
     /**
+     * Test streaming list objects API
+     */
+    @Test
+    public void streamedListObjectsTest() throws Exception {
+        // Given
+        String postPath =
+                String.format("%s/stores/%s/streamed-list-objects", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        String expectedBody = String.format(
+                "{\"authorization_model_id\":\"%s\",\"type\":\"%s\",\"relation\":\"%s\",\"user\":\"%s\",\"contextual_tuples\":null,\"context\":null,\"consistency\":\"%s\"}",
+                DEFAULT_AUTH_MODEL_ID, DEFAULT_TYPE, DEFAULT_RELATION, DEFAULT_USER, DEFAULT_CONSISTENCY);
+
+        // Simulate NDJSON response - each line is a StreamResultOfStreamedListObjectsResponse
+        String ndjsonResponse = String.format(
+                "{\"result\":{\"object\":\"document:1\"}}\n{\"result\":{\"object\":\"document:2\"}}\n{\"result\":{\"object\":\"document:3\"}}\n");
+
+        mockHttpClient.onPost(postPath).withBody(is(expectedBody)).doReturn(200, ndjsonResponse);
+
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        Stream<StreamedListObjectsResponse> responseStream =
+                fga.streamedListObjects(request).get();
+        List<String> objects =
+                responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+
+        // Then
+        mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
+        assertEquals(3, objects.size());
+        assertEquals("document:1", objects.get(0));
+        assertEquals("document:2", objects.get(1));
+        assertEquals("document:3", objects.get(2));
+    }
+
+    @Test
+    public void streamedListObjects_storeIdRequired() {
+        // Given
+        clientConfiguration.storeId(null);
+
+        // When
+        var exception = assertThrows(
+                FgaInvalidParameterException.class,
+                () -> fga.streamedListObjects(new ClientListObjectsRequest()).get());
+
+        // Then
+        assertEquals(
+                "Required parameter storeId was invalid when calling ClientConfiguration.", exception.getMessage());
+    }
+
+    @Test
+    public void streamedListObjects_400() throws Exception {
+        // Given
+        String postUrl =
+                String.format("%s/stores/%s/streamed-list-objects", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(400, "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}");
+
+        // When
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.streamedListObjects(new ClientListObjectsRequest())
+                        .get());
+
+        // Then
+        mockHttpClient.verify().post(postUrl).called(1);
+        var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
+        assertEquals(400, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                exception.getResponseData());
+    }
+
+    @Test
+    public void streamedListObjects_500() throws Exception {
+        // Given
+        String postUrl =
+                String.format("%s/stores/%s/streamed-list-objects", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        mockHttpClient
+                .onPost(postUrl)
+                .doReturn(500, "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}");
+
+        // When
+        ExecutionException execException =
+                assertThrows(ExecutionException.class, () -> fga.streamedListObjects(new ClientListObjectsRequest())
+                        .get());
+
+        // Then
+        // POST requests retry on 5xx errors (1 initial + 3 retries = 4 total)
+        mockHttpClient.verify().post(postUrl).called(4);
+        var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void streamedListObjects_errorInStream() throws Exception {
+        // Given
+        String postPath =
+                String.format("%s/stores/%s/streamed-list-objects", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+
+        // Simulate NDJSON response with an error in the stream
+        String ndjsonResponse =
+                "{\"result\":{\"object\":\"document:1\"}}\n{\"error\":{\"code\":500,\"message\":\"Internal error\"}}\n";
+
+        mockHttpClient.onPost(postPath).doReturn(200, ndjsonResponse);
+
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        Stream<StreamedListObjectsResponse> responseStream =
+                fga.streamedListObjects(request).get();
+
+        // Then - should throw when processing the stream
+        var exception = assertThrows(RuntimeException.class, () -> {
+            responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+        });
+
+        assertTrue(exception.getMessage().contains("Error in streaming response"));
+    }
+
+    /**
      * Check whether a user is authorized to access an object.
      */
     @Test

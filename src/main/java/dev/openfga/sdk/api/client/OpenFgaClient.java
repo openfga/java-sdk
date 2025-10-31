@@ -24,6 +24,7 @@ public class OpenFgaClient {
     private final ApiClient apiClient;
     private ClientConfiguration configuration;
     private OpenFgaApi api;
+    private StreamedListObjectsApi streamedListObjectsApi;
 
     public OpenFgaClient(ClientConfiguration configuration) throws FgaInvalidParameterException {
         this(configuration, new ApiClient());
@@ -33,6 +34,7 @@ public class OpenFgaClient {
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.api = new OpenFgaApi(configuration, apiClient);
+        this.streamedListObjectsApi = new StreamedListObjectsApi(apiClient);
     }
 
     /* ***********
@@ -1102,6 +1104,75 @@ public class OpenFgaClient {
         var overrides = new ConfigurationOverride().addHeaders(options);
 
         return call(() -> api.listObjects(storeId, body, overrides)).thenApply(ClientListObjectsResponse::new);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of the given type that the user has a relation to (evaluates)
+     *
+     * Returns a Stream of objects that can be iterated. The streaming API returns results as they
+     * are computed, rather than collecting all results before returning. This is useful for
+     * large result sets.
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Stream<StreamedListObjectsResponse>> streamedListObjects(ClientListObjectsRequest request)
+            throws FgaInvalidParameterException {
+        return streamedListObjects(request, null);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of the given type that the user has a relation to (evaluates)
+     *
+     * Returns a Stream of objects that can be iterated. The streaming API returns results as they
+     * are computed, rather than collecting all results before returning. This is useful for
+     * large result sets.
+     *
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Stream<StreamedListObjectsResponse>> streamedListObjects(
+            ClientListObjectsRequest request, ClientListObjectsOptions options) throws FgaInvalidParameterException {
+        configuration.assertValid();
+        String storeId = configuration.getStoreIdChecked();
+
+        ListObjectsRequest body = new ListObjectsRequest();
+
+        if (request != null) {
+            body.user(request.getUser()).relation(request.getRelation()).type(request.getType());
+            if (request.getContextualTupleKeys() != null) {
+                var contextualTuples = request.getContextualTupleKeys();
+                var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
+                body.contextualTuples(bodyContextualTuples);
+            }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
+        }
+
+        if (options != null) {
+            if (options.getConsistency() != null) {
+                body.consistency(options.getConsistency());
+            }
+
+            // Set authorizationModelId from options if available; otherwise, use the default from configuration
+            String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
+                    ? options.getAuthorizationModelId()
+                    : configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        } else {
+            body.setAuthorizationModelId(configuration.getAuthorizationModelId());
+        }
+
+        Configuration config = configuration.override(new ConfigurationOverride().addHeaders(options));
+
+        return call(() -> streamedListObjectsApi.streamedListObjects(storeId, body, config))
+                .thenApply(response -> {
+                    String ndjsonResponse = response.getData().getRawResponse();
+                    StreamedResponseIterator iterator =
+                            new StreamedResponseIterator(ndjsonResponse, apiClient.getObjectMapper());
+                    // Convert Iterator to Stream
+                    return java.util.stream.StreamSupport.stream(
+                            ((Iterable<StreamedListObjectsResponse>) () -> iterator).spliterator(), false);
+                });
     }
 
     /**

@@ -215,7 +215,12 @@ public class HttpRequestAttempt<T> {
         if (clazz == Void.class && isNullOrWhitespace(response.body())) {
             return CompletableFuture.completedFuture(null);
         }
-
+        // Special handling for streaming responses - don't deserialize, just wrap the raw string
+        if (clazz == StreamingResponseString.class) {
+            @SuppressWarnings("unchecked")
+            T result = (T) new StreamingResponseString(response.body());
+            return CompletableFuture.completedFuture(result);
+        }
         try {
             T deserialized = apiClient.getObjectMapper().readValue(response.body(), clazz);
             return CompletableFuture.completedFuture(deserialized);
