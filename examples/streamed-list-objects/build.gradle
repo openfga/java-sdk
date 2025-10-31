@@ -1,0 +1,55 @@
+plugins {
+    id 'application'
+    id 'com.diffplug.spotless' version '8.0.0'
+}
+
+application {
+    mainClass = 'dev.openfga.sdk.example.streamedlistobjects.StreamedListObjectsExample'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    jacksonVersion = "2.20.0"
+}
+
+dependencies {
+    implementation("dev.openfga:openfga-sdk:0.9.2")
+
+    // Serialization
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+}
+
+// Use spotless plugin to automatically format code, remove unused import, etc
+// To apply changes directly to the file, run `gradlew spotlessApply`
+// Ref: https://github.com/diffplug/spotless/tree/main/plugin-gradle
+spotless {
+    // comment out below to run spotless as part of the `check` task
+    enforceCheck false
+    format 'misc', {
+        // define the files (e.g. '*.gradle', '*.md') to apply `misc` to
+        target '.gitignore'
+        // define the steps to apply to those files
+        trimTrailingWhitespace()
+        indentWithSpaces() // Takes an integer argument if you don't like 4
+        endWithNewline()
+    }
+    java {
+        palantirJavaFormat()
+        removeUnusedImports()
+        importOrder()
+    }
+}
+
+// Use spotless plugin to automatically format code, remove unused import, etc
+// To apply changes directly to the file, run `gradlew spotlessApply`
+// Ref: https://github.com/diffplug/spotless/tree/main/plugin-gradle
+tasks.register('fmt') {
+    dependsOn 'spotlessApply'
+}
