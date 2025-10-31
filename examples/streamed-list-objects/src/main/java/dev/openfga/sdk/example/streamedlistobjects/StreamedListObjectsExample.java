@@ -92,9 +92,9 @@ public class StreamedListObjectsExample {
 
         // Write some test tuples
         System.out.println("\nWriting 100 test tuples...");
-        List<ClientTuple> writes = new ArrayList<>();
+        List<ClientTupleKey> writes = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-            writes.add(new ClientTuple()
+            writes.add(new ClientTupleKey()
                     .user("user:anne")
                     .relation("owner")
                     ._object("document:" + i));
