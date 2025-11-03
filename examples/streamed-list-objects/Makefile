@@ -1,3 +1,5 @@
+.PHONY: all build run run-openfga
+
 all: build
 
 openfga_version=latest

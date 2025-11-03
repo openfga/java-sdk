@@ -59,6 +59,7 @@ public class OpenFgaClient {
     public void setConfiguration(ClientConfiguration configuration) throws FgaInvalidParameterException {
         this.configuration = configuration;
         this.api = new OpenFgaApi(configuration, apiClient);
+        this.streamedListObjectsApi = new StreamedListObjectsApi(apiClient);
     }
 
     /* ********
