@@ -61,11 +61,11 @@ public class StreamedListObjectsApi {
             telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "StreamedListObjects");
 
             return new HttpRequestAttempt<>(
-                    httpRequest,
-                    "streamedListObjects",
-                    StreamingResponseBody.class,
-                    apiClient,
-                    requestConfiguration)
+                            httpRequest,
+                            "streamedListObjects",
+                            StreamingResponseBody.class,
+                            apiClient,
+                            requestConfiguration)
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (Exception e) {
