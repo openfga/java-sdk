@@ -6,6 +6,7 @@ import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,13 +14,21 @@ import java.util.stream.Collectors;
 /**
  * Example demonstrating the usage of the Streamed ListObjects API.
  *
- * The Streamed ListObjects API returns results as they are computed, rather than
- * collecting all results before returning. This is particularly useful for:
- * - Large result sets that would take a long time to collect
- * - Scenarios where you want to start processing results immediately
- * - Cases where you might not need all results (early termination)
+ * <p>This example demonstrates working with OpenFGA's `/streamed-list-objects` endpoint using the
+ * Java SDK's `streamedListObjects()` method.
+ *
+ * <p>The Streamed ListObjects API returns results as they are computed, rather than collecting all
+ * results before returning. This is particularly useful for:
+ *
+ * <ul>
+ *   <li>Large result sets that would take a long time to collect
+ *   <li>Scenarios where you want to start processing results immediately
+ *   <li>Cases where you might not need all results (early termination)
+ * </ul>
  */
 public class StreamedListObjectsExample {
+    private static final int TUPLE_COUNT = 2000;
+
     public static void main(String[] args) throws Exception {
         // Configure the SDK
         var credentials = new Credentials();
@@ -37,137 +46,111 @@ public class StreamedListObjectsExample {
 
         var fgaClient = new OpenFgaClient(configuration);
 
-        // Create a test store
-        System.out.println("Creating test store...");
-        var store =
-                fgaClient.createStore(new CreateStoreRequest().name("StreamedListObjects Test Store"))
-                        .get();
-        fgaClient.setStoreId(store.getId());
-        System.out.println("Created store: " + store.getId());
+        // Create our temporary store
+        String storeId = createStore(fgaClient);
+        System.out.println("Created temporary store (" + storeId + ")");
 
-        // Create an authorization model
-        System.out.println("Creating authorization model...");
-        String authModelJson = """
-                {
-                  "schema_version": "1.1",
-                  "type_definitions": [
-                    {
-                      "type": "user",
-                      "relations": {}
-                    },
-                    {
-                      "type": "document",
-                      "relations": {
-                        "owner": {
-                          "this": {}
-                        },
-                        "viewer": {
-                          "this": {}
-                        }
-                      },
-                      "metadata": {
-                        "relations": {
-                          "owner": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          },
-                          "viewer": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-                """;
+        // Configure the SDK to use the temporary store for the rest of the example
+        fgaClient.setStoreId(storeId);
 
+        // Load the authorization model from a file and write it to the server
+        String modelId = writeModel(fgaClient);
+        System.out.println("Created temporary authorization model (" + modelId + ")\n");
+
+        // Configure the SDK to use this authorization model for the rest of the example
+        fgaClient.setAuthorizationModelId(modelId);
+
+        // Write a bunch of example tuples to the temporary store
+        int wrote = writeTuples(fgaClient, TUPLE_COUNT);
+        System.out.println("Wrote " + wrote + " tuples to the store.\n");
+
+        ////////////////////////////////
+        // Demonstrate streaming vs standard list objects
+
+        // Craft a request to list all `documents` owned by `user:anne`
+        var request = new ClientListObjectsRequest()
+                .type("document")
+                .relation("owner")
+                .user("user:anne");
+
+        // Send a single request to the server using both the streamed and standard endpoints
+        List<String> streamedResults = streamedListObjects(fgaClient, request);
+        List<String> standardResults = listObjects(fgaClient, request);
+
+        System.out.println(
+                "/streamed-list-objects returned " + streamedResults.size() + " objects in a single request.");
+
+        System.out.println("/list-objects returned " + standardResults.size() + " objects in a single request.");
+
+        ////////////////////////////////
+        // Clean up - delete the test store
+        fgaClient.deleteStore().get();
+        System.out.println("\nDeleted temporary store (" + storeId + ")");
+    }
+
+    /**
+     * Create a temporary store. The store will be deleted at the end of the example.
+     */
+    private static String createStore(OpenFgaClient fgaClient) throws Exception {
+        var response = fgaClient
+                .createStore(new CreateStoreRequest().name("Demo Store"))
+                .get();
+        return response.getId();
+    }
+
+    /**
+     * Load the authorization model from a file and write it to the server.
+     */
+    private static String writeModel(OpenFgaClient fgaClient) throws Exception {
         var mapper = new ObjectMapper();
-        var authModel = mapper.readValue(authModelJson, new TypeReference<WriteAuthorizationModelRequest>() {});
-        var modelResponse = fgaClient.writeAuthorizationModel(authModel).get();
-        fgaClient.setAuthorizationModelId(modelResponse.getAuthorizationModelId());
-        System.out.println("Created model: " + modelResponse.getAuthorizationModelId());
+        var modelFile = new File("model.json");
+        var authModel = mapper.readValue(modelFile, new TypeReference<WriteAuthorizationModelRequest>() {});
+        var response = fgaClient.writeAuthorizationModel(authModel).get();
+        return response.getAuthorizationModelId();
+    }
 
-        // Write some test tuples
-        System.out.println("\nWriting 100 test tuples...");
-        List<ClientTupleKey> writes = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            writes.add(new ClientTupleKey()
-                    .user("user:anne")
-                    .relation("owner")
-                    ._object("document:" + i));
+    /**
+     * Write a variable number of tuples to the temporary store.
+     */
+    private static int writeTuples(OpenFgaClient fgaClient, int quantity) throws Exception {
+        int chunks = quantity / 100;
+
+        for (int chunk = 0; chunk < chunks; chunk++) {
+            List<ClientTupleKey> writes = new ArrayList<>();
+            for (int t = 0; t < 100; t++) {
+                writes.add(new ClientTupleKey()
+                        .user("user:anne")
+                        .relation("owner")
+                        ._object("document:" + (chunk * 100 + t)));
+            }
+            fgaClient.write(new ClientWriteRequest().writes(writes)).get();
         }
 
-        fgaClient
-                .write(new ClientWriteRequest().writes(writes))
-                .get();
-        System.out.println("Successfully wrote 100 tuples");
+        return quantity;
+    }
 
-        // Example 1: Use streamedListObjects to get all objects
-        System.out.println("\n=== Example 1: List all objects using streaming ===");
-        var request1 = new ClientListObjectsRequest()
-                .type("document")
-                .relation("owner")
-                .user("user:anne");
+    /**
+     * Send our request to the streaming endpoint, and collect all results.
+     *
+     * <p>Note that streamedListObjects() returns a Stream, so we could process results as they
+     * come in. For the sake of this example, we'll just collect all the results into a list and
+     * return them all at once.
+     */
+    private static List<String> streamedListObjects(OpenFgaClient fgaClient, ClientListObjectsRequest request)
+            throws Exception {
+        var objectStream = fgaClient.streamedListObjects(request).get();
+        return objectStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+    }
 
-        var objectStream1 = fgaClient.streamedListObjects(request1).get();
-        List<String> allObjects =
-                objectStream1.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
-
-        System.out.println("Total objects found: " + allObjects.size());
-        System.out.println("First 5 objects: " + allObjects.subList(0, Math.min(5, allObjects.size())));
-
-        // Example 2: Early termination - stop after finding first N objects
-        System.out.println("\n=== Example 2: Early termination (first 10 objects) ===");
-        var request2 = new ClientListObjectsRequest()
-                .type("document")
-                .relation("owner")
-                .user("user:anne");
-
-        var objectStream2 = fgaClient.streamedListObjects(request2).get();
-        List<String> firstTen = objectStream2
-                .map(StreamedListObjectsResponse::getObject)
-                .limit(10)
-                .collect(Collectors.toList());
-
-        System.out.println("First 10 objects: " + firstTen);
-
-        // Example 3: Process objects as they arrive (immediate processing)
-        System.out.println("\n=== Example 3: Process objects immediately ===");
-        var request3 = new ClientListObjectsRequest()
-                .type("document")
-                .relation("owner")
-                .user("user:anne");
-
-        var objectStream3 = fgaClient.streamedListObjects(request3).get();
-        objectStream3
-                .map(StreamedListObjectsResponse::getObject)
-                .limit(10)
-                .forEach(obj -> {
-                    // Process each object as it arrives
-                    System.out.println("  Processing: " + obj);
-                });
-
-        // Example 4: With options (custom authorization model ID and consistency preference)
-        System.out.println("\n=== Example 4: With options ===");
-        var request4 = new ClientListObjectsRequest()
-                .type("document")
-                .relation("owner")
-                .user("user:anne");
-
-        var options4 = new ClientListObjectsOptions().consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
-
-        var objectStream4 = fgaClient.streamedListObjects(request4, options4).get();
-        long count = objectStream4.count();
-        System.out.println("Total objects with higher consistency: " + count);
-
-        // Clean up - delete the test store
-        System.out.println("\n=== Cleaning up ===");
-        fgaClient.deleteStore().get();
-        System.out.println("Deleted test store: " + store.getId());
-
-        System.out.println("\nExample completed successfully!");
+    /**
+     * For comparison sake, here is the non-streamed version of the same call, using
+     * listObjects().
+     *
+     * <p>Note that in the non-streamed version, the server will return a maximum of 1000 results.
+     */
+    private static List<String> listObjects(OpenFgaClient fgaClient, ClientListObjectsRequest request)
+            throws Exception {
+        var response = fgaClient.listObjects(request).get();
+        return response.getObjects();
     }
 }

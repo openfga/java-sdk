@@ -12,7 +12,7 @@ repositories {
 }
 
 ext {
-    jacksonVersion = "2.19.0"
+    jacksonVersion = "2.20.0"
 }
 
 dependencies {

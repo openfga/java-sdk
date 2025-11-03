@@ -1,6 +1,6 @@
 # Streamed List Objects Example
 
-This example demonstrates how to use the Streamed ListObjects API in the OpenFGA Java SDK.
+This example demonstrates working with [OpenFGA's `/streamed-list-objects` endpoint](https://openfga.dev/api/service#/Relationship%20Queries/StreamedListObjects) using the Java SDK's `streamedListObjects()` method.
 
 ## What is Streamed ListObjects?
 
@@ -19,31 +19,35 @@ Use the Streamed ListObjects API when:
 - You might not need all results (e.g., you want to stop after finding a certain number)
 - You want to avoid timeout issues with very large result sets
 
-## Running the Example
+## Prerequisites
 
-### Prerequisites
+- Java 11+
+- OpenFGA running on `localhost:8080`
 
-- A running OpenFGA server (or use the [OpenFGA Playground](https://play.fga.dev/))
-
-### Environment Variables
-
-Set the following environment variables:
+You can start OpenFGA with Docker by running the following command:
 
 ```bash
-# Required
-export FGA_API_URL=http://localhost:8080  # Your OpenFGA server URL
+docker pull openfga/openfga && docker run -it --rm -p 8080:8080 openfga/openfga run
+```
 
-# Optional - for authenticated servers
+## Running the Example
+
+No additional setup is required to run this example. Simply run the following command:
+
+```bash
+make run
+```
+
+### Environment Variables (Optional)
+
+For authenticated OpenFGA instances, set the following environment variables:
+
+```bash
+export FGA_API_URL=http://localhost:8080  # Your OpenFGA server URL
 export FGA_CLIENT_ID=your_client_id
 export FGA_CLIENT_SECRET=your_client_secret
 export FGA_API_TOKEN_ISSUER=your_token_issuer
 export FGA_API_AUDIENCE=your_audience
-```
-
-### Running
-
-```bash
-make run
 ```
 
 ## Code Examples
