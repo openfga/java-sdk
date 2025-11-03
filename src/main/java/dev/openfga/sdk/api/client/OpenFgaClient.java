@@ -1176,6 +1176,10 @@ public class OpenFgaClient {
                             ((Iterable<StreamedListObjectsResponse>) () -> iterator).spliterator(), false);
                     return stream.onClose(() -> {
                         try {
+                            iterator.close();
+                        } catch (java.io.IOException ignore) {
+                        }
+                        try {
                             srb.close();
                         } catch (java.io.IOException ignore) {
                         }

@@ -329,6 +329,33 @@ public class OpenFgaClientIntegrationTest {
     }
 
     @Test
+    public void write_and_streamedListObjects() throws Exception {
+        // Given
+        String storeName = thisTestName();
+        String storeId = createStore(storeName);
+        fga.setStoreId(storeId);
+        String authModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authModelId);
+        ClientWriteRequest writeRequest = new ClientWriteRequest().writes(List.of(DEFAULT_TUPLE_KEY));
+        ClientListObjectsRequest listObjectsRequest = new ClientListObjectsRequest()
+                .user(DEFAULT_USER)
+                .relation("reader")
+                .type("document");
+
+        // When
+        fga.write(writeRequest).get();
+        List<String> objects;
+        try (var stream = fga.streamedListObjects(listObjectsRequest).get()) {
+            objects = stream.map(StreamedListObjectsResponse::getObject).collect(java.util.stream.Collectors.toList());
+        }
+
+        // Then
+        assertNotNull(objects);
+        assertEquals(1, objects.size());
+        assertEquals(DEFAULT_DOC, objects.get(0));
+    }
+
+    @Test
     public void write_readAssertions() throws Exception {
         // Given
         String storeName = thisTestName();

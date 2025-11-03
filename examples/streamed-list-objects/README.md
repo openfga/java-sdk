@@ -57,41 +57,43 @@ export FGA_API_AUDIENCE=your_audience
 ```java
 // Create a request
 var request = new ClientListObjectsRequest()
-    .type("document")
-    .relation("owner")
-    .user("user:anne");
+                .type("document")
+                .relation("owner")
+                .user("user:anne");
 
-// Call the streaming API
-var objectStream = fgaClient.streamedListObjects(request).get();
-
+// Call the streaming API and ensure proper resource cleanup
+try (var objectStream = fgaClient.streamedListObjects(request).get()) {
 // Collect all results
 List<String> objects = objectStream
-    .map(StreamedListObjectsResponse::getObject)
-    .collect(Collectors.toList());
+        .map(StreamedListObjectsResponse::getObject)
+        .collect(Collectors.toList());
+}
 ```
 
 ### Early Termination
 
 ```java
-// Get only the first 10 results
-var objectStream = fgaClient.streamedListObjects(request).get();
-List<String> firstTen = objectStream
-    .map(StreamedListObjectsResponse::getObject)
-    .limit(10)
-    .collect(Collectors.toList());
+// Get only the first 10 results, ensuring the stream is closed properly
+try (var objectStream = fgaClient.streamedListObjects(request).get()) {
+    List<String> firstTen = objectStream
+        .map(StreamedListObjectsResponse::getObject)
+        .limit(10)
+        .collect(Collectors.toList());
+}
 ```
 
 ### Process as You Go
 
 ```java
 // Process each object immediately as it arrives
-var objectStream = fgaClient.streamedListObjects(request).get();
-objectStream
-    .map(StreamedListObjectsResponse::getObject)
-    .forEach(obj -> {
-        // Do something with each object
-        System.out.println("Processing: " + obj);
-    });
+try (var objectStream = fgaClient.streamedListObjects(request).get()) {
+    objectStream
+        .map(StreamedListObjectsResponse::getObject)
+        .forEach(obj -> {
+            // Do something with each object
+            System.out.println("Processing: " + obj);
+        });
+}
 ```
 
 ### With Options
@@ -99,8 +101,8 @@ objectStream
 ```java
 // Use options to specify consistency preference
 var options = new ClientListObjectsOptions()
-    .consistency(ConsistencyPreference.HIGHER_CONSISTENCY)
-    .authorizationModelId("01GXSXXXXXXXXXXXXXXXX");
+                .consistency(ConsistencyPreference.HIGHER_CONSISTENCY)
+                .authorizationModelId("01GXSXXXXXXXXXXXXXXXX");
 
 var objectStream = fgaClient.streamedListObjects(request, options).get();
 ```

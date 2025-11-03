@@ -138,8 +138,9 @@ public class StreamedListObjectsExample {
      */
     private static List<String> streamedListObjects(OpenFgaClient fgaClient, ClientListObjectsRequest request)
             throws Exception {
-        var objectStream = fgaClient.streamedListObjects(request).get();
-        return objectStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+        try (var objectStream = fgaClient.streamedListObjects(request).get()) {
+            return objectStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+        }
     }
 
     /**

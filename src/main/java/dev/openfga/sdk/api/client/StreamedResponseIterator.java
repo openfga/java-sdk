@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
  * If an error is encountered in the stream (either from parsing or from an error
  * response), it will be thrown as a StreamingException when hasNext() or next() is called.
  */
-public class StreamedResponseIterator implements Iterator<StreamedListObjectsResponse> {
+public class StreamedResponseIterator implements Iterator<StreamedListObjectsResponse>, AutoCloseable {
     private final BufferedReader reader;
     private final ObjectMapper objectMapper;
     private StreamedListObjectsResponse nextItem;
@@ -91,5 +91,10 @@ public class StreamedResponseIterator implements Iterator<StreamedListObjectsRes
         }
 
         return current;
+    }
+
+    @Override
+    public void close() throws IOException {
+        reader.close();
     }
 }

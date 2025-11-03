@@ -2610,10 +2610,11 @@ public class OpenFgaClientTest {
                 .user(DEFAULT_USER);
 
         // When
-        Stream<StreamedListObjectsResponse> responseStream =
-                fga.streamedListObjects(request).get();
-        List<String> objects =
-                responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+        List<String> objects;
+        try (Stream<StreamedListObjectsResponse> responseStream =
+                fga.streamedListObjects(request).get()) {
+            objects = responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+        }
 
         // Then
         mockHttpClient.verify().post(postPath).withBody(is(expectedBody)).called(1);
@@ -2702,12 +2703,12 @@ public class OpenFgaClientTest {
                 .user(DEFAULT_USER);
 
         // When
-        Stream<StreamedListObjectsResponse> responseStream =
-                fga.streamedListObjects(request).get();
-
         // Then - should throw when processing the stream
         var exception = assertThrows(RuntimeException.class, () -> {
-            responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+            try (Stream<StreamedListObjectsResponse> responseStream =
+                    fga.streamedListObjects(request).get()) {
+                responseStream.map(StreamedListObjectsResponse::getObject).collect(Collectors.toList());
+            }
         });
 
         assertTrue(exception.getMessage().contains("Error in streaming response"));
