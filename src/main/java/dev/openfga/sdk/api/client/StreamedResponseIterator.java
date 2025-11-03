@@ -1,12 +1,11 @@
 package dev.openfga.sdk.api.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.model.Status;
 import dev.openfga.sdk.api.model.StreamResultOfStreamedListObjectsResponse;
 import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -15,17 +14,17 @@ import java.util.NoSuchElementException;
  * Each line in the response is a StreamResultOfStreamedListObjectsResponse.
  *
  * If an error is encountered in the stream (either from parsing or from an error
- * response), it will be thrown as a RuntimeException when hasNext() or next() is called.
+ * response), it will be thrown as a StreamingException when hasNext() or next() is called.
  */
 public class StreamedResponseIterator implements Iterator<StreamedListObjectsResponse> {
     private final BufferedReader reader;
     private final ObjectMapper objectMapper;
     private StreamedListObjectsResponse nextItem;
     private boolean hasNext;
-    private RuntimeException pendingException;
+    private StreamingException pendingException;
 
-    public StreamedResponseIterator(String ndjsonResponse, ObjectMapper objectMapper) {
-        this.reader = new BufferedReader(new StringReader(ndjsonResponse));
+    public StreamedResponseIterator(Reader reader, ObjectMapper objectMapper) {
+        this.reader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
         this.objectMapper = objectMapper;
         this.hasNext = true;
         this.pendingException = null;
@@ -50,12 +49,7 @@ public class StreamedResponseIterator implements Iterator<StreamedListObjectsRes
                 }
 
                 if (streamResult.getError() != null) {
-                    // Handle error in stream - convert to exception
-                    Status error = streamResult.getError();
-                    String errorMessage = String.format(
-                            "Error in streaming response: code=%d, message=%s",
-                            error.getCode(), error.getMessage() != null ? error.getMessage() : "Unknown error");
-                    pendingException = new RuntimeException(errorMessage);
+                    pendingException = new StreamingException(streamResult.getError());
                     hasNext = false;
                     nextItem = null;
                     return;
@@ -65,7 +59,7 @@ public class StreamedResponseIterator implements Iterator<StreamedListObjectsRes
             hasNext = false;
             nextItem = null;
         } catch (IOException e) {
-            pendingException = new RuntimeException("Failed to parse streaming response", e);
+            pendingException = new StreamingException("Failed to parse streaming response", e);
             hasNext = false;
             nextItem = null;
         }
@@ -73,22 +67,16 @@ public class StreamedResponseIterator implements Iterator<StreamedListObjectsRes
 
     @Override
     public boolean hasNext() {
-        // If there's a pending exception, throw it before returning false
         if (pendingException != null) {
-            RuntimeException ex = pendingException;
-            pendingException = null; // Clear it so we don't throw multiple times
-            throw ex;
+            throw pendingException;
         }
         return hasNext && nextItem != null;
     }
 
     @Override
     public StreamedListObjectsResponse next() {
-        // Check for pending exception first
         if (pendingException != null) {
-            RuntimeException ex = pendingException;
-            pendingException = null;
-            throw ex;
+            throw pendingException;
         }
 
         if (!hasNext()) {
@@ -98,11 +86,8 @@ public class StreamedResponseIterator implements Iterator<StreamedListObjectsRes
         StreamedListObjectsResponse current = nextItem;
         advance();
 
-        // Check again after advance in case an error occurred
         if (pendingException != null) {
-            RuntimeException ex = pendingException;
-            pendingException = null;
-            throw ex;
+            throw pendingException;
         }
 
         return current;

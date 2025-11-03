@@ -5,13 +5,14 @@ import static dev.openfga.sdk.util.Validation.assertParamExists;
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.HttpRequestAttempt;
-import dev.openfga.sdk.api.client.StreamingResponseString;
+import dev.openfga.sdk.api.client.StreamingResponseBody;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
+import java.net.http.HttpRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,9 +22,11 @@ import java.util.concurrent.CompletableFuture;
  * This class is separate from the generated OpenFgaApi to avoid modifications to generated code.
  */
 public class StreamedListObjectsApi {
+    private final Configuration configuration;
     private final ApiClient apiClient;
 
-    public StreamedListObjectsApi(ApiClient apiClient) {
+    public StreamedListObjectsApi(Configuration configuration, ApiClient apiClient) {
+        this.configuration = configuration;
         this.apiClient = apiClient;
     }
 
@@ -33,13 +36,13 @@ public class StreamedListObjectsApi {
      *
      * @param storeId The store ID (required)
      * @param body The list objects request body (required)
-     * @param configuration The configuration to use for this request
+     * @param requestConfiguration The configuration to use for this request
      * @return CompletableFuture with raw streaming response
      * @throws ApiException if fails to make API call
      * @throws FgaInvalidParameterException if required parameters are missing
      */
-    public CompletableFuture<ApiResponse<StreamingResponseString>> streamedListObjects(
-            String storeId, ListObjectsRequest body, Configuration configuration)
+    public CompletableFuture<ApiResponse<StreamingResponseBody>> streamedListObjects(
+            String storeId, ListObjectsRequest body, Configuration requestConfiguration)
             throws ApiException, FgaInvalidParameterException {
 
         assertParamExists(storeId, "storeId", "streamedListObjects");
@@ -48,42 +51,21 @@ public class StreamedListObjectsApi {
         String path = "/stores/" + storeId + "/streamed-list-objects";
 
         try {
-            // Build the HTTP request
             byte[] requestBody = apiClient.getObjectMapper().writeValueAsBytes(body);
-            var bodyPublisher = java.net.http.HttpRequest.BodyPublishers.ofByteArray(requestBody);
+            HttpRequest.Builder requestBuilder =
+                    ApiClient.requestBuilder("POST", path, requestBody, requestConfiguration);
 
-            var requestBuilder = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create(configuration.getApiUrl() + path))
-                    .header("Content-Type", "application/json")
-                    .header("User-Agent", configuration.getUserAgent())
-                    .POST(bodyPublisher);
-
-            // Add authorization header if needed
-            if (configuration.getCredentials() != null
-                    && configuration.getCredentials().getApiToken() != null) {
-                requestBuilder.header(
-                        "Authorization",
-                        "Bearer " + configuration.getCredentials().getApiToken());
-            }
-
-            // Add default headers
-            if (configuration.getDefaultHeaders() != null) {
-                configuration.getDefaultHeaders().forEach(requestBuilder::header);
-            }
-
-            var httpRequest = requestBuilder.build();
-
-            // Build telemetry attributes
-            Map<String, Object> methodParameters = new HashMap<>();
-            methodParameters.put("storeId", storeId);
-            methodParameters.put("body", body);
+            HttpRequest httpRequest = requestBuilder.build();
 
             Map<Attribute, String> telemetryAttributes = new HashMap<>();
             telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "StreamedListObjects");
 
-            // Use HttpRequestAttempt with StreamingResponseString to get raw response
             return new HttpRequestAttempt<>(
-                            httpRequest, "streamedListObjects", StreamingResponseString.class, apiClient, configuration)
+                    httpRequest,
+                    "streamedListObjects",
+                    StreamingResponseBody.class,
+                    apiClient,
+                    requestConfiguration)
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (Exception e) {

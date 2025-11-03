@@ -12,6 +12,7 @@ import dev.openfga.sdk.telemetry.Telemetry;
 import dev.openfga.sdk.util.RetryAfterHeaderParser;
 import dev.openfga.sdk.util.RetryStrategy;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.http.*;
 import java.nio.ByteBuffer;
@@ -90,18 +91,27 @@ public class HttpRequestAttempt<T> {
 
     private CompletableFuture<ApiResponse<T>> attemptHttpRequest(
             HttpClient httpClient, int retryNumber, Throwable previousError) {
-        return httpClient
-                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .handle((response, throwable) -> {
-                    if (throwable != null) {
-                        // Handle network errors (no HTTP response received)
-                        return handleNetworkError(throwable, retryNumber);
-                    }
-
-                    // Handle HTTP response (including error status codes)
-                    return processHttpResponse(response, retryNumber, previousError);
-                })
-                .thenCompose(Function.identity());
+        if (clazz == StreamingResponseBody.class) {
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                    .handle((response, throwable) -> {
+                        if (throwable != null) {
+                            return handleNetworkError(throwable, retryNumber);
+                        }
+                        return processHttpResponseStreaming(response, retryNumber, previousError);
+                    })
+                    .thenCompose(Function.identity());
+        } else {
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .handle((response, throwable) -> {
+                        if (throwable != null) {
+                            return handleNetworkError(throwable, retryNumber);
+                        }
+                        return processHttpResponse(response, retryNumber, previousError);
+                    })
+                    .thenCompose(Function.identity());
+        }
     }
 
     private CompletableFuture<ApiResponse<T>> handleNetworkError(Throwable throwable, int retryNumber) {
@@ -209,6 +219,105 @@ public class HttpRequestAttempt<T> {
         return deserializeResponse(response)
                 .thenApply(modeledResponse -> new ApiResponse<>(
                         response.statusCode(), response.headers().map(), response.body(), modeledResponse));
+    }
+
+    private CompletableFuture<ApiResponse<T>> processHttpResponseStreaming(
+            HttpResponse<InputStream> response, int retryNumber, Throwable previousError) {
+        int statusCode = response.statusCode();
+
+        if (!HttpStatusCode.isSuccessful(statusCode)) {
+            try {
+                String bodyStr = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+                HttpResponse<String> stringResponse = new HttpResponse<>() {
+                    @Override
+                    public int statusCode() {
+                        return response.statusCode();
+                    }
+
+                    @Override
+                    public HttpRequest request() {
+                        return response.request();
+                    }
+
+                    @Override
+                    public java.util.Optional<HttpResponse<String>> previousResponse() {
+                        return java.util.Optional.empty();
+                    }
+
+                    @Override
+                    public HttpHeaders headers() {
+                        return response.headers();
+                    }
+
+                    @Override
+                    public String body() {
+                        return bodyStr;
+                    }
+
+                    @Override
+                    public java.util.Optional<javax.net.ssl.SSLSession> sslSession() {
+                        return response.sslSession();
+                    }
+
+                    @Override
+                    public java.net.URI uri() {
+                        return response.uri();
+                    }
+
+                    @Override
+                    public HttpClient.Version version() {
+                        return response.version();
+                    }
+                };
+
+                Optional<FgaError> fgaError =
+                        FgaError.getError(name, request, configuration, stringResponse, previousError);
+                if (fgaError.isPresent()) {
+                    FgaError error = fgaError.get();
+                    if (retryNumber < configuration.getMaxRetries()) {
+                        Optional<Duration> retryAfterDelay = response.headers()
+                                .firstValue(FgaConstants.RETRY_AFTER_HEADER_NAME)
+                                .flatMap(RetryAfterHeaderParser::parseRetryAfter);
+                        if (RetryStrategy.shouldRetry(statusCode)) {
+                            return handleHttpErrorRetry(retryAfterDelay, retryNumber, error);
+                        }
+                    }
+                    return CompletableFuture.failedFuture(error);
+                }
+            } catch (IOException e) {
+                return CompletableFuture.failedFuture(new ApiException(e));
+            }
+        }
+
+        addTelemetryAttributes(Attributes.fromHttpResponse(response, this.configuration.getCredentials()));
+
+        if (retryNumber > 0) {
+            addTelemetryAttribute(Attributes.HTTP_REQUEST_RESEND_COUNT, String.valueOf(retryNumber));
+        }
+
+        if (response.headers()
+                .firstValue(FgaConstants.QUERY_DURATION_HEADER_NAME)
+                .isPresent()) {
+            String queryDuration = response.headers()
+                    .firstValue(FgaConstants.QUERY_DURATION_HEADER_NAME)
+                    .orElse(null);
+
+            if (!isNullOrWhitespace(queryDuration)) {
+                try {
+                    double queryDurationDouble = Double.parseDouble(queryDuration);
+                    telemetry.metrics().queryDuration(queryDurationDouble, this.getTelemetryAttributes());
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+
+        Double requestDuration = (double) (System.currentTimeMillis() - requestStarted);
+        telemetry.metrics().requestDuration(requestDuration, this.getTelemetryAttributes());
+
+        @SuppressWarnings("unchecked")
+        T result = (T) new StreamingResponseBody(response.body());
+        return CompletableFuture.completedFuture(
+                new ApiResponse<>(response.statusCode(), response.headers().map(), null, result));
     }
 
     private CompletableFuture<T> deserializeResponse(HttpResponse<String> response) {
