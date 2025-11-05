@@ -79,7 +79,7 @@ public class OpenFgaClient {
         configuration.assertValid();
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.listStores(
-                        options.getPageSize(), options.getContinuationToken(), options.getName(), overrides))
+                options.getPageSize(), options.getContinuationToken(), options.getName(), overrides))
                 .thenApply(ClientListStoresResponse::new);
     }
 
@@ -296,12 +296,12 @@ public class OpenFgaClient {
         var options = readChangesOptions != null ? readChangesOptions : new ClientReadChangesOptions();
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readChanges(
-                        storeId,
-                        request.getType(),
-                        options.getPageSize(),
-                        options.getContinuationToken(),
-                        request.getStartTime(),
-                        overrides))
+                storeId,
+                request.getType(),
+                options.getPageSize(),
+                options.getContinuationToken(),
+                request.getStartTime(),
+                overrides))
                 .thenApply(ClientReadChangesResponse::new);
     }
 
@@ -492,19 +492,19 @@ public class OpenFgaClient {
             // For transaction-based writes, all tuples are successful if the call succeeds
             List<ClientWriteSingleResponse> writeResponses = writeTuples != null
                     ? writeTuples.stream()
-                            .map(tuple -> new ClientWriteSingleResponse(tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
-                            .collect(Collectors.toList())
+                    .map(tuple -> new ClientWriteSingleResponse(tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
+                    .collect(Collectors.toList())
                     : new ArrayList<>();
 
             List<ClientWriteSingleResponse> deleteResponses = deleteTuples != null
                     ? deleteTuples.stream()
-                            .map(tuple -> new ClientWriteSingleResponse(
-                                    new TupleKey()
-                                            .user(tuple.getUser())
-                                            .relation(tuple.getRelation())
-                                            ._object(tuple.getObject()),
-                                    ClientWriteStatus.SUCCESS))
-                            .collect(Collectors.toList())
+                    .map(tuple -> new ClientWriteSingleResponse(
+                            new TupleKey()
+                                    .user(tuple.getUser())
+                                    .relation(tuple.getRelation())
+                                    ._object(tuple.getObject()),
+                            ClientWriteStatus.SUCCESS))
+                    .collect(Collectors.toList())
                     : new ArrayList<>();
 
             return new ClientWriteResponse(writeResponses, deleteResponses);
@@ -639,18 +639,18 @@ public class OpenFgaClient {
         CompletableFuture<List<ClientWriteSingleResponse>> allWritesFuture = writeFutures.isEmpty()
                 ? CompletableFuture.completedFuture(new ArrayList<>())
                 : CompletableFuture.allOf(writeFutures.toArray(new CompletableFuture[0]))
-                        .thenApply(v -> writeFutures.stream()
-                                .map(CompletableFuture::join)
-                                .flatMap(List::stream)
-                                .collect(Collectors.toList()));
+                .thenApply(v -> writeFutures.stream()
+                        .map(CompletableFuture::join)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList()));
 
         CompletableFuture<List<ClientWriteSingleResponse>> allDeletesFuture = deleteFutures.isEmpty()
                 ? CompletableFuture.completedFuture(new ArrayList<>())
                 : CompletableFuture.allOf(deleteFutures.toArray(new CompletableFuture[0]))
-                        .thenApply(v -> deleteFutures.stream()
-                                .map(CompletableFuture::join)
-                                .flatMap(List::stream)
-                                .collect(Collectors.toList()));
+                .thenApply(v -> deleteFutures.stream()
+                        .map(CompletableFuture::join)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList()));
 
         return CompletableFuture.allOf(allWritesFuture, allDeletesFuture)
                 .thenApply(v -> new ClientWriteResponse(allWritesFuture.join(), allDeletesFuture.join()));
@@ -828,7 +828,7 @@ public class OpenFgaClient {
         var options = batchCheckOptions != null
                 ? batchCheckOptions
                 : new ClientBatchCheckClientOptions()
-                        .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS);
+                .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS);
 
         HashMap<String, String> headers = options.getAdditionalHeaders() != null
                 ? new HashMap<>(options.getAdditionalHeaders())
@@ -889,8 +889,8 @@ public class OpenFgaClient {
         var options = batchCheckOptions != null
                 ? batchCheckOptions
                 : new ClientBatchCheckOptions()
-                        .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS)
-                        .maxBatchSize(FgaConstants.CLIENT_MAX_BATCH_SIZE);
+                .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS)
+                .maxBatchSize(FgaConstants.CLIENT_MAX_BATCH_SIZE);
 
         HashMap<String, String> headers = options.getAdditionalHeaders() != null
                 ? new HashMap<>(options.getAdditionalHeaders())
@@ -951,22 +951,22 @@ public class OpenFgaClient {
         var override = new ConfigurationOverride().addHeaders(options);
 
         Consumer<List<BatchCheckItem>> singleBatchCheckRequest = request -> call(() -> {
-                    BatchCheckRequest body = new BatchCheckRequest().checks(request);
-                    if (options.getConsistency() != null) {
-                        body.consistency(options.getConsistency());
-                    }
+            BatchCheckRequest body = new BatchCheckRequest().checks(request);
+            if (options.getConsistency() != null) {
+                body.consistency(options.getConsistency());
+            }
 
-                    // Set authorizationModelId from options if available; otherwise, use the default from configuration
-                    String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
-                            ? options.getAuthorizationModelId()
-                            : configuration.getAuthorizationModelId();
+            // Set authorizationModelId from options if available; otherwise, use the default from configuration
+            String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
+                    ? options.getAuthorizationModelId()
+                    : configuration.getAuthorizationModelId();
 
-                    if (!isNullOrWhitespace(authorizationModelId)) {
-                        body.authorizationModelId(authorizationModelId);
-                    }
+            if (!isNullOrWhitespace(authorizationModelId)) {
+                body.authorizationModelId(authorizationModelId);
+            }
 
-                    return api.batchCheck(configuration.getStoreId(), body, override);
-                })
+            return api.batchCheck(configuration.getStoreId(), body, override);
+        })
                 .whenComplete((batchCheckResponseApiResponse, throwable) -> {
                     try {
                         if (throwable != null) {
@@ -1105,6 +1105,102 @@ public class OpenFgaClient {
     }
 
     /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @return CompletableFuture<Void> that completes when streaming finishes
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Void> streamedListObjects(ClientListObjectsRequest request, Consumer<String> consumer)
+            throws FgaInvalidParameterException {
+        return streamedListObjects(request, null, consumer, null);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param options Options for the streaming request
+     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @return CompletableFuture<Void> that completes when streaming finishes
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request, ClientStreamedListObjectsOptions options, Consumer<String> consumer)
+            throws FgaInvalidParameterException {
+        return streamedListObjects(request, options, consumer, null);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param options Options for the streaming request
+     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @param errorConsumer Optional callback to handle errors during streaming
+     * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     */
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request,
+            ClientStreamedListObjectsOptions options,
+            Consumer<String> consumer,
+            Consumer<Throwable> errorConsumer)
+            throws FgaInvalidParameterException {
+        configuration.assertValid();
+        String storeId = configuration.getStoreIdChecked();
+
+        ListObjectsRequest body = new ListObjectsRequest();
+
+        if (request != null) {
+            body.user(request.getUser()).relation(request.getRelation()).type(request.getType());
+            if (request.getContextualTupleKeys() != null) {
+                var contextualTuples = request.getContextualTupleKeys();
+                var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
+                body.contextualTuples(bodyContextualTuples);
+            }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
+        }
+
+        if (options != null) {
+            if (options.getConsistency() != null) {
+                body.consistency(options.getConsistency());
+            }
+
+            // Set authorizationModelId from options if available; otherwise, use the default from configuration
+            String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
+                    ? options.getAuthorizationModelId()
+                    : configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        } else {
+            body.setAuthorizationModelId(configuration.getAuthorizationModelId());
+        }
+
+        // Create streaming API instance and execute streaming request asynchronously
+        StreamedListObjectsApi streamingApi = new StreamedListObjectsApi(configuration, apiClient);
+        try {
+            return streamingApi.streamedListObjects(storeId, body, consumer, errorConsumer);
+        } catch (ApiException e) {
+            if (errorConsumer != null) {
+                errorConsumer.accept(e);
+            }
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
      * ListRelations - List allowed relations a user has with an object (evaluates)
      */
     public CompletableFuture<ClientListRelationsResponse> listRelations(ClientListRelationsRequest request)
@@ -1126,7 +1222,7 @@ public class OpenFgaClient {
         var options = listRelationsOptions != null
                 ? listRelationsOptions
                 : new ClientListRelationsOptions()
-                        .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS);
+                .maxParallelRequests(FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS);
 
         HashMap<String, String> headers = options.getAdditionalHeaders() != null
                 ? new HashMap<>(options.getAdditionalHeaders())
