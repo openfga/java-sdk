@@ -1,14 +1,7 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.3...HEAD)
-
-## v0.9.3
-
-### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.2...v0.9.3)) (2025-11-10)
-
-### Fixed
-
-- fix: preserve response headers in transaction write operations (#254)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.2...HEAD)
+- feat: Improve error messaging by parsing error details from resp bodies (#256)
 
 ## v0.9.2
 
