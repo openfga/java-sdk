@@ -144,29 +144,25 @@ public class StreamedListObjectsApi {
             return apiClient
                     .getHttpClient()
                     .sendAsync(request, HttpResponse.BodyHandlers.ofLines())
-                    .thenCompose(response -> {
+                    .thenApply(response -> {
                         // Check response status
                         int statusCode = response.statusCode();
                         if (statusCode < 200 || statusCode >= 300) {
-                            ApiException apiException =
-                                    new ApiException(statusCode, "API error: " + statusCode, response.headers(), null);
-                            // Error will be handled by whenComplete
-                            return CompletableFuture.failedFuture(apiException);
+                            throw new RuntimeException(
+                                    new ApiException(statusCode, "API error: " + statusCode, response.headers(), null));
                         }
 
-                        // Process the stream asynchronously on a separate thread
-                        return CompletableFuture.runAsync(() -> {
-                            try (Stream<String> lines = response.body()) {
-                                lines.forEach(line -> {
-                                    if (!isNullOrWhitespace(line)) {
-                                        processLine(line, consumer, errorConsumer);
-                                    }
-                                });
-                            } catch (Exception e) {
-                                // Error will be handled by whenComplete
-                                throw new RuntimeException(e);
-                            }
-                        });
+                        // Process the stream - this runs on HttpClient's executor thread
+                        try (Stream<String> lines = response.body()) {
+                            lines.forEach(line -> {
+                                if (!isNullOrWhitespace(line)) {
+                                    processLine(line, consumer, errorConsumer);
+                                }
+                            });
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        return (Void) null;
                     })
                     .whenComplete((result, throwable) -> {
                         if (throwable != null && errorConsumer != null) {
