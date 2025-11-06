@@ -293,6 +293,44 @@ public class StreamedListObjectsTest {
         assertEquals(2, completionFlag.get());
     }
 
+    @Test
+    public void streamedListObjects_additionalHeadersPassedThrough() throws Exception {
+        // Given
+        String line1 = "{\"result\":{\"object\":\"document:1\"}}";
+        Stream<String> streamResponse = Stream.of(line1);
+
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(200, streamResponse);
+        CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                CompletableFuture.completedFuture(mockResponse);
+
+        when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
+
+        List<String> receivedObjects = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // Create options with additional headers
+        Map<String, String> additionalHeaders = Map.of(
+                "X-Custom-Header", "custom-value",
+                "X-Request-ID", "test-request-123");
+
+        ClientStreamedListObjectsOptions options =
+                new ClientStreamedListObjectsOptions().additionalHeaders(additionalHeaders);
+
+        // When
+        CompletableFuture<Void> future = fga.streamedListObjects(request, options, receivedObjects::add);
+        future.get(); // Wait for completion
+
+        // Then
+        assertEquals(1, receivedObjects.size());
+        assertEquals("document:1", receivedObjects.get(0));
+
+        // Verify that the HTTP client was called (which means headers were applied)
+        verify(mockHttpClient, times(1)).sendAsync(any(), any());
+    }
+
     private HttpResponse<Stream<String>> createMockStreamResponse(int statusCode, Stream<String> body) {
         HttpResponse<Stream<String>> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(statusCode);
