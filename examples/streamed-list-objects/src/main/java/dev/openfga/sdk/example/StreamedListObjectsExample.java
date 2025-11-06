@@ -66,7 +66,6 @@ public class StreamedListObjectsExample {
         // Stream objects
         System.out.println("Listing objects using streaming endpoint:");
         List<String> results = new ArrayList<>();
-        AtomicInteger count = new AtomicInteger(0);
 
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type("document")
@@ -77,7 +76,6 @@ public class StreamedListObjectsExample {
                 .streamedListObjects(request, object -> {
                     System.out.println("  " + object);
                     results.add(object);
-                    count.incrementAndGet();
                 })
                 .thenRun(() -> {
                     System.out.println("Streaming complete!");

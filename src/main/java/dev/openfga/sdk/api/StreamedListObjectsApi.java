@@ -144,12 +144,13 @@ public class StreamedListObjectsApi {
             return apiClient
                     .getHttpClient()
                     .sendAsync(request, HttpResponse.BodyHandlers.ofLines())
-                    .thenApply(response -> {
+                    .thenCompose(response -> {
                         // Check response status
                         int statusCode = response.statusCode();
                         if (statusCode < 200 || statusCode >= 300) {
-                            throw new RuntimeException(
-                                    new ApiException(statusCode, "API error: " + statusCode, response.headers(), null));
+                            ApiException apiException =
+                                    new ApiException(statusCode, "API error: " + statusCode, response.headers(), null);
+                            return CompletableFuture.failedFuture(apiException);
                         }
 
                         // Process the stream - this runs on HttpClient's executor thread
@@ -159,15 +160,30 @@ public class StreamedListObjectsApi {
                                     processLine(line, consumer, errorConsumer);
                                 }
                             });
+                            return CompletableFuture.completedFuture((Void) null);
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            return CompletableFuture.failedFuture(e);
                         }
-                        return (Void) null;
                     })
-                    .whenComplete((result, throwable) -> {
-                        if (throwable != null && errorConsumer != null) {
-                            errorConsumer.accept(throwable);
+                    .handle((result, throwable) -> {
+                        if (throwable != null) {
+                            // Unwrap CompletionException to get the original exception
+                            Throwable actualException = throwable;
+                            if (throwable instanceof java.util.concurrent.CompletionException
+                                    && throwable.getCause() != null) {
+                                actualException = throwable.getCause();
+                            }
+
+                            if (errorConsumer != null) {
+                                errorConsumer.accept(actualException);
+                            }
+                            // Re-throw to keep the CompletableFuture in failed state
+                            if (actualException instanceof RuntimeException) {
+                                throw (RuntimeException) actualException;
+                            }
+                            throw new RuntimeException(actualException);
                         }
+                        return result;
                     });
 
         } catch (Exception e) {

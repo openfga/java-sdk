@@ -331,6 +331,42 @@ public class StreamedListObjectsTest {
         verify(mockHttpClient, times(1)).sendAsync(any(), any());
     }
 
+    @Test
+    public void streamedListObjects_preservesApiExceptionType() throws Exception {
+        // Given - HTTP 400 error should create ApiException
+        Stream<String> streamResponse = Stream.empty();
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(400, streamResponse);
+        CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                CompletableFuture.completedFuture(mockResponse);
+
+        when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
+
+        List<Throwable> receivedErrors = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        CompletableFuture<Void> future = fga.streamedListObjects(request, null, obj -> {}, receivedErrors::add);
+
+        try {
+            future.get();
+            fail("Expected exception");
+        } catch (Exception e) {
+            // Expected to fail
+        }
+
+        // Then - verify the error consumer received the original ApiException, not wrapped
+        assertEquals(1, receivedErrors.size());
+        Throwable error = receivedErrors.get(0);
+        assertTrue(
+                error instanceof dev.openfga.sdk.errors.ApiException,
+                "Expected ApiException but got " + error.getClass().getName());
+        dev.openfga.sdk.errors.ApiException apiException = (dev.openfga.sdk.errors.ApiException) error;
+        assertEquals(400, apiException.getStatusCode());
+    }
+
     private HttpResponse<Stream<String>> createMockStreamResponse(int statusCode, Stream<String> body) {
         HttpResponse<Stream<String>> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(statusCode);
