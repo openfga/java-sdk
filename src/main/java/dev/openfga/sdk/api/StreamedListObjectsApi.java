@@ -8,6 +8,7 @@ import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.ConfigurationOverride;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
+import dev.openfga.sdk.api.model.Status;
 import dev.openfga.sdk.api.model.StreamResultOfStreamedListObjectsResponse;
 import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
 import dev.openfga.sdk.errors.ApiException;
@@ -206,8 +207,11 @@ public class StreamedListObjectsApi {
             if (streamResult.getError() != null) {
                 // Handle error in stream
                 if (errorConsumer != null) {
-                    errorConsumer.accept(new ApiException(
-                            "Stream error: " + streamResult.getError().getMessage()));
+                    Status error = streamResult.getError();
+                    String errorMessage = error.getMessage() != null
+                            ? "Stream error: " + error.getMessage()
+                            : "Stream error: " + (error.getCode() != null ? "code " + error.getCode() : "unknown");
+                    errorConsumer.accept(new ApiException(errorMessage));
                 }
             } else if (streamResult.getResult() != null) {
                 // Deliver the object to the consumer

@@ -200,6 +200,49 @@ public class StreamedListObjectsTest {
     }
 
     @Test
+    public void streamedListObjects_errorHandlingWithNullMessage() throws Exception {
+        // Given - error with null message and no code
+        String line1 = "{\"result\":{\"object\":\"document:1\"}}";
+        String line2 = "{\"error\":{}}"; // Empty error object (null message, null code)
+        String line3 = "{\"error\":{\"code\":123}}"; // Error with code but null message
+        Stream<String> streamResponse = Stream.of(line1, line2, line3);
+
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(200, streamResponse);
+        CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                CompletableFuture.completedFuture(mockResponse);
+
+        when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
+
+        List<String> receivedObjects = new ArrayList<>();
+        List<Throwable> receivedErrors = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        CompletableFuture<Void> future =
+                fga.streamedListObjects(request, null, receivedObjects::add, receivedErrors::add);
+        future.get(); // Wait for completion
+
+        // Then - should handle null messages gracefully without NPE
+        assertEquals(1, receivedObjects.size());
+        assertEquals(2, receivedErrors.size());
+
+        // Verify first error has a fallback message
+        assertTrue(receivedErrors.get(0) instanceof dev.openfga.sdk.errors.ApiException);
+        String firstErrorMsg = ((dev.openfga.sdk.errors.ApiException) receivedErrors.get(0)).getMessage();
+        assertTrue(firstErrorMsg.contains("Stream error"));
+        assertTrue(firstErrorMsg.contains("unknown"));
+
+        // Verify second error has code in message
+        assertTrue(receivedErrors.get(1) instanceof dev.openfga.sdk.errors.ApiException);
+        String secondErrorMsg = ((dev.openfga.sdk.errors.ApiException) receivedErrors.get(1)).getMessage();
+        assertTrue(secondErrorMsg.contains("Stream error"));
+        assertTrue(secondErrorMsg.contains("code 123"));
+    }
+
+    @Test
     public void streamedListObjects_httpError() throws Exception {
         // Given
         Stream<String> streamResponse = Stream.empty();
