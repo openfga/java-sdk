@@ -4,7 +4,7 @@
 
 ## v0.9.3
 
-### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.0...v0.9.1) (2025-11-10)
+### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.2...v0.9.3)) (2025-11-10)
 
 ### Fixed
 
