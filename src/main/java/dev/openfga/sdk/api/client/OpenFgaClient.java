@@ -507,7 +507,7 @@ public class OpenFgaClient {
                             .collect(Collectors.toList())
                     : new ArrayList<>();
 
-            return new ClientWriteResponse(writeResponses, deleteResponses);
+            return new ClientWriteResponse(apiResponse, writeResponses, deleteResponses);
         });
     }
 
@@ -710,7 +710,7 @@ public class OpenFgaClient {
             List<ClientWriteSingleResponse> writeResponses = tupleKeys.stream()
                     .map(tuple -> new ClientWriteSingleResponse(tuple.asTupleKey(), ClientWriteStatus.SUCCESS))
                     .collect(Collectors.toList());
-            return new ClientWriteResponse(writeResponses, new ArrayList<>());
+            return new ClientWriteResponse(apiResponse, writeResponses, new ArrayList<>());
         });
     }
 
@@ -756,7 +756,7 @@ public class OpenFgaClient {
                                     ._object(tuple.getObject()),
                             ClientWriteStatus.SUCCESS))
                     .collect(Collectors.toList());
-            return new ClientWriteResponse(new ArrayList<>(), deleteResponses);
+            return new ClientWriteResponse(apiResponse, new ArrayList<>(), deleteResponses);
         });
     }
 
