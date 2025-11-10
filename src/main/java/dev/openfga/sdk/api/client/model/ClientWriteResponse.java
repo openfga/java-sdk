@@ -28,6 +28,17 @@ public class ClientWriteResponse {
         this.deletes = deletes != null ? deletes : Collections.emptyList();
     }
 
+    public ClientWriteResponse(
+            ApiResponse<Object> apiResponse,
+            List<ClientWriteSingleResponse> writes,
+            List<ClientWriteSingleResponse> deletes) {
+        this.statusCode = apiResponse.getStatusCode();
+        this.headers = apiResponse.getHeaders();
+        this.rawResponse = apiResponse.getRawResponse();
+        this.writes = writes != null ? writes : Collections.emptyList();
+        this.deletes = deletes != null ? deletes : Collections.emptyList();
+    }
+
     public int getStatusCode() {
         return statusCode;
     }

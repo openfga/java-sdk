@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.2...HEAD)
+- fix: preserve response headers in transaction write operations (#254)
 - feat: Add `streamedListObjects` API endpoint with consumer callback support (#252)
 
 ## v0.9.2
