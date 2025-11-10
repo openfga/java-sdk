@@ -1,7 +1,6 @@
 # Changelog
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.2...HEAD)
-- feat: Add `streamedListObjects` API endpoint with consumer callback support (#252)
 
 ## v0.9.2
 
