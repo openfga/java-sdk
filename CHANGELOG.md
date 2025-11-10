@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.2...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.3...HEAD)
 
 ## v0.9.3
 
