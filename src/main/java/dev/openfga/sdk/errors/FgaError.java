@@ -10,6 +10,8 @@ import dev.openfga.sdk.constants.FgaConstants;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class FgaError extends ApiException {
@@ -25,6 +27,7 @@ public class FgaError extends ApiException {
     private String apiErrorMessage = null;
     private String operationName = null;
     private String retryAfterHeader = null;
+    private Map<String, Object> metadata = null;
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
@@ -256,5 +259,122 @@ public class FgaError extends ApiException {
 
     public String getOperationName() {
         return operationName;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
+    public Map<String, Object> getMetadata() {
+        if (metadata == null) {
+            metadata = new HashMap<>();
+        }
+        return metadata;
+    }
+
+    public void addMetadata(String key, Object value) {
+        getMetadata().put(key, value);
+    }
+
+    /**
+     * Override getMessage() to return the actual API error message
+     * instead of the generic operation name.
+     *
+     * This makes errors understandable everywhere they're displayed:
+     * - Exception stack traces
+     * - IDE error tooltips
+     * - Log files
+     * - toString() output
+     */
+    @Override
+    public String getMessage() {
+        // Return the actual API error if available
+        if (apiErrorMessage != null && !apiErrorMessage.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+
+            // Include operation context
+            if (operationName != null) {
+                sb.append("[").append(operationName).append("] ");
+            }
+
+            // Main error message from API
+            sb.append(apiErrorMessage);
+
+            // Add error code if available
+            if (apiErrorCode != null) {
+                sb.append(" (").append(apiErrorCode).append(")");
+            }
+
+            return sb.toString();
+        }
+
+        // Fallback to original message (operation name)
+        return super.getMessage();
+    }
+
+    /**
+     * Returns a developer-friendly error message with all context
+     */
+    public String getDetailedMessage() {
+        StringBuilder sb = new StringBuilder();
+
+        if (operationName != null) {
+            sb.append("[").append(operationName).append("] ");
+        }
+
+        if (apiErrorMessage != null) {
+            sb.append(apiErrorMessage);
+        } else if (super.getMessage() != null) {
+            sb.append(super.getMessage());
+        }
+
+        if (apiErrorCode != null) {
+            sb.append(" (code: ").append(apiErrorCode).append(")");
+        }
+
+        if (requestId != null) {
+            sb.append(" [request-id: ").append(requestId).append("]");
+        }
+
+        if (getStatusCode() > 0) {
+            sb.append(" [HTTP ").append(getStatusCode()).append("]");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Override toString() to provide a formatted string for better logging
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+
+        if (operationName != null) {
+            sb.append(" [").append(operationName).append("]");
+        }
+
+        sb.append(": ");
+
+        if (apiErrorMessage != null) {
+            sb.append(apiErrorMessage);
+        } else if (super.getMessage() != null) {
+            sb.append(super.getMessage());
+        }
+
+        if (getStatusCode() > 0) {
+            sb.append(" (HTTP ").append(getStatusCode()).append(")");
+        }
+
+        if (apiErrorCode != null) {
+            sb.append(" [code: ").append(apiErrorCode).append("]");
+        }
+
+        if (requestId != null) {
+            sb.append(" [request-id: ").append(requestId).append("]");
+        }
+
+        return sb.toString();
     }
 }
