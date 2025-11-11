@@ -114,8 +114,8 @@ testing {
                 implementation "com.fasterxml.jackson.core:jackson-core"
                 implementation "com.fasterxml.jackson.core:jackson-databind"
 
-                implementation "org.testcontainers:junit-jupiter:1.21.3"
-                implementation "org.testcontainers:openfga:1.21.3"
+                implementation "org.testcontainers:testcontainers-junit-jupiter:2.0.1"
+                implementation "org.testcontainers:testcontainers-openfga:2.0.1"
                 implementation project()
             }
 
