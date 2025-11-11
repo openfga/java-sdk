@@ -20,12 +20,34 @@ public class FgaApiValidationError extends FgaError {
     public FgaApiValidationError(
             String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
-        parseValidationDetails(responseBody);
+        parseValidationDetails(responseBody, null);
     }
 
     public FgaApiValidationError(String message, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, code, responseHeaders, responseBody);
-        parseValidationDetails(responseBody);
+        parseValidationDetails(responseBody, null);
+    }
+
+    /**
+     * Constructor that accepts a pre-parsed JsonNode to avoid re-parsing the response body.
+     * This is more efficient when the JSON has already been parsed by the parent class.
+     *
+     * @param message The error message
+     * @param cause The underlying cause (if any)
+     * @param code The HTTP status code
+     * @param responseHeaders The response headers
+     * @param responseBody The raw response body
+     * @param parsedJson The already-parsed JSON root node (may be null)
+     */
+    public FgaApiValidationError(
+            String message,
+            Throwable cause,
+            int code,
+            HttpHeaders responseHeaders,
+            String responseBody,
+            JsonNode parsedJson) {
+        super(message, cause, code, responseHeaders, responseBody);
+        parseValidationDetails(responseBody, parsedJson);
     }
 
     /**
@@ -36,14 +58,16 @@ public class FgaApiValidationError extends FgaError {
      * The application should not rely on these fields for critical logic.
      *
      * @param responseBody The API error response body
+     * @param parsedJson The already-parsed JSON root node (may be null, in which case we parse it)
      */
-    private void parseValidationDetails(String responseBody) {
+    private void parseValidationDetails(String responseBody, JsonNode parsedJson) {
         if (responseBody == null || responseBody.trim().isEmpty()) {
             return;
         }
 
         try {
-            JsonNode root = getErrorMapper().readTree(responseBody);
+            // Use the pre-parsed JSON node if available, otherwise parse it
+            JsonNode root = parsedJson != null ? parsedJson : getErrorMapper().readTree(responseBody);
             String message = root.has("message") ? root.get("message").asText() : null;
 
             if (message != null) {
@@ -73,7 +97,8 @@ public class FgaApiValidationError extends FgaError {
                 else if (message.contains(CHECK_REQUEST_TUPLE_KEY_PREFIX)) {
                     int start =
                             message.indexOf(CHECK_REQUEST_TUPLE_KEY_PREFIX) + CHECK_REQUEST_TUPLE_KEY_PREFIX.length();
-                    int end = message.indexOf(":", start);
+                    // Search for ": " (colon followed by space) for more robust matching
+                    int end = message.indexOf(": ", start);
                     if (end > start) {
                         this.invalidField = message.substring(start, end);
                         addMetadata("invalid_field", invalidField);
@@ -82,7 +107,7 @@ public class FgaApiValidationError extends FgaError {
                 // Parse patterns like: "invalid TupleKey.User: value does not match regex..."
                 else if (message.contains(TUPLE_KEY_PREFIX)) {
                     int start = message.indexOf(TUPLE_KEY_PREFIX) + TUPLE_KEY_PREFIX.length();
-                    int end = message.indexOf(":", start);
+                    int end = message.indexOf(": ", start);
                     if (end > start) {
                         this.invalidField = message.substring(start, end);
                         addMetadata("invalid_field", invalidField);
