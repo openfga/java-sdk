@@ -2,6 +2,8 @@ package dev.openfga.sdk.errors;
 
 import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import dev.openfga.sdk.constants.FgaConstants;
@@ -11,6 +13,8 @@ import java.net.http.HttpResponse;
 import java.util.Optional;
 
 public class FgaError extends ApiException {
+    private static final ObjectMapper ERROR_MAPPER = new ObjectMapper();
+
     private String method = null;
     private String requestUrl = null;
     private String clientId = null;
@@ -28,6 +32,62 @@ public class FgaError extends ApiException {
         super(message, code, responseHeaders, responseBody);
     }
 
+    /**
+     * Parse the API error response body to extract the error message and code.
+     * @param methodName The API method name that was called
+     * @param responseBody The response body JSON string
+     * @return A descriptive error message
+     */
+    private static String parseErrorMessage(String methodName, String responseBody) {
+        if (responseBody == null || responseBody.trim().isEmpty()) {
+            return methodName;
+        }
+
+        try {
+            JsonNode jsonNode = ERROR_MAPPER.readTree(responseBody);
+
+            // Try to extract message field
+            JsonNode messageNode = jsonNode.get("message");
+            String message = (messageNode != null && !messageNode.isNull()) ? messageNode.asText() : null;
+
+            // If we have a message, return it, otherwise fall back to method name
+            if (message != null && !message.trim().isEmpty()) {
+                return message;
+            }
+        } catch (Exception e) {
+            // If parsing fails, fall back to the method name
+            // This is intentional to ensure errors are still reported even if the response format is unexpected
+        }
+
+        return methodName;
+    }
+
+    /**
+     * Extract the API error code from the response body.
+     * @param responseBody The response body JSON string
+     * @return The error code, or null if not found
+     */
+    private static String extractErrorCode(String responseBody) {
+        if (responseBody == null || responseBody.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            JsonNode jsonNode = ERROR_MAPPER.readTree(responseBody);
+
+            // Try to extract code field
+            JsonNode codeNode = jsonNode.get("code");
+            if (codeNode != null && !codeNode.isNull()) {
+                return codeNode.asText();
+            }
+        } catch (Exception e) {
+            // If parsing fails, return null
+            // This is intentional - we still want to report the error even if we can't extract the code
+        }
+
+        return null;
+    }
+
     public static Optional<FgaError> getError(
             String name,
             HttpRequest request,
@@ -43,24 +103,42 @@ public class FgaError extends ApiException {
 
         final String body = response.body();
         final var headers = response.headers();
+
+        // Parse the error message from the response body
+        final String errorMessage = parseErrorMessage(name, body);
         final FgaError error;
 
         if (status == BAD_REQUEST || status == UNPROCESSABLE_ENTITY) {
-            error = new FgaApiValidationError(name, previousError, status, headers, body);
+            error = new FgaApiValidationError(errorMessage, previousError, status, headers, body);
         } else if (status == UNAUTHORIZED || status == FORBIDDEN) {
-            error = new FgaApiAuthenticationError(name, previousError, status, headers, body);
+            error = new FgaApiAuthenticationError(errorMessage, previousError, status, headers, body);
         } else if (status == NOT_FOUND) {
-            error = new FgaApiNotFoundError(name, previousError, status, headers, body);
+            error = new FgaApiNotFoundError(errorMessage, previousError, status, headers, body);
         } else if (status == TOO_MANY_REQUESTS) {
-            error = new FgaApiRateLimitExceededError(name, previousError, status, headers, body);
+            error = new FgaApiRateLimitExceededError(errorMessage, previousError, status, headers, body);
         } else if (isServerError(status)) {
-            error = new FgaApiInternalError(name, previousError, status, headers, body);
+            error = new FgaApiInternalError(errorMessage, previousError, status, headers, body);
         } else {
-            error = new FgaError(name, previousError, status, headers, body);
+            error = new FgaError(errorMessage, previousError, status, headers, body);
         }
 
         error.setMethod(request.method());
         error.setRequestUrl(configuration.getApiUrl());
+
+        // Extract and set API error code from response body
+        String apiErrorCode = extractErrorCode(body);
+        if (apiErrorCode != null) {
+            error.setApiErrorCode(apiErrorCode);
+        }
+
+        // Extract and set request ID from response headers if present
+        // Common request ID header names
+        Optional<String> requestId = headers.firstValue("X-Request-Id")
+                .or(() -> headers.firstValue("x-request-id"))
+                .or(() -> headers.firstValue("Request-Id"));
+        if (requestId.isPresent()) {
+            error.setRequestId(requestId.get());
+        }
 
         // Extract and set Retry-After header if present
         Optional<String> retryAfter = headers.firstValue(FgaConstants.RETRY_AFTER_HEADER_NAME);
@@ -132,6 +210,15 @@ public class FgaError extends ApiException {
     }
 
     public String getApiErrorCode() {
+        return apiErrorCode;
+    }
+
+    /**
+     * Get the API error code.
+     * This is an alias for getApiErrorCode() for convenience.
+     * @return The API error code from the response
+     */
+    public String getCode() {
         return apiErrorCode;
     }
 
