@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.3...HEAD)
-- feat: Improve error messaging by parsing error details from resp bodies (#256)
+- feat: Improve error messaging by parsing error details from response bodies (#258)
 
 ## v0.9.3
 
