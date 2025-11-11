@@ -76,7 +76,7 @@ public class FgaError extends ApiException {
 
         try {
             JsonNode jsonNode = ERROR_MAPPER.readTree(responseBody);
-            
+
             JsonNode codeNode = jsonNode.get("code");
             if (codeNode != null && !codeNode.isNull()) {
                 return codeNode.asText();
