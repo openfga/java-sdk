@@ -15,6 +15,11 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FgaError extends ApiException {
+    /**
+     * Shared ObjectMapper instance for parsing error responses.
+     * ObjectMapper is thread-safe for read operations (parsing JSON).
+     * This instance is shared across all error classes to reduce memory overhead.
+     */
     private static final ObjectMapper ERROR_MAPPER = new ObjectMapper();
 
     private String method = null;
@@ -27,7 +32,14 @@ public class FgaError extends ApiException {
     private String apiErrorMessage = null;
     private String operationName = null;
     private String retryAfterHeader = null;
-    private Map<String, Object> metadata = null;
+
+    /**
+     * Metadata map for additional error context.
+     * <p>
+     * Note: Error instances follow a single-threaded lifecycle (create → populate → throw → catch).
+     * They are not shared between threads, so thread-safety is not required.
+     */
+    private final Map<String, Object> metadata = new HashMap<>();
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
@@ -176,6 +188,11 @@ public class FgaError extends ApiException {
         this.method = method;
     }
 
+    /**
+     * Gets the HTTP method used for the request that caused this error.
+     *
+     * @return The HTTP method (e.g., "GET", "POST"), or null if not set
+     */
     public String getMethod() {
         return method;
     }
@@ -184,6 +201,11 @@ public class FgaError extends ApiException {
         this.requestUrl = requestUrl;
     }
 
+    /**
+     * Gets the API URL for the request that caused this error.
+     *
+     * @return The request URL, or null if not set
+     */
     public String getRequestUrl() {
         return requestUrl;
     }
@@ -192,6 +214,11 @@ public class FgaError extends ApiException {
         this.clientId = clientId;
     }
 
+    /**
+     * Gets the OAuth2 client ID used in the request, if client credentials authentication was used.
+     *
+     * @return The client ID, or null if not using client credentials or not set
+     */
     public String getClientId() {
         return clientId;
     }
@@ -200,6 +227,11 @@ public class FgaError extends ApiException {
         this.audience = audience;
     }
 
+    /**
+     * Gets the OAuth2 audience used in the request, if client credentials authentication was used.
+     *
+     * @return The audience, or null if not using client credentials or not set
+     */
     public String getAudience() {
         return audience;
     }
@@ -208,6 +240,11 @@ public class FgaError extends ApiException {
         this.grantType = grantType;
     }
 
+    /**
+     * Gets the OAuth2 grant type used in the request.
+     *
+     * @return The grant type, or null if not set
+     */
     public String getGrantType() {
         return grantType;
     }
@@ -216,6 +253,11 @@ public class FgaError extends ApiException {
         this.requestId = requestId;
     }
 
+    /**
+     * Gets the request ID from the response headers, useful for debugging and support.
+     *
+     * @return The request ID (from X-Request-Id header), or null if not present
+     */
     public String getRequestId() {
         return requestId;
     }
@@ -224,6 +266,11 @@ public class FgaError extends ApiException {
         this.apiErrorCode = apiErrorCode;
     }
 
+    /**
+     * Gets the error code returned by the API in the response body.
+     *
+     * @return The API error code, or null if not available in the response
+     */
     public String getApiErrorCode() {
         return apiErrorCode;
     }
@@ -241,6 +288,11 @@ public class FgaError extends ApiException {
         this.retryAfterHeader = retryAfterHeader;
     }
 
+    /**
+     * Gets the Retry-After header value from rate limit responses.
+     *
+     * @return The Retry-After header value (in seconds or HTTP date), or null if not present
+     */
     public String getRetryAfterHeader() {
         return retryAfterHeader;
     }
@@ -249,6 +301,11 @@ public class FgaError extends ApiException {
         this.apiErrorMessage = apiErrorMessage;
     }
 
+    /**
+     * Gets the error message parsed from the API response body.
+     *
+     * @return The API error message, or null if not available in the response
+     */
     public String getApiErrorMessage() {
         return apiErrorMessage;
     }
@@ -257,23 +314,36 @@ public class FgaError extends ApiException {
         this.operationName = operationName;
     }
 
+    /**
+     * Gets the operation name that resulted in this error.
+     *
+     * @return The operation name (e.g., "check", "write"), or null if not set
+     */
     public String getOperationName() {
         return operationName;
     }
 
-    public void setMetadata(Map<String, Object> metadata) {
-        this.metadata = metadata;
-    }
-
+    /**
+     * Gets the metadata map containing additional error context.
+     *
+     * @return A map of metadata key-value pairs (never null)
+     */
     public Map<String, Object> getMetadata() {
-        if (metadata == null) {
-            metadata = new HashMap<>();
-        }
         return metadata;
     }
 
     public void addMetadata(String key, Object value) {
         getMetadata().put(key, value);
+    }
+
+    /**
+     * Provides access to the shared ObjectMapper for subclasses.
+     * This mapper is thread-safe for read operations.
+     *
+     * @return The shared ObjectMapper instance
+     */
+    protected static ObjectMapper getErrorMapper() {
+        return ERROR_MAPPER;
     }
 
     /**
