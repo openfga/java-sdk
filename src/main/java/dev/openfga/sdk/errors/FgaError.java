@@ -378,9 +378,9 @@ public class FgaError extends ApiException {
     }
 
     /**
-     * Returns a developer-friendly error message with all context
+     * Build the core error message (operation + message + code)
      */
-    public String getDetailedMessage() {
+    private String buildCoreMessage() {
         StringBuilder sb = new StringBuilder();
 
         if (operationName != null) {
@@ -392,6 +392,15 @@ public class FgaError extends ApiException {
         } else if (super.getMessage() != null) {
             sb.append(super.getMessage());
         }
+
+        return sb.toString();
+    }
+
+    /**
+     * Returns a developer-friendly error message with all context
+     */
+    public String getDetailedMessage() {
+        StringBuilder sb = new StringBuilder(buildCoreMessage());
 
         if (apiErrorCode != null) {
             sb.append(" (code: ").append(apiErrorCode).append(")");
@@ -414,19 +423,8 @@ public class FgaError extends ApiException {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-
-        if (operationName != null) {
-            sb.append(" [").append(operationName).append("]");
-        }
-
-        sb.append(": ");
-
-        if (apiErrorMessage != null) {
-            sb.append(apiErrorMessage);
-        } else if (super.getMessage() != null) {
-            sb.append(super.getMessage());
-        }
+        sb.append(getClass().getSimpleName()).append(": ");
+        sb.append(buildCoreMessage());
 
         if (getStatusCode() > 0) {
             sb.append(" (HTTP ").append(getStatusCode()).append(")");
