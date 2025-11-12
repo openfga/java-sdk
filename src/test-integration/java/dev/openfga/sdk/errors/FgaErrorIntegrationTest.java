@@ -59,10 +59,8 @@ class FgaErrorIntegrationTest {
                 fga.writeAuthorizationModel(authModelRequest).get();
         fga.setAuthorizationModelId(authModelResponse.getAuthorizationModelId());
 
-        ClientCheckRequest request = new ClientCheckRequest()
-                .user("user:123")
-                .relation("viewer")
-                ._object("invalid_type:doc1");
+        ClientCheckRequest request =
+                new ClientCheckRequest().user("user:123").relation("viewer")._object("invalid_type:doc1");
 
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
@@ -168,10 +166,8 @@ class FgaErrorIntegrationTest {
                 fga.writeAuthorizationModel(authModelRequest).get();
         fga.setAuthorizationModelId(authModelResponse.getAuthorizationModelId());
 
-        ClientCheckRequest request = new ClientCheckRequest()
-                .user("user:123")
-                .relation("viewer")
-                ._object("invalid_type:doc1");
+        ClientCheckRequest request =
+                new ClientCheckRequest().user("user:123").relation("viewer")._object("invalid_type:doc1");
 
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
 
@@ -198,10 +194,8 @@ class FgaErrorIntegrationTest {
                 fga.writeAuthorizationModel(authModelRequest).get();
         fga.setAuthorizationModelId(authModelResponse.getAuthorizationModelId());
 
-        ClientCheckRequest request = new ClientCheckRequest()
-                .user("user:123")
-                .relation("viewer")
-                ._object("invalid_type:doc1");
+        ClientCheckRequest request =
+                new ClientCheckRequest().user("user:123").relation("viewer")._object("invalid_type:doc1");
 
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
@@ -223,10 +217,8 @@ class FgaErrorIntegrationTest {
                 fga.writeAuthorizationModel(authModelRequest).get();
         fga.setAuthorizationModelId(authModelResponse.getAuthorizationModelId());
 
-        ClientCheckRequest request = new ClientCheckRequest()
-                .user("user:123")
-                .relation("viewer")
-                ._object("invalid_type:doc1");
+        ClientCheckRequest request =
+                new ClientCheckRequest().user("user:123").relation("viewer")._object("invalid_type:doc1");
 
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
@@ -256,10 +248,8 @@ class FgaErrorIntegrationTest {
         fga.setAuthorizationModelId(authModelResponse.getAuthorizationModelId());
 
         ClientWriteRequest writeRequest = new ClientWriteRequest()
-                .writes(List.of(new ClientTupleKey()
-                        .user("user:123")
-                        .relation("reader")
-                        ._object("invalid_type:doc1")));
+                .writes(List.of(
+                        new ClientTupleKey().user("user:123").relation("reader")._object("invalid_type:doc1")));
 
         CompletableFuture<ClientWriteResponse> future = fga.write(writeRequest);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
@@ -273,4 +263,3 @@ class FgaErrorIntegrationTest {
         assertNotNull(error.getApiErrorMessage());
     }
 }
-
