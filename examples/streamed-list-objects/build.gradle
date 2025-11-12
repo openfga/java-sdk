@@ -17,7 +17,7 @@ ext {
 
 dependencies {
     // Use local build of SDK
-    implementation files('../../build/libs/openfga-sdk-0.9.2.jar')
+    implementation files('../../build/libs/openfga-sdk-0.9.3.jar')
 
     // Serialization
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
