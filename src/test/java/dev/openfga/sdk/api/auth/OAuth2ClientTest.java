@@ -160,7 +160,11 @@ class OAuth2ClientTest {
         var exception = assertThrows(java.util.concurrent.ExecutionException.class, () -> auth0.getAccessToken()
                 .get());
 
-        assertEquals("dev.openfga.sdk.errors.FgaApiRateLimitExceededError: exchangeToken", exception.getMessage());
+        // The error message now includes the formatted message from getMessage() override
+        // which shows: FgaApiRateLimitExceededError [operation]: message (error_code)
+        // Since the response has no "message" field, it falls back to operation name
+        assertTrue(exception.getMessage().contains("FgaApiRateLimitExceededError"));
+        assertTrue(exception.getMessage().contains("exchangeToken"));
         verify(3, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 
