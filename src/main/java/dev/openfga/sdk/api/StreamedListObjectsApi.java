@@ -43,13 +43,13 @@ public class StreamedListObjectsApi {
      *
      * @param storeId The store ID
      * @param body The list objects request
-     * @param consumer Callback to handle each streamed object response (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse (invoked asynchronously)
      * @return CompletableFuture<Void> that completes when streaming finishes
      * @throws ApiException if the API call fails immediately
      * @throws FgaInvalidParameterException if required parameters are missing
      */
     public CompletableFuture<Void> streamedListObjects(
-            String storeId, ListObjectsRequest body, Consumer<String> consumer)
+            String storeId, ListObjectsRequest body, Consumer<StreamedListObjectsResponse> consumer)
             throws ApiException, FgaInvalidParameterException {
         return streamedListObjects(storeId, body, consumer, null, this.configuration);
     }
@@ -61,7 +61,7 @@ public class StreamedListObjectsApi {
      *
      * @param storeId The store ID
      * @param body The list objects request
-     * @param consumer Callback to handle each streamed object response (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse (invoked asynchronously)
      * @param configurationOverride Configuration overrides (e.g., additional headers)
      * @return CompletableFuture<Void> that completes when streaming finishes
      * @throws ApiException if the API call fails immediately
@@ -70,7 +70,7 @@ public class StreamedListObjectsApi {
     public CompletableFuture<Void> streamedListObjects(
             String storeId,
             ListObjectsRequest body,
-            Consumer<String> consumer,
+            Consumer<StreamedListObjectsResponse> consumer,
             ConfigurationOverride configurationOverride)
             throws ApiException, FgaInvalidParameterException {
         return streamedListObjects(storeId, body, consumer, null, this.configuration.override(configurationOverride));
@@ -83,14 +83,17 @@ public class StreamedListObjectsApi {
      *
      * @param storeId The store ID
      * @param body The list objects request
-     * @param consumer Callback to handle each streamed object response (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse (invoked asynchronously)
      * @param errorConsumer Optional callback to handle errors during streaming
      * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
      * @throws ApiException if the API call fails immediately
      * @throws FgaInvalidParameterException if required parameters are missing
      */
     public CompletableFuture<Void> streamedListObjects(
-            String storeId, ListObjectsRequest body, Consumer<String> consumer, Consumer<Throwable> errorConsumer)
+            String storeId,
+            ListObjectsRequest body,
+            Consumer<StreamedListObjectsResponse> consumer,
+            Consumer<Throwable> errorConsumer)
             throws ApiException, FgaInvalidParameterException {
         return streamedListObjects(storeId, body, consumer, errorConsumer, this.configuration);
     }
@@ -102,7 +105,7 @@ public class StreamedListObjectsApi {
      *
      * @param storeId The store ID
      * @param body The list objects request
-     * @param consumer Callback to handle each streamed object response (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse (invoked asynchronously)
      * @param errorConsumer Optional callback to handle errors during streaming
      * @param configurationOverride Configuration overrides (e.g., additional headers)
      * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
@@ -112,7 +115,7 @@ public class StreamedListObjectsApi {
     public CompletableFuture<Void> streamedListObjects(
             String storeId,
             ListObjectsRequest body,
-            Consumer<String> consumer,
+            Consumer<StreamedListObjectsResponse> consumer,
             Consumer<Throwable> errorConsumer,
             ConfigurationOverride configurationOverride)
             throws ApiException, FgaInvalidParameterException {
@@ -126,7 +129,7 @@ public class StreamedListObjectsApi {
     private CompletableFuture<Void> streamedListObjects(
             String storeId,
             ListObjectsRequest body,
-            Consumer<String> consumer,
+            Consumer<StreamedListObjectsResponse> consumer,
             Consumer<Throwable> errorConsumer,
             Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
@@ -198,7 +201,8 @@ public class StreamedListObjectsApi {
     /**
      * Process a single line from the NDJSON stream
      */
-    private void processLine(String line, Consumer<String> consumer, Consumer<Throwable> errorConsumer) {
+    private void processLine(
+            String line, Consumer<StreamedListObjectsResponse> consumer, Consumer<Throwable> errorConsumer) {
         try {
             // Parse the JSON line to extract the object
             StreamResultOfStreamedListObjectsResponse streamResult =
@@ -214,10 +218,10 @@ public class StreamedListObjectsApi {
                     errorConsumer.accept(new ApiException(errorMessage));
                 }
             } else if (streamResult.getResult() != null) {
-                // Deliver the object to the consumer
+                // Deliver the response object to the consumer
                 StreamedListObjectsResponse result = streamResult.getResult();
-                if (result.getObject() != null) {
-                    consumer.accept(result.getObject());
+                if (result != null) {
+                    consumer.accept(result);
                 }
             }
         } catch (Exception e) {

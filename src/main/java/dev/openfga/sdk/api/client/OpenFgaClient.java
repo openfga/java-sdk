@@ -1110,13 +1110,33 @@ public class OpenFgaClient {
      * Objects are delivered to the consumer as they are received from the server asynchronously.
      * Returns a CompletableFuture that completes when streaming is finished.
      *
+     * <p>Example usage:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * client.streamedListObjects(request,
+     *     response -> System.out.println("Found object: " + response.getObject())
+     * ).thenRun(() -> System.out.println("Streaming complete"))
+     *  .exceptionally(error -> {
+     *      System.err.println("Error: " + error.getMessage());
+     *      return null;
+     *  });
+     * }</pre>
+     *
      * @param request The list objects request containing type, relation, and user
-     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
      * @return CompletableFuture<Void> that completes when streaming finishes
-     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
-    public CompletableFuture<Void> streamedListObjects(ClientListObjectsRequest request, Consumer<String> consumer)
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request, Consumer<StreamedListObjectsResponse> consumer)
             throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
         return streamedListObjects(request, null, consumer, null);
     }
 
@@ -1126,15 +1146,39 @@ public class OpenFgaClient {
      * Objects are delivered to the consumer as they are received from the server asynchronously.
      * Returns a CompletableFuture that completes when streaming is finished.
      *
+     * <p>Example usage with options:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * ClientStreamedListObjectsOptions options = new ClientStreamedListObjectsOptions()
+     *     .authorizationModelId("01HVMMBCMGZNT3SED4Z17ECXCA");
+     *
+     * client.streamedListObjects(request, options,
+     *     response -> System.out.println("Found object: " + response.getObject())
+     * ).thenRun(() -> System.out.println("Streaming complete"))
+     *  .exceptionally(error -> {
+     *      System.err.println("Error: " + error.getMessage());
+     *      return null;
+     *  });
+     * }</pre>
+     *
      * @param request The list objects request containing type, relation, and user
      * @param options Options for the streaming request
-     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
      * @return CompletableFuture<Void> that completes when streaming finishes
-     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
     public CompletableFuture<Void> streamedListObjects(
-            ClientListObjectsRequest request, ClientStreamedListObjectsOptions options, Consumer<String> consumer)
+            ClientListObjectsRequest request,
+            ClientStreamedListObjectsOptions options,
+            Consumer<StreamedListObjectsResponse> consumer)
             throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
         return streamedListObjects(request, options, consumer, null);
     }
 
@@ -1144,19 +1188,38 @@ public class OpenFgaClient {
      * Objects are delivered to the consumer as they are received from the server asynchronously.
      * Returns a CompletableFuture that completes when streaming is finished.
      *
+     * <p>Example usage with error handling:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * ClientStreamedListObjectsOptions options = new ClientStreamedListObjectsOptions()
+     *     .authorizationModelId("01HVMMBCMGZNT3SED4Z17ECXCA");
+     *
+     * client.streamedListObjects(request, options,
+     *     response -> System.out.println("Found object: " + response.getObject()),
+     *     error -> System.err.println("Streaming error: " + error.getMessage())
+     * ).thenRun(() -> System.out.println("Streaming complete"));
+     * }</pre>
+     *
      * @param request The list objects request containing type, relation, and user
      * @param options Options for the streaming request
-     * @param consumer Callback to handle each streamed object as it arrives (invoked asynchronously)
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
      * @param errorConsumer Optional callback to handle errors during streaming
      * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
-     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
     public CompletableFuture<Void> streamedListObjects(
             ClientListObjectsRequest request,
             ClientStreamedListObjectsOptions options,
-            Consumer<String> consumer,
+            Consumer<StreamedListObjectsResponse> consumer,
             Consumer<Throwable> errorConsumer)
             throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
         configuration.assertValid();
         String storeId = configuration.getStoreIdChecked();
 

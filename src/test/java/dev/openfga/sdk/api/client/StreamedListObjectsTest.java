@@ -10,6 +10,7 @@ import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.model.ConsistencyPreference;
+import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.http.HttpClient;
@@ -74,7 +75,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
                 .relation(DEFAULT_RELATION)
@@ -86,9 +87,9 @@ public class StreamedListObjectsTest {
 
         // Then
         assertEquals(3, receivedObjects.size());
-        assertEquals("document:1", receivedObjects.get(0));
-        assertEquals("document:2", receivedObjects.get(1));
-        assertEquals("document:3", receivedObjects.get(2));
+        assertEquals("document:1", receivedObjects.get(0).getObject());
+        assertEquals("document:2", receivedObjects.get(1).getObject());
+        assertEquals("document:3", receivedObjects.get(2).getObject());
         verify(mockHttpClient, times(1)).sendAsync(any(), any());
     }
 
@@ -104,7 +105,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
                 .relation(DEFAULT_RELATION)
@@ -120,7 +121,7 @@ public class StreamedListObjectsTest {
 
         // Then
         assertEquals(1, receivedObjects.size());
-        assertEquals("document:1", receivedObjects.get(0));
+        assertEquals("document:1", receivedObjects.get(0).getObject());
     }
 
     @Test
@@ -134,7 +135,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
                 .relation(DEFAULT_RELATION)
@@ -159,7 +160,7 @@ public class StreamedListObjectsTest {
 
         // When/Then
         var exception = assertThrows(FgaInvalidParameterException.class, () -> {
-            fga.streamedListObjects(request, obj -> {});
+            fga.streamedListObjects(request, response -> {});
         });
 
         assertEquals(
@@ -180,7 +181,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         List<Throwable> receivedErrors = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
@@ -194,8 +195,8 @@ public class StreamedListObjectsTest {
 
         // Then
         assertEquals(2, receivedObjects.size());
-        assertEquals("document:1", receivedObjects.get(0));
-        assertEquals("document:2", receivedObjects.get(1));
+        assertEquals("document:1", receivedObjects.get(0).getObject());
+        assertEquals("document:2", receivedObjects.get(1).getObject());
         assertEquals(1, receivedErrors.size());
     }
 
@@ -213,7 +214,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         List<Throwable> receivedErrors = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
@@ -252,7 +253,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         List<Throwable> receivedErrors = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
@@ -298,7 +299,7 @@ public class StreamedListObjectsTest {
                 .user(DEFAULT_USER);
 
         // When
-        CompletableFuture<Void> future = fga.streamedListObjects(request, obj -> callCount.incrementAndGet());
+        CompletableFuture<Void> future = fga.streamedListObjects(request, response -> callCount.incrementAndGet());
         future.get(); // Wait for completion
 
         // Then
@@ -317,7 +318,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
                 .relation(DEFAULT_RELATION)
@@ -348,7 +349,7 @@ public class StreamedListObjectsTest {
 
         when(mockHttpClient.<Stream<String>>sendAsync(any(), any())).thenReturn(responseFuture);
 
-        List<String> receivedObjects = new ArrayList<>();
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
                 .type(DEFAULT_TYPE)
                 .relation(DEFAULT_RELATION)
@@ -368,7 +369,7 @@ public class StreamedListObjectsTest {
 
         // Then
         assertEquals(1, receivedObjects.size());
-        assertEquals("document:1", receivedObjects.get(0));
+        assertEquals("document:1", receivedObjects.get(0).getObject());
 
         // Verify that the HTTP client was called (which means headers were applied)
         verify(mockHttpClient, times(1)).sendAsync(any(), any());

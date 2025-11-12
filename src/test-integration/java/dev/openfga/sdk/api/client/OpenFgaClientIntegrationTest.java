@@ -419,7 +419,8 @@ public class OpenFgaClientIntegrationTest {
                 .relation("reader")
                 .user("user:test");
 
-        CompletableFuture<Void> streamingFuture1 = fga.streamedListObjects(request1, streamedObjects::add);
+        CompletableFuture<Void> streamingFuture1 =
+                fga.streamedListObjects(request1, response -> streamedObjects.add(response.getObject()));
         streamingFuture1.get(); // Wait for completion
 
         assertEquals(50, streamedObjects.size());
@@ -435,8 +436,8 @@ public class OpenFgaClientIntegrationTest {
                 .relation("reader")
                 .user("user:error-test");
 
-        CompletableFuture<Void> streamingFuture2 =
-                fga.streamedListObjects(request2, null, errorTestObjects::add, errors::add);
+        CompletableFuture<Void> streamingFuture2 = fga.streamedListObjects(
+                request2, null, response -> errorTestObjects.add(response.getObject()), errors::add);
         streamingFuture2.get();
 
         assertEquals(10, errorTestObjects.size());
@@ -452,7 +453,8 @@ public class OpenFgaClientIntegrationTest {
         java.util.concurrent.atomic.AtomicBoolean chainedOperationExecuted =
                 new java.util.concurrent.atomic.AtomicBoolean(false);
 
-        CompletableFuture<Void> chainedFuture = fga.streamedListObjects(request3, chainTestObjects::add)
+        CompletableFuture<Void> chainedFuture = fga.streamedListObjects(
+                        request3, response -> chainTestObjects.add(response.getObject()))
                 .thenRun(() -> {
                     chainedOperationExecuted.set(true);
                 });

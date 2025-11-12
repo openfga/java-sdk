@@ -73,9 +73,9 @@ public class StreamedListObjectsExample {
                 .user("user:anne");
 
         fgaClient
-                .streamedListObjects(request, object -> {
-                    System.out.println("  " + object);
-                    results.add(object);
+                .streamedListObjects(request, response -> {
+                    System.out.println("  " + response.getObject());
+                    results.add(response.getObject());
                 })
                 .thenRun(() -> {
                     System.out.println("Streaming complete!");
