@@ -65,11 +65,12 @@ class FgaErrorIntegrationTest {
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
 
-        String message = exception.getMessage();
-        assertNotNull(message);
+        String exceptionMessage = exception.getMessage();
+        assertNotNull(exceptionMessage);
+        assertTrue(exceptionMessage.contains("FgaApiValidationError"), "Should include error class name");
+        assertTrue(exceptionMessage.contains("[check]"), "Should include operation name");
         assertTrue(
-                message.contains("check") || message.contains("invalid_type") || message.contains("not found"),
-                "Error message should contain context, got: " + message);
+                exceptionMessage.contains("type 'invalid_type' not found"), "Should include actual error from server");
 
         Throwable cause = exception.getCause();
         assertInstanceOf(FgaApiValidationError.class, cause);
@@ -77,8 +78,15 @@ class FgaErrorIntegrationTest {
         FgaApiValidationError error = (FgaApiValidationError) cause;
         assertEquals("check", error.getOperationName());
         assertEquals(400, error.getStatusCode());
-        assertNotNull(error.getApiErrorMessage());
-        assertNotNull(error.getMessage());
+        assertEquals("validation_error", error.getApiErrorCode());
+        assertEquals("type 'invalid_type' not found", error.getApiErrorMessage());
+
+        // Verify formatted messages
+        String errorMessage = error.getMessage();
+        assertNotNull(errorMessage);
+        assertTrue(errorMessage.contains("[check]"), "Should include operation name");
+        assertTrue(errorMessage.contains("type 'invalid_type' not found"), "Should include server error");
+        assertTrue(errorMessage.contains("validation_error"), "Should include error code");
     }
 
     @Test
@@ -95,19 +103,35 @@ class FgaErrorIntegrationTest {
         CompletableFuture<ClientCheckResponse> future = fga.check(request);
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
 
+        // Verify ExecutionException message contains the full error details from server
+        // Note: These assertions will fail if OpenFGA server changes its error message format,
+        // which is intentional - integration tests should catch server behavior changes
+        String exceptionMessage = exception.getMessage();
+        assertNotNull(exceptionMessage);
+        assertTrue(exceptionMessage.contains("FgaApiValidationError"), "Should include error class name");
+        assertTrue(exceptionMessage.contains("[check]"), "Should include operation name");
+        assertTrue(
+                exceptionMessage.contains("relation 'document#invalid_relation' not found"),
+                "Should include actual error from server");
+
         Throwable cause = exception.getCause();
         assertInstanceOf(FgaApiValidationError.class, cause);
 
         FgaApiValidationError error = (FgaApiValidationError) cause;
+
+        // Verify error object contains expected details
         assertEquals("check", error.getOperationName());
         assertEquals(400, error.getStatusCode());
-        assertNotNull(error.getApiErrorMessage());
+        assertEquals("validation_error", error.getApiErrorCode());
+        assertEquals("relation 'document#invalid_relation' not found", error.getApiErrorMessage());
 
+        // Verify formatted messages
         String errorMessage = error.getMessage();
         assertNotNull(errorMessage);
+        assertTrue(errorMessage.contains("[check]"), "Should include operation name");
         assertTrue(
-                errorMessage.contains("check") || errorMessage.contains("relation") || errorMessage.contains("invalid"),
-                "Error message should provide context, got: " + errorMessage);
+                errorMessage.contains("relation 'document#invalid_relation' not found"), "Should include server error");
+        assertTrue(errorMessage.contains("validation_error"), "Should include error code");
     }
 
     @Test
