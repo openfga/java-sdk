@@ -1185,6 +1185,7 @@ try {
 | [**readAuthorizationModel**](docs/OpenFgaApi.md#readauthorizationmodel) | **GET** /stores/{store_id}/authorization-models/{id} | Return a particular version of an authorization model |
 | [**readAuthorizationModels**](docs/OpenFgaApi.md#readauthorizationmodels) | **GET** /stores/{store_id}/authorization-models | Return all the authorization models for a particular store |
 | [**readChanges**](docs/OpenFgaApi.md#readchanges) | **GET** /stores/{store_id}/changes | Return a list of all the tuple changes |
+| [**streamedListObjects**](docs/OpenFgaApi.md#streamedlistobjects) | **POST** /stores/{store_id}/streamed-list-objects | Stream all objects of the given type that the user has a relation with |
 | [**write**](docs/OpenFgaApi.md#write) | **POST** /stores/{store_id}/write | Add or delete tuples from the store |
 | [**writeAssertions**](docs/OpenFgaApi.md#writeassertions) | **PUT** /stores/{store_id}/assertions/{authorization_model_id} | Upsert assertions for an authorization model ID |
 | [**writeAuthorizationModel**](docs/OpenFgaApi.md#writeauthorizationmodel) | **POST** /stores/{store_id}/authorization-models | Create a new authorization model |
@@ -1309,6 +1310,10 @@ try {
 - [Status](https://github.com/openfga/java-sdk/blob/main/docs/Status.md)
 
 - [Store](https://github.com/openfga/java-sdk/blob/main/docs/Store.md)
+
+- [StreamResultOfStreamedListObjectsResponse](https://github.com/openfga/java-sdk/blob/main/docs/StreamResultOfStreamedListObjectsResponse.md)
+
+- [StreamedListObjectsResponse](https://github.com/openfga/java-sdk/blob/main/docs/StreamedListObjectsResponse.md)
 
 - [Tuple](https://github.com/openfga/java-sdk/blob/main/docs/Tuple.md)
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -370,6 +371,98 @@ public class OpenFgaClientIntegrationTest {
         var request = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
         var response = fga.writeAuthorizationModel(request).get();
         return response.getAuthorizationModelId();
+    }
+
+    @Test
+    public void streamedListObjects() throws Exception {
+        // Given - Create a single store for all streaming tests
+        String storeId = createStore(thisTestName());
+        fga.setStoreId(storeId);
+        String authorizationModelId = writeAuthModel(storeId);
+        fga.setAuthorizationModelId(authorizationModelId);
+
+        // Write tuples for different test scenarios
+        // Tuples for basic streaming test (user:test)
+        for (int i = 0; i < 50; i++) {
+            ClientWriteRequest writeRequest = new ClientWriteRequest()
+                    .writes(List.of(new ClientTupleKey()
+                            .user("user:test")
+                            .relation("reader")
+                            ._object("document:test-" + i)));
+            fga.write(writeRequest).get();
+        }
+
+        // Tuples for error handling test (user:error-test)
+        for (int i = 0; i < 10; i++) {
+            ClientWriteRequest writeRequest = new ClientWriteRequest()
+                    .writes(List.of(new ClientTupleKey()
+                            .user("user:error-test")
+                            .relation("reader")
+                            ._object("document:error-test-" + i)));
+            fga.write(writeRequest).get();
+        }
+
+        // Tuples for chaining operations test (user:chain-test)
+        for (int i = 0; i < 20; i++) {
+            ClientWriteRequest writeRequest = new ClientWriteRequest()
+                    .writes(List.of(new ClientTupleKey()
+                            .user("user:chain-test")
+                            .relation("reader")
+                            ._object("document:chain-" + i)));
+            fga.write(writeRequest).get();
+        }
+
+        // Test 1: Basic streaming - verify async execution and all objects received
+        List<String> streamedObjects = new java.util.ArrayList<>();
+        ClientListObjectsRequest request1 = new ClientListObjectsRequest()
+                .type("document")
+                .relation("reader")
+                .user("user:test");
+
+        CompletableFuture<Void> streamingFuture1 =
+                fga.streamedListObjects(request1, response -> streamedObjects.add(response.getObject()));
+        streamingFuture1.get(); // Wait for completion
+
+        assertEquals(50, streamedObjects.size());
+        for (int i = 0; i < 50; i++) {
+            assertTrue(streamedObjects.contains("document:test-" + i));
+        }
+
+        // Test 2: Error handling - verify error consumer works
+        List<String> errorTestObjects = new java.util.ArrayList<>();
+        List<Throwable> errors = new java.util.ArrayList<>();
+        ClientListObjectsRequest request2 = new ClientListObjectsRequest()
+                .type("document")
+                .relation("reader")
+                .user("user:error-test");
+
+        CompletableFuture<Void> streamingFuture2 = fga.streamedListObjects(
+                request2, null, response -> errorTestObjects.add(response.getObject()), errors::add);
+        streamingFuture2.get();
+
+        assertEquals(10, errorTestObjects.size());
+        assertEquals(0, errors.size()); // Should have no errors in normal operation
+
+        // Test 3: Chaining operations - verify CompletableFuture chaining works
+        List<String> chainTestObjects = new java.util.ArrayList<>();
+        ClientListObjectsRequest request3 = new ClientListObjectsRequest()
+                .type("document")
+                .relation("reader")
+                .user("user:chain-test");
+
+        java.util.concurrent.atomic.AtomicBoolean chainedOperationExecuted =
+                new java.util.concurrent.atomic.AtomicBoolean(false);
+
+        CompletableFuture<Void> chainedFuture = fga.streamedListObjects(
+                        request3, response -> chainTestObjects.add(response.getObject()))
+                .thenRun(() -> {
+                    chainedOperationExecuted.set(true);
+                });
+
+        chainedFuture.get(); // Wait for all chained operations
+
+        assertEquals(20, chainTestObjects.size());
+        assertTrue(chainedOperationExecuted.get());
     }
 
     /** Get the name of the test that invokes this function. Returned in the form: "$class.$fn" */
