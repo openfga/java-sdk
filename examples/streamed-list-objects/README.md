@@ -1,82 +1,132 @@
-# Streamed List Objects example for OpenFGA's Java SDK
+# Streamed List Objects Example
 
-This example demonstrates working with the `POST` `/stores/:id/streamed-list-objects` endpoint in OpenFGA using the Java SDK.
+Demonstrates using `StreamedListObjects` to retrieve objects via the streaming API in the Java SDK.
+
+## What is StreamedListObjects?
+
+The Streamed ListObjects API is very similar to the ListObjects API, with two key differences:
+
+1. **Streaming Results**: Instead of collecting all objects before returning a response, it streams them to the client as they are collected.
+2. **No Pagination Limit**: Returns all results without the 1000-object limit of the standard ListObjects API.
+
+This makes it ideal for scenarios where you need to retrieve large numbers of objects, especially when querying computed relations.
 
 ## Prerequisites
 
-If you do not already have an OpenFGA instance running, you can start one using the following command:
+- Java 11 or higher
+- OpenFGA server running on `http://localhost:8080` (or set `FGA_API_URL`)
+
+## Running
 
 ```bash
-make run-openfga
+# From the SDK root directory, build the SDK first
+./gradlew build
+
+# Then run the example
+cd examples/streamed-list-objects
+./gradlew run
 ```
 
-Or directly with docker:
-
-```bash
-docker run -d -p 8080:8080 openfga/openfga run
-```
-
-## Configure the example
-
-You may need to configure the example for your environment by setting environment variables:
-
-```bash
-export FGA_API_URL=http://localhost:8080
-```
-
-Optional authentication configuration:
-```bash
-export FGA_CLIENT_ID=your-client-id
-export FGA_CLIENT_SECRET=your-client-secret
-export FGA_API_AUDIENCE=your-api-audience
-export FGA_API_TOKEN_ISSUER=your-token-issuer
-```
-
-## Running the example
-
-Build the project:
+Or using the Makefile:
 
 ```bash
 make build
-```
-
-Run the example:
-
-```bash
 make run
 ```
 
-This will:
-1. Create a temporary store
-2. Create an authorization model
-3. Write 100 mock tuples
-4. Stream all objects using the `streamedListObjects` API
-5. Display each object as it's received
-6. Clean up the temporary store
+## What it does
 
-## What to expect
+- Creates a temporary store
+- Writes an authorization model with **computed relations**
+- Adds 2000 tuples (1000 owners + 1000 viewers)
+- Queries the **computed `can_read` relation** via `StreamedListObjects`
+- Shows all 2000 results (demonstrating computed relations)
+- Shows progress (first 3 objects and every 500th)
+- Cleans up the store
 
-The example will output each object as it's streamed from the server:
+## Authorization Model
+
+The example demonstrates OpenFGA's **computed relations**:
 
 ```
-Created temporary store (01HXXX...)
-Created temporary authorization model (01GXXX...)
-Writing 100 mock tuples to store.
-Listing objects using streaming endpoint:
-  document:0
-  document:1
-  document:2
-  ...
-  document:99
-API returned 100 objects.
-Deleted temporary store (01HXXX...)
-Finished.
+type user
+
+type document
+  relations
+    define owner: [user]
+    define viewer: [user]
+    define can_read: owner or viewer
 ```
 
-## Note
+**Why this matters:**
+- We write tuples to `owner` and `viewer` (base permissions)
+- We query `can_read` (computed from owner OR viewer)
 
-The streaming API is particularly useful when dealing with large result sets, as it:
-- Reduces memory usage by processing objects one at a time
-- Provides faster time-to-first-result
-- Allows for real-time processing of results
-- Is only limited by execution timeout rather than result set size
+**Example flow:**
+1. Write: `user:anne owner document:1-1000`
+2. Write: `user:anne viewer document:1001-2000`
+3. Query: `StreamedListObjects(user:anne, relation:can_read, type:document)`
+4. Result: All 2000 documents (because `can_read = owner OR viewer`)
+
+## Key Features Demonstrated
+
+### CompletableFuture-based Streaming Pattern
+
+The `streamedListObjects` method uses Java's `CompletableFuture` with a consumer callback to handle streaming data:
+
+```java
+fga.streamedListObjects(request, response -> {
+    System.out.println("Received: " + response.getObject());
+}).get(); // Wait for completion
+```
+
+### Early Break and Cleanup
+
+The streaming implementation properly handles early termination through cancellation:
+
+```java
+AtomicBoolean shouldStop = new AtomicBoolean(false);
+CompletableFuture<Void> future = fga.streamedListObjects(request, response -> {
+    System.out.println(response.getObject());
+    if (someCondition) {
+        shouldStop.set(true);
+    }
+});
+
+// Cancel if needed
+if (shouldStop.get()) {
+    future.cancel(true);
+}
+```
+
+### Exception Handling
+
+The example demonstrates proper error handling:
+
+```java
+try {
+    fga.streamedListObjects(request, response -> {
+        System.out.println(response.getObject());
+    }).get();
+} catch (ExecutionException ex) {
+    if (ex.getCause() instanceof FgaInvalidParameterException) {
+        System.err.println("Validation error");
+    }
+} catch (CancellationException ex) {
+    System.err.println("Operation cancelled");
+}
+```
+
+## Benefits Over ListObjects
+
+- **No Pagination**: Retrieve all objects in a single streaming request
+- **Lower Memory**: Objects are processed as they arrive, not held in memory
+- **Early Termination**: Can stop streaming at any point without wasting resources
+- **Better for Large Results**: Ideal when expecting hundreds or thousands of objects
+
+## Performance Considerations
+
+- Streaming starts immediately - no need to wait for all results
+- HTTP connection remains open during streaming
+- Properly handles cleanup if consumer stops early
+- Supports all the same options as `ListObjects` (consistency, contextual tuples, etc.)

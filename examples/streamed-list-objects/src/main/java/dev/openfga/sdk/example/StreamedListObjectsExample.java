@@ -2,103 +2,128 @@ package dev.openfga.sdk.example;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
+import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
 import dev.openfga.sdk.api.client.model.ClientTupleKey;
 import dev.openfga.sdk.api.client.model.ClientWriteRequest;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
-import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Credentials;
+import dev.openfga.sdk.api.model.ConsistencyPreference;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
+import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StreamedListObjectsExample {
-    public static void main(String[] args) throws Exception {
-        new StreamedListObjectsExample().run();
+    public static void main(String[] args) {
+        try {
+            new StreamedListObjectsExample().run();
+        } catch (Exception ex) {
+            // Avoid logging sensitive data; only display generic info
+            if (ex instanceof FgaInvalidParameterException) {
+                System.err.println("Validation error in configuration. Please check your configuration for errors.");
+            } else if (ex.getMessage() != null && ex.getMessage().contains("Connection refused")
+                    || (ex.getCause() != null
+                            && ex.getCause().getMessage() != null
+                            && ex.getCause().getMessage().contains("Connection refused"))) {
+                System.err.println(
+                        "Is OpenFGA server running? Check FGA_API_URL environment variable or default http://localhost:8080");
+            } else {
+                System.err.println("An error occurred. [" + ex.getClass().getSimpleName() + "]");
+            }
+            System.exit(1);
+        }
     }
 
     public void run() throws Exception {
-        // Configure the client
-        var credentials = new Credentials();
-        if (System.getenv("FGA_CLIENT_ID") != null) {
-            credentials = new Credentials(new ClientCredentials()
-                    .apiAudience(System.getenv("FGA_API_AUDIENCE"))
-                    .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
-                    .clientId(System.getenv("FGA_CLIENT_ID"))
-                    .clientSecret(System.getenv("FGA_CLIENT_SECRET")));
-        } else {
-            System.out.println("Proceeding with no credentials (expecting localhost)");
-        }
-
         String apiUrl = System.getenv("FGA_API_URL");
         if (apiUrl == null || apiUrl.isEmpty()) {
             apiUrl = "http://localhost:8080";
         }
 
-        var configuration = new ClientConfiguration().apiUrl(apiUrl).credentials(credentials);
+        var configuration = new ClientConfiguration().apiUrl(apiUrl).credentials(new Credentials());
 
-        var fgaClient = new OpenFgaClient(configuration);
+        var client = new OpenFgaClient(configuration);
 
-        // Create a temporary store
-        var store = fgaClient
-                .createStore(new CreateStoreRequest().name("Test Store"))
+        System.out.println("Creating temporary store");
+        var store = client.createStore(new CreateStoreRequest().name("streamed-list-objects"))
                 .get();
-        String storeId = store.getId();
-        System.out.println("Created temporary store (" + storeId + ")");
-        fgaClient.setStoreId(storeId);
 
-        // Create an authorization model
-        var authModel = createAuthorizationModel();
-        var model = fgaClient.writeAuthorizationModel(authModel).get();
-        String modelId = model.getAuthorizationModelId();
-        System.out.println("Created temporary authorization model (" + modelId + ")");
+        var clientWithStore = new OpenFgaClient(
+                new ClientConfiguration().apiUrl(apiUrl).storeId(store.getId()).credentials(new Credentials()));
 
-        // Write 100 mock tuples
-        System.out.println("Writing 100 mock tuples to store.");
-        List<ClientTupleKey> writes = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            writes.add(new ClientTupleKey().user("user:anne").relation("owner")._object("document:" + i));
+        System.out.println("Writing authorization model");
+        var authModel = clientWithStore
+                .writeAuthorizationModel(createAuthorizationModel())
+                .get();
+
+        var fga = new OpenFgaClient(new ClientConfiguration()
+                .apiUrl(apiUrl)
+                .storeId(store.getId())
+                .authorizationModelId(authModel.getAuthorizationModelId())
+                .credentials(new Credentials()));
+
+        System.out.println("Writing tuples (1000 as owner, 1000 as viewer)");
+
+        // Write in batches of 100 (OpenFGA limit)
+        final int batchSize = 100;
+        int totalWritten = 0;
+
+        // Write 1000 documents where anne is the owner
+        for (int batch = 0; batch < 10; batch++) {
+            var tuples = new ArrayList<ClientTupleKey>();
+            for (int i = 1; i <= batchSize; i++) {
+                tuples.add(new ClientTupleKey()
+                        .user("user:anne")
+                        .relation("owner")
+                        ._object("document:" + (batch * batchSize + i)));
+            }
+            fga.write(new ClientWriteRequest().writes(tuples)).get();
+            totalWritten += tuples.size();
         }
 
-        fgaClient.write(new ClientWriteRequest().writes(writes)).get();
-
-        // Stream objects
-        System.out.println("Listing objects using streaming endpoint:");
-        List<String> results = new ArrayList<>();
-
-        ClientListObjectsRequest request = new ClientListObjectsRequest()
-                .type("document")
-                .relation("owner")
-                .user("user:anne");
-
-        fgaClient
-                .streamedListObjects(request, response -> {
-                    System.out.println("  " + response.getObject());
-                    results.add(response.getObject());
-                })
-                .thenRun(() -> {
-                    System.out.println("Streaming complete!");
-                    System.out.println("API returned " + results.size() + " objects.");
-                })
-                .get(); // Wait for completion
-
-        System.out.println("All results processed.");
-
-        // Clean up - delete the temporary store
-        try {
-            fgaClient.deleteStore().get();
-            System.out.println("Deleted temporary store (" + storeId + ")");
-        } catch (Exception e) {
-            System.err.println("Failed to delete store: " + e.getMessage());
+        // Write 1000 documents where anne is a viewer
+        for (int batch = 0; batch < 10; batch++) {
+            var tuples = new ArrayList<ClientTupleKey>();
+            for (int i = 1; i <= batchSize; i++) {
+                tuples.add(new ClientTupleKey()
+                        .user("user:anne")
+                        .relation("viewer")
+                        ._object("document:" + (1000 + batch * batchSize + i)));
+            }
+            fga.write(new ClientWriteRequest().writes(tuples)).get();
+            totalWritten += tuples.size();
         }
 
-        System.out.println("Finished.");
+        System.out.println("Wrote " + totalWritten + " tuples");
+
+        System.out.println("Streaming objects via computed 'can_read' relation...");
+        var count = new AtomicInteger(0);
+
+        var request = new ClientListObjectsRequest()
+                .user("user:anne")
+                .relation("can_read") // Computed: owner OR viewer
+                .type("document");
+
+        var options = new ClientStreamedListObjectsOptions().consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
+
+        fga.streamedListObjects(request, options, response -> {
+                    int currentCount = count.incrementAndGet();
+                    if (currentCount <= 3 || currentCount % 500 == 0) {
+                        System.out.println("- " + response.getObject());
+                    }
+                })
+                .get();
+
+        System.out.println("✓ Streamed " + count.get() + " objects");
+
+        System.out.println("Cleaning up...");
+        fga.deleteStore().get();
+        System.out.println("Done");
     }
 
     private WriteAuthorizationModelRequest createAuthorizationModel() {
-        // This is a simplified authorization model for the example
-        // In a real application, you would load this from a file or define it more comprehensively
+        // Simplified authorization model demonstrating computed relations
         String modelJson =
                 """
                 {
@@ -109,103 +134,12 @@ public class StreamedListObjectsExample {
                       "relations": {}
                     },
                     {
-                      "type": "group",
+                      "type": "document",
                       "relations": {
-                        "member": {
-                          "this": {}
-                        }
-                      },
-                      "metadata": {
-                        "relations": {
-                          "member": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "folder",
-                      "relations": {
-                        "can_create_file": {
-                          "computedUserset": {
-                            "object": "",
-                            "relation": "owner"
-                          }
-                        },
                         "owner": {
-                          "this": {}
-                        },
-                        "parent": {
                           "this": {}
                         },
                         "viewer": {
-                          "union": {
-                            "child": [
-                              {
-                                "this": {}
-                              },
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "owner"
-                                }
-                              },
-                              {
-                                "tupleToUserset": {
-                                  "tupleset": {
-                                    "object": "",
-                                    "relation": "parent"
-                                  },
-                                  "computedUserset": {
-                                    "object": "",
-                                    "relation": "viewer"
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      },
-                      "metadata": {
-                        "relations": {
-                          "can_create_file": {
-                            "directly_related_user_types": []
-                          },
-                          "owner": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          },
-                          "parent": {
-                            "directly_related_user_types": [
-                              {"type": "folder"}
-                            ]
-                          },
-                          "viewer": {
-                            "directly_related_user_types": [
-                              {"type": "user"},
-                              {"type": "user", "wildcard": {}},
-                              {"type": "group", "relation": "member"}
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "document",
-                      "relations": {
-                        "can_change_owner": {
-                          "computedUserset": {
-                            "object": "",
-                            "relation": "owner"
-                          }
-                        },
-                        "owner": {
-                          "this": {}
-                        },
-                        "parent": {
                           "this": {}
                         },
                         "can_read": {
@@ -214,76 +148,13 @@ public class StreamedListObjectsExample {
                               {
                                 "computedUserset": {
                                   "object": "",
+                                  "relation": "owner"
+                                }
+                              },
+                              {
+                                "computedUserset": {
+                                  "object": "",
                                   "relation": "viewer"
-                                }
-                              },
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "owner"
-                                }
-                              },
-                              {
-                                "tupleToUserset": {
-                                  "tupleset": {
-                                    "object": "",
-                                    "relation": "parent"
-                                  },
-                                  "computedUserset": {
-                                    "object": "",
-                                    "relation": "viewer"
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "can_share": {
-                          "union": {
-                            "child": [
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "owner"
-                                }
-                              },
-                              {
-                                "tupleToUserset": {
-                                  "tupleset": {
-                                    "object": "",
-                                    "relation": "parent"
-                                  },
-                                  "computedUserset": {
-                                    "object": "",
-                                    "relation": "owner"
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "viewer": {
-                          "this": {}
-                        },
-                        "can_write": {
-                          "union": {
-                            "child": [
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "owner"
-                                }
-                              },
-                              {
-                                "tupleToUserset": {
-                                  "tupleset": {
-                                    "object": "",
-                                    "relation": "parent"
-                                  },
-                                  "computedUserset": {
-                                    "object": "",
-                                    "relation": "owner"
-                                  }
                                 }
                               }
                             ]
@@ -292,33 +163,17 @@ public class StreamedListObjectsExample {
                       },
                       "metadata": {
                         "relations": {
-                          "can_change_owner": {
-                            "directly_related_user_types": []
-                          },
                           "owner": {
                             "directly_related_user_types": [
                               {"type": "user"}
                             ]
                           },
-                          "parent": {
+                          "viewer": {
                             "directly_related_user_types": [
-                              {"type": "folder"}
+                              {"type": "user"}
                             ]
                           },
                           "can_read": {
-                            "directly_related_user_types": []
-                          },
-                          "can_share": {
-                            "directly_related_user_types": []
-                          },
-                          "viewer": {
-                            "directly_related_user_types": [
-                              {"type": "user"},
-                              {"type": "user", "wildcard": {}},
-                              {"type": "group", "relation": "member"}
-                            ]
-                          },
-                          "can_write": {
                             "directly_related_user_types": []
                           }
                         }
