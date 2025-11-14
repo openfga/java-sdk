@@ -2,6 +2,8 @@ package dev.openfga.sdk.errors;
 
 import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import dev.openfga.sdk.constants.FgaConstants;
@@ -19,6 +21,13 @@ public class FgaError extends ApiException {
     private String requestId = null;
     private String apiErrorCode = null;
     private String retryAfterHeader = null;
+    private String apiErrorMessage = null;
+    private String operationName = null;
+
+    public static class ApiErrorResponse {
+        public String code;
+        public String message;
+    }
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
         super(message, cause, code, responseHeaders, responseBody);
@@ -73,6 +82,26 @@ public class FgaError extends ApiException {
             var clientCredentials = credentials.getClientCredentials();
             error.setClientId(clientCredentials.getClientId());
             error.setAudience(clientCredentials.getApiAudience());
+        }
+
+        error.setOperationName(name);
+
+        // Parse API error response
+        if (body != null && !body.trim().isEmpty()) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                ApiErrorResponse resp = mapper.readValue(body, ApiErrorResponse.class);
+                error.setApiErrorCode(resp.code);
+                error.setApiErrorMessage(resp.message);
+            } catch (JsonProcessingException e) {
+                // Fall back, do nothing
+            }
+        }
+
+        // Extract requestId from headers
+        Optional<String> requestIdOpt = headers.firstValue("x-request-id");
+        if (requestIdOpt.isPresent()) {
+            error.setRequestId(requestIdOpt.get());
         }
 
         // Unknown error
@@ -141,5 +170,31 @@ public class FgaError extends ApiException {
 
     public String getRetryAfterHeader() {
         return retryAfterHeader;
+    }
+
+    public void setApiErrorMessage(String apiErrorMessage) {
+        this.apiErrorMessage = apiErrorMessage;
+    }
+
+    public String getApiErrorMessage() {
+        return apiErrorMessage;
+    }
+
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
+    }
+
+    public String getOperationName() {
+        return operationName;
+    }
+
+    @Override
+    public String getMessage() {
+        if (apiErrorMessage != null && !apiErrorMessage.isEmpty() && operationName != null) {
+            String codePart = (apiErrorCode != null && !apiErrorCode.isEmpty()) ? " (" + apiErrorCode + ")" : "";
+            return String.format("[%s] %s%s", operationName, apiErrorMessage, codePart);
+        } else {
+            return super.getMessage();
+        }
     }
 }
