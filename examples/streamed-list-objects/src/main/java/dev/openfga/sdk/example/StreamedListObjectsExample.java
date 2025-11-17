@@ -1,5 +1,7 @@
 package dev.openfga.sdk.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.language.DslToJsonTransformer;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
 import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
@@ -7,6 +9,7 @@ import dev.openfga.sdk.api.client.model.ClientTupleKey;
 import dev.openfga.sdk.api.client.model.ClientWriteRequest;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
+import dev.openfga.sdk.api.model.AuthorizationModel;
 import dev.openfga.sdk.api.model.ConsistencyPreference;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
@@ -15,6 +18,29 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StreamedListObjectsExample {
+    // Configuration constants
+    private static final String DEFAULT_API_URL = "http://localhost:8080";
+    private static final String ENV_API_URL = "FGA_API_URL";
+    private static final String STORE_NAME = "streamed-list-objects";
+
+    // Data constants
+    private static final String USER_TYPE = "user";
+    private static final String DOCUMENT_TYPE = "document";
+    private static final String USER_ANNE = "user:anne";
+    private static final String RELATION_OWNER = "owner";
+    private static final String RELATION_VIEWER = "viewer";
+    private static final String RELATION_CAN_READ = "can_read";
+
+    // Batch configuration
+    private static final int WRITE_BATCH_SIZE = 100; // OpenFGA limit
+    private static final int TOTAL_OWNER_DOCUMENTS = 1000;
+    private static final int TOTAL_VIEWER_DOCUMENTS = 1000;
+    private static final int VIEWER_DOCUMENT_OFFSET = 1000;
+
+    // Display configuration
+    private static final int DISPLAY_FIRST_N = 3;
+    private static final int DISPLAY_EVERY_N = 500;
+
     public static void main(String[] args) {
         try {
             new StreamedListObjectsExample().run();
@@ -26,8 +52,8 @@ public class StreamedListObjectsExample {
                     || (ex.getCause() != null
                             && ex.getCause().getMessage() != null
                             && ex.getCause().getMessage().contains("Connection refused"))) {
-                System.err.println(
-                        "Is OpenFGA server running? Check FGA_API_URL environment variable or default http://localhost:8080");
+                System.err.println("Is OpenFGA server running? Check " + ENV_API_URL
+                        + " environment variable or default " + DEFAULT_API_URL);
             } else {
                 System.err.println("An error occurred. [" + ex.getClass().getSimpleName() + "]");
             }
@@ -36,9 +62,9 @@ public class StreamedListObjectsExample {
     }
 
     public void run() throws Exception {
-        String apiUrl = System.getenv("FGA_API_URL");
+        String apiUrl = System.getenv(ENV_API_URL);
         if (apiUrl == null || apiUrl.isEmpty()) {
-            apiUrl = "http://localhost:8080";
+            apiUrl = DEFAULT_API_URL;
         }
 
         var configuration = new ClientConfiguration().apiUrl(apiUrl).credentials(new Credentials());
@@ -46,7 +72,7 @@ public class StreamedListObjectsExample {
         var client = new OpenFgaClient(configuration);
 
         System.out.println("Creating temporary store");
-        var store = client.createStore(new CreateStoreRequest().name("streamed-list-objects"))
+        var store = client.createStore(new CreateStoreRequest().name(STORE_NAME))
                 .get();
 
         var clientWithStore = new OpenFgaClient(
@@ -63,33 +89,34 @@ public class StreamedListObjectsExample {
                 .authorizationModelId(authModel.getAuthorizationModelId())
                 .credentials(new Credentials()));
 
-        System.out.println("Writing tuples (1000 as owner, 1000 as viewer)");
+        System.out.println("Writing tuples (" + TOTAL_OWNER_DOCUMENTS + " as owner, " + TOTAL_VIEWER_DOCUMENTS
+                + " as viewer)");
 
-        // Write in batches of 100 (OpenFGA limit)
-        final int batchSize = 100;
         int totalWritten = 0;
 
-        // Write 1000 documents where anne is the owner
-        for (int batch = 0; batch < 10; batch++) {
+        // Write documents where anne is the owner
+        int ownerBatches = TOTAL_OWNER_DOCUMENTS / WRITE_BATCH_SIZE;
+        for (int batch = 0; batch < ownerBatches; batch++) {
             var tuples = new ArrayList<ClientTupleKey>();
-            for (int i = 1; i <= batchSize; i++) {
+            for (int i = 1; i <= WRITE_BATCH_SIZE; i++) {
                 tuples.add(new ClientTupleKey()
-                        .user("user:anne")
-                        .relation("owner")
-                        ._object("document:" + (batch * batchSize + i)));
+                        .user(USER_ANNE)
+                        .relation(RELATION_OWNER)
+                        ._object(DOCUMENT_TYPE + ":" + (batch * WRITE_BATCH_SIZE + i)));
             }
             fga.write(new ClientWriteRequest().writes(tuples)).get();
             totalWritten += tuples.size();
         }
 
-        // Write 1000 documents where anne is a viewer
-        for (int batch = 0; batch < 10; batch++) {
+        // Write documents where anne is a viewer
+        int viewerBatches = TOTAL_VIEWER_DOCUMENTS / WRITE_BATCH_SIZE;
+        for (int batch = 0; batch < viewerBatches; batch++) {
             var tuples = new ArrayList<ClientTupleKey>();
-            for (int i = 1; i <= batchSize; i++) {
+            for (int i = 1; i <= WRITE_BATCH_SIZE; i++) {
                 tuples.add(new ClientTupleKey()
-                        .user("user:anne")
-                        .relation("viewer")
-                        ._object("document:" + (1000 + batch * batchSize + i)));
+                        .user(USER_ANNE)
+                        .relation(RELATION_VIEWER)
+                        ._object(DOCUMENT_TYPE + ":" + (VIEWER_DOCUMENT_OFFSET + batch * WRITE_BATCH_SIZE + i)));
             }
             fga.write(new ClientWriteRequest().writes(tuples)).get();
             totalWritten += tuples.size();
@@ -97,19 +124,19 @@ public class StreamedListObjectsExample {
 
         System.out.println("Wrote " + totalWritten + " tuples");
 
-        System.out.println("Streaming objects via computed 'can_read' relation...");
+        System.out.println("Streaming objects via computed '" + RELATION_CAN_READ + "' relation...");
         var count = new AtomicInteger(0);
 
         var request = new ClientListObjectsRequest()
-                .user("user:anne")
-                .relation("can_read") // Computed: owner OR viewer
-                .type("document");
+                .user(USER_ANNE)
+                .relation(RELATION_CAN_READ) // Computed: owner OR viewer
+                .type(DOCUMENT_TYPE);
 
         var options = new ClientStreamedListObjectsOptions().consistency(ConsistencyPreference.HIGHER_CONSISTENCY);
 
         fga.streamedListObjects(request, options, response -> {
                     int currentCount = count.incrementAndGet();
-                    if (currentCount <= 3 || currentCount % 500 == 0) {
+                    if (currentCount <= DISPLAY_FIRST_N || currentCount % DISPLAY_EVERY_N == 0) {
                         System.out.println("- " + response.getObject());
                     }
                 })
@@ -123,72 +150,47 @@ public class StreamedListObjectsExample {
     }
 
     private WriteAuthorizationModelRequest createAuthorizationModel() {
-        // Simplified authorization model demonstrating computed relations
-        String modelJson =
+        // Define the authorization model using OpenFGA DSL
+        // This is much cleaner and more readable than building the model with Java objects
+        var dslModel = String.format(
                 """
-                {
-                  "schema_version": "1.1",
-                  "type_definitions": [
-                    {
-                      "type": "user",
-                      "relations": {}
-                    },
-                    {
-                      "type": "document",
-                      "relations": {
-                        "owner": {
-                          "this": {}
-                        },
-                        "viewer": {
-                          "this": {}
-                        },
-                        "can_read": {
-                          "union": {
-                            "child": [
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "owner"
-                                }
-                              },
-                              {
-                                "computedUserset": {
-                                  "object": "",
-                                  "relation": "viewer"
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      },
-                      "metadata": {
-                        "relations": {
-                          "owner": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          },
-                          "viewer": {
-                            "directly_related_user_types": [
-                              {"type": "user"}
-                            ]
-                          },
-                          "can_read": {
-                            "directly_related_user_types": []
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-                """;
+                model
+                  schema 1.1
+                
+                type %s
+                
+                type %s
+                  relations
+                    define %s: [%s]
+                    define %s: [%s]
+                    define %s: %s or %s
+                """,
+                USER_TYPE,
+                DOCUMENT_TYPE,
+                RELATION_OWNER,
+                USER_TYPE,
+                RELATION_VIEWER,
+                USER_TYPE,
+                RELATION_CAN_READ,
+                RELATION_OWNER,
+                RELATION_VIEWER);
 
         try {
-            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            // Transform DSL to JSON and parse into AuthorizationModel
+            var jsonModel = new DslToJsonTransformer().transform(dslModel);
+            var mapper = new ObjectMapper();
             mapper.findAndRegisterModules();
-            return mapper.readValue(modelJson, WriteAuthorizationModelRequest.class);
+
+            // Parse as AuthorizationModel first (which includes the "id" field)
+            var authModel = mapper.readValue(jsonModel, AuthorizationModel.class);
+
+            // Convert to WriteAuthorizationModelRequest (which doesn't have "id")
+            return new WriteAuthorizationModelRequest()
+                    .typeDefinitions(authModel.getTypeDefinitions())
+                    .schemaVersion(authModel.getSchemaVersion())
+                    .conditions(authModel.getConditions());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse authorization model", e);
+            throw new RuntimeException("Failed to transform DSL model to JSON", e);
         }
     }
 }
