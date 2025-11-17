@@ -94,7 +94,8 @@ public class FgaError extends ApiException {
                 error.setApiErrorCode(resp.code);
                 error.setApiErrorMessage(resp.message);
             } catch (JsonProcessingException e) {
-                // Fall back, do nothing
+                // Fall back, do nothing - log the exception for debugging
+                System.err.println("Failed to parse API error response JSON: " + e.getMessage());
             }
         }
 
