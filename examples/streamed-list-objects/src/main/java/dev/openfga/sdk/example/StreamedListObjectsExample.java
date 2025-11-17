@@ -181,10 +181,8 @@ public class StreamedListObjectsExample {
             var mapper = new ObjectMapper();
             mapper.findAndRegisterModules();
 
-            // Parse as AuthorizationModel first (which includes the "id" field)
             var authModel = mapper.readValue(jsonModel, AuthorizationModel.class);
 
-            // Convert to WriteAuthorizationModelRequest (which doesn't have "id")
             return new WriteAuthorizationModelRequest()
                     .typeDefinitions(authModel.getTypeDefinitions())
                     .schemaVersion(authModel.getSchemaVersion())
