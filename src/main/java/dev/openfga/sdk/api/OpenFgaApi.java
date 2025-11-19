@@ -38,6 +38,7 @@ import dev.openfga.sdk.api.model.ReadAuthorizationModelsResponse;
 import dev.openfga.sdk.api.model.ReadChangesResponse;
 import dev.openfga.sdk.api.model.ReadRequest;
 import dev.openfga.sdk.api.model.ReadResponse;
+import dev.openfga.sdk.api.model.StreamResultOfStreamedListObjectsResponse;
 import dev.openfga.sdk.api.model.WriteAssertionsRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.api.model.WriteAuthorizationModelResponse;
@@ -899,6 +900,68 @@ public class OpenFgaApi {
         try {
             HttpRequest request = buildHttpRequest("GET", path, configuration);
             return new HttpRequestAttempt<>(request, "readChanges", ReadChangesResponse.class, apiClient, configuration)
+                    .addTelemetryAttributes(telemetryAttributes)
+                    .attemptHttpRequest();
+        } catch (ApiException e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
+     * Stream all objects of the given type that the user has a relation with
+     * The Streamed ListObjects API is very similar to the the ListObjects API, with two differences:  1. Instead of collecting all objects before returning a response, it streams them to the client as they are collected.  2. The number of results returned is only limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE.
+     * @param storeId  (required)
+     * @param body  (required)
+     * @return CompletableFuture&lt;ApiResponse&lt;StreamResultOfStreamedListObjectsResponse&gt;&gt;
+     * @throws ApiException if fails to make API call
+     */
+    public CompletableFuture<ApiResponse<StreamResultOfStreamedListObjectsResponse>> streamedListObjects(
+            String storeId, ListObjectsRequest body) throws ApiException, FgaInvalidParameterException {
+        return streamedListObjects(storeId, body, this.configuration);
+    }
+
+    /**
+     * Stream all objects of the given type that the user has a relation with
+     * The Streamed ListObjects API is very similar to the the ListObjects API, with two differences:  1. Instead of collecting all objects before returning a response, it streams them to the client as they are collected.  2. The number of results returned is only limited by the execution timeout specified in the flag OPENFGA_LIST_OBJECTS_DEADLINE.
+     * @param storeId  (required)
+     * @param body  (required)
+     * @param configurationOverride Override the {@link Configuration} this OpenFgaApi was constructed with
+     * @return CompletableFuture&lt;ApiResponse&lt;StreamResultOfStreamedListObjectsResponse&gt;&gt;
+     * @throws ApiException if fails to make API call
+     */
+    public CompletableFuture<ApiResponse<StreamResultOfStreamedListObjectsResponse>> streamedListObjects(
+            String storeId, ListObjectsRequest body, ConfigurationOverride configurationOverride)
+            throws ApiException, FgaInvalidParameterException {
+        return streamedListObjects(storeId, body, this.configuration.override(configurationOverride));
+    }
+
+    private CompletableFuture<ApiResponse<StreamResultOfStreamedListObjectsResponse>> streamedListObjects(
+            String storeId, ListObjectsRequest body, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
+
+        assertParamExists(storeId, "storeId", "streamedListObjects");
+
+        assertParamExists(body, "body", "streamedListObjects");
+
+        String path = "/stores/{store_id}/streamed-list-objects"
+                .replace("{store_id}", StringUtil.urlEncode(storeId.toString()));
+
+        Map<String, Object> methodParameters = new HashMap<>();
+        methodParameters.put("storeId", storeId);
+        methodParameters.put("body", body);
+
+        Map<Attribute, String> telemetryAttributes = buildTelemetryAttributes(methodParameters);
+
+        telemetryAttributes.put(Attributes.FGA_CLIENT_REQUEST_METHOD, "StreamedListObjects");
+
+        try {
+            HttpRequest request = buildHttpRequest("POST", path, body, configuration);
+            return new HttpRequestAttempt<>(
+                            request,
+                            "streamedListObjects",
+                            StreamResultOfStreamedListObjectsResponse.class,
+                            apiClient,
+                            configuration)
                     .addTelemetryAttributes(telemetryAttributes)
                     .attemptHttpRequest();
         } catch (ApiException e) {

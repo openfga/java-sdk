@@ -67,6 +67,8 @@ docs/RelationshipCondition.md
 docs/SourceInfo.md
 docs/Status.md
 docs/Store.md
+docs/StreamResultOfStreamedListObjectsResponse.md
+docs/StreamedListObjectsResponse.md
 docs/Tuple.md
 docs/TupleChange.md
 docs/TupleKey.md
@@ -155,6 +157,8 @@ src/main/java/dev/openfga/sdk/api/model/RelationshipCondition.java
 src/main/java/dev/openfga/sdk/api/model/SourceInfo.java
 src/main/java/dev/openfga/sdk/api/model/Status.java
 src/main/java/dev/openfga/sdk/api/model/Store.java
+src/main/java/dev/openfga/sdk/api/model/StreamResultOfStreamedListObjectsResponse.java
+src/main/java/dev/openfga/sdk/api/model/StreamedListObjectsResponse.java
 src/main/java/dev/openfga/sdk/api/model/Tuple.java
 src/main/java/dev/openfga/sdk/api/model/TupleChange.java
 src/main/java/dev/openfga/sdk/api/model/TupleKey.java
