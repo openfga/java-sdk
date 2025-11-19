@@ -160,7 +160,9 @@ class OAuth2ClientTest {
         var exception = assertThrows(java.util.concurrent.ExecutionException.class, () -> auth0.getAccessToken()
                 .get());
 
-        assertEquals("dev.openfga.sdk.errors.FgaApiRateLimitExceededError: exchangeToken", exception.getMessage());
+        assertTrue(exception.getMessage().contains("FgaApiRateLimitExceededError"));
+        assertTrue(exception.getMessage().contains("exchangeToken"));
+        assertTrue(exception.getMessage().contains("HTTP 429"));
         verify(3, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 

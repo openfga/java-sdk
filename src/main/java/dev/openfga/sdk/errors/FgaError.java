@@ -26,12 +26,16 @@ public class FgaError extends ApiException {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     public static class ApiErrorResponse {
         @com.fasterxml.jackson.annotation.JsonProperty("code")
         private String code;
 
         @com.fasterxml.jackson.annotation.JsonProperty("message")
         private String message;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("error")
+        private String error;
 
         public String getCode() {
             return code;
@@ -42,11 +46,19 @@ public class FgaError extends ApiException {
         }
 
         public String getMessage() {
-            return message;
+            return message != null ? message : error;
         }
 
         public void setMessage(String message) {
             this.message = message;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
         }
     }
 
@@ -83,7 +95,7 @@ public class FgaError extends ApiException {
             error = new FgaApiNotFoundError(name, previousError, status, headers, body);
         } else if (status == TOO_MANY_REQUESTS) {
             error = new FgaApiRateLimitExceededError(name, previousError, status, headers, body);
-        } else if (isServerError(status)) {
+        } else if (HttpStatusCode.isServerError(status)) {
             error = new FgaApiInternalError(name, previousError, status, headers, body);
         } else {
             error = new FgaError(name, previousError, status, headers, body);
@@ -212,26 +224,116 @@ public class FgaError extends ApiException {
     /**
      * Returns a formatted error message for FgaError.
      * <p>
-     * If both {@code apiErrorMessage} and {@code operationName} are present and non-empty, the message is formatted as:
+     * The message is formatted as:
      * <pre>
-     *     [operationName] apiErrorMessage (apiErrorCode)
+     *     [operationName] HTTP statusCode apiErrorMessage (apiErrorCode) [request-id: requestId]
      * </pre>
-     * where {@code apiErrorCode} is included only if present and non-empty.
-     * Otherwise, falls back to the default parent message.
+     * Example: [write] HTTP 400 type 'invalid_type' not found (validation_error) [request-id: abc-123]
      * </p>
      *
      * @return the formatted error message string
      */
     @Override
     public String getMessage() {
-        if (apiErrorMessage != null
-                && !apiErrorMessage.isEmpty()
-                && operationName != null
-                && !operationName.isEmpty()) {
-            String codePart = (apiErrorCode != null && !apiErrorCode.isEmpty()) ? " (" + apiErrorCode + ")" : "";
-            return String.format("[%s] %s%s", operationName, apiErrorMessage, codePart);
-        } else {
-            return super.getMessage();
+        // Use apiErrorMessage if available, otherwise fall back to the original message
+        String message = (apiErrorMessage != null && !apiErrorMessage.isEmpty()) ? apiErrorMessage : super.getMessage();
+
+        StringBuilder sb = new StringBuilder();
+
+        // [operationName]
+        if (operationName != null && !operationName.isEmpty()) {
+            sb.append("[").append(operationName).append("] ");
         }
+
+        // HTTP 400
+        sb.append("HTTP ").append(getStatusCode()).append(" ");
+
+        // type 'invalid_type' not found
+        if (message != null && !message.isEmpty()) {
+            sb.append(message);
+        }
+
+        // (validation_error)
+        if (apiErrorCode != null && !apiErrorCode.isEmpty()) {
+            sb.append(" (").append(apiErrorCode).append(")");
+        }
+
+        // [request-id: abc-123]
+        if (requestId != null && !requestId.isEmpty()) {
+            sb.append(" [request-id: ").append(requestId).append("]");
+        }
+
+        return sb.toString().trim();
+    }
+
+    // --- Helper Methods ---
+
+    /**
+     * Checks if this is a validation error.
+     * Reliable error type checking based on error code.
+     *
+     * @return true if this is a validation error
+     */
+    public boolean isValidationError() {
+        return "validation_error".equals(apiErrorCode);
+    }
+
+    /**
+     * Checks if this is a not found (404) error.
+     *
+     * @return true if this is a 404 error
+     */
+    public boolean isNotFoundError() {
+        return getStatusCode() == NOT_FOUND;
+    }
+
+    /**
+     * Checks if this is an authentication (401) error.
+     *
+     * @return true if this is a 401 error
+     */
+    public boolean isAuthenticationError() {
+        return getStatusCode() == UNAUTHORIZED;
+    }
+
+    /**
+     * Checks if this is a rate limit (429) error.
+     *
+     * @return true if this is a rate limit error
+     */
+    public boolean isRateLimitError() {
+        return getStatusCode() == TOO_MANY_REQUESTS || "rate_limit_exceeded".equals(apiErrorCode);
+    }
+
+    /**
+     * Checks if this error should be retried.
+     * 429 (Rate Limit) and 5xx (Server Errors) are typically retryable.
+     *
+     * @return true if this error is retryable
+     */
+    public boolean isRetryable() {
+        int status = getStatusCode();
+        // 429 (Rate Limit) and 5xx (Server Errors) are typically retryable.
+        return status == TOO_MANY_REQUESTS || (status >= 500 && status < 600);
+    }
+
+    /**
+     * Checks if this is a client error (4xx).
+     *
+     * @return true if this is a 4xx error
+     */
+    public boolean isClientError() {
+        int status = getStatusCode();
+        return status >= 400 && status < 500;
+    }
+
+    /**
+     * Checks if this is a server error (5xx).
+     *
+     * @return true if this is a 5xx error
+     */
+    public boolean isServerError() {
+        int status = getStatusCode();
+        return status >= 500 && status < 600;
     }
 }
