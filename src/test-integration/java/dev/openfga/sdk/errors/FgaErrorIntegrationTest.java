@@ -291,7 +291,7 @@ public class FgaErrorIntegrationTest {
         FgaApiValidationError exception = assertInstanceOf(FgaApiValidationError.class, executionException.getCause());
 
         // Verify operation name is "read"
-        assertTrue(exception.getOperationName().equals("read")
+        assertTrue("read".equals(exception.getOperationName())
                 || exception.getMessage().contains("read"));
         assertEquals("validation_error", exception.getApiErrorCode());
         assertNotNull(exception.getApiErrorMessage());
@@ -312,7 +312,7 @@ public class FgaErrorIntegrationTest {
         FgaApiValidationError exception = assertInstanceOf(FgaApiValidationError.class, executionException.getCause());
 
         // Verify operation name is "expand"
-        assertTrue(exception.getOperationName().equals("expand")
+        assertTrue("expand".equals(exception.getOperationName())
                 || exception.getMessage().contains("expand"));
         assertEquals("validation_error", exception.getApiErrorCode());
         assertNotNull(exception.getApiErrorMessage());

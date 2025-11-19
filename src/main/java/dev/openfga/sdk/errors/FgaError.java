@@ -24,9 +24,30 @@ public class FgaError extends ApiException {
     private String apiErrorMessage = null;
     private String operationName = null;
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     public static class ApiErrorResponse {
-        public String code;
-        public String message;
+        @com.fasterxml.jackson.annotation.JsonProperty("code")
+        private String code;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("message")
+        private String message;
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 
     public FgaError(String message, Throwable cause, int code, HttpHeaders responseHeaders, String responseBody) {
@@ -88,11 +109,10 @@ public class FgaError extends ApiException {
 
         // Parse API error response
         if (body != null && !body.trim().isEmpty()) {
-            ObjectMapper mapper = new ObjectMapper();
             try {
-                ApiErrorResponse resp = mapper.readValue(body, ApiErrorResponse.class);
-                error.setApiErrorCode(resp.code);
-                error.setApiErrorMessage(resp.message);
+                ApiErrorResponse resp = OBJECT_MAPPER.readValue(body, ApiErrorResponse.class);
+                error.setApiErrorCode(resp.getCode());
+                error.setApiErrorMessage(resp.getMessage());
             } catch (JsonProcessingException e) {
                 // Fall back, do nothing - log the exception for debugging
                 System.err.println("Failed to parse API error response JSON: " + e.getMessage());
@@ -189,9 +209,25 @@ public class FgaError extends ApiException {
         return operationName;
     }
 
+    /**
+     * Returns a formatted error message for FgaError.
+     * <p>
+     * If both {@code apiErrorMessage} and {@code operationName} are present and non-empty, the message is formatted as:
+     * <pre>
+     *     [operationName] apiErrorMessage (apiErrorCode)
+     * </pre>
+     * where {@code apiErrorCode} is included only if present and non-empty.
+     * Otherwise, falls back to the default parent message.
+     * </p>
+     *
+     * @return the formatted error message string
+     */
     @Override
     public String getMessage() {
-        if (apiErrorMessage != null && !apiErrorMessage.isEmpty() && operationName != null) {
+        if (apiErrorMessage != null
+                && !apiErrorMessage.isEmpty()
+                && operationName != null
+                && !operationName.isEmpty()) {
             String codePart = (apiErrorCode != null && !apiErrorCode.isEmpty()) ? " (" + apiErrorCode + ")" : "";
             return String.format("[%s] %s%s", operationName, apiErrorMessage, codePart);
         } else {
