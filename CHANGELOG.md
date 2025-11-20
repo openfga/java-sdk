@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.3...HEAD)
 
+- Improved error handling and integration test coverage for FgaError and related classes. (#260)
+
 ## v0.9.3
 
 ### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.2...v0.9.3)) (2025-11-10)
