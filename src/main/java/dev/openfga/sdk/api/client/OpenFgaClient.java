@@ -1105,6 +1105,167 @@ public class OpenFgaClient {
     }
 
     /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * <p>Example usage:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * client.streamedListObjects(request,
+     *     response -> System.out.println("Found object: " + response.getObject())
+     * ).thenRun(() -> System.out.println("Streaming complete"))
+     *  .exceptionally(error -> {
+     *      System.err.println("Error: " + error.getMessage());
+     *      return null;
+     *  });
+     * }</pre>
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
+     * @return CompletableFuture<Void> that completes when streaming finishes
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
+     */
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request, Consumer<StreamedListObjectsResponse> consumer)
+            throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
+        return streamedListObjects(request, null, consumer, null);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * <p>Example usage with options:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * ClientStreamedListObjectsOptions options = new ClientStreamedListObjectsOptions()
+     *     .authorizationModelId("01HVMMBCMGZNT3SED4Z17ECXCA");
+     *
+     * client.streamedListObjects(request, options,
+     *     response -> System.out.println("Found object: " + response.getObject())
+     * ).thenRun(() -> System.out.println("Streaming complete"))
+     *  .exceptionally(error -> {
+     *      System.err.println("Error: " + error.getMessage());
+     *      return null;
+     *  });
+     * }</pre>
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param options Options for the streaming request
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
+     * @return CompletableFuture<Void> that completes when streaming finishes
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
+     */
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request,
+            ClientStreamedListObjectsOptions options,
+            Consumer<StreamedListObjectsResponse> consumer)
+            throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
+        return streamedListObjects(request, options, consumer, null);
+    }
+
+    /**
+     * StreamedListObjects - Stream all objects of a particular type that the user has a relation to.
+     * This method provides true asynchronous streaming with consumer callbacks.
+     * Objects are delivered to the consumer as they are received from the server asynchronously.
+     * Returns a CompletableFuture that completes when streaming is finished.
+     *
+     * <p>Example usage with error handling:</p>
+     * <pre>{@code
+     * ClientListObjectsRequest request = new ClientListObjectsRequest()
+     *     .user("user:anne")
+     *     .relation("viewer")
+     *     .type("document");
+     *
+     * ClientStreamedListObjectsOptions options = new ClientStreamedListObjectsOptions()
+     *     .authorizationModelId("01HVMMBCMGZNT3SED4Z17ECXCA");
+     *
+     * client.streamedListObjects(request, options,
+     *     response -> System.out.println("Found object: " + response.getObject()),
+     *     error -> System.err.println("Streaming error: " + error.getMessage())
+     * ).thenRun(() -> System.out.println("Streaming complete"));
+     * }</pre>
+     *
+     * @param request The list objects request containing type, relation, and user
+     * @param options Options for the streaming request
+     * @param consumer Callback to handle each StreamedListObjectsResponse as it arrives
+     * @param errorConsumer Optional callback to handle errors during streaming
+     * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
+     * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
+     */
+    public CompletableFuture<Void> streamedListObjects(
+            ClientListObjectsRequest request,
+            ClientStreamedListObjectsOptions options,
+            Consumer<StreamedListObjectsResponse> consumer,
+            Consumer<Throwable> errorConsumer)
+            throws FgaInvalidParameterException {
+        if (consumer == null) {
+            throw new FgaInvalidParameterException("consumer", "streamedListObjects");
+        }
+        configuration.assertValid();
+        String storeId = configuration.getStoreIdChecked();
+
+        ListObjectsRequest body = new ListObjectsRequest();
+
+        if (request != null) {
+            body.user(request.getUser()).relation(request.getRelation()).type(request.getType());
+            if (request.getContextualTupleKeys() != null) {
+                var contextualTuples = request.getContextualTupleKeys();
+                var bodyContextualTuples = ClientTupleKey.asContextualTupleKeys(contextualTuples);
+                body.contextualTuples(bodyContextualTuples);
+            }
+            if (request.getContext() != null) {
+                body.context(request.getContext());
+            }
+        }
+
+        if (options != null) {
+            if (options.getConsistency() != null) {
+                body.consistency(options.getConsistency());
+            }
+
+            // Set authorizationModelId from options if available; otherwise, use the default from configuration
+            String authorizationModelId = !isNullOrWhitespace(options.getAuthorizationModelId())
+                    ? options.getAuthorizationModelId()
+                    : configuration.getAuthorizationModelId();
+            body.authorizationModelId(authorizationModelId);
+        } else {
+            body.setAuthorizationModelId(configuration.getAuthorizationModelId());
+        }
+
+        var overrides = new ConfigurationOverride().addHeaders(options);
+
+        // Create streaming API instance and execute streaming request asynchronously
+        StreamedListObjectsApi streamingApi = new StreamedListObjectsApi(configuration, apiClient);
+        try {
+            return streamingApi.streamedListObjects(storeId, body, consumer, errorConsumer, overrides);
+        } catch (ApiException e) {
+            if (errorConsumer != null) {
+                errorConsumer.accept(e);
+            }
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
      * ListRelations - List allowed relations a user has with an object (evaluates)
      */
     public CompletableFuture<ClientListRelationsResponse> listRelations(ClientListRelationsRequest request)
