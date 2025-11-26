@@ -66,12 +66,12 @@ class StreamingApiTest {
 
     @Test
     void testStreamedListObjects_successfulStream() throws Exception {
-        // Arrange: Create  response with multiple objects
-        String Response = "{\"result\":{\"object\":\"document:1\"}}\n"
+        // Arrange: Create response with multiple objects
+        String resp = "{\"result\":{\"object\":\"document:1\"}}\n"
                 + "{\"result\":{\"object\":\"document:2\"}}\n"
                 + "{\"result\":{\"object\":\"document:3\"}}\n";
 
-        Stream<String> lineStream = Response.lines();
+        Stream<String> lineStream = resp.lines();
         when(mockHttpResponse.body()).thenReturn(lineStream);
         when(mockHttpResponse.statusCode()).thenReturn(200);
 
@@ -103,10 +103,10 @@ class StreamingApiTest {
     @Test
     void testStreamedListObjects_withErrorInStream() throws Exception {
         // Arrange: Streaming response with an error
-        String Response = "{\"result\":{\"object\":\"document:1\"}}\n"
+        String resp = "{\"result\":{\"object\":\"document:1\"}}\n"
                 + "{\"error\":{\"code\":400,\"message\":\"Something went wrong\"}}\n";
 
-        Stream<String> lineStream = Response.lines();
+        Stream<String> lineStream = resp.lines();
         when(mockHttpResponse.body()).thenReturn(lineStream);
         when(mockHttpResponse.statusCode()).thenReturn(200);
 
@@ -168,7 +168,6 @@ class StreamingApiTest {
 
     @Test
     void testStreamedListObjects_emptyStream() throws Exception {
-        // Arrange: Empty streaming response
         String streamResponse = "";
 
         Stream<String> lineStream = streamResponse.lines();
@@ -211,7 +210,6 @@ class StreamingApiTest {
         when(mockHttpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
 
-        // Act: Stream large response
         List<String> receivedObjects = Collections.synchronizedList(new ArrayList<>());
         CountDownLatch latch = new CountDownLatch(objectCount);
 
