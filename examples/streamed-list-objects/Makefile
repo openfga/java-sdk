@@ -6,10 +6,10 @@ openfga_version=latest
 language=java
 
 build:
-	./gradlew -P language=$(language) build
+	../../gradlew -P language=$(language) build
 
 run:
-	./gradlew -P language=$(language) run
+	../../gradlew -P language=$(language) run
 
 run-openfga:
 	docker pull docker.io/openfga/openfga:${openfga_version} && \

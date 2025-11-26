@@ -97,7 +97,9 @@ docs/WriteAuthorizationModelResponse.md
 docs/WriteRequest.md
 docs/WriteRequestDeletes.md
 docs/WriteRequestWrites.md
+src/main/java/dev/openfga/sdk/api/BaseStreamingApi.java
 src/main/java/dev/openfga/sdk/api/OpenFgaApi.java
+src/main/java/dev/openfga/sdk/api/StreamedListObjectsApi.java
 src/main/java/dev/openfga/sdk/api/model/AbortedMessageResponse.java
 src/main/java/dev/openfga/sdk/api/model/AbstractOpenApiSchema.java
 src/main/java/dev/openfga/sdk/api/model/Any.java
@@ -157,6 +159,7 @@ src/main/java/dev/openfga/sdk/api/model/RelationshipCondition.java
 src/main/java/dev/openfga/sdk/api/model/SourceInfo.java
 src/main/java/dev/openfga/sdk/api/model/Status.java
 src/main/java/dev/openfga/sdk/api/model/Store.java
+src/main/java/dev/openfga/sdk/api/model/StreamResult.java
 src/main/java/dev/openfga/sdk/api/model/StreamResultOfStreamedListObjectsResponse.java
 src/main/java/dev/openfga/sdk/api/model/StreamedListObjectsResponse.java
 src/main/java/dev/openfga/sdk/api/model/Tuple.java
