@@ -2,8 +2,12 @@ package dev.openfga.sdk.errors;
 
 import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import dev.openfga.sdk.constants.FgaConstants;
@@ -11,6 +15,7 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
+import org.openapitools.jackson.nullable.JsonNullableModule;
 
 public class FgaError extends ApiException {
     private String method = null;
@@ -24,10 +29,24 @@ public class FgaError extends ApiException {
     private String apiErrorMessage = null;
     private String operationName = null;
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = createConfiguredObjectMapper();
+
+    private static ObjectMapper createConfiguredObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+        mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
+        mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new JsonNullableModule());
+        return mapper;
+    }
 
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ApiErrorResponse {
+    private static class ApiErrorResponse {
         @com.fasterxml.jackson.annotation.JsonProperty("code")
         private String code;
 
@@ -312,9 +331,7 @@ public class FgaError extends ApiException {
      * @return true if this error is retryable
      */
     public boolean isRetryable() {
-        int status = getStatusCode();
-        // 429 (Rate Limit) and 5xx (Server Errors) are typically retryable.
-        return status == TOO_MANY_REQUESTS || (status >= 500 && status < 600);
+        return HttpStatusCode.isRetryable(getStatusCode());
     }
 
     /**
@@ -333,7 +350,6 @@ public class FgaError extends ApiException {
      * @return true if this is a 5xx error
      */
     public boolean isServerError() {
-        int status = getStatusCode();
-        return status >= 500 && status < 600;
+        return HttpStatusCode.isServerError(getStatusCode());
     }
 }
