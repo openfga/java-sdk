@@ -18,6 +18,8 @@ import java.util.Optional;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
 public class FgaError extends ApiException {
+    private static final String UNKNOWN_ERROR_CODE = "unknown_error";
+
     private String method = null;
     private String requestUrl = null;
     private String clientId = null;
@@ -145,8 +147,9 @@ public class FgaError extends ApiException {
                 error.setApiErrorCode(resp.getCode());
                 error.setApiErrorMessage(resp.getMessage());
             } catch (JsonProcessingException e) {
-                // Fall back to using raw response body as error message if parsing fails
-                error.setApiErrorMessage(body);
+                // Wrap unparseable response
+                error.setApiErrorCode(UNKNOWN_ERROR_CODE);
+                error.setApiErrorMessage("Unable to parse error response. Raw response: " + body);
             }
         }
 
@@ -295,6 +298,16 @@ public class FgaError extends ApiException {
      */
     public boolean isValidationError() {
         return "validation_error".equals(apiErrorCode);
+    }
+
+    /**
+     * Checks if this is an unknown error due to unparseable response.
+     * This occurs when the error response could not be parsed as JSON.
+     *
+     * @return true if this is an unknown error
+     */
+    public boolean isUnknownError() {
+        return UNKNOWN_ERROR_CODE.equals(apiErrorCode);
     }
 
     /**
