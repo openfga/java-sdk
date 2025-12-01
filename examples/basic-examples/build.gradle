@@ -1,7 +1,7 @@
 plugins {
     id 'application'
     id 'com.diffplug.spotless' version '8.0.0'
-    id 'org.jetbrains.kotlin.jvm' version '2.2.20'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
 }
 
 application {
@@ -30,7 +30,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.8")
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
