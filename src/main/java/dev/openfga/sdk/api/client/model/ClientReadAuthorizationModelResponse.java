@@ -34,7 +34,10 @@ public class ClientReadAuthorizationModelResponse extends ReadAuthorizationModel
         ClientReadAuthorizationModelResponse clientResponse = new ClientReadAuthorizationModelResponse(
                 apiResponse.getStatusCode(), apiResponse.getHeaders(), apiResponse.getRawResponse());
         ReadAuthorizationModelsResponse response = apiResponse.getData();
-        clientResponse.setAuthorizationModel(response.getAuthorizationModels().get(0));
+        List<dev.openfga.sdk.api.model.AuthorizationModel> models = response.getAuthorizationModels();
+        if (!models.isEmpty()) {
+            clientResponse.setAuthorizationModel(models.get(0));
+        }
         return clientResponse;
     }
 

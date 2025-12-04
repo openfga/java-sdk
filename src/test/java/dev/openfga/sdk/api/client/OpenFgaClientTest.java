@@ -747,6 +747,23 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void readLatestAuthorizationModelTest_emptyList() throws Exception {
+        // Given
+        String getUrl = String.format(
+                "%s/stores/%s/authorization-models?page_size=1", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        String responseBody = "{\"authorization_models\":[]}";
+        mockHttpClient.onGet(getUrl).doReturn(200, responseBody);
+
+        // When
+        ClientReadAuthorizationModelResponse response =
+                fga.readLatestAuthorizationModel().get();
+
+        // Then
+        mockHttpClient.verify().get(getUrl).called(1);
+        assertNull(response.getAuthorizationModel());
+    }
+
+    @Test
     public void readChanges() throws Exception {
         // Given
         String changeType = "repo";
