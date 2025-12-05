@@ -4,7 +4,7 @@
 
 ## v0.9.4
 
-### [0.9.4](https://github.com/openfga/java-sdk/compare/v0.9.3...v0.9.4)) (2025-12-05)
+### [0.9.4](https://github.com/openfga/java-sdk/compare/v0.9.3...v0.9.4) (2025-12-05)
 
 ### Changed
 - Improved error handling and integration test coverage for FgaError and related classes. (#260)
