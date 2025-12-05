@@ -1,3 +1,7 @@
+// NOTE: This example is temporarily commented out as the streamedListObjects API is not yet available for public use.
+// It will be enabled in a future release.
+
+/*
 package dev.openfga.sdk.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -192,3 +196,4 @@ public class StreamedListObjectsExample {
         }
     }
 }
+*/

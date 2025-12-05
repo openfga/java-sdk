@@ -1131,7 +1131,7 @@ public class OpenFgaClient {
      * @return CompletableFuture<Void> that completes when streaming finishes
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
-    public CompletableFuture<Void> streamedListObjects(
+    CompletableFuture<Void> streamedListObjects(
             ClientListObjectsRequest request, Consumer<StreamedListObjectsResponse> consumer)
             throws FgaInvalidParameterException {
         if (consumer == null) {
@@ -1171,7 +1171,7 @@ public class OpenFgaClient {
      * @return CompletableFuture<Void> that completes when streaming finishes
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
-    public CompletableFuture<Void> streamedListObjects(
+    CompletableFuture<Void> streamedListObjects(
             ClientListObjectsRequest request,
             ClientStreamedListObjectsOptions options,
             Consumer<StreamedListObjectsResponse> consumer)
@@ -1211,7 +1211,7 @@ public class OpenFgaClient {
      * @return CompletableFuture<Void> that completes when streaming finishes or exceptionally on error
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace, or consumer is null
      */
-    public CompletableFuture<Void> streamedListObjects(
+    CompletableFuture<Void> streamedListObjects(
             ClientListObjectsRequest request,
             ClientStreamedListObjectsOptions options,
             Consumer<StreamedListObjectsResponse> consumer,

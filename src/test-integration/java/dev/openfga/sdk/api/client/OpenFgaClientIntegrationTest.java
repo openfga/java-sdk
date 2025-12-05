@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -374,6 +375,7 @@ public class OpenFgaClientIntegrationTest {
     }
 
     @Test
+    @Disabled("streamedListObjects is private for now")
     public void streamedListObjects() throws Exception {
         // Given - Create a single store for all streaming tests
         String storeId = createStore(thisTestName());

@@ -1,5 +1,8 @@
 # Streamed List Objects Example
 
+> **NOTE:** This example is temporarily disabled as the `streamedListObjects` API is not yet available for public use. It will be enabled in a future release.
+
+<!--
 Demonstrates using `StreamedListObjects` to retrieve objects via the streaming API in the Java SDK.
 
 ## What is StreamedListObjects?
