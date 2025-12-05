@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -372,10 +374,8 @@ public class OpenFgaClientIntegrationTest {
         return response.getAuthorizationModelId();
     }
 
-    // NOTE: This test is temporarily commented out as the streamedListObjects API is not yet available for public use.
-    // It will be enabled in a future release.
-    /*
     @Test
+    @Disabled("streamedListObjects is private for now")
     public void streamedListObjects() throws Exception {
         // Given - Create a single store for all streaming tests
         String storeId = createStore(thisTestName());
@@ -466,7 +466,6 @@ public class OpenFgaClientIntegrationTest {
         assertEquals(20, chainTestObjects.size());
         assertTrue(chainedOperationExecuted.get());
     }
-    */
 
     /** Get the name of the test that invokes this function. Returned in the form: "$class.$fn" */
     private String thisTestName() {
