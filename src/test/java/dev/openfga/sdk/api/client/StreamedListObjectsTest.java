@@ -1,36 +1,36 @@
 // NOTE: This test is temporarily commented out as the streamedListObjects API is not yet available for public use.
 // It will be enabled in a future release.
 
-//package dev.openfga.sdk.api.client;
+// package dev.openfga.sdk.api.client;
 //
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.*;
+// import static org.junit.jupiter.api.Assertions.*;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.Mockito.*;
 //
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
-//import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
-//import dev.openfga.sdk.api.configuration.ClientConfiguration;
-//import dev.openfga.sdk.api.configuration.Credentials;
-//import dev.openfga.sdk.api.model.ConsistencyPreference;
-//import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
-//import dev.openfga.sdk.constants.FgaConstants;
-//import dev.openfga.sdk.errors.FgaInvalidParameterException;
-//import java.net.http.HttpClient;
-//import java.net.http.HttpHeaders;
-//import java.net.http.HttpResponse;
-//import java.time.Duration;
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.concurrent.atomic.AtomicInteger;
-//import java.util.stream.Stream;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
+// import com.fasterxml.jackson.databind.ObjectMapper;
+// import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
+// import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
+// import dev.openfga.sdk.api.configuration.ClientConfiguration;
+// import dev.openfga.sdk.api.configuration.Credentials;
+// import dev.openfga.sdk.api.model.ConsistencyPreference;
+// import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
+// import dev.openfga.sdk.constants.FgaConstants;
+// import dev.openfga.sdk.errors.FgaInvalidParameterException;
+// import java.net.http.HttpClient;
+// import java.net.http.HttpHeaders;
+// import java.net.http.HttpResponse;
+// import java.time.Duration;
+// import java.util.ArrayList;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.concurrent.CompletableFuture;
+// import java.util.concurrent.atomic.AtomicInteger;
+// import java.util.stream.Stream;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
 //
-///** Tests for streaming list objects functionality with CompletableFuture. */
-//public class StreamedListObjectsTest {
+/// ** Tests for streaming list objects functionality with CompletableFuture. */
+// public class StreamedListObjectsTest {
 //    private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
 //    private static final String DEFAULT_AUTH_MODEL_ID = "01G5JAVJ41T49E9TT3SKVS7X1J";
 //    private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
@@ -426,4 +426,4 @@
 //
 //        return mockResponse;
 //    }
-//}
+// }
