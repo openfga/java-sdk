@@ -1,18 +1,21 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.3...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.4...HEAD)
+
+## v0.9.4
+
+### [0.9.4](https://github.com/openfga/java-sdk/compare/v0.9.3...v0.9.4) (2025-12-05)
 
 ### Changed
 - Improved error handling and integration test coverage for FgaError and related classes. (#260)
 
 ## v0.9.3
 
-### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.2...v0.9.3)) (2025-11-10)
+### [0.9.3](https://github.com/openfga/java-sdk/compare/v0.9.2...v0.9.3) (2025-11-10)
 
 ### Fixed
 
 - fix: preserve response headers in transaction write operations (#254)
-- feat: Add `streamedListObjects` API endpoint with consumer callback support (#252)
 
 ## v0.9.2
 
