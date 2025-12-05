@@ -373,6 +373,9 @@ public class OpenFgaClientIntegrationTest {
         return response.getAuthorizationModelId();
     }
 
+    // NOTE: This test is temporarily commented out as the streamedListObjects API is not yet available for public use.
+    // It will be enabled in a future release.
+    /*
     @Test
     public void streamedListObjects() throws Exception {
         // Given - Create a single store for all streaming tests
@@ -464,6 +467,7 @@ public class OpenFgaClientIntegrationTest {
         assertEquals(20, chainTestObjects.size());
         assertTrue(chainedOperationExecuted.get());
     }
+    */
 
     /** Get the name of the test that invokes this function. Returned in the form: "$class.$fn" */
     private String thisTestName() {
