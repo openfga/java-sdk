@@ -2138,4 +2138,68 @@ public class OpenFgaApiTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
+
+    @Test
+    public void getAccessToken_withClientCredentials() throws Exception {
+        // Given
+        String accessToken = "test-access-token-12345";
+        String tokenResponse = String.format("{\"access_token\":\"%s\",\"token_type\":\"Bearer\",\"expires_in\":3600}", accessToken);
+        
+        // Mock the token endpoint
+        mockHttpClient.onPost("https://auth.fga.example/oauth/token").doReturn(200, tokenResponse);
+        
+        ClientCredentials clientCredentials = new ClientCredentials()
+                .clientId("test-client-id")
+                .clientSecret("test-client-secret")
+                .apiTokenIssuer("https://auth.fga.example")
+                .apiAudience("https://api.fga.example");
+                
+        Configuration configuration = new Configuration()
+                .apiUrl("https://api.fga.example")
+                .credentials(new Credentials(clientCredentials));
+                
+        OpenFgaApi api = new OpenFgaApi(configuration, mockApiClient);
+
+        // When
+        String result = api.getAccessToken().get();
+
+        // Then
+        assertEquals(accessToken, result);
+        mockHttpClient.verify().post("https://auth.fga.example/oauth/token").called();
+    }
+
+    @Test
+    public void getAccessToken_withApiToken() throws Exception {
+        // Given - API token configuration
+        ApiToken apiToken = new ApiToken("static-api-token");
+        Configuration configuration = new Configuration()
+                .apiUrl("https://api.fga.example")
+                .credentials(new Credentials(apiToken));
+                
+        OpenFgaApi api = new OpenFgaApi(configuration, mockApiClient);
+
+        // When & Then
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            api.getAccessToken().get();
+        });
+        
+        assertEquals("getAccessToken() is only available when using CLIENT_CREDENTIALS authentication method", exception.getMessage());
+    }
+
+    @Test
+    public void getAccessToken_withNoCredentials() throws Exception {
+        // Given - No credentials configuration
+        Configuration configuration = new Configuration()
+                .apiUrl("https://api.fga.example")
+                .credentials(new Credentials());
+                
+        OpenFgaApi api = new OpenFgaApi(configuration, mockApiClient);
+
+        // When & Then  
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            api.getAccessToken().get();
+        });
+        
+        assertEquals("getAccessToken() is only available when using CLIENT_CREDENTIALS authentication method", exception.getMessage());
+    }
 }
