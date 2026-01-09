@@ -24,11 +24,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /** Tests for streaming list objects functionality with CompletableFuture. */
-@Disabled("streamedListObjects is private for now")
 public class StreamedListObjectsTest {
     private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
     private static final String DEFAULT_AUTH_MODEL_ID = "01G5JAVJ41T49E9TT3SKVS7X1J";
