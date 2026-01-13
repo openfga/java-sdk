@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.errors.FgaError;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
