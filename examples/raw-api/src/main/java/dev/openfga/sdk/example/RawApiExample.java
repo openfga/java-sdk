@@ -3,6 +3,10 @@ package dev.openfga.sdk.example;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.RawRequestBuilder;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.model.CreateStoreRequest;
+import dev.openfga.sdk.api.model.ListStoresResponse;
+import dev.openfga.sdk.api.model.Store;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,173 +14,177 @@ import java.util.Map;
  *
  * This example shows how to use the Raw API to call OpenFGA endpoints
  * that are not yet wrapped by the SDK's typed methods.
+ *
+ * The example uses real OpenFGA endpoints to demonstrate actual functionality.
  */
 public class RawApiExample {
 
-    /**
-     * Custom response type for demonstration.
-     */
-    public static class BulkDeleteResponse {
-        public int deletedCount;
-        public String message;
-    }
-
-    /**
-     * Custom response type for demonstration.
-     */
-    public static class ExperimentalFeatureResponse {
-        public boolean enabled;
-        public String version;
-        public Map<String, Object> metadata;
-    }
-
     public static void main(String[] args) throws Exception {
-        // Initialize the OpenFGA client
-        ClientConfiguration config = new ClientConfiguration()
-                .apiUrl("http://localhost:8080")
-                .storeId("01YCP46JKYM8FJCQ37NMBYHE5X");
+        // Initialize the OpenFGA client (no store ID needed for list stores)
+        ClientConfiguration config = new ClientConfiguration().apiUrl("http://localhost:8080");
 
         OpenFgaClient fgaClient = new OpenFgaClient(config);
 
-        // Example 1: Call a POST endpoint with typed response
-        System.out.println("Example 1: POST request with typed response");
-        postRequestExample(fgaClient);
+        System.out.println("=== Raw API Examples ===\n");
 
-        // Example 2: GET request with raw JSON response
-        System.out.println("\nExample 2: GET request with raw JSON");
-        rawJsonExample(fgaClient);
+        // Example 1: List stores with typed response
+        System.out.println("Example 1: List stores (GET with typed response)");
+        String storeId = listStoresExample(fgaClient);
 
-        // Example 3: Request with query parameters
-        System.out.println("\nExample 3: Request with query parameters");
-        queryParametersExample(fgaClient);
+        // Example 2: Get store with raw JSON response
+        System.out.println("\nExample 2: Get store (GET with raw JSON)");
+        getStoreRawJsonExample(fgaClient, storeId);
 
-        // Example 4: Request with custom headers
-        System.out.println("\nExample 4: Request with custom headers");
-        customHeadersExample(fgaClient);
+        // Example 3: List stores with query parameters
+        System.out.println("\nExample 3: List stores with pagination (query parameters)");
+        listStoresWithPaginationExample(fgaClient);
 
-        // Example 5: Error handling
-        System.out.println("\nExample 5: Error handling");
+        // Example 4: Create store with custom headers
+        System.out.println("\nExample 4: Create store (POST with custom headers)");
+        createStoreWithHeadersExample(fgaClient);
+
+        // Example 5: Error handling - try to get non-existent store
+        System.out.println("\nExample 5: Error handling (404 error)");
         errorHandlingExample(fgaClient);
+
+        System.out.println("\n=== All examples completed ===");
     }
 
     /**
-     * Example 1: POST request with request body and typed response.
+     * Example 1: GET request with typed response.
+     * Lists all stores using the Raw API and returns a store ID for use in other examples.
      */
-    private static void postRequestExample(OpenFgaClient fgaClient) {
+    private static String listStoresExample(OpenFgaClient fgaClient) {
         try {
-            // Build the raw request
-            RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
-                    .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
-                    .queryParam("force", "true")
-                    .body(Map.of(
-                            "older_than", "2023-01-01",
-                            "type", "user",
-                            "limit", 1000));
+            // Build the raw request for GET /stores
+            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores");
 
             // Execute with typed response
-            fgaClient
+            var response = fgaClient
                     .raw()
-                    .send(request, BulkDeleteResponse.class)
-                    .thenAccept(response -> {
-                        System.out.println("Status: " + response.getStatusCode());
-                        System.out.println("Deleted items: " + response.getData().deletedCount);
-                        System.out.println("Message: " + response.getData().message);
-                    })
-                    .exceptionally(e -> {
-                        System.err.println("Error: " + e.getMessage());
-                        return null;
-                    })
-                    .get(); // Wait for completion (in production, avoid blocking)
+                    .send(request, ListStoresResponse.class)
+                    .get();
+
+            System.out.println("✓ Status: " + response.getStatusCode());
+            List<Store> stores = response.getData().getStores();
+            System.out.println("✓ Found " + stores.size() + " store(s)");
+
+            if (!stores.isEmpty()) {
+                Store firstStore = stores.get(0);
+                System.out.println("✓ First store: " + firstStore.getName() + " (ID: " + firstStore.getId() + ")");
+                return firstStore.getId();
+            } else {
+                // Create a store if none exist
+                System.out.println("  No stores found, creating one...");
+                return createStoreForExamples(fgaClient);
+            }
 
         } catch (Exception e) {
-            System.err.println("Failed to execute bulk delete: " + e.getMessage());
+            System.err.println("✗ Error: " + e.getMessage());
+            // Create a store on error
+            try {
+                return createStoreForExamples(fgaClient);
+            } catch (Exception ex) {
+                return "01YCP46JKYM8FJCQ37NMBYHE5X"; // fallback
+            }
         }
+    }
+
+    /**
+     * Helper method to create a store for examples.
+     */
+    private static String createStoreForExamples(OpenFgaClient fgaClient) throws Exception {
+        String storeName = "raw-api-example-" + System.currentTimeMillis();
+        RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
+                .body(Map.of("name", storeName));
+
+        var response = fgaClient.raw().send(request).get();
+        String rawJson = response.getData();
+        System.out.println("  Created store: " + storeName);
+
+        // Extract store ID from JSON (simple parsing)
+        String idPrefix = "\"id\":\"";
+        int idStart = rawJson.indexOf(idPrefix);
+        if (idStart == -1) {
+            throw new RuntimeException("Could not find store ID in response: " + rawJson);
+        }
+        idStart += idPrefix.length();
+        int idEnd = rawJson.indexOf("\"", idStart);
+        if (idEnd == -1) {
+            throw new RuntimeException("Could not parse store ID from response: " + rawJson);
+        }
+        return rawJson.substring(idStart, idEnd);
     }
 
     /**
      * Example 2: Get raw JSON response without deserialization.
      */
-    private static void rawJsonExample(OpenFgaClient fgaClient) {
+    private static void getStoreRawJsonExample(OpenFgaClient fgaClient, String storeId) {
         try {
-            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/experimental-feature")
-                    .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X");
+            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
+                    .pathParam("store_id", storeId);
 
             // Execute and get raw JSON string
-            fgaClient
-                    .raw()
-                    .send(request) // No class specified = returns String
-                    .thenAccept(response -> {
-                        System.out.println("Status: " + response.getStatusCode());
-                        System.out.println("Raw JSON: " + response.getRawResponse());
-                    })
-                    .exceptionally(e -> {
-                        System.err.println("Error: " + e.getMessage());
-                        return null;
-                    })
-                    .get();
+            var response = fgaClient.raw().send(request).get();
+
+            System.out.println("✓ Status: " + response.getStatusCode());
+            System.out.println("✓ Raw JSON: " + response.getData());
+            System.out.println("✓ Content-Type: " + response.getHeaders().get("content-type"));
 
         } catch (Exception e) {
-            System.err.println("Failed to get raw response: " + e.getMessage());
+            System.err.println("✗ Error: " + e.getMessage());
         }
     }
 
     /**
      * Example 3: Add query parameters to requests.
      */
-    private static void queryParametersExample(OpenFgaClient fgaClient) {
+    private static void listStoresWithPaginationExample(OpenFgaClient fgaClient) {
         try {
-            RawRequestBuilder request =
-                    RawRequestBuilder.builder("GET", "/stores/{store_id}/experimental-list")
-                            .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
-                            .queryParam("page", "1")
-                            .queryParam("limit", "50")
-                            .queryParam("filter", "active");
+            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores")
+                    .queryParam("page_size", "2");
 
-            fgaClient
+            var response = fgaClient
                     .raw()
-                    .send(request, ExperimentalFeatureResponse.class)
-                    .thenAccept(response -> {
-                        System.out.println("Status: " + response.getStatusCode());
-                        System.out.println("Feature enabled: " + response.getData().enabled);
-                        System.out.println("Version: " + response.getData().version);
-                    })
-                    .exceptionally(e -> {
-                        System.err.println("Error: " + e.getMessage());
-                        return null;
-                    })
+                    .send(request, ListStoresResponse.class)
                     .get();
 
+            System.out.println("✓ Status: " + response.getStatusCode());
+            System.out.println("✓ Stores returned: " + response.getData().getStores().size());
+            if (response.getData().getContinuationToken() != null) {
+                String token = response.getData().getContinuationToken();
+                String tokenPreview = token.length() > 20 ? token.substring(0, 20) + "..." : token;
+                System.out.println("✓ Continuation token present: " + tokenPreview);
+            } else {
+                System.out.println("✓ No continuation token (all results returned)");
+            }
+
         } catch (Exception e) {
-            System.err.println("Failed to call endpoint with query params: " + e.getMessage());
+            System.err.println("✗ Error: " + e.getMessage());
         }
     }
 
     /**
      * Example 4: Add custom headers to requests.
      */
-    private static void customHeadersExample(OpenFgaClient fgaClient) {
+    private static void createStoreWithHeadersExample(OpenFgaClient fgaClient) {
         try {
-            RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/experimental-action")
-                    .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
-                    .header("X-Request-ID", "unique-request-123")
-                    .header("X-Client-Version", "1.0.0")
-                    .body(Map.of("action", "test"));
+            String storeName = "raw-api-custom-headers-" + System.currentTimeMillis();
+            RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
+                    .header("X-Example-Header", "custom-value")
+                    .header("X-Request-ID", "req-" + System.currentTimeMillis())
+                    .body(Map.of("name", storeName));
 
-            fgaClient
-                    .raw()
-                    .send(request, ExperimentalFeatureResponse.class)
-                    .thenAccept(response -> {
-                        System.out.println("Status: " + response.getStatusCode());
-                        System.out.println("Response: " + response.getData());
-                    })
-                    .exceptionally(e -> {
-                        System.err.println("Error: " + e.getMessage());
-                        return null;
-                    })
-                    .get();
+            var response = fgaClient.raw().send(request).get();
+
+            System.out.println("✓ Status: " + response.getStatusCode());
+            System.out.println("✓ Store created successfully");
+            String responseData = response.getData();
+            String preview = responseData.length() > 100 ? responseData.substring(0, 100) + "..." : responseData;
+            System.out.println("✓ Response: " + preview);
 
         } catch (Exception e) {
-            System.err.println("Failed to call endpoint with custom headers: " + e.getMessage());
+            System.err.println("✗ Error: " + e.getMessage());
         }
     }
 
@@ -186,30 +194,19 @@ public class RawApiExample {
      */
     private static void errorHandlingExample(OpenFgaClient fgaClient) {
         try {
-            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/non-existent")
-                    .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X");
+            // Try to get a non-existent store
+            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
+                    .pathParam("store_id", "01ZZZZZZZZZZZZZZZZZZZZZZZ9");
 
-            fgaClient
-                    .raw()
-                    .send(request)
-                    .thenAccept(response -> {
-                        System.out.println("Success: " + response.getStatusCode());
-                    })
-                    .exceptionally(e -> {
-                        // Standard SDK error handling works here:
-                        // - 401: Unauthorized
-                        // - 404: Not Found
-                        // - 500: Internal Server Error (with automatic retries)
-                        System.err.println("API Error: " + e.getMessage());
-                        if (e.getCause() != null) {
-                            System.err.println("Cause: " + e.getCause().getClass().getName());
-                        }
-                        return null;
-                    })
-                    .get();
+            var response = fgaClient.raw().send(request).get();
+
+            System.out.println("✓ Success: " + response.getStatusCode());
 
         } catch (Exception e) {
-            System.err.println("Failed with error: " + e.getMessage());
+            // Expected error - demonstrates proper error handling
+            System.out.println("✓ Error handled correctly:");
+            System.out.println("  Message: " + e.getMessage());
+            System.out.println("  Type: " + e.getCause().getClass().getSimpleName());
         }
     }
 }

@@ -19,7 +19,11 @@ Use cases:
 ## Running
 
 ```bash
-# From the SDK root directory, build the SDK first
+# Start OpenFGA server first (if not already running)
+docker run -p 8080:8080 openfga/openfga run
+
+# From the SDK root directory, build the SDK
+cd /Users/anurag/openfga/java-sdk
 ./gradlew build
 
 # Then run the example
@@ -36,13 +40,15 @@ make run
 
 ## What it does
 
-The example demonstrates Raw API capabilities:
+The example demonstrates Raw API capabilities using real OpenFGA endpoints:
 
-1. **POST Request with Typed Response**: Sends a request and deserializes the response into a custom Java class
-2. **GET Request with Raw JSON**: Retrieves the raw JSON response string
-3. **Query Parameters**: Adds query parameters to the request
-4. **Custom Headers**: Adds custom HTTP headers to the request
-5. **Error Handling**: Demonstrates SDK error handling and retry behavior
+1. **List Stores (GET with typed response)**: Lists all stores and deserializes into `ListStoresResponse`
+2. **Get Store (GET with raw JSON)**: Retrieves a single store and returns the raw JSON string
+3. **List Stores with Pagination**: Demonstrates query parameters using `page_size`
+4. **Create Store (POST with custom headers)**: Creates a new store with custom HTTP headers
+5. **Error Handling**: Attempts to get a non-existent store and handles the 404 error properly
+
+All requests will succeed (except #5 which intentionally triggers an error for demonstration).
 
 ## Key Features
 
@@ -91,15 +97,11 @@ Requests automatically include:
 
 ## Code Structure
 
-- `RawApiExample.java`: Example demonstrating Raw API usage
-- Custom response classes: `BulkDeleteResponse` and `ExperimentalFeatureResponse`
+- `RawApiExample.java`: Example demonstrating Raw API usage with real OpenFGA endpoints
 
 ## Notes
 
-This example uses placeholder endpoints for demonstration. In production:
-- Use actual OpenFGA endpoint paths
-- Match request/response structures to the target API
-- Implement appropriate error handling
+This example uses real OpenFGA endpoints (`/stores`, `/stores/{store_id}`) to demonstrate actual functionality. The Raw API can be used with any OpenFGA endpoint, including custom endpoints if you have extended the API.
 
 ## See Also
 
