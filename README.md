@@ -1170,14 +1170,14 @@ try {
 
 ### Calling Other Endpoints
 
-In certain cases you may want to call other APIs not yet wrapped by the SDK. You can do so by using the Raw API available from the `fgaClient`. The Raw API allows you to make raw HTTP calls to any OpenFGA endpoint by specifying the HTTP method, path, parameters, body, and headers, while still honoring the client configuration (authentication, telemetry, retries, and error handling).
+The Raw API provides direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK. It maintains the SDK's client configuration including authentication, telemetry, retries, and error handling.
 
-This is useful when:
-- you want to call a new endpoint that is not yet supported by the SDK
-- you are using an earlier version of the SDK that doesn't yet support a particular endpoint
-- you have a custom endpoint deployed that extends the OpenFGA API
+Use cases:
+- Calling endpoints not yet supported by the SDK
+- Using an SDK version that lacks support for a particular endpoint
+- Accessing custom endpoints that extend the OpenFGA API
 
-In all cases, you initialize the SDK the same way as usual, and then use the Raw API from the `fgaClient` instance.
+Initialize the SDK normally and access the Raw API via the `fgaClient` instance:
 
 ```java
 // Initialize the client, same as above
