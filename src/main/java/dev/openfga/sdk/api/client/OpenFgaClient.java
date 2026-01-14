@@ -46,6 +46,26 @@ public class OpenFgaClient {
         return api;
     }
 
+    /**
+     * Returns a RawApi instance for executing HTTP requests to arbitrary OpenFGA endpoints.
+     * Requests automatically include authentication, retry logic, error handling, and configured timeouts/headers.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+     *     .pathParam("store_id", storeId)
+     *     .body(requestData);
+     *
+     * client.raw().send(request, ResponseType.class)
+     *     .thenAccept(response -> handleResponse(response.getData()));
+     * }</pre>
+     *
+     * @return RawApi instance
+     */
+    public RawApi raw() {
+        return new RawApi(this.apiClient, this.configuration);
+    }
+
     public void setStoreId(String storeId) {
         configuration.storeId(storeId);
     }

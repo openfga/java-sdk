@@ -216,6 +216,13 @@ public class HttpRequestAttempt<T> {
             return CompletableFuture.completedFuture(null);
         }
 
+        // Return raw response body as-is for String.class
+        if (clazz == String.class) {
+            @SuppressWarnings("unchecked")
+            T raw = (T) response.body();
+            return CompletableFuture.completedFuture(raw);
+        }
+
         try {
             T deserialized = apiClient.getObjectMapper().readValue(response.body(), clazz);
             return CompletableFuture.completedFuture(deserialized);
