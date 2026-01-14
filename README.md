@@ -1170,14 +1170,14 @@ try {
 
 ### Calling Other Endpoints
 
-In certain cases you may want to call other APIs not yet wrapped by the SDK. You can do so by using the APIExecutor available from the `fgaClient`. The APIExecutor allows you to make raw HTTP calls to any OpenFGA endpoint by specifying the operation name, HTTP method, path, parameters, body, and headers, while still honoring the client configuration (authentication, telemetry, retries, and error handling).
+In certain cases you may want to call other APIs not yet wrapped by the SDK. You can do so by using the Raw API available from the `fgaClient`. The Raw API allows you to make raw HTTP calls to any OpenFGA endpoint by specifying the HTTP method, path, parameters, body, and headers, while still honoring the client configuration (authentication, telemetry, retries, and error handling).
 
 This is useful when:
 - you want to call a new endpoint that is not yet supported by the SDK
 - you are using an earlier version of the SDK that doesn't yet support a particular endpoint
 - you have a custom endpoint deployed that extends the OpenFGA API
 
-In all cases, you initialize the SDK the same way as usual, and then get the APIExecutor from the `fgaClient` instance.
+In all cases, you initialize the SDK the same way as usual, and then use the Raw API from the `fgaClient` instance.
 
 ```java
 // Initialize the client, same as above
@@ -1185,9 +1185,6 @@ ClientConfiguration config = new ClientConfiguration()
     .apiUrl("http://localhost:8080")
     .storeId("01YCP46JKYM8FJCQ37NMBYHE5X");
 OpenFgaClient fgaClient = new OpenFgaClient(config);
-
-// Get the generic API executor
-APIExecutor executor = fgaClient.getAPIExecutor();
 
 // Custom new endpoint that doesn't exist in the SDK yet
 Map<String, Object> requestBody = Map.of(
@@ -1197,26 +1194,22 @@ Map<String, Object> requestBody = Map.of(
 );
 
 // Build the request
-APIExecutorRequest request = new APIExecutorRequestBuilder("CustomEndpoint", "POST", "/stores/{store_id}/custom-endpoint")
-    .withPathParameter("store_id", storeId)
-    .withQueryParameter("page_size", "20")
-    .withQueryParameter("continuation_token", "eyJwayI6...")
-    .withBody(requestBody)
-    .withHeader("X-Experimental-Feature", "enabled")
-    .build();
+RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/custom-endpoint")
+    .pathParam("store_id", storeId)
+    .queryParam("page_size", "20")
+    .queryParam("continuation_token", "eyJwayI6...")
+    .body(requestBody)
+    .header("X-Experimental-Feature", "enabled");
 ```
 
 #### Example: Calling a new "Custom Endpoint" endpoint and handling raw response
 
 ```java
 // Get raw response without automatic decoding
-APIExecutorResponse rawResponse = executor.execute(request).get();
+ApiResponse<String> rawResponse = fgaClient.raw().send(request).get();
 
-// Manually decode the response
-ObjectMapper mapper = new ObjectMapper();
-Map<String, Object> result = mapper.readValue(rawResponse.getBody(), new TypeReference<Map<String, Object>>() {});
-
-System.out.println("Response: " + result);
+String rawJson = rawResponse.getData();
+System.out.println("Response: " + rawJson);
 
 // You can access fields like headers, status code, etc. from rawResponse:
 System.out.println("Status Code: " + rawResponse.getStatusCode());
@@ -1237,16 +1230,21 @@ class CustomEndpointResponse {
     public void setReason(String reason) { this.reason = reason; }
 }
 
-// Get raw response decoded into CustomEndpointResponse class
-APIExecutorResponse rawResponse = executor.executeWithDecode(request, CustomEndpointResponse.class).get();
+// Get response decoded into CustomEndpointResponse class
+ApiResponse<CustomEndpointResponse> response = fgaClient.raw()
+    .send(request, CustomEndpointResponse.class)
+    .get();
 
-CustomEndpointResponse customEndpointResponse = rawResponse.getData();
-System.out.println("Response: " + customEndpointResponse);
+CustomEndpointResponse customEndpointResponse = response.getData();
+System.out.println("Allowed: " + customEndpointResponse.isAllowed());
+System.out.println("Reason: " + customEndpointResponse.getReason());
 
-// You can access fields like headers, status code, etc. from rawResponse:
-System.out.println("Status Code: " + rawResponse.getStatusCode());
-System.out.println("Headers: " + rawResponse.getHeaders());
+// You can access fields like headers, status code, etc. from response:
+System.out.println("Status Code: " + response.getStatusCode());
+System.out.println("Headers: " + response.getHeaders());
 ```
+
+For a complete working example, see [examples/raw-api](examples/raw-api).
 
 #### Documentation
 

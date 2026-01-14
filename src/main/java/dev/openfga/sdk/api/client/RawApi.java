@@ -95,23 +95,26 @@ public class RawApi {
     }
 
     private String buildCompletePath(RawRequestBuilder requestBuilder) {
-        String path = requestBuilder.getPath();
+        StringBuilder pathBuilder = new StringBuilder(requestBuilder.getPath());
         Map<String, String> pathParams = requestBuilder.getPathParams();
+
         // Automatic {store_id} replacement if not provided
-        if (path.contains("{store_id}") && !pathParams.containsKey("store_id")) {
+        if (pathBuilder.indexOf("{store_id}") != -1 && !pathParams.containsKey("store_id")) {
             if (configuration instanceof dev.openfga.sdk.api.configuration.ClientConfiguration) {
                 String storeId = ((dev.openfga.sdk.api.configuration.ClientConfiguration) configuration).getStoreId();
                 if (storeId != null) {
-                    path = path.replace("{store_id}", dev.openfga.sdk.util.StringUtil.urlEncode(storeId));
+                    replaceInBuilder(pathBuilder, "{store_id}", dev.openfga.sdk.util.StringUtil.urlEncode(storeId));
                 }
             }
         }
+
         // Replace path parameters
         for (Map.Entry<String, String> entry : pathParams.entrySet()) {
             String placeholder = "{" + entry.getKey() + "}";
             String encodedValue = dev.openfga.sdk.util.StringUtil.urlEncode(entry.getValue());
-            path = path.replace(placeholder, encodedValue);
+            replaceInBuilder(pathBuilder, placeholder, encodedValue);
         }
+
         // Add query parameters (sorted for deterministic order)
         Map<String, String> queryParams = requestBuilder.getQueryParams();
         if (!queryParams.isEmpty()) {
@@ -120,10 +123,18 @@ public class RawApi {
                     .map(entry -> dev.openfga.sdk.util.StringUtil.urlEncode(entry.getKey()) + "="
                             + dev.openfga.sdk.util.StringUtil.urlEncode(entry.getValue()))
                     .collect(java.util.stream.Collectors.joining("&"));
-            path = path + (path.contains("?") ? "&" : "?") + queryString;
+            pathBuilder.append(pathBuilder.indexOf("?") != -1 ? "&" : "?").append(queryString);
         }
 
-        return path;
+        return pathBuilder.toString();
+    }
+
+    private void replaceInBuilder(StringBuilder builder, String target, String replacement) {
+        int index = builder.indexOf(target);
+        while (index != -1) {
+            builder.replace(index, index + target.length(), replacement);
+            index = builder.indexOf(target, index + replacement.length());
+        }
     }
 
     private HttpRequest buildHttpRequest(RawRequestBuilder requestBuilder, String path)

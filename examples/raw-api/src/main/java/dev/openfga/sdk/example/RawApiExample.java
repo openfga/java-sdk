@@ -1,6 +1,5 @@
-package dev.openfga.sdk.examples;
+package dev.openfga.sdk.example;
 
-import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.RawRequestBuilder;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -54,12 +53,17 @@ public class RawApiExample {
         // Example 4: Request with custom headers
         System.out.println("\nExample 4: Request with custom headers");
         customHeadersExample(fgaClient);
+
+        // Example 5: Error handling
+        System.out.println("\nExample 5: Error handling");
+        errorHandlingExample(fgaClient);
     }
 
     /**
      * Example 1: POST request with request body and typed response.
-    private static void bulkDeleteExample(OpenFgaClient fgaClient) {
+     */
     private static void postRequestExample(OpenFgaClient fgaClient) {
+        try {
             // Build the raw request
             RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
                     .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
@@ -90,9 +94,10 @@ public class RawApiExample {
     }
 
     /**
-     * Example 2: Get a raw JSON response without typed deserialization.
-     * This is useful when you want to inspect the response or don't have a Java class.
      * Example 2: Get raw JSON response without deserialization.
+     * This is useful when you want to inspect the response or don't have a Java class.
+     */
+    private static void rawJsonExample(OpenFgaClient fgaClient) {
         try {
             RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/experimental-feature")
                     .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X");
@@ -117,10 +122,10 @@ public class RawApiExample {
     }
 
     /**
-     * Example 3: Use query parameters to filter or paginate results.
+     * Example 3: Using query parameters for filtering or pagination.
      */
     private static void queryParametersExample(OpenFgaClient fgaClient) {
-     * Example 3: Using query parameters for filtering or pagination.
+        try {
             RawRequestBuilder request =
                     RawRequestBuilder.builder("GET", "/stores/{store_id}/experimental-list")
                             .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
@@ -148,10 +153,10 @@ public class RawApiExample {
     }
 
     /**
-     * Example 4: Add custom headers to the request.
+     * Example 4: Adding custom headers to requests.
      */
     private static void customHeadersExample(OpenFgaClient fgaClient) {
-     * Example 4: Adding custom headers to requests.
+        try {
             RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/experimental-action")
                     .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X")
                     .header("X-Request-ID", "unique-request-123")
@@ -177,10 +182,11 @@ public class RawApiExample {
     }
 
     /**
-     * Bonus Example: Error handling with the Raw API.
+     * Example 5: Error handling with the Raw API.
      * The Raw API automatically benefits from the SDK's error handling and retries.
      */
-     * Error handling example. The Raw API uses standard SDK error handling and retries.
+    private static void errorHandlingExample(OpenFgaClient fgaClient) {
+        try {
             RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/non-existent")
                     .pathParam("store_id", "01YCP46JKYM8FJCQ37NMBYHE5X");
 

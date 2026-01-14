@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = 'dev.openfga.sdk.example.StreamedListObjectsExample'
+    mainClass = 'dev.openfga.sdk.example.RawApiExample'
 }
 
 repositories {
@@ -64,3 +64,4 @@ spotless {
 tasks.register('fmt') {
     dependsOn 'spotlessApply'
 }
+
