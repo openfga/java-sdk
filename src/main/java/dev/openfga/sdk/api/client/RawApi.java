@@ -16,7 +16,8 @@ import java.util.concurrent.CompletableFuture;
  * <pre>{@code
  * RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
- *     .body(requestData);
+ *     .body(requestData)
+ *     .build();
  *
  * // Typed response
  * ApiResponse<ResponseType> response = client.raw().send(request, ResponseType.class).get();

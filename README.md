@@ -1199,7 +1199,8 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
     .queryParam("page_size", "20")
     .queryParam("continuation_token", "eyJwayI6...")
     .body(requestBody)
-    .header("X-Experimental-Feature", "enabled");
+    .header("X-Experimental-Feature", "enabled")
+    .build();
 ```
 
 #### Example: Calling a new "Custom Endpoint" endpoint and handling raw response

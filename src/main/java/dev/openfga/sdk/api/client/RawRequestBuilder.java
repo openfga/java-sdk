@@ -14,7 +14,8 @@ import java.util.Set;
  * RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
  *     .queryParam("limit", "50")
- *     .body(requestObject);
+ *     .body(requestObject)
+ *     .build();
  * }</pre>
  */
 public class RawRequestBuilder {
@@ -112,6 +113,18 @@ public class RawRequestBuilder {
      */
     public RawRequestBuilder body(Object body) {
         this.body = body;
+        return this;
+    }
+    /**
+     * Builds and returns the request for use with the Raw API.
+     * This method must be called to complete request construction.
+     *
+     * <p>This is required for consistency with other OpenFGA SDKs (e.g., Go SDK)
+     * and follows the standard builder pattern.</p>
+     *
+     * @return This builder instance (ready to be passed to {@link RawApi#send})
+     */
+    public RawRequestBuilder build() {
         return this;
     }
 

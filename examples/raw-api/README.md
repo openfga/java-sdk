@@ -61,7 +61,8 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
     .queryParam("page_size", "20")
     .queryParam("continuation_token", "eyJwayI6...")
     .body(requestBody)
-    .header("X-Custom-Header", "value");
+    .header("X-Custom-Header", "value")
+    .build();
 ```
 
 ### Response Handling

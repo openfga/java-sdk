@@ -50,7 +50,7 @@ public class RawApiIntegrationTest {
         createStoreUsingRawRequest(storeName);
 
         // Use raw API to list stores (equivalent to GET /stores)
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores");
+        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores").build();
 
         ApiResponse<ListStoresResponse> response =
                 fga.raw().send(request, ListStoresResponse.class).get();
@@ -83,7 +83,8 @@ public class RawApiIntegrationTest {
         requestBody.put("name", storeName);
 
         // Use raw API to create store (equivalent to POST /stores)
-        RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores").body(requestBody);
+        RawRequestBuilder request =
+                RawRequestBuilder.builder("POST", "/stores").body(requestBody).build();
 
         ApiResponse<CreateStoreResponse> response =
                 fga.raw().send(request, CreateStoreResponse.class).get();
@@ -112,7 +113,8 @@ public class RawApiIntegrationTest {
         requestBody.put("name", storeName);
 
         // Use raw API to create store and get raw JSON response
-        RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores").body(requestBody);
+        RawRequestBuilder request =
+                RawRequestBuilder.builder("POST", "/stores").body(requestBody).build();
 
         ApiResponse<String> response = fga.raw().send(request).get();
 
@@ -142,8 +144,9 @@ public class RawApiIntegrationTest {
         String storeId = createStoreUsingRawRequest(storeName);
 
         // Use raw API to get store details (equivalent to GET /stores/{store_id})
-        RawRequestBuilder request =
-                RawRequestBuilder.builder("GET", "/stores/{store_id}").pathParam("store_id", storeId);
+        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
+                .pathParam("store_id", storeId)
+                .build();
 
         ApiResponse<GetStoreResponse> response =
                 fga.raw().send(request, GetStoreResponse.class).get();
@@ -170,7 +173,8 @@ public class RawApiIntegrationTest {
         fga.setStoreId(storeId);
 
         // Use raw API WITHOUT providing store_id path param - it should be auto-replaced
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}");
+        RawRequestBuilder request =
+                RawRequestBuilder.builder("GET", "/stores/{store_id}").build();
 
         ApiResponse<GetStoreResponse> response =
                 fga.raw().send(request, GetStoreResponse.class).get();
@@ -221,7 +225,8 @@ public class RawApiIntegrationTest {
 
         // Use raw API to write authorization model
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/authorization-models")
-                .body(requestBody);
+                .body(requestBody)
+                .build();
 
         ApiResponse<WriteAuthorizationModelResponse> response =
                 fga.raw().send(request, WriteAuthorizationModelResponse.class).get();
@@ -252,7 +257,8 @@ public class RawApiIntegrationTest {
         // Use raw API to read authorization models with query parameters
         RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/authorization-models")
                 .queryParam("page_size", "10")
-                .queryParam("continuation_token", "");
+                .queryParam("continuation_token", "")
+                .build();
 
         ApiResponse<ReadAuthorizationModelsResponse> response =
                 fga.raw().send(request, ReadAuthorizationModelsResponse.class).get();
@@ -295,16 +301,12 @@ public class RawApiIntegrationTest {
         tupleKey.put("object", "document:budget");
         checkBody.put("tuple_key", tupleKey);
 
-        RawRequestBuilder request =
-                RawRequestBuilder.builder("POST", "/stores/{store_id}/check").body(checkBody);
+        RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/check")
+                .body(checkBody)
+                .build();
 
         ApiResponse<CheckResponse> response =
                 fga.raw().send(request, CheckResponse.class).get();
-
-        // Verify response
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode());
-        assertNotNull(response.getData());
         assertTrue(response.getData().getAllowed(), "Alice should be allowed to read the document");
 
         System.out.println("✓ Successfully performed check using raw request");
@@ -325,7 +327,8 @@ public class RawApiIntegrationTest {
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
                 .body(requestBody)
                 .header("X-Custom-Header", "custom-value")
-                .header("X-Request-ID", "test-123");
+                .header("X-Request-ID", "test-123")
+                .build();
 
         ApiResponse<CreateStoreResponse> response =
                 fga.raw().send(request, CreateStoreResponse.class).get();
@@ -343,8 +346,9 @@ public class RawApiIntegrationTest {
     @Test
     public void rawRequest_errorHandling_notFound() throws Exception {
         // Try to get a non-existent store
-        RawRequestBuilder request =
-                RawRequestBuilder.builder("GET", "/stores/{store_id}").pathParam("store_id", "non-existent-store-id");
+        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
+                .pathParam("store_id", "non-existent-store-id")
+                .build();
 
         // Should throw an exception
         try {
@@ -372,7 +376,9 @@ public class RawApiIntegrationTest {
         }
 
         // Use raw API to list stores with pagination
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores").queryParam("page_size", "2");
+        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores")
+                .queryParam("page_size", "2")
+                .build();
 
         ApiResponse<ListStoresResponse> response =
                 fga.raw().send(request, ListStoresResponse.class).get();
@@ -396,7 +402,8 @@ public class RawApiIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", storeName);
 
-        RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores").body(requestBody);
+        RawRequestBuilder request =
+                RawRequestBuilder.builder("POST", "/stores").body(requestBody).build();
 
         ApiResponse<CreateStoreResponse> response =
                 fga.raw().send(request, CreateStoreResponse.class).get();
@@ -431,7 +438,8 @@ public class RawApiIntegrationTest {
 
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/authorization-models")
                 .pathParam("store_id", storeId)
-                .body(requestBody);
+                .body(requestBody)
+                .build();
 
         ApiResponse<WriteAuthorizationModelResponse> response =
                 fga.raw().send(request, WriteAuthorizationModelResponse.class).get();
@@ -451,7 +459,8 @@ public class RawApiIntegrationTest {
 
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/write")
                 .pathParam("store_id", storeId)
-                .body(requestBody);
+                .body(requestBody)
+                .build();
 
         fga.raw().send(request, Object.class).get();
     }

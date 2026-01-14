@@ -10,7 +10,8 @@ OpenFgaClient client = new OpenFgaClient(config);
 // Build request
 RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/check")
     .pathParam("store_id", storeId)
-    .body(Map.of("tuple_key", Map.of("user", "user:jon", "relation", "reader", "object", "doc:1")));
+    .body(Map.of("tuple_key", Map.of("user", "user:jon", "relation", "reader", "object", "doc:1")))
+    .build();
 
 // Execute - typed response
 ApiResponse<CheckResponse> response = client.raw().send(request, CheckResponse.class).get();
@@ -34,15 +35,17 @@ RawRequestBuilder.builder(String method, String path)
 .queryParam(String key, String value)     // Add query parameter, URL-encoded
 .header(String key, String value)         // Add HTTP header
 .body(Object body)                        // Set request body (auto-serialized to JSON)
+.build()                                  // Complete the builder (required)
 ```
 
 **Example:**
 ```java
-RawRequestBuilder.builder("POST", "/stores/{store_id}/write")
+RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/write")
     .pathParam("store_id", "01ABC")
     .queryParam("dry_run", "true")
     .header("X-Request-ID", "uuid")
-    .body(requestObject);
+    .body(requestObject)
+    .build();
 ```
 
 ### RawApi
@@ -69,10 +72,11 @@ T getData()                            // Deserialized data
 
 ## Examples
 
-### Typed Response
+### GET Request
 ```java
 RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/feature")
-    .pathParam("store_id", storeId);
+    .pathParam("store_id", storeId)
+    .build();
 
 client.raw().send(request, FeatureResponse.class)
     .thenAccept(r -> System.out.println("Status: " + r.getStatusCode()));
@@ -83,7 +87,8 @@ client.raw().send(request, FeatureResponse.class)
 RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
     .pathParam("store_id", storeId)
     .queryParam("force", "true")
-    .body(new BulkDeleteRequest("2023-01-01", "user", 1000));
+    .body(new BulkDeleteRequest("2023-01-01", "user", 1000))
+    .build();
 
 client.raw().send(request, BulkDeleteResponse.class).get();
 ```
@@ -100,7 +105,8 @@ RawRequestBuilder.builder("GET", "/stores/{store_id}/items")
     .pathParam("store_id", storeId)
     .queryParam("page", "1")
     .queryParam("limit", "50")
-    .queryParam("sort", "created_at");
+    .queryParam("sort", "created_at")
+    .build();
 ```
 
 ### Custom Headers
@@ -108,7 +114,8 @@ RawRequestBuilder.builder("GET", "/stores/{store_id}/items")
 RawRequestBuilder.builder("POST", "/stores/{store_id}/action")
     .header("X-Request-ID", UUID.randomUUID().toString())
     .header("X-Idempotency-Key", "key-123")
-    .body(data);
+    .body(data)
+    .build();
 ```
 
 ### Error Handling
@@ -125,29 +132,34 @@ client.raw().send(request, ResponseType.class)
 
 ### Map as Request Body
 ```java
-.body(Map.of(
-    "setting", "value",
-    "enabled", true,
-    "threshold", 100,
-    "options", List.of("opt1", "opt2")
-))
+RawRequestBuilder.builder("POST", "/stores/{store_id}/settings")
+    .pathParam("store_id", storeId)
+    .body(Map.of(
+        "setting", "value",
+        "enabled", true,
+        "threshold", 100,
+        "options", List.of("opt1", "opt2")
+    ))
+    .build();
 ```
 
 ## Notes
 
 - Path/query parameters are URL-encoded automatically
 - Authentication tokens injected from client config
-- Retries on 429, 5xx errors
 - `{store_id}` auto-replaced if not provided via `.pathParam()`
 
 ## Migration to Typed Methods
 
+When SDK adds typed methods for an endpoint, you can migrate from Raw API:
+
 ```java
 // Raw API
-client.raw().send(
-    RawRequestBuilder.builder("POST", "/stores/{store_id}/check").body(req),
-    CheckResponse.class
-).get();
+RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/check")
+    .body(req)
+    .build();
+    
+client.raw().send(request, CheckResponse.class).get();
 
 // Typed SDK (when available)
 client.check(req).get();

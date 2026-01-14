@@ -63,7 +63,7 @@ public class RawApiExample {
     private static String listStoresExample(OpenFgaClient fgaClient) {
         try {
             // Build the raw request for GET /stores
-            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores");
+            RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores").build();
 
             // Execute with typed response
             var response = fgaClient
@@ -102,7 +102,8 @@ public class RawApiExample {
     private static String createStoreForExamples(OpenFgaClient fgaClient) throws Exception {
         String storeName = "raw-api-example-" + UUID.randomUUID().toString().substring(0, 8);
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
-                .body(Map.of("name", storeName));
+                .body(Map.of("name", storeName))
+                .build();
 
         // Use typed response instead of manual JSON parsing
         var response = fgaClient.raw().send(request, CreateStoreResponse.class).get();
@@ -116,7 +117,8 @@ public class RawApiExample {
     private static void getStoreRawJsonExample(OpenFgaClient fgaClient, String storeId) {
         try {
             RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
-                    .pathParam("store_id", storeId);
+                    .pathParam("store_id", storeId)
+                    .build();
 
             // Execute and get raw JSON string
             var response = fgaClient.raw().send(request).get();
@@ -136,7 +138,8 @@ public class RawApiExample {
     private static void listStoresWithPaginationExample(OpenFgaClient fgaClient) {
         try {
             RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores")
-                    .queryParam("page_size", "2");
+                    .queryParam("page_size", "2")
+                    .build();
 
             var response = fgaClient
                     .raw()
@@ -167,7 +170,8 @@ public class RawApiExample {
             RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
                     .header("X-Example-Header", "custom-value")
                     .header("X-Request-ID", "req-" + UUID.randomUUID())
-                    .body(Map.of("name", storeName));
+                    .body(Map.of("name", storeName))
+                    .build();
 
             var response = fgaClient.raw().send(request).get();
 
@@ -190,7 +194,8 @@ public class RawApiExample {
         try {
             // Try to get a non-existent store
             RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}")
-                    .pathParam("store_id", "01ZZZZZZZZZZZZZZZZZZZZZZZ9");
+                    .pathParam("store_id", "01ZZZZZZZZZZZZZZZZZZZZZZZ9")
+                    .build();
 
             var response = fgaClient.raw().send(request).get();
 
