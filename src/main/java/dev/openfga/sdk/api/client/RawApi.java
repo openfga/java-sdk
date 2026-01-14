@@ -149,7 +149,7 @@ public class RawApi {
 
             // Handle String body separately
             if (body instanceof String) {
-                bodyBytes = ((String) body).getBytes();
+                bodyBytes = ((String) body).getBytes(java.nio.charset.StandardCharsets.UTF_8);
             } else {
                 bodyBytes = apiClient.getObjectMapper().writeValueAsBytes(body);
             }
