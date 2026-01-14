@@ -447,7 +447,7 @@ public class RawApiIntegrationTest {
         tupleKey.put("object", object);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("writes", List.of(Map.of("tuple_key", tupleKey)));
+        requestBody.put("writes", Map.of("tuple_keys", List.of(tupleKey)));
 
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/write")
                 .pathParam("store_id", storeId)

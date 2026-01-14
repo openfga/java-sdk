@@ -23,7 +23,6 @@ Use cases:
 docker run -p 8080:8080 openfga/openfga run
 
 # From the SDK root directory, build the SDK
-cd /Users/anurag/openfga/java-sdk
 ./gradlew build
 
 # Then run the example
@@ -62,8 +61,7 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
     .queryParam("page_size", "20")
     .queryParam("continuation_token", "eyJwayI6...")
     .body(requestBody)
-    .header("X-Custom-Header", "value")
-    .build();
+    .header("X-Custom-Header", "value");
 ```
 
 ### Response Handling
