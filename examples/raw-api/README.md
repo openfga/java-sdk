@@ -4,12 +4,12 @@ Demonstrates using the Raw API to call OpenFGA endpoints that are not yet wrappe
 
 ## What is the Raw API?
 
-The Raw API (also known as the "escape hatch") allows you to make HTTP calls to any OpenFGA endpoint while still benefiting from the SDK's configuration (authentication, telemetry, retries, and error handling).
+The Raw API provides direct HTTP access to OpenFGA endpoints while maintaining the SDK's configuration (authentication, telemetry, retries, and error handling).
 
-This is useful when:
-- You want to call a new endpoint that is not yet supported by the SDK
-- You are using an earlier version of the SDK that doesn't yet support a particular endpoint
-- You have a custom endpoint deployed that extends the OpenFGA API
+Use cases:
+- Calling endpoints not yet wrapped by the SDK
+- Using an SDK version that lacks support for a particular endpoint
+- Accessing custom endpoints that extend the OpenFGA API
 
 ## Prerequisites
 
@@ -36,19 +36,19 @@ make run
 
 ## What it does
 
-The example demonstrates several key features of the Raw API:
+The example demonstrates Raw API capabilities:
 
-1. **POST Request with Typed Response**: Calls a hypothetical `/bulk-delete` endpoint and deserializes the response into a custom Java class
-2. **GET Request with Raw JSON**: Retrieves raw JSON response without automatic deserialization
-3. **Query Parameters**: Shows how to add query parameters for filtering and pagination
-4. **Custom Headers**: Demonstrates adding custom HTTP headers to requests
-5. **Error Handling**: Shows how the Raw API benefits from the SDK's built-in error handling and retry logic
+1. **POST Request with Typed Response**: Sends a request and deserializes the response into a custom Java class
+2. **GET Request with Raw JSON**: Retrieves the raw JSON response string
+3. **Query Parameters**: Adds query parameters to the request
+4. **Custom Headers**: Adds custom HTTP headers to the request
+5. **Error Handling**: Demonstrates SDK error handling and retry behavior
 
 ## Key Features
 
 ### Request Building
 
-The Raw API uses a builder pattern to construct requests:
+Build requests using the builder pattern:
 
 ```java
 RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/custom-endpoint")
@@ -62,7 +62,6 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
 
 ### Response Handling
 
-You can handle responses in two ways:
 
 **Typed Response (automatic deserialization):**
 ```java
@@ -81,26 +80,26 @@ client.raw().send(request)
     });
 ```
 
-### Automatic Features
+### SDK Features Applied
 
-The Raw API automatically includes:
-- Authentication credentials from your client configuration
+Requests automatically include:
+- Authentication credentials
 - Retry logic for 5xx errors with exponential backoff
 - Error handling and exception mapping
 - Configured timeouts and headers
-- Telemetry and observability hooks
+- Telemetry hooks
 
 ## Code Structure
 
-- `RawApiExample.java`: Main example class demonstrating various Raw API use cases
+- `RawApiExample.java`: Example demonstrating Raw API usage
 - Custom response classes: `BulkDeleteResponse` and `ExperimentalFeatureResponse`
 
 ## Notes
 
-This example uses hypothetical endpoints for demonstration purposes. In a real-world scenario:
-- Replace the endpoint paths with actual OpenFGA endpoints
-- Adjust the request/response structures to match your API
-- Handle errors appropriately for your use case
+This example uses placeholder endpoints for demonstration. In production:
+- Use actual OpenFGA endpoint paths
+- Match request/response structures to the target API
+- Implement appropriate error handling
 
 ## See Also
 

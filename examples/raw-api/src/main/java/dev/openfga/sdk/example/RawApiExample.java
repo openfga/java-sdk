@@ -6,10 +6,10 @@ import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.util.Map;
 
 /**
- * Example demonstrating the Raw API "Escape Hatch" functionality.
+ * Example demonstrating Raw API usage.
  *
- * This example shows how to use the Raw API to call experimental or newly-released
- * OpenFGA endpoints that may not yet be supported in the typed SDK methods.
+ * This example shows how to use the Raw API to call OpenFGA endpoints
+ * that are not yet wrapped by the SDK's typed methods.
  */
 public class RawApiExample {
 
@@ -95,7 +95,6 @@ public class RawApiExample {
 
     /**
      * Example 2: Get raw JSON response without deserialization.
-     * This is useful when you want to inspect the response or don't have a Java class.
      */
     private static void rawJsonExample(OpenFgaClient fgaClient) {
         try {
@@ -122,7 +121,7 @@ public class RawApiExample {
     }
 
     /**
-     * Example 3: Using query parameters for filtering or pagination.
+     * Example 3: Add query parameters to requests.
      */
     private static void queryParametersExample(OpenFgaClient fgaClient) {
         try {
@@ -153,7 +152,7 @@ public class RawApiExample {
     }
 
     /**
-     * Example 4: Adding custom headers to requests.
+     * Example 4: Add custom headers to requests.
      */
     private static void customHeadersExample(OpenFgaClient fgaClient) {
         try {
@@ -183,7 +182,7 @@ public class RawApiExample {
 
     /**
      * Example 5: Error handling with the Raw API.
-     * The Raw API automatically benefits from the SDK's error handling and retries.
+     * Requests use the SDK's error handling and retry logic.
      */
     private static void errorHandlingExample(OpenFgaClient fgaClient) {
         try {
