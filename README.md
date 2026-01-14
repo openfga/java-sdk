@@ -747,7 +747,7 @@ Similar to [check](#check), but instead of checking a single user-object relatio
 > Passing `ClientBatchCheckOptions` is optional. All fields of `ClientBatchCheckOptions` are optional.
 
 ```java
-var reequst = new ClientBatchCheckRequest().checks(
+var request = new ClientBatchCheckRequest().checks(
     List.of(
         new ClientBatchCheckItem()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
@@ -775,7 +775,7 @@ var reequst = new ClientBatchCheckRequest().checks(
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("creator")
             ._object("document:0192ab2a-d83f-756d-9397-c5ed9f3cb69a")
-            .correlationId("cor-3), // optional, one will be generated for you if not provided
+            .correlationId("cor-3"), // optional, one will be generated for you if not provided
         new ClientCheckRequest()
             .user("user:81684243-9356-4421-8fbf-a4f8d36aa31b")
             .relation("deleter")
