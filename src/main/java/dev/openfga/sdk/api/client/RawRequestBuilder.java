@@ -2,6 +2,7 @@ package dev.openfga.sdk.api.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Fluent builder for constructing HTTP requests to OpenFGA API endpoints.
@@ -17,6 +18,9 @@ import java.util.Map;
  * }</pre>
  */
 public class RawRequestBuilder {
+    private static final Set<String> VALID_HTTP_METHODS =
+            Set.of("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS");
+
     private final String method;
     private final String path;
     private final Map<String, String> pathParams;
@@ -36,9 +40,10 @@ public class RawRequestBuilder {
     /**
      * Creates a new RawRequestBuilder instance.
      *
-     * @param method HTTP method (GET, POST, PUT, DELETE, etc.)
+     * @param method HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
      * @param path API path with optional placeholders like {store_id}
      * @return New RawRequestBuilder instance
+     * @throws IllegalArgumentException if method or path is invalid
      */
     public static RawRequestBuilder builder(String method, String path) {
         if (method == null || method.trim().isEmpty()) {
@@ -47,7 +52,14 @@ public class RawRequestBuilder {
         if (path == null || path.trim().isEmpty()) {
             throw new IllegalArgumentException("Path cannot be null or empty");
         }
-        return new RawRequestBuilder(method.toUpperCase(), path);
+
+        String upperMethod = method.toUpperCase();
+        if (!VALID_HTTP_METHODS.contains(upperMethod)) {
+            throw new IllegalArgumentException(
+                    "Invalid HTTP method: " + method + ". Valid methods: " + VALID_HTTP_METHODS);
+        }
+
+        return new RawRequestBuilder(upperMethod, path);
     }
 
     /**

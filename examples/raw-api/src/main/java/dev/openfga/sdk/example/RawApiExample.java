@@ -3,11 +3,12 @@ package dev.openfga.sdk.example;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.RawRequestBuilder;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
-import dev.openfga.sdk.api.model.CreateStoreRequest;
+import dev.openfga.sdk.api.model.CreateStoreResponse;
 import dev.openfga.sdk.api.model.ListStoresResponse;
 import dev.openfga.sdk.api.model.Store;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Example demonstrating Raw API usage.
@@ -16,6 +17,11 @@ import java.util.Map;
  * that are not yet wrapped by the SDK's typed methods.
  *
  * The example uses real OpenFGA endpoints to demonstrate actual functionality.
+ *
+ * Note: Examples use .get() to block for simplicity. In production, use async patterns:
+ * - thenApply/thenAccept for chaining
+ * - thenCompose for sequential async operations
+ * - CompletableFuture.allOf for parallel operations
  */
 public class RawApiExample {
 
@@ -94,26 +100,14 @@ public class RawApiExample {
      * Helper method to create a store for examples.
      */
     private static String createStoreForExamples(OpenFgaClient fgaClient) throws Exception {
-        String storeName = "raw-api-example-" + System.currentTimeMillis();
+        String storeName = "raw-api-example-" + UUID.randomUUID().toString().substring(0, 8);
         RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
                 .body(Map.of("name", storeName));
 
-        var response = fgaClient.raw().send(request).get();
-        String rawJson = response.getData();
+        // Use typed response instead of manual JSON parsing
+        var response = fgaClient.raw().send(request, CreateStoreResponse.class).get();
         System.out.println("  Created store: " + storeName);
-
-        // Extract store ID from JSON (simple parsing)
-        String idPrefix = "\"id\":\"";
-        int idStart = rawJson.indexOf(idPrefix);
-        if (idStart == -1) {
-            throw new RuntimeException("Could not find store ID in response: " + rawJson);
-        }
-        idStart += idPrefix.length();
-        int idEnd = rawJson.indexOf("\"", idStart);
-        if (idEnd == -1) {
-            throw new RuntimeException("Could not parse store ID from response: " + rawJson);
-        }
-        return rawJson.substring(idStart, idEnd);
+        return response.getData().getId();
     }
 
     /**
@@ -169,10 +163,10 @@ public class RawApiExample {
      */
     private static void createStoreWithHeadersExample(OpenFgaClient fgaClient) {
         try {
-            String storeName = "raw-api-custom-headers-" + System.currentTimeMillis();
+            String storeName = "raw-api-custom-headers-" + UUID.randomUUID().toString().substring(0, 8);
             RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores")
                     .header("X-Example-Header", "custom-value")
-                    .header("X-Request-ID", "req-" + System.currentTimeMillis())
+                    .header("X-Request-ID", "req-" + UUID.randomUUID())
                     .body(Map.of("name", storeName));
 
             var response = fgaClient.raw().send(request).get();

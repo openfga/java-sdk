@@ -135,6 +135,25 @@ public class RawApiTest {
     }
 
     @Test
+    public void rawRequestBuilder_throwsExceptionForInvalidHttpMethod() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> RawRequestBuilder.builder("INVALID", "/test"));
+        assertTrue(exception.getMessage().contains("Invalid HTTP method"));
+    }
+
+    @Test
+    public void rawRequestBuilder_acceptsValidHttpMethods() {
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("GET", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("POST", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("PUT", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("PATCH", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("DELETE", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("HEAD", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("OPTIONS", "/test"));
+        assertDoesNotThrow(() -> RawRequestBuilder.builder("get", "/test"));
+    }
+
+    @Test
     public void rawApi_canSendGetRequestWithTypedResponse() throws Exception {
         // Setup mock server
         ExperimentalResponse mockResponse = new ExperimentalResponse(true, 42, "Success");
