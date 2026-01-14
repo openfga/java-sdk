@@ -136,8 +136,8 @@ public class RawApiTest {
 
     @Test
     public void rawRequestBuilder_throwsExceptionForInvalidHttpMethod() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> RawRequestBuilder.builder("INVALID", "/test"));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder("INVALID", "/test"));
         assertTrue(exception.getMessage().contains("Invalid HTTP method"));
     }
 
