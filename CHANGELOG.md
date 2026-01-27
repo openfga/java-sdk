@@ -2,31 +2,8 @@
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.4...HEAD)
 
-### Changed
-- **BREAKING**: Renamed "Raw API" to "API Executor" throughout the SDK for consistency with Go SDK naming conventions
-  - `RawApi` class renamed to `ApiExecutor`
-  - `RawRequestBuilder` class renamed to `ApiExecutorRequestBuilder`
-  - `OpenFgaClient.raw()` method renamed to `OpenFgaClient.apiExecutor()`
-  - All documentation updated to refer to "API Executor" instead of "Raw API"
-  - Example directory `examples/raw-api` renamed to `examples/api-executor`
-  - Documentation file `docs/RawApi.md` renamed to `docs/ApiExecutor.md`
-  
-  **Migration Guide**: Update your code as follows:
-  ```java
-  // Before
-  RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
-      .pathParam("store_id", storeId)
-      .body(requestData)
-      .build();
-  ApiResponse<ResponseType> response = client.raw().send(request, ResponseType.class).get();
-  
-  // After
-  ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
-      .pathParam("store_id", storeId)
-      .body(requestData)
-      .build();
-  ApiResponse<ResponseType> response = client.apiExecutor().send(request, ResponseType.class).get();
-  ```
+### Added
+- Introduced `ApiExecutor` for executing custom HTTP requests to OpenFGA API endpoints
 
 ## v0.9.4
 
