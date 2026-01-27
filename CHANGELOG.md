@@ -7,7 +7,7 @@
 ### [0.9.5](https://github.com/openfga/java-sdk/compare/v0.9.4...v0.9.5) (2026-01-26)
 
 ### Added
-- feat: support for streamed list objects (#252)
+- feat: support for streamed list objects (#252, #272)
 
 ## v0.9.4
 
