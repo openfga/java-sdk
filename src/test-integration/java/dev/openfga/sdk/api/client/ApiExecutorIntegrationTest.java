@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.openfga.OpenFGAContainer;
 
 /**
- * Integration tests for Raw API functionality.
+ * Integration tests for ApiExecutor functionality.
  * These tests demonstrate how to use raw requests to call OpenFGA endpoints
  * without using the SDK's typed methods.
  */
@@ -41,7 +41,7 @@ public class ApiExecutorIntegrationTest {
     }
 
     /**
-     * Test listing stores using raw API instead of fga.listStores().
+     * Test listing stores using ApiExecutor instead of fga.listStores().
      */
     @Test
     public void rawRequest_listStores() throws Exception {
@@ -49,7 +49,7 @@ public class ApiExecutorIntegrationTest {
         String storeName = "test-store-" + System.currentTimeMillis();
         createStoreUsingRawRequest(storeName);
 
-        // Use raw API to list stores (equivalent to GET /stores)
+        // Use ApiExecutor to list stores (equivalent to GET /stores)
         ApiExecutorRequestBuilder request =
                 ApiExecutorRequestBuilder.builder("GET", "/stores").build();
 
@@ -73,7 +73,7 @@ public class ApiExecutorIntegrationTest {
     }
 
     /**
-     * Test creating a store using raw API with typed response.
+     * Test creating a store using ApiExecutor with typed response.
      */
     @Test
     public void rawRequest_createStore_typedResponse() throws Exception {
@@ -83,7 +83,7 @@ public class ApiExecutorIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", storeName);
 
-        // Use raw API to create store (equivalent to POST /stores)
+        // Use ApiExecutor to create store (equivalent to POST /stores)
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
                 .body(requestBody)
                 .build();
@@ -104,7 +104,7 @@ public class ApiExecutorIntegrationTest {
     }
 
     /**
-     * Test creating a store using raw API with raw JSON string response.
+     * Test creating a store using ApiExecutor with raw JSON string response.
      */
     @Test
     public void rawRequest_createStore_rawJsonResponse() throws Exception {
@@ -114,7 +114,7 @@ public class ApiExecutorIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", storeName);
 
-        // Use raw API to create store and get raw JSON response
+        // Use ApiExecutor to create store and get raw JSON response
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
                 .body(requestBody)
                 .build();
@@ -138,7 +138,7 @@ public class ApiExecutorIntegrationTest {
     }
 
     /**
-     * Test getting a specific store using raw API with path parameters.
+     * Test getting a specific store using ApiExecutor with path parameters.
      */
     @Test
     public void rawRequest_getStore_withPathParams() throws Exception {
@@ -146,7 +146,7 @@ public class ApiExecutorIntegrationTest {
         String storeName = "get-test-store-" + System.currentTimeMillis();
         String storeId = createStoreUsingRawRequest(storeName);
 
-        // Use raw API to get store details (equivalent to GET /stores/{store_id})
+        // Use ApiExecutor to get store details (equivalent to GET /stores/{store_id})
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}")
                 .pathParam("store_id", storeId)
                 .build();
@@ -175,7 +175,7 @@ public class ApiExecutorIntegrationTest {
         String storeId = createStoreUsingRawRequest(storeName);
         fga.setStoreId(storeId);
 
-        // Use raw API WITHOUT providing store_id path param - it should be auto-replaced
+        // Use ApiExecutor WITHOUT providing store_id path param - it should be auto-replaced
         ApiExecutorRequestBuilder request =
                 ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}").build();
 
@@ -192,7 +192,7 @@ public class ApiExecutorIntegrationTest {
     }
 
     /**
-     * Test writing authorization model using raw API.
+     * Test writing authorization model using ApiExecutor.
      */
     @Test
     public void rawRequest_writeAuthorizationModel() throws Exception {
@@ -226,7 +226,7 @@ public class ApiExecutorIntegrationTest {
 
         requestBody.put("type_definitions", typeDefinitions);
 
-        // Use raw API to write authorization model
+        // Use ApiExecutor to write authorization model
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
                         "POST", "/stores/{store_id}/authorization-models")
                 .body(requestBody)
@@ -259,7 +259,7 @@ public class ApiExecutorIntegrationTest {
         // Create an authorization model first
         writeSimpleAuthorizationModel(storeId);
 
-        // Use raw API to read authorization models with query parameters
+        // Use ApiExecutor to read authorization models with query parameters
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
                         "GET", "/stores/{store_id}/authorization-models")
                 .queryParam("page_size", "10")
@@ -298,7 +298,7 @@ public class ApiExecutorIntegrationTest {
         // Write a tuple
         writeTupleUsingRawRequest(storeId, "user:alice", "reader", "document:budget");
 
-        // Use raw API to perform check
+        // Use ApiExecutor to perform check
         Map<String, Object> checkBody = new HashMap<>();
         checkBody.put("authorization_model_id", modelId);
 
@@ -330,7 +330,7 @@ public class ApiExecutorIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", storeName);
 
-        // Use raw API with custom headers
+        // Use ApiExecutor with custom headers
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
                 .body(requestBody)
                 .header("X-Custom-Header", "custom-value")
@@ -382,7 +382,7 @@ public class ApiExecutorIntegrationTest {
             createStoreUsingRawRequest("pagination-test-" + i + "-" + System.currentTimeMillis());
         }
 
-        // Use raw API to list stores with pagination
+        // Use ApiExecutor to list stores with pagination
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores")
                 .queryParam("page_size", "2")
                 .build();
