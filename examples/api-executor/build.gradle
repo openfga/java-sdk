@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = 'dev.openfga.sdk.example.RawApiExample'
+    mainClass = 'dev.openfga.sdk.example.ApiExecutorExample'
 }
 
 repositories {

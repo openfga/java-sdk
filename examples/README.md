@@ -13,6 +13,6 @@ A simple example that creates a store, runs a set of calls against it including 
 #### Streaming Examples
 - `streamed-list-objects/` - Demonstrates using the StreamedListObjects API to retrieve large result sets without pagination limits
 
-#### Raw API Examples
-- `raw-api/` - Demonstrates direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK, maintaining SDK configuration (authentication, retries, error handling)
+#### API Executor Examples
+- `api-executor/` - Demonstrates direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK, maintaining SDK configuration (authentication, retries, error handling)
 

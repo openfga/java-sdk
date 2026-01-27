@@ -18,7 +18,7 @@ import java.util.Set;
  *     .build();
  * }</pre>
  */
-public class RawRequestBuilder {
+public class ApiExecutorRequestBuilder {
     private static final Set<String> VALID_HTTP_METHODS =
             Set.of("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS");
 
@@ -29,7 +29,7 @@ public class RawRequestBuilder {
     private final Map<String, String> headers;
     private Object body;
 
-    private RawRequestBuilder(String method, String path) {
+    private ApiExecutorRequestBuilder(String method, String path) {
         this.method = method;
         this.path = path;
         this.pathParams = new HashMap<>();
@@ -39,14 +39,14 @@ public class RawRequestBuilder {
     }
 
     /**
-     * Creates a new RawRequestBuilder instance.
+     * Creates a new ApiExecutorRequestBuilder instance.
      *
      * @param method HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
      * @param path API path with optional placeholders like {store_id}
-     * @return New RawRequestBuilder instance
+     * @return New ApiExecutorRequestBuilder instance
      * @throws IllegalArgumentException if method or path is invalid
      */
-    public static RawRequestBuilder builder(String method, String path) {
+    public static ApiExecutorRequestBuilder builder(String method, String path) {
         if (method == null || method.trim().isEmpty()) {
             throw new IllegalArgumentException("HTTP method cannot be null or empty");
         }
@@ -60,7 +60,7 @@ public class RawRequestBuilder {
                     "Invalid HTTP method: " + method + ". Valid methods: " + VALID_HTTP_METHODS);
         }
 
-        return new RawRequestBuilder(upperMethod, path);
+        return new ApiExecutorRequestBuilder(upperMethod, path);
     }
 
     /**
@@ -70,7 +70,7 @@ public class RawRequestBuilder {
      * @param value Parameter value
      * @return This builder instance
      */
-    public RawRequestBuilder pathParam(String key, String value) {
+    public ApiExecutorRequestBuilder pathParam(String key, String value) {
         if (key != null && value != null) {
             this.pathParams.put(key, value);
         }
@@ -84,7 +84,7 @@ public class RawRequestBuilder {
      * @param value Query parameter value
      * @return This builder instance
      */
-    public RawRequestBuilder queryParam(String key, String value) {
+    public ApiExecutorRequestBuilder queryParam(String key, String value) {
         if (key != null && value != null) {
             this.queryParams.put(key, value);
         }
@@ -98,7 +98,7 @@ public class RawRequestBuilder {
      * @param value Header value
      * @return This builder instance
      */
-    public RawRequestBuilder header(String key, String value) {
+    public ApiExecutorRequestBuilder header(String key, String value) {
         if (key != null && value != null) {
             this.headers.put(key, value);
         }
@@ -111,20 +111,20 @@ public class RawRequestBuilder {
      * @param body Request body
      * @return This builder instance
      */
-    public RawRequestBuilder body(Object body) {
+    public ApiExecutorRequestBuilder body(Object body) {
         this.body = body;
         return this;
     }
     /**
-     * Builds and returns the request for use with the Raw API.
+     * Builds and returns the request for use with the API Executor.
      * This method must be called to complete request construction.
      *
      * <p>This is required for consistency with other OpenFGA SDKs (e.g., Go SDK)
      * and follows the standard builder pattern.</p>
      *
-     * @return This builder instance (ready to be passed to {@link RawApi#send})
+     * @return This builder instance (ready to be passed to {@link ApiExecutor#send})
      */
-    public RawRequestBuilder build() {
+    public ApiExecutorRequestBuilder build() {
         return this;
     }
 

@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>Example:</p>
  * <pre>{@code
- * RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+ * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
  *     .body(requestData)
  *     .build();
@@ -23,20 +23,20 @@ import java.util.concurrent.CompletableFuture;
  * ApiResponse<ResponseType> response = client.raw().send(request, ResponseType.class).get();
  *
  * // Raw JSON
- * ApiResponse<String> response = client.raw().send(request).get();
+ * ApiResponse<String> response = client.apiExecutor().send(request).get();
  * }</pre>
  */
-public class RawApi {
+public class ApiExecutor {
     private final ApiClient apiClient;
     private final Configuration configuration;
 
     /**
-     * Constructs a RawApi instance. Typically called via {@link OpenFgaClient#raw()}.
+     * Constructs an ApiExecutor instance. Typically called via {@link OpenFgaClient#apiExecutor()}.
      *
      * @param apiClient API client for HTTP operations
      * @param configuration Client configuration
      */
-    public RawApi(ApiClient apiClient, Configuration configuration) {
+    public ApiExecutor(ApiClient apiClient, Configuration configuration) {
         if (apiClient == null) {
             throw new IllegalArgumentException("ApiClient cannot be null");
         }
@@ -55,7 +55,7 @@ public class RawApi {
      * @throws FgaInvalidParameterException If configuration is invalid
      * @throws ApiException If request construction fails
      */
-    public CompletableFuture<ApiResponse<String>> send(RawRequestBuilder requestBuilder)
+    public CompletableFuture<ApiResponse<String>> send(ApiExecutorRequestBuilder requestBuilder)
             throws FgaInvalidParameterException, ApiException {
         return send(requestBuilder, String.class);
     }
@@ -70,7 +70,7 @@ public class RawApi {
      * @throws FgaInvalidParameterException If configuration is invalid
      * @throws ApiException If request construction fails
      */
-    public <T> CompletableFuture<ApiResponse<T>> send(RawRequestBuilder requestBuilder, Class<T> responseType)
+    public <T> CompletableFuture<ApiResponse<T>> send(ApiExecutorRequestBuilder requestBuilder, Class<T> responseType)
             throws FgaInvalidParameterException, ApiException {
         if (requestBuilder == null) {
             throw new IllegalArgumentException("Request builder cannot be null");
@@ -85,7 +85,7 @@ public class RawApi {
             String completePath = buildCompletePath(requestBuilder);
             HttpRequest httpRequest = buildHttpRequest(requestBuilder, completePath);
 
-            String methodName = "raw:" + requestBuilder.getMethod() + ":" + requestBuilder.getPath();
+            String methodName = "apiExecutor:" + requestBuilder.getMethod() + ":" + requestBuilder.getPath();
 
             return new HttpRequestAttempt<>(httpRequest, methodName, responseType, apiClient, configuration)
                     .attemptHttpRequest();
@@ -95,7 +95,7 @@ public class RawApi {
         }
     }
 
-    private String buildCompletePath(RawRequestBuilder requestBuilder) {
+    private String buildCompletePath(ApiExecutorRequestBuilder requestBuilder) {
         StringBuilder pathBuilder = new StringBuilder(requestBuilder.getPath());
         Map<String, String> pathParams = requestBuilder.getPathParams();
 
@@ -138,7 +138,7 @@ public class RawApi {
         }
     }
 
-    private HttpRequest buildHttpRequest(RawRequestBuilder requestBuilder, String path)
+    private HttpRequest buildHttpRequest(ApiExecutorRequestBuilder requestBuilder, String path)
             throws FgaInvalidParameterException, IOException {
 
         HttpRequest.Builder httpRequestBuilder;

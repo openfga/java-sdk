@@ -1170,14 +1170,14 @@ try {
 
 ### Calling Other Endpoints
 
-The Raw API provides direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK. It maintains the SDK's client configuration including authentication, telemetry, retries, and error handling.
+The API Executor provides direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK. It maintains the SDK's client configuration including authentication, telemetry, retries, and error handling.
 
 Use cases:
 - Calling endpoints not yet supported by the SDK
 - Using an SDK version that lacks support for a particular endpoint
 - Accessing custom endpoints that extend the OpenFGA API
 
-Initialize the SDK normally and access the Raw API via the `fgaClient` instance:
+Initialize the SDK normally and access the API Executor via the `fgaClient` instance:
 
 ```java
 // Initialize the client, same as above
@@ -1194,7 +1194,7 @@ Map<String, Object> requestBody = Map.of(
 );
 
 // Build the request
-RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/custom-endpoint")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/custom-endpoint")
     .pathParam("store_id", storeId)
     .queryParam("page_size", "20")
     .queryParam("continuation_token", "eyJwayI6...")
@@ -1207,7 +1207,7 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
 
 ```java
 // Get raw response without automatic decoding
-ApiResponse<String> rawResponse = fgaClient.raw().send(request).get();
+ApiResponse<String> rawResponse = fgaClient.apiExecutor().send(request).get();
 
 String rawJson = rawResponse.getData();
 System.out.println("Response: " + rawJson);
@@ -1232,7 +1232,7 @@ class CustomEndpointResponse {
 }
 
 // Get response decoded into CustomEndpointResponse class
-ApiResponse<CustomEndpointResponse> response = fgaClient.raw()
+ApiResponse<CustomEndpointResponse> response = fgaClient.apiExecutor()
     .send(request, CustomEndpointResponse.class)
     .get();
 
@@ -1245,11 +1245,11 @@ System.out.println("Status Code: " + response.getStatusCode());
 System.out.println("Headers: " + response.getHeaders());
 ```
 
-For a complete working example, see [examples/raw-api](examples/raw-api).
+For a complete working example, see [examples/api-executor](examples/api-executor).
 
 #### Documentation
 
-See [docs/RawApi.md](docs/RawApi.md) for complete API reference and examples.
+See [docs/ApiExecutor.md](docs/ApiExecutor.md) for complete API reference and examples.
 
 ### API Endpoints
 

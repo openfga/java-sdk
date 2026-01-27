@@ -1,4 +1,4 @@
-# Raw API
+# API Executor
 
 Direct HTTP access to OpenFGA endpoints.
 
@@ -8,25 +8,25 @@ Direct HTTP access to OpenFGA endpoints.
 OpenFgaClient client = new OpenFgaClient(config);
 
 // Build request
-RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/check")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/check")
     .pathParam("store_id", storeId)
     .body(Map.of("tuple_key", Map.of("user", "user:jon", "relation", "reader", "object", "doc:1")))
     .build();
 
 // Execute - typed response
-ApiResponse<CheckResponse> response = client.raw().send(request, CheckResponse.class).get();
+ApiResponse<CheckResponse> response = client.apiExecutor().send(request, CheckResponse.class).get();
 
 // Execute - raw JSON
-ApiResponse<String> rawResponse = client.raw().send(request).get();
+ApiResponse<String> rawResponse = client.apiExecutor().send(request).get();
 ```
 
 ## API Reference
 
-### RawRequestBuilder
+### ApiExecutorRequestBuilder
 
 **Factory:**
 ```java
-RawRequestBuilder.builder(String method, String path)
+ApiExecutorRequestBuilder.builder(String method, String path)
 ```
 
 **Methods:**
@@ -40,7 +40,7 @@ RawRequestBuilder.builder(String method, String path)
 
 **Example:**
 ```java
-RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/write")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/write")
     .pathParam("store_id", "01ABC")
     .queryParam("dry_run", "true")
     .header("X-Request-ID", "uuid")
@@ -48,17 +48,17 @@ RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id
     .build();
 ```
 
-### RawApi
+### ApiExecutor
 
 **Access:**
 ```java
-RawApi rawApi = client.raw();
+RawApi rawApi = client.apiExecutor();
 ```
 
 **Methods:**
 ```java
-CompletableFuture<ApiResponse<String>> send(RawRequestBuilder request)
-CompletableFuture<ApiResponse<T>> send(RawRequestBuilder request, Class<T> responseType)
+CompletableFuture<ApiResponse<String>> send(ApiExecutorRequestBuilder request)
+CompletableFuture<ApiResponse<T>> send(ApiExecutorRequestBuilder request, Class<T> responseType)
 ```
 
 ### ApiResponse<T>
@@ -74,34 +74,34 @@ T getData()                            // Deserialized data
 
 ### GET Request
 ```java
-RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/feature")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/feature")
     .pathParam("store_id", storeId)
     .build();
 
-client.raw().send(request, FeatureResponse.class)
+client.apiExecutor().send(request, FeatureResponse.class)
     .thenAccept(r -> System.out.println("Status: " + r.getStatusCode()));
 ```
 
 ### POST with Body
 ```java
-RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
     .pathParam("store_id", storeId)
     .queryParam("force", "true")
     .body(new BulkDeleteRequest("2023-01-01", "user", 1000))
     .build();
 
-client.raw().send(request, BulkDeleteResponse.class).get();
+client.apiExecutor().send(request, BulkDeleteResponse.class).get();
 ```
 
 ### Raw JSON Response
 ```java
-ApiResponse<String> response = client.raw().send(request).get();
+ApiResponse<String> response = client.apiExecutor().send(request).get();
 String json = response.getRawResponse(); // Raw JSON
 ```
 
 ### Query Parameters
 ```java
-RawRequestBuilder.builder("GET", "/stores/{store_id}/items")
+ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/items")
     .pathParam("store_id", storeId)
     .queryParam("page", "1")
     .queryParam("limit", "50")
@@ -111,7 +111,7 @@ RawRequestBuilder.builder("GET", "/stores/{store_id}/items")
 
 ### Custom Headers
 ```java
-RawRequestBuilder.builder("POST", "/stores/{store_id}/action")
+ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/action")
     .header("X-Request-ID", UUID.randomUUID().toString())
     .header("X-Idempotency-Key", "key-123")
     .body(data)
@@ -120,7 +120,7 @@ RawRequestBuilder.builder("POST", "/stores/{store_id}/action")
 
 ### Error Handling
 ```java
-client.raw().send(request, ResponseType.class)
+client.apiExecutor().send(request, ResponseType.class)
     .exceptionally(e -> {
         if (e.getCause() instanceof FgaError) {
             FgaError error = (FgaError) e.getCause();
@@ -132,7 +132,7 @@ client.raw().send(request, ResponseType.class)
 
 ### Map as Request Body
 ```java
-RawRequestBuilder.builder("POST", "/stores/{store_id}/settings")
+ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/settings")
     .pathParam("store_id", storeId)
     .body(Map.of(
         "setting", "value",
@@ -151,15 +151,15 @@ RawRequestBuilder.builder("POST", "/stores/{store_id}/settings")
 
 ## Migration to Typed Methods
 
-When SDK adds typed methods for an endpoint, you can migrate from Raw API:
+When SDK adds typed methods for an endpoint, you can migrate from API Executor:
 
 ```java
-// Raw API
-RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/check")
+// API Executor
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/check")
     .body(req)
     .build();
     
-client.raw().send(request, CheckResponse.class).get();
+client.apiExecutor().send(request, CheckResponse.class).get();
 
 // Typed SDK (when available)
 client.check(req).get();

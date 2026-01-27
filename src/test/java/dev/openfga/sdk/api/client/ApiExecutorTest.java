@@ -16,10 +16,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test suite for Raw API functionality.
+ * Test suite for API Executor functionality.
  */
 @WireMockTest
-public class RawApiTest {
+public class ApiExecutorTest {
     private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
     private static final String EXPERIMENTAL_ENDPOINT = "/stores/{store_id}/experimental-feature";
 
@@ -60,13 +60,13 @@ public class RawApiTest {
     @Test
     public void rawApi_canAccessViaClient() throws Exception {
         OpenFgaClient client = createClient();
-        assertNotNull(client.raw(), "raw() should return a non-null RawApi instance");
+        assertNotNull(client.apiExecutor(), "apiExecutor() should return a non-null ApiExecutor instance");
     }
 
     @Test
     public void rawRequestBuilder_canBuildBasicRequest() {
-        RawRequestBuilder builder =
-                RawRequestBuilder.builder("GET", "/stores/{store_id}/test").build();
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/test")
+                .build();
 
         assertNotNull(builder);
         assertEquals("GET", builder.getMethod());
@@ -75,7 +75,7 @@ public class RawApiTest {
 
     @Test
     public void rawRequestBuilder_canAddPathParameters() {
-        RawRequestBuilder builder = RawRequestBuilder.builder("GET", "/stores/{store_id}/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/test")
                 .pathParam("store_id", "my-store")
                 .build();
 
@@ -86,7 +86,7 @@ public class RawApiTest {
 
     @Test
     public void rawRequestBuilder_canAddQueryParameters() {
-        RawRequestBuilder builder = RawRequestBuilder.builder("GET", "/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/test")
                 .queryParam("page", "1")
                 .queryParam("limit", "10")
                 .build();
@@ -99,7 +99,7 @@ public class RawApiTest {
 
     @Test
     public void rawRequestBuilder_canAddHeaders() {
-        RawRequestBuilder builder = RawRequestBuilder.builder("GET", "/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/test")
                 .header("X-Custom-Header", "custom-value")
                 .build();
 
@@ -113,8 +113,8 @@ public class RawApiTest {
         Map<String, Object> body = new HashMap<>();
         body.put("key", "value");
 
-        RawRequestBuilder builder =
-                RawRequestBuilder.builder("POST", "/test").body(body).build();
+        ApiExecutorRequestBuilder builder =
+                ApiExecutorRequestBuilder.builder("POST", "/test").body(body).build();
 
         assertTrue(builder.hasBody());
         assertEquals(body, builder.getBody());
@@ -122,41 +122,41 @@ public class RawApiTest {
 
     @Test
     public void rawRequestBuilder_throwsExceptionForNullMethod() {
-        assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder(null, "/test"));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder(null, "/test"));
     }
 
     @Test
     public void rawRequestBuilder_throwsExceptionForEmptyMethod() {
-        assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder("", "/test"));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("", "/test"));
     }
 
     @Test
     public void rawRequestBuilder_throwsExceptionForNullPath() {
-        assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder("GET", null));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("GET", null));
     }
 
     @Test
     public void rawRequestBuilder_throwsExceptionForEmptyPath() {
-        assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder("GET", ""));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("GET", ""));
     }
 
     @Test
     public void rawRequestBuilder_throwsExceptionForInvalidHttpMethod() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> RawRequestBuilder.builder("INVALID", "/test"));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("INVALID", "/test"));
         assertTrue(exception.getMessage().contains("Invalid HTTP method"));
     }
 
     @Test
     public void rawRequestBuilder_acceptsValidHttpMethods() {
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("GET", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("POST", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("PUT", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("PATCH", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("DELETE", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("HEAD", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("OPTIONS", "/test"));
-        assertDoesNotThrow(() -> RawRequestBuilder.builder("get", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("GET", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("POST", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("PUT", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("PATCH", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("DELETE", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("HEAD", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("OPTIONS", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("get", "/test"));
     }
 
     @Test
@@ -171,12 +171,12 @@ public class RawApiTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
         ApiResponse<ExperimentalResponse> response =
-                client.raw().send(request, ExperimentalResponse.class).get();
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
 
         // Verify response
         assertNotNull(response);
@@ -206,13 +206,13 @@ public class RawApiTest {
         requestBody.put("name", "test");
         requestBody.put("value", 123);
 
-        RawRequestBuilder request = RawRequestBuilder.builder("POST", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .body(requestBody)
                 .build();
 
         ApiResponse<ExperimentalResponse> response =
-                client.raw().send(request, ExperimentalResponse.class).get();
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
 
         // Verify response
         assertNotNull(response);
@@ -236,14 +236,14 @@ public class RawApiTest {
                         .withBody("{\"success\":true,\"count\":10,\"message\":\"Success\"}")));
         // Build and send request
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .queryParam("force", "true")
                 .queryParam("limit", "10")
                 .build();
 
         ApiResponse<ExperimentalResponse> response =
-                client.raw().send(request, ExperimentalResponse.class).get();
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
 
         // Verify response
         assertNotNull(response);
@@ -267,11 +267,11 @@ public class RawApiTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
-        ApiResponse<String> response = client.raw().send(request).get();
+        ApiResponse<String> response = client.apiExecutor().send(request).get();
 
         // Verify response
         assertNotNull(response);
@@ -288,13 +288,14 @@ public class RawApiTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/stores/{store_id}/non-existent")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/non-existent")
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
         // Verify exception is thrown
         ExecutionException exception = assertThrows(
-                ExecutionException.class, () -> client.raw().send(request).get());
+                ExecutionException.class,
+                () -> client.apiExecutor().send(request).get());
 
         assertTrue(exception.getCause() instanceof FgaError);
     }
@@ -307,13 +308,14 @@ public class RawApiTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
         // Verify exception is thrown
         ExecutionException exception = assertThrows(
-                ExecutionException.class, () -> client.raw().send(request).get());
+                ExecutionException.class,
+                () -> client.apiExecutor().send(request).get());
 
         assertTrue(exception.getCause() instanceof FgaError);
     }
@@ -329,14 +331,14 @@ public class RawApiTest {
 
         // Build and send request with custom header
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .header("X-Custom-Header", "custom-value")
                 .header("X-Request-ID", "12345")
                 .build();
 
         ApiResponse<ExperimentalResponse> response =
-                client.raw().send(request, ExperimentalResponse.class).get();
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
 
         // Verify response
         assertNotNull(response);
@@ -362,12 +364,12 @@ public class RawApiTest {
         ClientConfiguration config = new ClientConfiguration().apiUrl(fgaApiUrl).storeId("store with spaces");
         OpenFgaClient client = new OpenFgaClient(config);
 
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", "store with spaces")
                 .build();
 
         ApiResponse<ExperimentalResponse> response =
-                client.raw().send(request, ExperimentalResponse.class).get();
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
 
         // Verify response
         assertNotNull(response);
@@ -380,13 +382,14 @@ public class RawApiTest {
     @Test
     public void rawApi_throwsExceptionForNullBuilder() throws Exception {
         OpenFgaClient client = createClient();
-        assertThrows(IllegalArgumentException.class, () -> client.raw().send(null));
+        assertThrows(IllegalArgumentException.class, () -> client.apiExecutor().send(null));
     }
 
     @Test
     public void rawApi_throwsExceptionForNullResponseType() throws Exception {
         OpenFgaClient client = createClient();
-        RawRequestBuilder request = RawRequestBuilder.builder("GET", "/test").build();
-        assertThrows(IllegalArgumentException.class, () -> client.raw().send(request, null));
+        ApiExecutorRequestBuilder request =
+                ApiExecutorRequestBuilder.builder("GET", "/test").build();
+        assertThrows(IllegalArgumentException.class, () -> client.apiExecutor().send(request, null));
     }
 }
