@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
  *     .build();
  *
  * // Typed response
- * ApiResponse<ResponseType> response = client.raw().send(request, ResponseType.class).get();
+ * ApiResponse<ResponseType> response = client.apiExecutor().send(request, ResponseType.class).get();
  *
  * // Raw JSON
  * ApiResponse<String> response = client.apiExecutor().send(request).get();

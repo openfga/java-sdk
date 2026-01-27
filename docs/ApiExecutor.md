@@ -52,7 +52,7 @@ ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/
 
 **Access:**
 ```java
-RawApi rawApi = client.apiExecutor();
+ApiExecutor apiExecutor = client.apiExecutor();
 ```
 
 **Methods:**

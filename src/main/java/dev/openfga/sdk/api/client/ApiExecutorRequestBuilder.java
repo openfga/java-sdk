@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * <p>Example:</p>
  * <pre>{@code
- * RawRequestBuilder request = RawRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+ * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
  *     .queryParam("limit", "50")
  *     .body(requestObject)
