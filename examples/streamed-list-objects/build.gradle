@@ -17,7 +17,7 @@ ext {
 
 dependencies {
     // Use local build of SDK
-    implementation files('../../build/libs/openfga-sdk-0.9.4.jar')
+    implementation files('../../build/libs/openfga-sdk-0.9.5.jar')
 
     // OpenFGA Language SDK for DSL transformation
     implementation("dev.openfga:openfga-language:v0.2.0-beta.1")
