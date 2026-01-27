@@ -22,7 +22,7 @@ public final class FgaConstants {
     public static final String SDK_VERSION = "0.9.5";
 
     /** User agent used in HTTP requests. */
-    public static final String USER_AGENT = "openfga-sdk java/0.9.5";
+    public static final String USER_AGENT = "openfga-sdk java/" + SDK_VERSION;
 
     /** Example API domain for documentation/tests. */
     public static final String SAMPLE_BASE_DOMAIN = "fga.example";
