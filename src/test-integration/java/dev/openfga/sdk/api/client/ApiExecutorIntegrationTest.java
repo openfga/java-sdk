@@ -18,7 +18,7 @@ import org.testcontainers.openfga.OpenFGAContainer;
 
 /**
  * Integration tests for ApiExecutor functionality.
- * These tests demonstrate how to use raw requests to call OpenFGA endpoints
+ * These tests demonstrate how to use API Executor to call OpenFGA endpoints
  * without using the SDK's typed methods.
  */
 @TestInstance(Lifecycle.PER_CLASS)
