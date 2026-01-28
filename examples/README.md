@@ -9,3 +9,10 @@ A simple example that creates a store, runs a set of calls against it including 
 
 #### OpenTelemetry Examples
 - `opentelemetry/` - Demonstrates OpenTelemetry integration both via manual code configuration, as well as no-code instrumentation using the OpenTelemetry java agent
+
+#### Streaming Examples
+- `streamed-list-objects/` - Demonstrates using the StreamedListObjects API to retrieve large result sets without pagination limits
+
+#### API Executor Examples
+- `api-executor/` - Demonstrates direct HTTP access to OpenFGA endpoints not yet wrapped by the SDK, maintaining SDK configuration (authentication, retries, error handling)
+

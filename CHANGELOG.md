@@ -9,6 +9,9 @@
 ### Added
 - feat: support for streamed list objects (#252, #272)
 
+### Added
+- Introduced `ApiExecutor` for executing custom HTTP requests to OpenFGA API endpoints
+
 ## v0.9.4
 
 ### [0.9.4](https://github.com/openfga/java-sdk/compare/v0.9.3...v0.9.4) (2025-12-05)

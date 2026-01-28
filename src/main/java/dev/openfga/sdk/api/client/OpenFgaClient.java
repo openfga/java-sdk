@@ -46,6 +46,26 @@ public class OpenFgaClient {
         return api;
     }
 
+    /**
+     * Returns an ApiExecutor instance for executing HTTP requests to arbitrary OpenFGA endpoints.
+     * Requests automatically include authentication, retry logic, error handling, and configured timeouts/headers.
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+     *     .pathParam("store_id", storeId)
+     *     .body(requestData);
+     *
+     * client.apiExecutor().send(request, ResponseType.class)
+     *     .thenAccept(response -> handleResponse(response.getData()));
+     * }</pre>
+     *
+     * @return ApiExecutor instance
+     */
+    public ApiExecutor apiExecutor() {
+        return new ApiExecutor(this.apiClient, this.configuration);
+    }
+
     public void setStoreId(String storeId) {
         configuration.storeId(storeId);
     }
