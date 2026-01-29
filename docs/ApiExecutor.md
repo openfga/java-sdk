@@ -73,8 +73,8 @@ T getData()                            // Deserialized data
 ## Examples
 
 ### GET Request
+```java
 ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}/feature")
-ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/feature")
     .pathParam("store_id", storeId)
     .build();
 
@@ -83,8 +83,8 @@ client.apiExecutor().send(request, FeatureResponse.class)
 ```
 
 ### POST with Body
+```java
 ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/bulk-delete")
-ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/bulk-delete")
     .pathParam("store_id", storeId)
     .queryParam("force", "true")
     .body(new BulkDeleteRequest("2023-01-01", "user", 1000))

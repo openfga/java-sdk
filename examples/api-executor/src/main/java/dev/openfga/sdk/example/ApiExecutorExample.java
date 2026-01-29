@@ -194,7 +194,6 @@ public class ApiExecutorExample {
     private static void errorHandlingExample(OpenFgaClient fgaClient) {
         try {
             ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
                     .pathParam("store_id", "01ZZZZZZZZZZZZZZZZZZZZZZZ9")
                     .build();
 
