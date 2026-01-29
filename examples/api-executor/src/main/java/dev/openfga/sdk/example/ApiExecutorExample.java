@@ -1,5 +1,6 @@
 package dev.openfga.sdk.example;
 
+import dev.openfga.sdk.api.client.HttpMethod;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.ApiExecutorRequestBuilder;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -63,7 +64,7 @@ public class ApiExecutorExample {
     private static String listStoresExample(OpenFgaClient fgaClient) {
         try {
             // Build the raw request for GET /stores
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores").build();
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores").build();
 
             // Execute with typed response
             var response = fgaClient
@@ -101,7 +102,7 @@ public class ApiExecutorExample {
      */
     private static String createStoreForExamples(OpenFgaClient fgaClient) throws Exception {
         String storeName = "api-executor-example-" + UUID.randomUUID().toString().substring(0, 8);
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(Map.of("name", storeName))
                 .build();
 
@@ -116,7 +117,7 @@ public class ApiExecutorExample {
      */
     private static void getStoreRawJsonExample(OpenFgaClient fgaClient, String storeId) {
         try {
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}")
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
                     .pathParam("store_id", storeId)
                     .build();
 
@@ -137,7 +138,7 @@ public class ApiExecutorExample {
      */
     private static void listStoresWithPaginationExample(OpenFgaClient fgaClient) {
         try {
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores")
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores")
                     .queryParam("page_size", "2")
                     .build();
 
@@ -167,7 +168,7 @@ public class ApiExecutorExample {
     private static void createStoreWithHeadersExample(OpenFgaClient fgaClient) {
         try {
             String storeName = "raw-api-custom-headers-" + UUID.randomUUID().toString().substring(0, 8);
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                     .header("X-Example-Header", "custom-value")
                     .header("X-Request-ID", "req-" + UUID.randomUUID())
                     .body(Map.of("name", storeName))
@@ -192,8 +193,8 @@ public class ApiExecutorExample {
      */
     private static void errorHandlingExample(OpenFgaClient fgaClient) {
         try {
-            // Try to get a non-existent store
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}")
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
+            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
                     .pathParam("store_id", "01ZZZZZZZZZZZZZZZZZZZZZZZ9")
                     .build();
 

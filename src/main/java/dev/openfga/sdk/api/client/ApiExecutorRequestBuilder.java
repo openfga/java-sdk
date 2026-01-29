@@ -2,7 +2,6 @@ package dev.openfga.sdk.api.client;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Fluent builder for constructing HTTP requests to OpenFGA API endpoints.
@@ -11,7 +10,7 @@ import java.util.Set;
  *
  * <p>Example:</p>
  * <pre>{@code
- * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+ * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
  *     .queryParam("limit", "50")
  *     .body(requestObject)
@@ -19,17 +18,14 @@ import java.util.Set;
  * }</pre>
  */
 public class ApiExecutorRequestBuilder {
-    private static final Set<String> VALID_HTTP_METHODS =
-            Set.of("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS");
-
-    private final String method;
+    private final HttpMethod method;
     private final String path;
     private final Map<String, String> pathParams;
     private final Map<String, String> queryParams;
     private final Map<String, String> headers;
     private Object body;
 
-    private ApiExecutorRequestBuilder(String method, String path) {
+    private ApiExecutorRequestBuilder(HttpMethod method, String path) {
         this.method = method;
         this.path = path;
         this.pathParams = new HashMap<>();
@@ -41,26 +37,20 @@ public class ApiExecutorRequestBuilder {
     /**
      * Creates a new ApiExecutorRequestBuilder instance.
      *
-     * @param method HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+     * @param method HTTP method enum value (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
      * @param path API path with optional placeholders like {store_id}
      * @return New ApiExecutorRequestBuilder instance
      * @throws IllegalArgumentException if method or path is invalid
      */
-    public static ApiExecutorRequestBuilder builder(String method, String path) {
-        if (method == null || method.trim().isEmpty()) {
-            throw new IllegalArgumentException("HTTP method cannot be null or empty");
+    public static ApiExecutorRequestBuilder builder(HttpMethod method, String path) {
+        if (method == null) {
+            throw new IllegalArgumentException("HTTP method cannot be null");
         }
         if (path == null || path.trim().isEmpty()) {
             throw new IllegalArgumentException("Path cannot be null or empty");
         }
 
-        String upperMethod = method.toUpperCase();
-        if (!VALID_HTTP_METHODS.contains(upperMethod)) {
-            throw new IllegalArgumentException(
-                    "Invalid HTTP method: " + method + ". Valid methods: " + VALID_HTTP_METHODS);
-        }
-
-        return new ApiExecutorRequestBuilder(upperMethod, path);
+        return new ApiExecutorRequestBuilder(method, path);
     }
 
     /**
@@ -115,6 +105,7 @@ public class ApiExecutorRequestBuilder {
         this.body = body;
         return this;
     }
+
     /**
      * Builds and returns the request for use with the API Executor.
      * This method must be called to complete request construction.
@@ -129,7 +120,7 @@ public class ApiExecutorRequestBuilder {
     }
 
     String getMethod() {
-        return method;
+        return method.name();
     }
 
     String getPath() {
