@@ -65,7 +65,7 @@ public class ApiExecutorTest {
 
     @Test
     public void rawRequestBuilder_canBuildBasicRequest() {
-        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}/test")
                 .build();
 
         assertNotNull(builder);
@@ -75,7 +75,7 @@ public class ApiExecutorTest {
 
     @Test
     public void rawRequestBuilder_canAddPathParameters() {
-        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}/test")
                 .pathParam("store_id", "my-store")
                 .build();
 
@@ -86,7 +86,7 @@ public class ApiExecutorTest {
 
     @Test
     public void rawRequestBuilder_canAddQueryParameters() {
-        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test")
                 .queryParam("page", "1")
                 .queryParam("limit", "10")
                 .build();
@@ -99,7 +99,7 @@ public class ApiExecutorTest {
 
     @Test
     public void rawRequestBuilder_canAddHeaders() {
-        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder("GET", "/test")
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test")
                 .header("X-Custom-Header", "custom-value")
                 .build();
 
@@ -113,8 +113,9 @@ public class ApiExecutorTest {
         Map<String, Object> body = new HashMap<>();
         body.put("key", "value");
 
-        ApiExecutorRequestBuilder builder =
-                ApiExecutorRequestBuilder.builder("POST", "/test").body(body).build();
+        ApiExecutorRequestBuilder builder = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/test")
+                .body(body)
+                .build();
 
         assertTrue(builder.hasBody());
         assertEquals(body, builder.getBody());
@@ -126,37 +127,24 @@ public class ApiExecutorTest {
     }
 
     @Test
-    public void rawRequestBuilder_throwsExceptionForEmptyMethod() {
-        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("", "/test"));
-    }
-
-    @Test
     public void rawRequestBuilder_throwsExceptionForNullPath() {
-        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("GET", null));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder(HttpMethod.GET, null));
     }
 
     @Test
     public void rawRequestBuilder_throwsExceptionForEmptyPath() {
-        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("GET", ""));
-    }
-
-    @Test
-    public void rawRequestBuilder_throwsExceptionForInvalidHttpMethod() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder("INVALID", "/test"));
-        assertTrue(exception.getMessage().contains("Invalid HTTP method"));
+        assertThrows(IllegalArgumentException.class, () -> ApiExecutorRequestBuilder.builder(HttpMethod.GET, ""));
     }
 
     @Test
     public void rawRequestBuilder_acceptsValidHttpMethods() {
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("GET", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("POST", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("PUT", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("PATCH", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("DELETE", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("HEAD", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("OPTIONS", "/test"));
-        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder("get", "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.PUT, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.PATCH, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.DELETE, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.HEAD, "/test"));
+        assertDoesNotThrow(() -> ApiExecutorRequestBuilder.builder(HttpMethod.OPTIONS, "/test"));
     }
 
     @Test
@@ -171,7 +159,7 @@ public class ApiExecutorTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
@@ -206,7 +194,7 @@ public class ApiExecutorTest {
         requestBody.put("name", "test");
         requestBody.put("value", 123);
 
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .body(requestBody)
                 .build();
@@ -236,7 +224,7 @@ public class ApiExecutorTest {
                         .withBody("{\"success\":true,\"count\":10,\"message\":\"Success\"}")));
         // Build and send request
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .queryParam("force", "true")
                 .queryParam("limit", "10")
@@ -267,7 +255,7 @@ public class ApiExecutorTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
@@ -288,7 +276,8 @@ public class ApiExecutorTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}/non-existent")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
+                        HttpMethod.GET, "/stores/{store_id}/non-existent")
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
@@ -308,7 +297,7 @@ public class ApiExecutorTest {
 
         // Build and send request
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .build();
 
@@ -331,7 +320,7 @@ public class ApiExecutorTest {
 
         // Build and send request with custom header
         OpenFgaClient client = createClient();
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", DEFAULT_STORE_ID)
                 .header("X-Custom-Header", "custom-value")
                 .header("X-Request-ID", "12345")
@@ -364,7 +353,7 @@ public class ApiExecutorTest {
         ClientConfiguration config = new ClientConfiguration().apiUrl(fgaApiUrl).storeId("store with spaces");
         OpenFgaClient client = new OpenFgaClient(config);
 
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", EXPERIMENTAL_ENDPOINT)
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
                 .pathParam("store_id", "store with spaces")
                 .build();
 
@@ -389,7 +378,7 @@ public class ApiExecutorTest {
     public void rawApi_throwsExceptionForNullResponseType() throws Exception {
         OpenFgaClient client = createClient();
         ApiExecutorRequestBuilder request =
-                ApiExecutorRequestBuilder.builder("GET", "/test").build();
+                ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test").build();
         assertThrows(IllegalArgumentException.class, () -> client.apiExecutor().send(request, null));
     }
 }

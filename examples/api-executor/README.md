@@ -56,7 +56,7 @@ All requests will succeed (except #5 which intentionally triggers an error for d
 Build requests using the builder pattern:
 
 ```java
-ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/custom-endpoint")
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/custom-endpoint")
     .pathParam("store_id", storeId)
     .queryParam("page_size", "20")
     .queryParam("continuation_token", "eyJwayI6...")

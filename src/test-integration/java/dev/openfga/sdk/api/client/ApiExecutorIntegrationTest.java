@@ -51,7 +51,7 @@ public class ApiExecutorIntegrationTest {
 
         // Use ApiExecutor to list stores (equivalent to GET /stores)
         ApiExecutorRequestBuilder request =
-                ApiExecutorRequestBuilder.builder("GET", "/stores").build();
+                ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores").build();
 
         ApiResponse<ListStoresResponse> response =
                 fga.apiExecutor().send(request, ListStoresResponse.class).get();
@@ -84,7 +84,7 @@ public class ApiExecutorIntegrationTest {
         requestBody.put("name", storeName);
 
         // Use ApiExecutor to create store (equivalent to POST /stores)
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(requestBody)
                 .build();
 
@@ -115,7 +115,7 @@ public class ApiExecutorIntegrationTest {
         requestBody.put("name", storeName);
 
         // Use ApiExecutor to create store and get raw JSON response
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(requestBody)
                 .build();
 
@@ -147,7 +147,7 @@ public class ApiExecutorIntegrationTest {
         String storeId = createStoreUsingRawRequest(storeName);
 
         // Use ApiExecutor to get store details (equivalent to GET /stores/{store_id})
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
                 .pathParam("store_id", storeId)
                 .build();
 
@@ -176,8 +176,8 @@ public class ApiExecutorIntegrationTest {
         fga.setStoreId(storeId);
 
         // Use ApiExecutor WITHOUT providing store_id path param - it should be auto-replaced
-        ApiExecutorRequestBuilder request =
-                ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}").build();
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
+                .build();
 
         ApiResponse<GetStoreResponse> response =
                 fga.apiExecutor().send(request, GetStoreResponse.class).get();
@@ -228,7 +228,7 @@ public class ApiExecutorIntegrationTest {
 
         // Use ApiExecutor to write authorization model
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
-                        "POST", "/stores/{store_id}/authorization-models")
+                        HttpMethod.POST, "/stores/{store_id}/authorization-models")
                 .body(requestBody)
                 .build();
 
@@ -261,7 +261,7 @@ public class ApiExecutorIntegrationTest {
 
         // Use ApiExecutor to read authorization models with query parameters
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
-                        "GET", "/stores/{store_id}/authorization-models")
+                        HttpMethod.GET, "/stores/{store_id}/authorization-models")
                 .queryParam("page_size", "10")
                 .queryParam("continuation_token", "")
                 .build();
@@ -308,7 +308,8 @@ public class ApiExecutorIntegrationTest {
         tupleKey.put("object", "document:budget");
         checkBody.put("tuple_key", tupleKey);
 
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/check")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
+                        HttpMethod.POST, "/stores/{store_id}/check")
                 .body(checkBody)
                 .build();
 
@@ -331,7 +332,7 @@ public class ApiExecutorIntegrationTest {
         requestBody.put("name", storeName);
 
         // Use ApiExecutor with custom headers
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(requestBody)
                 .header("X-Custom-Header", "custom-value")
                 .header("X-Request-ID", "test-123")
@@ -353,7 +354,7 @@ public class ApiExecutorIntegrationTest {
     @Test
     public void rawRequest_errorHandling_notFound() throws Exception {
         // Try to get a non-existent store
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores/{store_id}")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}")
                 .pathParam("store_id", "non-existent-store-id")
                 .build();
 
@@ -383,7 +384,7 @@ public class ApiExecutorIntegrationTest {
         }
 
         // Use ApiExecutor to list stores with pagination
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("GET", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores")
                 .queryParam("page_size", "2")
                 .build();
 
@@ -409,7 +410,7 @@ public class ApiExecutorIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", storeName);
 
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(requestBody)
                 .build();
 
@@ -445,7 +446,7 @@ public class ApiExecutorIntegrationTest {
         requestBody.put("type_definitions", typeDefinitions);
 
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
-                        "POST", "/stores/{store_id}/authorization-models")
+                        HttpMethod.POST, "/stores/{store_id}/authorization-models")
                 .pathParam("store_id", storeId)
                 .body(requestBody)
                 .build();
@@ -467,7 +468,8 @@ public class ApiExecutorIntegrationTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("writes", Map.of("tuple_keys", List.of(tupleKey)));
 
-        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/write")
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
+                        HttpMethod.POST, "/stores/{store_id}/write")
                 .pathParam("store_id", storeId)
                 .body(requestBody)
                 .build();

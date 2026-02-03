@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>Example:</p>
  * <pre>{@code
- * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder("POST", "/stores/{store_id}/endpoint")
+ * ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/endpoint")
  *     .pathParam("store_id", storeId)
  *     .body(requestData)
  *     .build();
