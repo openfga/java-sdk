@@ -1314,6 +1314,29 @@ public class OpenFgaApi {
     }
 
     /**
+     * Get an access token asynchronously. This method is only available when using CLIENT_CREDENTIALS 
+     * authentication. The token can be used for making API calls to other services that accept the same token.
+     * 
+     * @return A CompletableFuture containing the access token
+     * @throws IllegalStateException when the credentials method is not CLIENT_CREDENTIALS
+     * @throws FgaInvalidParameterException when the configuration is invalid
+     * @throws ApiException when token retrieval fails
+     */
+    public CompletableFuture<String> getAccessToken() throws IllegalStateException, FgaInvalidParameterException, ApiException {
+        CredentialsMethod credentialsMethod = this.configuration.getCredentials().getCredentialsMethod();
+
+        if (credentialsMethod != CredentialsMethod.CLIENT_CREDENTIALS) {
+            throw new IllegalStateException("getAccessToken() is only available when using CLIENT_CREDENTIALS authentication method");
+        }
+
+        if (oAuth2Client == null) {
+            throw new IllegalStateException("OAuth2Client is not initialized");
+        }
+
+        return oAuth2Client.getAccessToken();
+    }
+
+    /**
      * Get an access token. Expects that configuration is valid (meaning it can
      * pass {@link Configuration#assertValid()}) and expects that if the
      * CredentialsMethod is CLIENT_CREDENTIALS that a valid {@link OAuth2Client}
