@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.20.1"
+    jackson_version = "2.21.0"
 }
 
 dependencies {
@@ -67,10 +67,10 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "org.openapitools:jackson-databind-nullable:0.2.8"
+    implementation "org.openapitools:jackson-databind-nullable:0.2.9"
 
     // ---- OpenTelemetry ----
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.57.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.59.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
@@ -81,7 +81,7 @@ testing {
             dependencies {
                 implementation 'org.assertj:assertj-core:3.27.7'
                 implementation 'org.mockito:mockito-core:5.21.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.14.1'
+                implementation 'org.junit.jupiter:junit-jupiter:5.14.2'
                 implementation 'org.wiremock:wiremock:3.13.2'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
