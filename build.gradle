@@ -105,7 +105,6 @@ testing {
         }
 
         integration(JvmTestSuite) {
-            testType = TestSuiteType.INTEGRATION_TEST
             useJUnitJupiter()
 
             dependencies {
