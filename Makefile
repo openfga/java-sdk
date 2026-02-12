@@ -1,12 +1,19 @@
-.PHONY: help test test-integration lint fmt
+.PHONY: help build test test-integration lint fmt clean all
 
 # Default target when 'make' is run without arguments
 help:
 	@echo "Available targets:"
-	@echo "  test           - Run unit tests"
+	@echo "  build            - Compile the project"
+	@echo "  test             - Run unit tests"
 	@echo "  test-integration - Run integration tests"
-	@echo "  lint           - Run static analysis and checkstyle"
-	@echo "  fmt            - Auto-format code using Spotless"
+	@echo "  lint             - Run static analysis and checkstyle"
+	@echo "  fmt              - Auto-format code using Spotless"
+	@echo "  clean            - Clean build artifacts"
+	@echo "  all              - Run all tests and lint"
+
+# Compile the project
+build:
+	./gradlew assemble
 
 # Run unit tests
 test:
@@ -24,11 +31,9 @@ lint:
 fmt:
 	./gradlew spotlessApply
 
-
 # Clean build artifacts
 clean:
 	./gradlew clean
 
-# Run all tests
+# Run all tests and lint
 all: test lint
-	@echo "All checks completed"
