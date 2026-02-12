@@ -34,12 +34,7 @@ jobs:
         uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
 
       - name: Test and Build with Gradle
-        run: |
-          if [ "${{ matrix.java }}" = "25" ]; then
-            ./gradlew build test-integration -x spotlessCheck
-          else
-            ./gradlew build test-integration
-          fi
+        run: ./gradlew build test-integration
 
       - if: matrix.java == 17
         name: Upload coverage to Codecov
