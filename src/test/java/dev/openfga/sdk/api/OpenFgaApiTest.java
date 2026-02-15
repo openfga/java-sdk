@@ -2138,4 +2138,11 @@ public class OpenFgaApiTest {
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
     }
+
+    @Test
+    public void shouldRejectNullTelemetry() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new OpenFgaApi(new Configuration().apiUrl("https://localhost"), new ApiClient(), null));
+    }
 }
