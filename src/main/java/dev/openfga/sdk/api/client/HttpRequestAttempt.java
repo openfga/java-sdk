@@ -49,6 +49,9 @@ public class HttpRequestAttempt<T> {
             Telemetry telemetry)
             throws FgaInvalidParameterException {
         assertParamExists(configuration.getMaxRetries(), "maxRetries", "Configuration");
+        if (telemetry == null) {
+            throw new IllegalArgumentException("Telemetry cannot be null");
+        }
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.name = name;

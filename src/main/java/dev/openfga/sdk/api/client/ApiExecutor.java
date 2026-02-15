@@ -56,6 +56,9 @@ public class ApiExecutor {
         if (configuration == null) {
             throw new IllegalArgumentException("Configuration cannot be null");
         }
+        if (telemetry == null) {
+            throw new IllegalArgumentException("Telemetry cannot be null");
+        }
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.telemetry = telemetry;
