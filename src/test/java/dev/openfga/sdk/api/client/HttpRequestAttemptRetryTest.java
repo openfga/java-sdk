@@ -13,6 +13,7 @@ import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaApiInternalError;
 import dev.openfga.sdk.errors.FgaError;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +27,7 @@ class HttpRequestAttemptRetryTest {
     private WireMockServer wireMockServer;
     private ClientConfiguration configuration;
     private ApiClient apiClient;
+    private Telemetry telemetry;
 
     @BeforeEach
     void setUp() {
@@ -39,6 +41,7 @@ class HttpRequestAttemptRetryTest {
                 .minimumRetryDelay(Duration.ofMillis(10)); // Short delay for testing
 
         apiClient = new ApiClient();
+        telemetry = new Telemetry(configuration);
     }
 
     @AfterEach
@@ -73,7 +76,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When
         ApiResponse<Void> response = attempt.attemptHttpRequest().get();
@@ -110,7 +113,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When
         ApiResponse<Void> response = attempt.attemptHttpRequest().get();
@@ -134,7 +137,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When & Then
         ExecutionException exception = assertThrows(
@@ -174,7 +177,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When
         ApiResponse<Void> response = attempt.attemptHttpRequest().get();
@@ -198,7 +201,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When & Then
         ExecutionException exception = assertThrows(
@@ -224,7 +227,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When & Then
         ExecutionException exception = assertThrows(
@@ -260,7 +263,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When
         ApiResponse<Void> response = attempt.attemptHttpRequest().get();
@@ -301,7 +304,7 @@ class HttpRequestAttemptRetryTest {
                 .build();
 
         HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration);
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, configuration, telemetry);
 
         // When
         ApiResponse<Void> response = attempt.attemptHttpRequest().get();
@@ -331,8 +334,8 @@ class HttpRequestAttemptRetryTest {
                 .timeout(Duration.ofMillis(50)) // Short timeout to force connection error
                 .build();
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, networkConfig, new Telemetry(networkConfig));
 
         Instant startTime = Instant.now();
 
@@ -371,8 +374,8 @@ class HttpRequestAttemptRetryTest {
                 .timeout(Duration.ofMillis(50)) // Short timeout to force connection error quickly
                 .build();
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, networkConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, networkConfig, new Telemetry(networkConfig));
 
         Instant startTime = Instant.now();
 
@@ -408,7 +411,8 @@ class HttpRequestAttemptRetryTest {
                 .timeout(Duration.ofMillis(500)) // Reasonable timeout
                 .build();
 
-        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig, new Telemetry(dnsConfig));
 
         Instant startTime = Instant.now();
 
@@ -446,7 +450,8 @@ class HttpRequestAttemptRetryTest {
                 .timeout(Duration.ofMillis(1000))
                 .build();
 
-        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig);
+        HttpRequestAttempt<Void> attempt =
+                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, dnsConfig, new Telemetry(dnsConfig));
 
         // When & Then
         ExecutionException exception = assertThrows(
@@ -506,8 +511,8 @@ class HttpRequestAttemptRetryTest {
                 .maxRetries(2)
                 .minimumRetryDelay(Duration.ofMillis(100)); // Should act as floor for exponential backoff
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, globalConfig, new Telemetry(globalConfig));
 
         Instant startTime = Instant.now();
 
@@ -556,8 +561,8 @@ class HttpRequestAttemptRetryTest {
                 .maxRetries(2)
                 .minimumRetryDelay(Duration.ofMillis(150)); // Should NOT override Retry-After
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, globalConfig, new Telemetry(globalConfig));
 
         Instant startTime = Instant.now();
 
@@ -604,8 +609,8 @@ class HttpRequestAttemptRetryTest {
                 .maxRetries(2)
                 .minimumRetryDelay(Duration.ofMillis(50)); // Should NOT override Retry-After: 100ms
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, globalConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, globalConfig, new Telemetry(globalConfig));
 
         Instant startTime = Instant.now();
 
@@ -643,8 +648,8 @@ class HttpRequestAttemptRetryTest {
                 configuration.override(new dev.openfga.sdk.api.configuration.ConfigurationOverride()
                         .minimumRetryDelay(Duration.ofMillis(100)));
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, overriddenConfig, new Telemetry(overriddenConfig));
 
         Instant startTime = Instant.now();
 
@@ -687,8 +692,8 @@ class HttpRequestAttemptRetryTest {
                     .POST(HttpRequest.BodyPublishers.ofString("{}"))
                     .build();
 
-            HttpRequestAttempt<Void> attempt =
-                    new HttpRequestAttempt<>(request, "check", Void.class, apiClient, effectiveConfig);
+            HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                    request, "check", Void.class, apiClient, effectiveConfig, new Telemetry(effectiveConfig));
             attempt.attemptHttpRequest().get();
         });
 
@@ -726,8 +731,8 @@ class HttpRequestAttemptRetryTest {
                 configuration.override(new dev.openfga.sdk.api.configuration.ConfigurationOverride()
                         .minimumRetryDelay(Duration.ofMillis(150)));
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, overriddenConfig, new Telemetry(overriddenConfig));
 
         Instant startTime = Instant.now();
 
@@ -776,8 +781,8 @@ class HttpRequestAttemptRetryTest {
         // Verify the override took effect
         assertEquals(Duration.ofMillis(500), overriddenConfig.getMinimumRetryDelay());
 
-        HttpRequestAttempt<Void> attempt =
-                new HttpRequestAttempt<>(request, "test", Void.class, apiClient, overriddenConfig);
+        HttpRequestAttempt<Void> attempt = new HttpRequestAttempt<>(
+                request, "test", Void.class, apiClient, overriddenConfig, new Telemetry(overriddenConfig));
 
         Instant startTime = Instant.now();
 

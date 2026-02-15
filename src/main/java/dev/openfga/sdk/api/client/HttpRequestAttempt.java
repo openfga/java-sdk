@@ -37,13 +37,24 @@ public class HttpRequestAttempt<T> {
     public HttpRequestAttempt(
             HttpRequest request, String name, Class<T> clazz, ApiClient apiClient, Configuration configuration)
             throws FgaInvalidParameterException {
+        this(request, name, clazz, apiClient, configuration, new Telemetry(configuration));
+    }
+
+    public HttpRequestAttempt(
+            HttpRequest request,
+            String name,
+            Class<T> clazz,
+            ApiClient apiClient,
+            Configuration configuration,
+            Telemetry telemetry)
+            throws FgaInvalidParameterException {
         assertParamExists(configuration.getMaxRetries(), "maxRetries", "Configuration");
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.name = name;
         this.request = request;
         this.clazz = clazz;
-        this.telemetry = new Telemetry(configuration);
+        this.telemetry = telemetry;
         this.telemetryAttributes = new HashMap<>();
     }
 

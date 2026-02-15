@@ -6,8 +6,8 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Metrics class provides methods for creating and publishing metrics using OpenTelemetry.
@@ -24,8 +24,8 @@ public class Metrics {
 
     public Metrics(Configuration configuration) {
         this.meter = GlobalOpenTelemetry.get().getMeterProvider().get("openfga-sdk");
-        this.counters = new HashMap<>();
-        this.histograms = new HashMap<>();
+        this.counters = new ConcurrentHashMap<>();
+        this.histograms = new ConcurrentHashMap<>();
         this.configuration = configuration;
         if (this.configuration.getTelemetryConfiguration() == null) {
             this.configuration.telemetryConfiguration(new TelemetryConfiguration());
@@ -55,15 +55,9 @@ public class Metrics {
                 || !configuration.getTelemetryConfiguration().metrics().containsKey(counter)) {
             return null;
         }
-        if (!counters.containsKey(counter.getName())) {
-            counters.put(
-                    counter.getName(),
-                    meter.counterBuilder(counter.getName())
-                            .setDescription(counter.getDescription())
-                            .build());
-        }
-
-        LongCounter counterInstance = counters.get(counter.getName());
+        LongCounter counterInstance = counters.computeIfAbsent(counter.getName(), name -> meter.counterBuilder(name)
+                .setDescription(counter.getDescription())
+                .build());
 
         if (value != null) {
             counterInstance.add(value, Attributes.prepare(attributes, counter, configuration));
@@ -87,16 +81,11 @@ public class Metrics {
             return null;
         }
 
-        if (!histograms.containsKey(histogram.getName())) {
-            histograms.put(
-                    histogram.getName(),
-                    meter.histogramBuilder(histogram.getName())
-                            .setDescription(histogram.getDescription())
-                            .setUnit(histogram.getUnit())
-                            .build());
-        }
-
-        DoubleHistogram histogramInstance = histograms.get(histogram.getName());
+        DoubleHistogram histogramInstance =
+                histograms.computeIfAbsent(histogram.getName(), name -> meter.histogramBuilder(name)
+                        .setDescription(histogram.getDescription())
+                        .setUnit(histogram.getUnit())
+                        .build());
 
         if (value != null) {
             histogramInstance.record(value, Attributes.prepare(attributes, histogram, configuration));

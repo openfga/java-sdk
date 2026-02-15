@@ -78,7 +78,8 @@ public class OAuth2Client {
                 ApiClient.formRequestBuilder("POST", "", this.authRequest.buildFormRequestBody(), config);
         HttpRequest request = requestBuilder.build();
 
-        return new HttpRequestAttempt<>(request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config)
+        return new HttpRequestAttempt<>(
+                        request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config, telemetry)
                 .attemptHttpRequest()
                 .thenApply(ApiResponse::getData);
     }
