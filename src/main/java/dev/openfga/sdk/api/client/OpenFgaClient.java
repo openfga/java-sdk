@@ -9,6 +9,7 @@ import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 
 public class OpenFgaClient {
     private final ApiClient apiClient;
+    private Telemetry telemetry;
     private ClientConfiguration configuration;
     private OpenFgaApi api;
 
@@ -32,7 +34,8 @@ public class OpenFgaClient {
     public OpenFgaClient(ClientConfiguration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         this.apiClient = apiClient;
         this.configuration = configuration;
-        this.api = new OpenFgaApi(configuration, apiClient);
+        this.telemetry = new Telemetry(configuration);
+        this.api = new OpenFgaApi(configuration, apiClient, telemetry);
     }
 
     /* ***********
@@ -63,7 +66,7 @@ public class OpenFgaClient {
      * @return ApiExecutor instance
      */
     public ApiExecutor apiExecutor() {
-        return new ApiExecutor(this.apiClient, this.configuration);
+        return new ApiExecutor(this.apiClient, this.configuration, this.telemetry);
     }
 
     public void setStoreId(String storeId) {
@@ -76,7 +79,8 @@ public class OpenFgaClient {
 
     public void setConfiguration(ClientConfiguration configuration) throws FgaInvalidParameterException {
         this.configuration = configuration;
-        this.api = new OpenFgaApi(configuration, apiClient);
+        this.telemetry = new Telemetry(configuration);
+        this.api = new OpenFgaApi(configuration, apiClient, telemetry);
     }
 
     /* ********
