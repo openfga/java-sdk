@@ -33,24 +33,31 @@ class TelemetryTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         List<Metrics> results = new CopyOnWriteArrayList<>();
 
-        // when
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-                    results.add(telemetry.metrics());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
-        }
-        startLatch.countDown();
-        executor.shutdown();
-        executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+        try {
+            // when
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    try {
+                        startLatch.await();
+                        results.add(telemetry.metrics());
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            }
+            startLatch.countDown();
+            executor.shutdown();
+            boolean terminated = executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+            assertThat(terminated).isTrue();
 
-        // then
-        assertThat(results).hasSize(threadCount);
-        Metrics expected = results.get(0);
-        assertThat(results).allSatisfy(m -> assertThat(m).isSameAs(expected));
+            // then
+            assertThat(results).hasSize(threadCount);
+            Metrics expected = results.get(0);
+            assertThat(results).allSatisfy(m -> assertThat(m).isSameAs(expected));
+        } finally {
+            if (!executor.isTerminated()) {
+                executor.shutdownNow();
+            }
+        }
     }
 }
