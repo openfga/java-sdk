@@ -74,7 +74,7 @@ repositories {
 }
 
 ext {
-    fgaSdkVersion = "0.9.5"
+    fgaSdkVersion = "0.9.6"
     openTelemetryVersion = "1.58.0"
     openTelemetryAlphaVersion = "1.58.0-alpha"
 }
