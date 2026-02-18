@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.5...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.6...HEAD)
+
+## v0.9.6
+
+### [0.9.6](https://github.com/openfga/java-sdk/compare/v0.9.5...v0.9.6) (2026-02-18)
+
+### Added
+- Introduced `ApiExecutor` for executing custom HTTP requests to OpenFGA API endpoints (#273, #277)
+
+### Breaking Changes
+- Minimum Java version requirement increased to Java 17 (#282) - Java 11 support removed (#282)
 
 ## v0.9.5
 
@@ -9,8 +19,6 @@
 ### Added
 - feat: support for streamed list objects (#252, #272)
 
-### Added
-- Introduced `ApiExecutor` for executing custom HTTP requests to OpenFGA API endpoints
 
 ## v0.9.4
 
