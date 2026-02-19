@@ -10,7 +10,7 @@ Both executors give you direct HTTP access to OpenFGA endpoints while maintainin
 |---|---|---|
 | **For** | Endpoints returning a single JSON response | Streaming endpoints |
 | **Returns** | `CompletableFuture<ApiResponse<T>>` | `CompletableFuture<Void>` + per-object consumer callback |
-| **Access** | `client.apiExecutor()` | `client.streamingApiExecutor(typeRef)` |
+| **Access** | `client.apiExecutor()` | `client.streamingApiExecutor(MyResponse.class)` |
 
 Use cases:
 - Calling endpoints not yet supported by the SDK
@@ -19,7 +19,7 @@ Use cases:
 
 ## Prerequisites
 
-- Java 11 or higher
+- Java 17 or higher
 - OpenFGA server running on `http://localhost:8080` (or set `FGA_API_URL`)
 
 ## Running
@@ -57,7 +57,7 @@ Demonstrates `StreamingApiExecutor` against the `streamed-list-objects` endpoint
 
 1. Creates a temporary store and writes an authorization model
 2. Writes 200 relationship tuples (100 owners + 100 viewers)
-3. Calls `POST /stores/{store_id}/streamed-list-objects` via `client.streamingApiExecutor(typeRef).stream(...)`
+3. Calls `POST /stores/{store_id}/streamed-list-objects` via `client.streamingApiExecutor(StreamedListObjectsResponse.class).stream(request, consumer)`
 4. Receives each object via a consumer callback as it arrives
 5. Cleans up the store
 
@@ -83,7 +83,6 @@ ApiResponse<String> raw = client.apiExecutor().send(request).get();
 ### Streaming request (StreamingApiExecutor)
 
 ```java
-// Just pass the response class — no TypeReference boilerplate needed
 ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-endpoint")
     .body(requestBody)
     .build();

@@ -24,7 +24,6 @@ ApiResponse<String> rawResponse = client.apiExecutor().send(request).get();
 ### Streaming endpoint
 
 ```java
-// Just pass the response class — no TypeReference boilerplate needed
 ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
     .body(listObjectsRequest)
     .build();
@@ -92,8 +91,8 @@ CompletableFuture<Void> stream(ApiExecutorRequestBuilder request, Consumer<T> co
 CompletableFuture<Void> stream(ApiExecutorRequestBuilder request, Consumer<T> consumer, Consumer<Throwable> errorConsumer)
 ```
 
-- The `consumer` is invoked once per successfully parsed `{"result": ...}` line.
-- The optional `errorConsumer` is invoked for `{"error": ...}` lines or HTTP errors.
+- The `consumer` is invoked once per successfully parsed response object.
+- The optional `errorConsumer` is invoked for errors within the stream or on HTTP error.
 - The returned `CompletableFuture<Void>` completes when the stream is exhausted or fails exceptionally on unrecoverable error.
 
 ### ApiResponse\<T\>
@@ -148,6 +147,24 @@ client.streamingApiExecutor(StreamedListObjectsResponse.class)
     .thenRun(() -> System.out.println("Received " + objects.size() + " objects"));
 ```
 
+### Streaming endpoint with TypeReference (escape hatch for generic response types)
+
+Use `TypeReference` only when the response type `T` is itself generic. For all concrete
+types — which covers the vast majority of endpoints — use `streamingApiExecutor(MyResponse.class)` instead.
+
+```java
+// Hypothetical endpoint whose response wraps a generic Page<Item>
+TypeReference<StreamResult<Page<Item>>> typeRef = new TypeReference<StreamResult<Page<Item>>>() {};
+
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-paged-items")
+    .body(requestBody)
+    .build();
+
+client.streamingApiExecutor(typeRef)
+    .stream(request, page -> page.getItems().forEach(System.out::println))
+    .thenRun(() -> System.out.println("Done"));
+```
+
 ### Query Parameters
 ```java
 ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores/{store_id}/items")
@@ -197,7 +214,7 @@ ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/settings"
 - Path/query parameters are URL-encoded automatically
 - Authentication tokens injected from client config
 - `{store_id}` auto-replaced if not provided via `.pathParam()`
-- `StreamingApiExecutor` requires a `TypeReference<StreamResult<T>>` because Java generics are erased at runtime; the type reference preserves the type information needed for JSON deserialization
+- For `StreamingApiExecutor`, pass the response class directly (`MyResponse.class`). The SDK builds the required Jackson type internally. Use the `TypeReference` overload only when `T` is itself a generic type.
 
 ## Migration to Typed Methods
 

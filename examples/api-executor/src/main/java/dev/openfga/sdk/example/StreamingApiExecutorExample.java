@@ -56,7 +56,6 @@ public class StreamingApiExecutorExample {
     private static final int TOTAL_VIEWER_DOCUMENTS = 100;
     private static final int VIEWER_DOCUMENT_OFFSET = 100;
 
-
     public static void main(String[] args) {
         try {
             new StreamingApiExecutorExample().run();
