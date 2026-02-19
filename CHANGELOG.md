@@ -3,8 +3,7 @@
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.6...HEAD)
 
 ### Added
-- `StreamingApiExecutor` for calling streaming endpoints not yet wrapped by the SDK
-  - `client.streamingApiExecutor(MyResponse.class).stream(request, consumer)` — pass the response class directly for concrete types, or use the `TypeReference` overload when the response type is itself generic
+- Introduced `StreamingApiExecutor` for executing HTTP requests to streaming endpoints not yet wrapped by the SDK
 
 ## v0.9.6
 
