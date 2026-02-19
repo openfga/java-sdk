@@ -13,16 +13,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
- * Executes HTTP requests to OpenFGA streaming API endpoints using the SDK's internal HTTP client.
- * Requests automatically include authentication, error handling, and configuration settings.
- * Each streamed response object is delivered to a consumer callback asynchronously.
+ * Executes HTTP requests to OpenFGA streaming endpoints, delivering each response object
+ * to a consumer callback as it arrives.
  *
- * <p>This class is analogous to {@link ApiExecutor} but for streaming endpoints that return
- * multiple response objects rather than a single JSON object. It reuses all the
- * streaming infrastructure from {@link BaseStreamingApi}.</p>
- *
- * <p>Obtain an instance via {@link OpenFgaClient#streamingApiExecutor(Class)} — pass the
- * response type directly, no {@link TypeReference} boilerplate required:</p>
+ * <p>Obtain via {@link OpenFgaClient#streamingApiExecutor(Class)}:</p>
  *
  * <pre>{@code
  * ApiExecutorRequestBuilder request =
@@ -35,19 +29,14 @@ import java.util.function.Consumer;
  *     .thenRun(() -> System.out.println("Done"));
  * }</pre>
  *
- * <p>If your response type is itself generic, use the {@link TypeReference} overload
- * {@link OpenFgaClient#streamingApiExecutor(TypeReference)} instead.</p>
+ * <p>If the response type is itself generic, use {@link OpenFgaClient#streamingApiExecutor(TypeReference)} instead.</p>
  */
 public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
 
     /**
-     * Constructs a StreamingApiExecutor from a plain {@link Class}.
-     * The SDK builds the required {@code TypeReference<StreamResult<T>>} internally.
-     * This is the preferred constructor for concrete (non-generic) response types.
-     *
      * @param apiClient     API client for HTTP operations
      * @param configuration Client configuration
-     * @param responseType  The class of individual response objects (e.g. {@code StreamedListObjectsResponse.class})
+     * @param responseType  Class of the response objects
      */
     public StreamingApiExecutor(ApiClient apiClient, Configuration configuration, Class<T> responseType) {
         this(
@@ -59,13 +48,12 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
     }
 
     /**
-     * Constructs a StreamingApiExecutor from an explicit {@link TypeReference}.
-     * Use this overload when the response type {@code T} is itself generic.
+     * Use when the response type {@code T} is itself generic.
      * For concrete types, prefer {@link #StreamingApiExecutor(ApiClient, Configuration, Class)}.
      *
      * @param apiClient     API client for HTTP operations
      * @param configuration Client configuration
-     * @param typeRef       TypeReference describing {@code StreamResult<T>} for deserialization
+     * @param typeRef       TypeReference for {@code StreamResult<T>}
      */
     public StreamingApiExecutor(
             ApiClient apiClient, Configuration configuration, TypeReference<StreamResult<T>> typeRef) {
@@ -75,10 +63,7 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
                 requireNonNull(typeRef, "TypeReference cannot be null"));
     }
 
-    /**
-     * Builds a TypeReference<StreamResult<T>> from a plain Class<T> using Jackson's TypeFactory,
-     * so the caller never has to mention StreamResult.
-     */
+    /** Builds a {@code TypeReference<StreamResult<T>>} from a plain {@code Class<T>}. */
     private static <T> TypeReference<StreamResult<T>> buildTypeReference(
             ObjectMapper objectMapper, Class<T> responseType) {
         JavaType javaType = objectMapper.getTypeFactory().constructParametricType(StreamResult.class, responseType);
@@ -98,11 +83,8 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
     }
 
     /**
-     * Executes a streaming HTTP request. Each received response object is delivered to the consumer
-     * callback asynchronously as it arrives.
-     *
-     * @param requestBuilder Request configuration (path, method, body, headers, etc.)
-     * @param consumer Callback invoked for each successfully parsed response object
+     * @param requestBuilder Request configuration
+     * @param consumer Callback invoked for each response object
      * @return CompletableFuture&lt;Void&gt; that completes when the stream is exhausted
      * @throws FgaInvalidParameterException If configuration is invalid
      * @throws ApiException If request construction fails
@@ -113,13 +95,9 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
     }
 
     /**
-     * Executes a streaming HTTP request. Each received response object is delivered to the consumer
-     * callback asynchronously as it arrives. Errors during streaming are delivered to the optional
-     * error consumer.
-     *
-     * @param requestBuilder Request configuration (path, method, body, headers, etc.)
-     * @param consumer Callback invoked for each successfully parsed response object
-     * @param errorConsumer Optional callback invoked for errors encountered during streaming
+     * @param requestBuilder Request configuration
+     * @param consumer Callback invoked for each response object
+     * @param errorConsumer Optional callback invoked for stream or HTTP errors
      * @return CompletableFuture&lt;Void&gt; that completes when the stream is exhausted or exceptionally on error
      * @throws FgaInvalidParameterException If configuration is invalid
      * @throws ApiException If request construction fails

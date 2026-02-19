@@ -71,9 +71,6 @@ public class OpenFgaClient {
     /**
      * Returns a {@link StreamingApiExecutor} for calling streaming endpoints not yet wrapped by the SDK.
      *
-     * <p>Pass the response type directly — no {@link com.fasterxml.jackson.core.type.TypeReference}
-     * boilerplate required. This is the preferred overload for concrete (non-generic) response types:</p>
-     *
      * <pre>{@code
      * ApiExecutorRequestBuilder request =
      *     ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
@@ -86,7 +83,7 @@ public class OpenFgaClient {
      * }</pre>
      *
      * @param <T>          The type of individual response objects delivered to the consumer
-     * @param responseType The class of the response objects (e.g. {@code StreamedListObjectsResponse.class})
+     * @param responseType Class of the response objects
      * @return StreamingApiExecutor instance
      */
     public <T> StreamingApiExecutor<T> streamingApiExecutor(Class<T> responseType) {
@@ -95,20 +92,10 @@ public class OpenFgaClient {
 
     /**
      * Returns a {@link StreamingApiExecutor} for calling streaming endpoints not yet wrapped by the SDK.
-     *
-     * <p>Use this overload only when the response type {@code T} is itself generic.
-     * For concrete types, prefer {@link #streamingApiExecutor(Class)}:</p>
-     *
-     * <pre>{@code
-     * // Only needed when T is generic — for most endpoints use streamingApiExecutor(MyResponse.class)
-     * TypeReference<StreamResult<StreamedListObjectsResponse>> typeRef =
-     *     new TypeReference<StreamResult<StreamedListObjectsResponse>>() {};
-     *
-     * client.streamingApiExecutor(typeRef).stream(request, response -> ...);
-     * }</pre>
+     * Use when the response type {@code T} is itself generic; otherwise prefer {@link #streamingApiExecutor(Class)}.
      *
      * @param <T>     The type of individual response objects delivered to the consumer
-     * @param typeRef TypeReference for {@code StreamResult<T>} used to deserialize each streamed response object
+     * @param typeRef TypeReference for {@code StreamResult<T>}
      * @return StreamingApiExecutor instance
      */
     public <T> StreamingApiExecutor<T> streamingApiExecutor(TypeReference<StreamResult<T>> typeRef) {

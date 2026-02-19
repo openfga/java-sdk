@@ -25,14 +25,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Tests for {@link StreamingApiExecutor}, which provides streaming HTTP access analogous to
- * {@link ApiExecutor} but for streaming endpoints.
- *
- * <p>The streamed-list-objects endpoint is used as the concrete demonstration endpoint
- * because it is the SDK's canonical streaming endpoint and its response format matches
- * the generic {@code StreamResult<T>} wrapper that {@link StreamingApiExecutor} expects.</p>
- */
+/** Tests for {@link StreamingApiExecutor}. */
 public class StreamingApiExecutorTest {
 
     private static final String DEFAULT_STORE_ID = "01YCP46JKYM8FJCQ37NMBYHE5X";
@@ -70,11 +63,6 @@ public class StreamingApiExecutorTest {
     // -----------------------------------------------------------------------
     // Happy-path tests
     // -----------------------------------------------------------------------
-
-    @Test
-    public void streamingApiExecutor_returnsNonNull() {
-        assertNotNull(fga.streamingApiExecutor(StreamedListObjectsResponse.class));
-    }
 
     @Test
     public void stream_successfulStream_deliversAllObjects() throws Exception {
@@ -223,8 +211,6 @@ public class StreamingApiExecutorTest {
 
     @Test
     public void stream_autoInjectsStoreIdFromConfiguration() throws Exception {
-        // The request path contains {store_id} but no explicit pathParam —
-        // the executor should substitute it from the client configuration.
         Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
 
         HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
@@ -242,7 +228,6 @@ public class StreamingApiExecutorTest {
                 .get();
 
         assertEquals(1, received.size());
-        // Verify the HTTP call was made exactly once (store_id was resolved)
         verify(mockHttpClient, times(1)).sendAsync(any(), any());
     }
 
@@ -301,8 +286,6 @@ public class StreamingApiExecutorTest {
 
     @Test
     public void streamingApiExecutor_typeReferenceOverload_works() throws Exception {
-        // The TypeReference overload is the escape hatch for generic response types.
-        // Verify it produces a working executor using the canonical streaming endpoint.
         TypeReference<StreamResult<StreamedListObjectsResponse>> typeRef =
                 new TypeReference<StreamResult<StreamedListObjectsResponse>>() {};
 
@@ -336,8 +319,6 @@ public class StreamingApiExecutorTest {
 
     @Test
     public void stream_storeIdRequired() throws Exception {
-        // Configuration without storeId — {store_id} stays unresolved in the path,
-        // causing URI.create() to throw IllegalArgumentException on the illegal characters.
         ClientConfiguration cfg = new ClientConfiguration()
                 .apiUrl(FgaConstants.TEST_API_URL)
                 .credentials(new Credentials())
