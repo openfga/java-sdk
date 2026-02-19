@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.6...HEAD)
 
+### Added
+- Introduced `StreamingApiExecutor` for executing HTTP requests to streaming endpoints not yet wrapped by the SDK (`client.streamingApiExecutor(typeRef).stream(request, consumer)`)
+
+### Changed
+- Moved path resolution and HTTP request construction from `ApiExecutor` into `ApiExecutorRequestBuilder`, eliminating duplication and making the logic reusable by `StreamingApiExecutor`
+
 ## v0.9.6
 
 ### [0.9.6](https://github.com/openfga/java-sdk/compare/v0.9.5...v0.9.6) (2026-02-18)

@@ -1,7 +1,16 @@
 package dev.openfga.sdk.api.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.util.StringUtil;
+import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Fluent builder for constructing HTTP requests to OpenFGA API endpoints.
@@ -128,15 +137,15 @@ public class ApiExecutorRequestBuilder {
     }
 
     Map<String, String> getPathParams() {
-        return new HashMap<>(pathParams);
+        return Collections.unmodifiableMap(pathParams);
     }
 
     Map<String, String> getQueryParams() {
-        return new HashMap<>(queryParams);
+        return Collections.unmodifiableMap(queryParams);
     }
 
     Map<String, String> getHeaders() {
-        return new HashMap<>(headers);
+        return Collections.unmodifiableMap(headers);
     }
 
     Object getBody() {
@@ -145,5 +154,76 @@ public class ApiExecutorRequestBuilder {
 
     boolean hasBody() {
         return body != null;
+    }
+
+    /**
+     * Resolves path parameters, auto-substitutes {@code {store_id}} from configuration if not
+     * explicitly provided, and appends sorted query parameters.
+     * Package-private — used by {@link ApiExecutor} and {@link StreamingApiExecutor}.
+     */
+    String buildPath(Configuration configuration) {
+        StringBuilder pathBuilder = new StringBuilder(path);
+
+        // Auto-substitute {store_id} from client configuration if the caller didn't provide it
+        if (pathBuilder.indexOf("{store_id}") != -1 && !pathParams.containsKey("store_id")) {
+            if (configuration instanceof ClientConfiguration) {
+                String storeId = ((ClientConfiguration) configuration).getStoreId();
+                if (storeId != null) {
+                    replaceAll(pathBuilder, "{store_id}", StringUtil.urlEncode(storeId));
+                }
+            }
+        }
+
+        // Replace remaining path parameter placeholders
+        for (Map.Entry<String, String> entry : pathParams.entrySet()) {
+            replaceAll(pathBuilder, "{" + entry.getKey() + "}", StringUtil.urlEncode(entry.getValue()));
+        }
+
+        // Append query parameters (sorted for deterministic ordering)
+        if (!queryParams.isEmpty()) {
+            String queryString = queryParams.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(e -> StringUtil.urlEncode(e.getKey()) + "=" + StringUtil.urlEncode(e.getValue()))
+                    .collect(Collectors.joining("&"));
+            pathBuilder.append(pathBuilder.indexOf("?") != -1 ? "&" : "?").append(queryString);
+        }
+
+        return pathBuilder.toString();
+    }
+
+    /**
+     * Builds a fully configured {@link HttpRequest} from this builder's state.
+     * Handles body serialization, custom headers, and request interceptors.
+     * Package-private — used by {@link ApiExecutor} and {@link StreamingApiExecutor}.
+     */
+    HttpRequest buildHttpRequest(Configuration configuration, ApiClient apiClient)
+            throws FgaInvalidParameterException, JsonProcessingException {
+        String resolvedPath = buildPath(configuration);
+
+        HttpRequest.Builder httpRequestBuilder;
+        if (hasBody()) {
+            byte[] bodyBytes = body instanceof String
+                    ? ((String) body).getBytes(StandardCharsets.UTF_8)
+                    : apiClient.getObjectMapper().writeValueAsBytes(body);
+            httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, bodyBytes, configuration);
+        } else {
+            httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, configuration);
+        }
+
+        headers.forEach(httpRequestBuilder::header);
+
+        if (apiClient.getRequestInterceptor() != null) {
+            apiClient.getRequestInterceptor().accept(httpRequestBuilder);
+        }
+
+        return httpRequestBuilder.build();
+    }
+
+    private static void replaceAll(StringBuilder sb, String target, String replacement) {
+        int index = sb.indexOf(target);
+        while (index != -1) {
+            sb.replace(index, index + target.length(), replacement);
+            index = sb.indexOf(target, index + replacement.length());
+        }
     }
 }

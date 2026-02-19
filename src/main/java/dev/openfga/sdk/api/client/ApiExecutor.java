@@ -5,7 +5,6 @@ import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.io.IOException;
 import java.net.http.HttpRequest;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -82,9 +81,7 @@ public class ApiExecutor {
         try {
             configuration.assertValid();
 
-            String completePath = buildCompletePath(requestBuilder);
-            HttpRequest httpRequest = buildHttpRequest(requestBuilder, completePath);
-
+            HttpRequest httpRequest = requestBuilder.buildHttpRequest(configuration, apiClient);
             String methodName = "apiExecutor:" + requestBuilder.getMethod() + ":" + requestBuilder.getPath();
 
             return new HttpRequestAttempt<>(httpRequest, methodName, responseType, apiClient, configuration)
@@ -93,83 +90,5 @@ public class ApiExecutor {
         } catch (IOException e) {
             return CompletableFuture.failedFuture(new ApiException(e));
         }
-    }
-
-    private String buildCompletePath(ApiExecutorRequestBuilder requestBuilder) {
-        StringBuilder pathBuilder = new StringBuilder(requestBuilder.getPath());
-        Map<String, String> pathParams = requestBuilder.getPathParams();
-
-        // Automatic {store_id} replacement if not provided
-        if (pathBuilder.indexOf("{store_id}") != -1 && !pathParams.containsKey("store_id")) {
-            if (configuration instanceof dev.openfga.sdk.api.configuration.ClientConfiguration) {
-                String storeId = ((dev.openfga.sdk.api.configuration.ClientConfiguration) configuration).getStoreId();
-                if (storeId != null) {
-                    replaceInBuilder(pathBuilder, "{store_id}", dev.openfga.sdk.util.StringUtil.urlEncode(storeId));
-                }
-            }
-        }
-
-        // Replace path parameters
-        for (Map.Entry<String, String> entry : pathParams.entrySet()) {
-            String placeholder = "{" + entry.getKey() + "}";
-            String encodedValue = dev.openfga.sdk.util.StringUtil.urlEncode(entry.getValue());
-            replaceInBuilder(pathBuilder, placeholder, encodedValue);
-        }
-
-        // Add query parameters (sorted for deterministic order)
-        Map<String, String> queryParams = requestBuilder.getQueryParams();
-        if (!queryParams.isEmpty()) {
-            String queryString = queryParams.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(entry -> dev.openfga.sdk.util.StringUtil.urlEncode(entry.getKey()) + "="
-                            + dev.openfga.sdk.util.StringUtil.urlEncode(entry.getValue()))
-                    .collect(java.util.stream.Collectors.joining("&"));
-            pathBuilder.append(pathBuilder.indexOf("?") != -1 ? "&" : "?").append(queryString);
-        }
-
-        return pathBuilder.toString();
-    }
-
-    private void replaceInBuilder(StringBuilder builder, String target, String replacement) {
-        int index = builder.indexOf(target);
-        while (index != -1) {
-            builder.replace(index, index + target.length(), replacement);
-            index = builder.indexOf(target, index + replacement.length());
-        }
-    }
-
-    private HttpRequest buildHttpRequest(ApiExecutorRequestBuilder requestBuilder, String path)
-            throws FgaInvalidParameterException, IOException {
-
-        HttpRequest.Builder httpRequestBuilder;
-
-        // Build request with or without body
-        if (requestBuilder.hasBody()) {
-            Object body = requestBuilder.getBody();
-            byte[] bodyBytes;
-
-            // Handle String body separately
-            if (body instanceof String) {
-                bodyBytes = ((String) body).getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            } else {
-                bodyBytes = apiClient.getObjectMapper().writeValueAsBytes(body);
-            }
-
-            httpRequestBuilder = ApiClient.requestBuilder(requestBuilder.getMethod(), path, bodyBytes, configuration);
-        } else {
-            httpRequestBuilder = ApiClient.requestBuilder(requestBuilder.getMethod(), path, configuration);
-        }
-
-        // Add custom headers
-        for (Map.Entry<String, String> entry : requestBuilder.getHeaders().entrySet()) {
-            httpRequestBuilder.header(entry.getKey(), entry.getValue());
-        }
-
-        // Apply request interceptor
-        if (apiClient.getRequestInterceptor() != null) {
-            apiClient.getRequestInterceptor().accept(httpRequestBuilder);
-        }
-
-        return httpRequestBuilder.build();
     }
 }
