@@ -7,8 +7,6 @@ import dev.openfga.sdk.api.BaseStreamingApi;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.StreamResult;
 import dev.openfga.sdk.errors.ApiException;
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -127,7 +125,7 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
             configuration.assertValid();
             return processStreamingResponse(
                     requestBuilder.buildHttpRequest(configuration, apiClient), consumer, errorConsumer);
-        } catch (FgaInvalidParameterException | IOException | IllegalArgumentException e) {
+        } catch (Exception e) {
             ApiException wrapped = new ApiException(e);
             if (errorConsumer != null) {
                 errorConsumer.accept(wrapped);

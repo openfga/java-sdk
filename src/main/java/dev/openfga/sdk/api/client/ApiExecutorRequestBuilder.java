@@ -116,7 +116,7 @@ public class ApiExecutorRequestBuilder {
     }
 
     /**
-     * Finalises the builder. Must be called before passing to {@link ApiExecutor#send}.
+     * Terminal step of the fluent builder chain.
      *
      * @return This builder instance
      */
