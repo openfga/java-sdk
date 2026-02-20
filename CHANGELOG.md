@@ -3,7 +3,7 @@
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.6...HEAD)
 
 ### Added
-- Introduced `StreamingApiExecutor` for executing HTTP requests to streaming endpoints not yet wrapped by the SDK
+- Introduced `StreamingApiExecutor` for executing HTTP requests to streaming endpoints not yet wrapped by the SDK (#296)
 
 ## v0.9.6
 
