@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.BaseStreamingApi;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.StreamResult;
-import dev.openfga.sdk.errors.ApiException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -126,11 +125,10 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
             return processStreamingResponse(
                     requestBuilder.buildHttpRequest(configuration, apiClient), consumer, errorConsumer);
         } catch (Exception e) {
-            ApiException wrapped = new ApiException(e);
             if (errorConsumer != null) {
-                errorConsumer.accept(wrapped);
+                errorConsumer.accept(e);
             }
-            return CompletableFuture.failedFuture(wrapped);
+            return CompletableFuture.failedFuture(e);
         }
     }
 }
