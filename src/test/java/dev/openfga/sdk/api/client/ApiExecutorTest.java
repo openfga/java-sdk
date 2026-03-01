@@ -381,4 +381,18 @@ public class ApiExecutorTest {
                 ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test").build();
         assertThrows(IllegalArgumentException.class, () -> client.apiExecutor().send(request, null));
     }
+
+    @Test
+    public void twoParamConstructor_shouldCreateWithOwnTelemetry() throws Exception {
+        // Verifies the backward-compatible 2-param constructor works
+        ClientConfiguration config = new ClientConfiguration().apiUrl(fgaApiUrl).storeId(DEFAULT_STORE_ID);
+        ApiExecutor executor = new ApiExecutor(new ApiClient(), config);
+        assertNotNull(executor);
+    }
+
+    @Test
+    public void threeParamConstructor_shouldRejectNullTelemetry() {
+        ClientConfiguration config = new ClientConfiguration().apiUrl(fgaApiUrl).storeId(DEFAULT_STORE_ID);
+        assertThrows(IllegalArgumentException.class, () -> new ApiExecutor(new ApiClient(), config, null));
+    }
 }
