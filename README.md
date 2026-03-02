@@ -1245,11 +1245,33 @@ System.out.println("Status Code: " + response.getStatusCode());
 System.out.println("Headers: " + response.getHeaders());
 ```
 
+#### Calling a streaming endpoint
+
+For streaming endpoints, use `streamingApiExecutor` instead. Pass the response class directly — the SDK handles the rest. It delivers each response object to a consumer callback as it arrives, and returns a `CompletableFuture<Void>` that completes when the stream is exhausted.
+
+```java
+ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
+    .body(new ListObjectsRequest().user("user:anne").relation("viewer").type("document"))
+    .build();
+
+fgaClient.streamingApiExecutor(StreamedListObjectsResponse.class)
+    .stream(
+        request,
+        response -> System.out.println("Object: " + response.getObject()),  // called per object
+        error    -> System.err.println("Stream error: " + error.getMessage()) // optional
+    )
+    .thenRun(() -> System.out.println("Streaming complete"))
+    .exceptionally(err -> {
+        System.err.println("Fatal error: " + err.getMessage());
+        return null;
+    });
+```
+
 For a complete working example, see [examples/api-executor](examples/api-executor).
 
 #### Documentation
 
-See [docs/ApiExecutor.md](docs/ApiExecutor.md) for complete API reference and examples.
+See [docs/ApiExecutor.md](docs/ApiExecutor.md) for complete API reference and examples for both `ApiExecutor` and `StreamingApiExecutor`.
 
 ### API Endpoints
 
