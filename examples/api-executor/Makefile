@@ -1,4 +1,4 @@
-.PHONY: build run run-openfga
+.PHONY: build run run-streaming run-openfga
 all: build
 
 project_name=.
@@ -10,6 +10,9 @@ build:
 
 run:
 	../../gradlew -P language=$(language) run
+
+run-streaming:
+	../../gradlew -P language=$(language) runStreaming
 
 run-openfga:
 	docker pull docker.io/openfga/openfga:${openfga_version} && \

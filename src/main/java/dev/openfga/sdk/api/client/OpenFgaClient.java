@@ -3,10 +3,12 @@ package dev.openfga.sdk.api.client;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static java.util.UUID.randomUUID;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import dev.openfga.sdk.api.*;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
+import dev.openfga.sdk.api.model.StreamResult;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
 import java.util.ArrayList;
@@ -64,6 +66,40 @@ public class OpenFgaClient {
      */
     public ApiExecutor apiExecutor() {
         return new ApiExecutor(this.apiClient, this.configuration);
+    }
+
+    /**
+     * Returns a {@link StreamingApiExecutor} for calling streaming endpoints not yet wrapped by the SDK.
+     *
+     * <pre>{@code
+     * ApiExecutorRequestBuilder request =
+     *     ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
+     *         .body(listObjectsRequest)
+     *         .build();
+     *
+     * client.streamingApiExecutor(StreamedListObjectsResponse.class)
+     *     .stream(request, response -> System.out.println(response.getObject()))
+     *     .thenRun(() -> System.out.println("Done"));
+     * }</pre>
+     *
+     * @param <T>          The type of individual response objects delivered to the consumer
+     * @param responseType Class of the response objects
+     * @return StreamingApiExecutor instance
+     */
+    public <T> StreamingApiExecutor<T> streamingApiExecutor(Class<T> responseType) {
+        return new StreamingApiExecutor<>(this.apiClient, this.configuration, responseType);
+    }
+
+    /**
+     * Returns a {@link StreamingApiExecutor} for calling streaming endpoints not yet wrapped by the SDK.
+     * Use when the response type {@code T} is itself generic; otherwise prefer {@link #streamingApiExecutor(Class)}.
+     *
+     * @param <T>     The type of individual response objects delivered to the consumer
+     * @param typeRef TypeReference for {@code StreamResult<T>}
+     * @return StreamingApiExecutor instance
+     */
+    public <T> StreamingApiExecutor<T> streamingApiExecutor(TypeReference<StreamResult<T>> typeRef) {
+        return new StreamingApiExecutor<>(this.apiClient, this.configuration, typeRef);
     }
 
     public void setStoreId(String storeId) {
