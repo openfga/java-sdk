@@ -3,6 +3,7 @@ package dev.openfga.sdk.api.client;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.telemetry.Telemetry;
 import java.io.IOException;
 import java.net.http.HttpRequest;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 public class ApiExecutor {
     private final ApiClient apiClient;
     private final Configuration configuration;
+    private final Telemetry telemetry;
 
     /**
      * Constructs an ApiExecutor instance. Typically called via {@link OpenFgaClient#apiExecutor()}.
@@ -36,14 +38,29 @@ public class ApiExecutor {
      * @param configuration Client configuration
      */
     public ApiExecutor(ApiClient apiClient, Configuration configuration) {
+        this(apiClient, configuration, new Telemetry(configuration));
+    }
+
+    /**
+     * Constructs an ApiExecutor instance. Typically called via {@link OpenFgaClient#apiExecutor()}.
+     *
+     * @param apiClient API client for HTTP operations
+     * @param configuration Client configuration
+     * @param telemetry Telemetry instance for collecting metrics
+     */
+    public ApiExecutor(ApiClient apiClient, Configuration configuration, Telemetry telemetry) {
         if (apiClient == null) {
             throw new IllegalArgumentException("ApiClient cannot be null");
         }
         if (configuration == null) {
             throw new IllegalArgumentException("Configuration cannot be null");
         }
+        if (telemetry == null) {
+            throw new IllegalArgumentException("Telemetry cannot be null");
+        }
         this.apiClient = apiClient;
         this.configuration = configuration;
+        this.telemetry = telemetry;
     }
 
     /**
@@ -84,7 +101,7 @@ public class ApiExecutor {
             HttpRequest httpRequest = requestBuilder.buildHttpRequest(configuration, apiClient);
             String methodName = "apiExecutor:" + requestBuilder.getMethod() + ":" + requestBuilder.getPath();
 
-            return new HttpRequestAttempt<>(httpRequest, methodName, responseType, apiClient, configuration)
+            return new HttpRequestAttempt<>(httpRequest, methodName, responseType, apiClient, configuration, telemetry)
                     .attemptHttpRequest();
 
         } catch (IOException e) {
