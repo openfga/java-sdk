@@ -1,9 +1,17 @@
 # Changelog
 
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.6...HEAD)
+## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.7...HEAD)
+
+## v0.9.7
+
+### [0.9.7](https://github.com/openfga/java-sdk/compare/v0.9.6...v0.9.7) (2026-03-17)
 
 ### Added
 - Introduced `StreamingApiExecutor` for executing HTTP requests to streaming endpoints not yet wrapped by the SDK (#296)
+
+### Fixed
+- fix: share single Telemetry instance per SDK client (#290)
+- fix: Socket Badge URL in README.md (#306)
 
 ## v0.9.6
 
