@@ -219,6 +219,7 @@ public class HttpRequestAttempt<T> {
         Double requestDuration = (double) (System.currentTimeMillis() - requestStarted);
 
         telemetry.metrics().requestDuration(requestDuration, this.getTelemetryAttributes());
+        telemetry.metrics().requestCount(1L, this.getTelemetryAttributes());
 
         return deserializeResponse(response)
                 .thenApply(modeledResponse -> new ApiResponse<>(

@@ -107,6 +107,20 @@ public class Metrics {
     }
 
     /**
+     * Returns a LongCounter counter for tracking the total number of HTTP requests made to the FGA server.
+     * This counter is emitted once per underlying HTTP request.
+     * Note: This counter is disabled by default and must be explicitly enabled in TelemetryConfiguration.
+     *
+     * @param value      The value to be added to the counter.
+     * @param attributes A map of attributes associated with the metric.
+     *
+     * @return The LongCounter metric instance for request count, or null if not configured.
+     */
+    public LongCounter requestCount(Long value, Map<Attribute, String> attributes) {
+        return getCounter(Counters.REQUEST_COUNT, value, attributes);
+    }
+
+    /**
      * Returns a DoubleHistogram histogram for measuring the total roundtrip time it took to process a request, including the time it took to send the request and receive the response.
      *
      * @param value      The value to be recorded in the histogram.

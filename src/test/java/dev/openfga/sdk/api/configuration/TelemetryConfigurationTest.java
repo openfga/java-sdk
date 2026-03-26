@@ -50,6 +50,9 @@ class TelemetryConfigurationTest {
         assertTrue(
                 metrics.containsKey(Histograms.REQUEST_DURATION),
                 "The metrics map should contain the REQUEST_DURATION histogram.");
+        assertFalse(
+                metrics.containsKey(Counters.REQUEST_COUNT),
+                "The metrics map should NOT contain the REQUEST_COUNT counter by default.");
 
         Map<Attribute, Optional<Object>> defaultAttributes = metrics.get(Counters.CREDENTIALS_REQUEST);
         assertNotNull(defaultAttributes, "The default attributes map should not be null.");
@@ -130,6 +133,33 @@ class TelemetryConfigurationTest {
         assertFalse(
                 defaultAttributes.containsKey(Attributes.FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE),
                 "The default attribute map should not contain the FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE attribute.");
+    }
+
+    @Test
+    void testRequestCountIsDisabledByDefault() {
+        // Arrange
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
+
+        // Act
+        Map<Metric, Map<Attribute, Optional<Object>>> metrics = telemetryConfiguration.metrics();
+
+        // Assert
+        assertFalse(
+                metrics.containsKey(Counters.REQUEST_COUNT),
+                "REQUEST_COUNT should not be enabled by default.");
+    }
+
+    @Test
+    void testRequestCountCanBeExplicitlyEnabled() {
+        // Arrange
+        Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
+        metrics.put(Counters.REQUEST_COUNT, TelemetryConfiguration.defaultAttributes());
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(metrics);
+
+        // Assert
+        assertTrue(
+                telemetryConfiguration.metrics().containsKey(Counters.REQUEST_COUNT),
+                "REQUEST_COUNT should be present when explicitly configured.");
     }
 
     @Test
