@@ -144,9 +144,7 @@ class TelemetryConfigurationTest {
         Map<Metric, Map<Attribute, Optional<Object>>> metrics = telemetryConfiguration.metrics();
 
         // Assert
-        assertFalse(
-                metrics.containsKey(Counters.REQUEST_COUNT),
-                "REQUEST_COUNT should not be enabled by default.");
+        assertFalse(metrics.containsKey(Counters.REQUEST_COUNT), "REQUEST_COUNT should not be enabled by default.");
     }
 
     @Test

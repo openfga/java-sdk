@@ -16,9 +16,8 @@ public class Counters {
      * This counter is emitted once per underlying HTTP request.
      * Note: This counter is disabled by default and must be explicitly enabled in TelemetryConfiguration.
      */
-    public static final Counter REQUEST_COUNT = new Counter(
-            "fga-client.request.count",
-            "The total number of HTTP requests made to the FGA server.");
+    public static final Counter REQUEST_COUNT =
+            new Counter("fga-client.request.count", "The total number of HTTP requests made to the FGA server.");
 
     private Counters() {} // Instantiation prevented.
 }

@@ -130,8 +130,7 @@ class MetricsTest {
     void shouldReturnRequestCountWhenExplicitlyEnabled() {
         // given
         Map<Attribute, Optional<Object>> attrs = Map.of();
-        Map<Metric, Map<Attribute, Optional<Object>>> configuredMetrics =
-                Map.of(Counters.REQUEST_COUNT, attrs);
+        Map<Metric, Map<Attribute, Optional<Object>>> configuredMetrics = Map.of(Counters.REQUEST_COUNT, attrs);
         TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(configuredMetrics);
         Configuration config = new Configuration().telemetryConfiguration(telemetryConfiguration);
         Metrics metrics = new Metrics(config);
@@ -203,8 +202,7 @@ class MetricsTest {
         assertThat(metrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, Map.of()))
                 .isNotNull();
         // REQUEST_COUNT is disabled by default
-        assertThat(metrics.getCounter(Counters.REQUEST_COUNT, 1L, Map.of()))
-                .isNull();
+        assertThat(metrics.getCounter(Counters.REQUEST_COUNT, 1L, Map.of())).isNull();
     }
 
     @Test
