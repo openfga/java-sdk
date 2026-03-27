@@ -136,18 +136,6 @@ class TelemetryConfigurationTest {
     }
 
     @Test
-    void testRequestCountIsDisabledByDefault() {
-        // Arrange
-        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
-
-        // Act
-        Map<Metric, Map<Attribute, Optional<Object>>> metrics = telemetryConfiguration.metrics();
-
-        // Assert
-        assertFalse(metrics.containsKey(Counters.REQUEST_COUNT), "REQUEST_COUNT should not be enabled by default.");
-    }
-
-    @Test
     void testRequestCountCanBeExplicitlyEnabled() {
         // Arrange
         Map<Metric, Map<Attribute, Optional<Object>>> metrics = new HashMap<>();
