@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.7...HEAD)
 
+### Added
+- Add `fga-client.request.count` counter metric to track the total number of HTTP requests made to the FGA server. This metric is **disabled by default** and must be explicitly enabled via `TelemetryConfiguration`.
+
 ## v0.9.7
 
 ### [0.9.7](https://github.com/openfga/java-sdk/compare/v0.9.6...v0.9.7) (2026-03-17)

@@ -19,4 +19,18 @@ class CountersTest {
         assertThat(counter.getName()).isEqualTo(expectedName);
         assertThat(counter.getDescription()).isEqualTo(expectedDescription);
     }
+
+    @Test
+    void shouldCreateRequestCountCounter() {
+        // given
+        String expectedName = "fga-client.request.count";
+        String expectedDescription = "The total number of HTTP requests made to the FGA server.";
+
+        // when
+        Counter counter = Counters.REQUEST_COUNT;
+
+        // then
+        assertThat(counter.getName()).isEqualTo(expectedName);
+        assertThat(counter.getDescription()).isEqualTo(expectedDescription);
+    }
 }
