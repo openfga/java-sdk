@@ -115,6 +115,34 @@ class MetricsTest {
     }
 
     @Test
+    void shouldReturnNullForRequestCountWhenNotConfigured() {
+        // given - default configuration does not include REQUEST_COUNT
+        Metrics metrics = new Metrics(new Configuration());
+
+        // when
+        LongCounter counter = metrics.requestCount(1L, Map.of());
+
+        // then
+        assertThat(counter).isNull();
+    }
+
+    @Test
+    void shouldReturnRequestCountWhenExplicitlyEnabled() {
+        // given
+        Map<Attribute, Optional<Object>> attrs = Map.of();
+        Map<Metric, Map<Attribute, Optional<Object>>> configuredMetrics = Map.of(Counters.REQUEST_COUNT, attrs);
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration(configuredMetrics);
+        Configuration config = new Configuration().telemetryConfiguration(telemetryConfiguration);
+        Metrics metrics = new Metrics(config);
+
+        // when
+        LongCounter counter = metrics.requestCount(1L, Map.of());
+
+        // then
+        assertThat(counter).isNotNull();
+    }
+
+    @Test
     void shouldNotSentMetricsIfNotConfigured() {
         // given
         Map<Attribute, Optional<Object>> attributes = Map.of(Attributes.FGA_CLIENT_REQUEST_METHOD, Optional.empty());
@@ -173,6 +201,8 @@ class MetricsTest {
                 .isNotNull();
         assertThat(metrics.getHistogram(Histograms.REQUEST_DURATION, 10.0, Map.of()))
                 .isNotNull();
+        // REQUEST_COUNT is disabled by default
+        assertThat(metrics.getCounter(Counters.REQUEST_COUNT, 1L, Map.of())).isNull();
     }
 
     @Test

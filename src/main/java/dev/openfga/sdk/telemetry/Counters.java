@@ -11,5 +11,13 @@ public class Counters {
             "fga-client.credentials.request",
             "The total number of times new access tokens have been requested using ClientCredentials.");
 
+    /**
+     * The REQUEST_COUNT counter represents the total number of HTTP requests made by the SDK.
+     * This counter is emitted once per underlying HTTP request.
+     * Note: This counter is disabled by default and must be explicitly enabled in TelemetryConfiguration.
+     */
+    public static final Counter REQUEST_COUNT =
+            new Counter("fga-client.request.count", "The total number of HTTP requests made to the FGA server.");
+
     private Counters() {} // Instantiation prevented.
 }
