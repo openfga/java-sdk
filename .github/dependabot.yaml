@@ -48,6 +48,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "gradle/actions/setup-gradle"
+        versions: [">= 6.0.0, < 7.0.0"]
     groups:
       dependencies:
         patterns:
