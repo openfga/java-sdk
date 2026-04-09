@@ -21,7 +21,11 @@
       ],
       "extra-files": [
         { "type": "generic", "path": "build.gradle" },
-        { "type": "generic", "path": "src/main/java/dev/openfga/sdk/constants/FgaConstants.java" }
+        { "type": "generic", "path": "src/main/java/dev/openfga/sdk/constants/FgaConstants.java" },
+        { "type": "generic", "path": "README.md" },
+        { "type": "generic", "path": "examples/opentelemetry/build.gradle" },
+        { "type": "generic", "path": "examples/basic-examples/build.gradle" },
+        { "type": "generic", "path": "examples/streamed-list-objects/build.gradle" }
       ]
     }
   }
