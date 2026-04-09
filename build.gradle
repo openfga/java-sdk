@@ -19,7 +19,7 @@ plugins {
 apply from: 'publish.gradle'
 
 group = 'dev.openfga'
-version = '0.9.7'
+version = '0.9.7' // x-release-please-version
 
 repositories {
     mavenCentral()

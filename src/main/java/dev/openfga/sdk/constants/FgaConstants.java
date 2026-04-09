@@ -19,7 +19,7 @@ import java.time.Duration;
 public final class FgaConstants {
 
     /** Version of the OpenFGA Java SDK. */
-    public static final String SDK_VERSION = "0.9.7";
+    public static final String SDK_VERSION = "0.9.7"; // x-release-please-version
 
     /** User agent used in HTTP requests. */
     public static final String USER_AGENT = "openfga-sdk java/" + SDK_VERSION;
