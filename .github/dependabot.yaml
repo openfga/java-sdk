@@ -50,7 +50,7 @@ updates:
       interval: "monthly"
     ignore:
       - dependency-name: "gradle/actions/setup-gradle"
-        versions: [">= 6.0.0, < 7.0.0"]
+        versions: [">= 6.0.0, < 6.1.0"]
     groups:
       dependencies:
         patterns:
