@@ -70,7 +70,7 @@ dependencies {
     implementation "org.openapitools:jackson-databind-nullable:0.2.10"
 
     // ---- OpenTelemetry ----
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.60.1")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
