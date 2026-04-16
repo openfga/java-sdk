@@ -208,7 +208,7 @@ public class Example {
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ClientCredentials()
-                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://mycompany.us.auth0.com/oauth/token"
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://issuer.fga.example/oauth/token"
                             .apiAudience(System.getenv("FGA_API_AUDIENCE"))
                             .clientId(System.getenv("FGA_CLIENT_ID"))
                             .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
@@ -240,7 +240,7 @@ public class Example {
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ClientCredentials()
-                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://mykeycloak.example.com/realms/myrealm/protocol/openid-connect/token"
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://mykeycloak.fga.example/realms/myrealm/protocol/openid-connect/token"
                             .scopes(System.getenv("FGA_API_SCOPES")) // Optional, space-separated scopes
                             .clientId(System.getenv("FGA_CLIENT_ID"))
                             .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
