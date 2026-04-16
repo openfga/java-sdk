@@ -222,7 +222,7 @@ public class Example {
 
 #### OAuth2 Client Credentials
 
-The SDK supports standard OAuth2 client credentials flow for any OAuth2-compliant provider (e.g. Keycloak, Okta). The `apiAudience` parameter is optional, and an optional `scopes` parameter can be provided as a space-separated string. The `apiTokenIssuer` should be set to the full token endpoint URL of your provider.
+The SDK supports standard OAuth2 client credentials flow for any OAuth2-compliant provider (e.g. Keycloak, Okta). The `apiAudience` parameter is optional, and an optional `scopes` parameter can be provided as a space-separated string. The `apiTokenIssuer` can be set to either a hostname (e.g. `issuer.example.com`, which defaults to `https` and appends `/oauth/token`) or a full token endpoint URL (e.g. `https://mykeycloak.fga.example.com/realms/myrealm/protocol/openid-connect/token`).
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -105,4 +105,32 @@ public class ClientCredentialsTest {
         creds.assertValid();
         assertEquals("read write", creds.getScopes());
     }
+
+    @Test
+    public void assertValid_blankApiAudienceNormalizedToNull() throws FgaInvalidParameterException {
+        for (String blank : Arrays.asList("", "  ", "\t\r\n")) {
+            ClientCredentials creds = new ClientCredentials()
+                    .clientId(VALID_CLIENT_ID)
+                    .clientSecret(VALID_CLIENT_SECRET)
+                    .apiTokenIssuer(VALID_API_TOKEN_ISSUER)
+                    .apiAudience(blank);
+
+            creds.assertValid();
+            assertNull(creds.getApiAudience(), "Blank apiAudience should be normalized to null");
+        }
+    }
+
+    @Test
+    public void assertValid_blankScopesNormalizedToNull() throws FgaInvalidParameterException {
+        for (String blank : Arrays.asList("", "  ", "\t\r\n")) {
+            ClientCredentials creds = new ClientCredentials()
+                    .clientId(VALID_CLIENT_ID)
+                    .clientSecret(VALID_CLIENT_SECRET)
+                    .apiTokenIssuer(VALID_API_TOKEN_ISSUER)
+                    .scopes(blank);
+
+            creds.assertValid();
+            assertNull(creds.getScopes(), "Blank scopes should be normalized to null");
+        }
+    }
 }

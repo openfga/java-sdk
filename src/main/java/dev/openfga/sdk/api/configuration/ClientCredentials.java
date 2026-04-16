@@ -3,6 +3,7 @@ package dev.openfga.sdk.api.configuration;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.util.StringUtil;
 
 public class ClientCredentials {
     private String clientId;
@@ -47,7 +48,7 @@ public class ClientCredentials {
     }
 
     public ClientCredentials apiAudience(String apiAudience) {
-        this.apiAudience = apiAudience;
+        this.apiAudience = StringUtil.isNullOrWhitespace(apiAudience) ? null : apiAudience;
         return this;
     }
 
@@ -56,7 +57,7 @@ public class ClientCredentials {
     }
 
     public ClientCredentials scopes(String scopes) {
-        this.scopes = scopes;
+        this.scopes = StringUtil.isNullOrWhitespace(scopes) ? null : scopes;
         return this;
     }
 
