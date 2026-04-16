@@ -80,4 +80,29 @@ public class ClientCredentialsTest {
                         "Required parameter apiTokenIssuer was invalid when calling ClientCredentials.",
                         exception.getMessage()));
     }
+
+    @Test
+    public void assertValid_withoutApiAudience() throws FgaInvalidParameterException {
+        // audience is optional for standard OAuth2 servers
+        ClientCredentials creds = new ClientCredentials()
+                .clientId(VALID_CLIENT_ID)
+                .clientSecret(VALID_CLIENT_SECRET)
+                .apiTokenIssuer(VALID_API_TOKEN_ISSUER);
+
+        // Should not throw
+        creds.assertValid();
+        assertNull(creds.getApiAudience());
+    }
+
+    @Test
+    public void assertValid_withScopes() throws FgaInvalidParameterException {
+        ClientCredentials creds = new ClientCredentials()
+                .clientId(VALID_CLIENT_ID)
+                .clientSecret(VALID_CLIENT_SECRET)
+                .apiTokenIssuer(VALID_API_TOKEN_ISSUER)
+                .scopes("read write");
+
+        creds.assertValid();
+        assertEquals("read write", creds.getScopes());
+    }
 }

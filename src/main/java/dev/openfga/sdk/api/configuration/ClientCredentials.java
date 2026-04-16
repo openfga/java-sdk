@@ -22,7 +22,6 @@ public class ClientCredentials {
         assertParamExists(clientId, "clientId", "ClientCredentials");
         assertParamExists(clientSecret, "clientSecret", "ClientCredentials");
         assertParamExists(apiTokenIssuer, "apiTokenIssuer", "ClientCredentials");
-        assertParamExists(apiAudience, "apiAudience", "ClientCredentials");
     }
 
     public String getClientId() {
