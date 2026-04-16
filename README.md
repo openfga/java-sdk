@@ -208,7 +208,7 @@ public class Example {
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ClientCredentials()
-                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://mycompany.us.auth0.com/oauth/token"
                             .apiAudience(System.getenv("FGA_API_AUDIENCE"))
                             .clientId(System.getenv("FGA_CLIENT_ID"))
                             .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
@@ -220,7 +220,9 @@ public class Example {
 }
 ```
 
-#### Oauth2 Credentials
+#### OAuth2 Client Credentials
+
+The SDK supports standard OAuth2 client credentials flow for any OAuth2-compliant provider (e.g. Keycloak, Okta). The `apiAudience` parameter is optional, and an optional `scopes` parameter can be provided as a space-separated string. The `apiTokenIssuer` should be set to the full token endpoint URL of your provider.
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -238,8 +240,8 @@ public class Example {
                 .authorizationModelId(System.getenv("FGA_MODEL_ID")) // Optional, can be overridden per request
                 .credentials(new Credentials(
                     new ClientCredentials()
-                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
-                            .scopes(System.getenv("FGA_API_SCOPES")) // optional space separated scopes
+                            .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER")) // Full token endpoint URL, e.g. "https://mykeycloak.example.com/realms/myrealm/protocol/openid-connect/token"
+                            .scopes(System.getenv("FGA_API_SCOPES")) // Optional, space-separated scopes
                             .clientId(System.getenv("FGA_CLIENT_ID"))
                             .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
                 ));
