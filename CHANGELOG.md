@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.8](https://github.com/openfga/java-sdk/compare/v0.9.7...v0.9.8) (2026-04-21)
+
+
+### Added
+
+* release automation configs ([#312](https://github.com/openfga/java-sdk/issues/312)) ([dbd003f](https://github.com/openfga/java-sdk/commit/dbd003fff357a31d65f6cff19f6ae7622d6da4c5))
+* report a per call http metric ([#310](https://github.com/openfga/java-sdk/issues/310)) ([cc3a5f2](https://github.com/openfga/java-sdk/commit/cc3a5f26ce78fe0796dc1acf57bc9f2829c2e534))
+
+
+### Miscellaneous
+
+* release 0.9.8 ([005fbdd](https://github.com/openfga/java-sdk/commit/005fbdd7a68cd46163a16292a326a8f32a96e39c))
+
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.7...HEAD)
 
 ### Added
