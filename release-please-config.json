@@ -28,7 +28,8 @@
         { "type": "generic", "path": "README.md" },
         { "type": "generic", "path": "examples/opentelemetry/build.gradle" },
         { "type": "generic", "path": "examples/basic-examples/build.gradle" },
-        { "type": "generic", "path": "examples/streamed-list-objects/build.gradle" }
+        { "type": "generic", "path": "examples/streamed-list-objects/build.gradle" },
+        { "type": "generic", "path": "examples/api-executor/build.gradle" }
       ]
     }
   }
