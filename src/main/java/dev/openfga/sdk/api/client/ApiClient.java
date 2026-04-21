@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.Credentials;
+import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.util.StringUtil;
 import java.io.InputStream;
@@ -17,6 +21,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
@@ -41,6 +47,7 @@ public class ApiClient {
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
     private Consumer<HttpResponse<String>> asyncResponseInterceptor;
+    private final AtomicReference<OAuth2Client> oAuth2Client = new AtomicReference<>();
 
     /**
      * Create an instance of ApiClient.
@@ -323,5 +330,69 @@ public class ApiClient {
      */
     public Consumer<HttpResponse<String>> getAsyncResponseInterceptor() {
         return asyncResponseInterceptor;
+    }
+
+    /**
+     * Applies the {@code Authorization: Bearer <token>} header to the request builder based on the
+     * supplied configuration's {@link Credentials}. This is the single entry point for attaching
+     * auth to outbound requests across the SDK — every request builder should delegate here.
+     *
+     * <ul>
+     *   <li>{@link CredentialsMethod#NONE}: no header is applied.</li>
+     *   <li>{@link CredentialsMethod#API_TOKEN}: the static API token from the configuration is used.</li>
+     *   <li>{@link CredentialsMethod#CLIENT_CREDENTIALS}: an {@link OAuth2Client} performs the
+     *       client-credentials exchange and caches the token on this {@code ApiClient} until expiry.
+     *       The client is lazily created from {@code configuration} on first use.</li>
+     * </ul>
+     *
+     * @param requestBuilder the request builder to mutate.
+     * @param configuration  the configuration that supplies credentials.
+     * @throws ApiException                 if CLIENT_CREDENTIALS token exchange fails.
+     * @throws FgaInvalidParameterException if the configuration is invalid when lazily creating
+     *                                      an {@link OAuth2Client}.
+     */
+    public void applyAuthHeader(HttpRequest.Builder requestBuilder, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
+
+        Credentials credentials = configuration.getCredentials();
+        if (credentials == null) {
+            return;
+        }
+
+        CredentialsMethod method = credentials.getCredentialsMethod();
+        if (method == null || method == CredentialsMethod.NONE) {
+            return;
+        }
+
+        String accessToken;
+        switch (method) {
+            case API_TOKEN:
+                accessToken = credentials.getApiToken().getToken();
+                break;
+            case CLIENT_CREDENTIALS:
+                try {
+                    accessToken =
+                            ensureOAuth2Client(configuration).getAccessToken().get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new ApiException(e);
+                } catch (ExecutionException e) {
+                    throw new ApiException(e);
+                }
+                break;
+            default:
+                throw new IllegalStateException("Unknown credentials method: " + method);
+        }
+
+        requestBuilder.header("Authorization", "Bearer " + accessToken);
+    }
+
+    private OAuth2Client ensureOAuth2Client(Configuration configuration) throws FgaInvalidParameterException {
+        OAuth2Client existing = oAuth2Client.get();
+        if (existing != null) {
+            return existing;
+        }
+        OAuth2Client created = new OAuth2Client(configuration, this);
+        return oAuth2Client.compareAndSet(null, created) ? created : oAuth2Client.get();
     }
 }

@@ -6,7 +6,9 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
 import dev.openfga.sdk.api.model.StreamResult;
@@ -354,6 +356,38 @@ public class StreamingApiExecutorTest {
     // -----------------------------------------------------------------------
     // Chaining & CompletableFuture semantics
     // -----------------------------------------------------------------------
+
+    @Test
+    public void stream_appliesApiTokenAuthHeader() throws Exception {
+        // Regression guard for openfga/java-sdk#330: the streaming path must attach
+        // Authorization: Bearer <token> when the configuration uses API_TOKEN credentials.
+        String apiToken = "stream-api-token";
+        ClientConfiguration authConfig = new ClientConfiguration()
+                .storeId(DEFAULT_STORE_ID)
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .apiUrl(FgaConstants.TEST_API_URL)
+                .credentials(new Credentials(new ApiToken(apiToken)))
+                .readTimeout(Duration.ofMillis(250));
+        doCallRealMethod()
+                .when(mockApiClient)
+                .applyAuthHeader(any(HttpRequest.Builder.class), any(Configuration.class));
+        OpenFgaClient authFga = new OpenFgaClient(authConfig, mockApiClient);
+
+        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
+        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
+        when(mockHttpClient.<Stream<String>>sendAsync(any(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        authFga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
+                        buildStreamedListObjectsRequest(), obj -> {})
+                .get();
+
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(mockHttpClient, times(1)).sendAsync(captor.capture(), any());
+        assertEquals(
+                "Bearer " + apiToken,
+                captor.getValue().headers().firstValue("Authorization").orElse(null));
+    }
 
     @Test
     public void stream_supportsChaining() throws Exception {
