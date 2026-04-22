@@ -21,7 +21,10 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -404,17 +407,26 @@ public class ApiClient {
 
     private static final class CredentialsCacheKey {
         private final String clientId;
-        private final String clientSecret;
+        private final byte[] clientSecretHash;
         private final String apiTokenIssuer;
         private final String apiAudience;
         private final String scopes;
 
         CredentialsCacheKey(ClientCredentials cc) {
             this.clientId = cc.getClientId();
-            this.clientSecret = cc.getClientSecret();
+            this.clientSecretHash = sha256(cc.getClientSecret());
             this.apiTokenIssuer = cc.getApiTokenIssuer();
             this.apiAudience = cc.getApiAudience();
             this.scopes = cc.getScopes();
+        }
+
+        private static byte[] sha256(String value) {
+            try {
+                return MessageDigest.getInstance("SHA-256")
+                        .digest(value == null ? new byte[0] : value.getBytes(UTF_8));
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("SHA-256 not available", e);
+            }
         }
 
         @Override
@@ -423,7 +435,7 @@ public class ApiClient {
             if (!(o instanceof CredentialsCacheKey)) return false;
             CredentialsCacheKey that = (CredentialsCacheKey) o;
             return Objects.equals(clientId, that.clientId)
-                    && Objects.equals(clientSecret, that.clientSecret)
+                    && Arrays.equals(clientSecretHash, that.clientSecretHash)
                     && Objects.equals(apiTokenIssuer, that.apiTokenIssuer)
                     && Objects.equals(apiAudience, that.apiAudience)
                     && Objects.equals(scopes, that.scopes);
@@ -431,7 +443,9 @@ public class ApiClient {
 
         @Override
         public int hashCode() {
-            return Objects.hash(clientId, clientSecret, apiTokenIssuer, apiAudience, scopes);
+            int result = Objects.hash(clientId, apiTokenIssuer, apiAudience, scopes);
+            result = 31 * result + Arrays.hashCode(clientSecretHash);
+            return result;
         }
     }
 }
