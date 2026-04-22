@@ -376,6 +376,9 @@ public class ApiClient {
                 return oAuth2Client.getAccessToken().get();
             } catch (ApiException e) {
                 throw e;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ApiException(e);
             } catch (Exception e) {
                 throw new ApiException(e);
             }

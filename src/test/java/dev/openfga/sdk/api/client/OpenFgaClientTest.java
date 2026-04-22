@@ -13,6 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.pgssoft.httpclient.HttpClientMock;
+import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
@@ -87,6 +88,27 @@ public class OpenFgaClientTest {
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
+
+        // Allow setOAuth2Client to store the value and getAccessToken to use real logic
+        final OAuth2Client[] oAuth2ClientHolder = new OAuth2Client[1];
+        doAnswer(invocation -> {
+            oAuth2ClientHolder[0] = invocation.getArgument(0);
+            return null;
+        }).when(mockApiClient).setOAuth2Client(any());
+        when(mockApiClient.getAccessToken(any())).thenAnswer(invocation -> {
+            Configuration config = invocation.getArgument(0);
+            var credentialsMethod = config.getCredentials().getCredentialsMethod();
+            if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.NONE) {
+                return null;
+            }
+            if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.API_TOKEN) {
+                return config.getCredentials().getApiToken().getToken();
+            }
+            if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.CLIENT_CREDENTIALS) {
+                return oAuth2ClientHolder[0].getAccessToken().get();
+            }
+            return null;
+        });
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);
     }
