@@ -215,6 +215,54 @@ class ApiClientTest {
                     .post(String.format("%s/oauth/token", FgaConstants.TEST_ISSUER_URL))
                     .called(1);
         }
+
+        @Test
+        void clientCredentials_differentCredentials_exchangeSeparateTokens() throws Exception {
+            String tokenA = "token-for-tenant-a";
+            String tokenB = "token-for-tenant-b";
+            String issuerA = FgaConstants.TEST_ISSUER_URL;
+            String issuerB = "https://issuer-b.example.com";
+
+            HttpClientMock mockHttpClient = new HttpClientMock();
+            mockHttpClient
+                    .onPost(issuerA + "/oauth/token")
+                    .withBody(containsString("client_id=client-a"))
+                    .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", tokenA));
+            mockHttpClient
+                    .onPost(issuerB + "/oauth/token")
+                    .withBody(containsString("client_id=client-b"))
+                    .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", tokenB));
+
+            ApiClient apiClient = new ApiClient(mockHttpClientBuilder(mockHttpClient));
+
+            Configuration configA = new Configuration()
+                    .apiUrl(FgaConstants.TEST_API_URL)
+                    .credentials(new Credentials(new ClientCredentials()
+                            .clientId("client-a")
+                            .clientSecret("secret-a")
+                            .apiAudience("audience-a")
+                            .apiTokenIssuer(issuerA)));
+
+            Configuration configB = new Configuration()
+                    .apiUrl(FgaConstants.TEST_API_URL)
+                    .credentials(new Credentials(new ClientCredentials()
+                            .clientId("client-b")
+                            .clientSecret("secret-b")
+                            .apiAudience("audience-b")
+                            .apiTokenIssuer(issuerB)));
+
+            HttpRequest.Builder requestA = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
+            apiClient.applyAuthHeader(requestA, configA);
+            assertEquals("Bearer " + tokenA, requestA.build().headers().firstValue("Authorization").orElseThrow());
+
+            HttpRequest.Builder requestB = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
+            apiClient.applyAuthHeader(requestB, configB);
+            assertEquals("Bearer " + tokenB, requestB.build().headers().firstValue("Authorization").orElseThrow());
+
+            // Each issuer is hit exactly once — no cross-contamination.
+            mockHttpClient.verify().post(issuerA + "/oauth/token").called(1);
+            mockHttpClient.verify().post(issuerB + "/oauth/token").called(1);
+        }
     }
 
     private static HttpClient.Builder mockHttpClientBuilder(HttpClient client) {
