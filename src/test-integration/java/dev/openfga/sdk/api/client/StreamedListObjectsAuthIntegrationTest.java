@@ -10,12 +10,10 @@ import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.model.*;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -54,13 +52,12 @@ public class StreamedListObjectsAuthIntegrationTest {
         fga = new OpenFgaClient(config);
 
         // Create store
-        var storeResponse =
-                fga.createStore(new CreateStoreRequest().name("auth-integration-test")).get();
+        var storeResponse = fga.createStore(new CreateStoreRequest().name("auth-integration-test"))
+                .get();
         fga.setStoreId(storeResponse.getId());
 
         // Write authorization model
-        String authModelJson =
-                Files.readString(Paths.get("src", "test-integration", "resources", "auth-model.json"));
+        String authModelJson = Files.readString(Paths.get("src", "test-integration", "resources", "auth-model.json"));
         var authModelRequest = mapper.readValue(authModelJson, WriteAuthorizationModelRequest.class);
         var modelResponse = fga.writeAuthorizationModel(authModelRequest).get();
         fga.setAuthorizationModelId(modelResponse.getAuthorizationModelId());
@@ -105,16 +102,15 @@ public class StreamedListObjectsAuthIntegrationTest {
     public void streamingApiExecutor_succeeds_withAuth() throws Exception {
         List<StreamedListObjectsResponse> received = new ArrayList<>();
 
-        ApiExecutorRequestBuilder request =
-                ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
-                        .body(new ListObjectsRequest()
-                                .user("user:alice")
-                                .relation("reader")
-                                .type("document"))
-                        .build();
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
+                        HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
+                .body(new ListObjectsRequest()
+                        .user("user:alice")
+                        .relation("reader")
+                        .type("document"))
+                .build();
 
-        fga.streamingApiExecutor(StreamedListObjectsResponse.class)
-                .stream(request, received::add)
+        fga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(request, received::add)
                 .get();
 
         assertEquals(3, received.size());
@@ -122,13 +118,13 @@ public class StreamedListObjectsAuthIntegrationTest {
 
     @Test
     public void apiExecutor_succeeds_withAuth() throws Exception {
-        ApiExecutorRequestBuilder request =
-                ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/list-objects")
-                        .body(new ListObjectsRequest()
-                                .user("user:alice")
-                                .relation("reader")
-                                .type("document"))
-                        .build();
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(
+                        HttpMethod.POST, "/stores/{store_id}/list-objects")
+                .body(new ListObjectsRequest()
+                        .user("user:alice")
+                        .relation("reader")
+                        .type("document"))
+                .build();
 
         ApiResponse<ListObjectsResponse> response =
                 fga.apiExecutor().send(request, ListObjectsResponse.class).get();
@@ -137,4 +133,3 @@ public class StreamedListObjectsAuthIntegrationTest {
         assertEquals(3, response.getData().getObjects().size());
     }
 }
-

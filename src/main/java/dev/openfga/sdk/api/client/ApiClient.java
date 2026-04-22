@@ -356,7 +356,8 @@ public class ApiClient {
      * @throws ApiException if token acquisition fails
      */
     public String getAccessToken(Configuration configuration) throws ApiException {
-        dev.openfga.sdk.api.configuration.CredentialsMethod credentialsMethod = configuration.getCredentials().getCredentialsMethod();
+        dev.openfga.sdk.api.configuration.CredentialsMethod credentialsMethod =
+                configuration.getCredentials().getCredentialsMethod();
 
         if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.NONE) {
             return null;

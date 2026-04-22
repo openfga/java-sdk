@@ -412,8 +412,8 @@ public class StreamingApiExecutorTest {
         List<StreamedListObjectsResponse> received = new ArrayList<>();
 
         // When
-        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class)
-                .stream(buildStreamedListObjectsRequest(), received::add)
+        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
+                        buildStreamedListObjectsRequest(), received::add)
                 .get();
 
         // Then
@@ -459,8 +459,8 @@ public class StreamingApiExecutorTest {
         List<StreamedListObjectsResponse> received = new ArrayList<>();
 
         // When
-        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class)
-                .stream(buildStreamedListObjectsRequest(), received::add)
+        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
+                        buildStreamedListObjectsRequest(), received::add)
                 .get();
 
         // Then
@@ -483,8 +483,8 @@ public class StreamingApiExecutorTest {
         List<StreamedListObjectsResponse> received = new ArrayList<>();
 
         // When
-        fga.streamingApiExecutor(StreamedListObjectsResponse.class)
-                .stream(buildStreamedListObjectsRequest(), received::add)
+        fga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
+                        buildStreamedListObjectsRequest(), received::add)
                 .get();
 
         // Then

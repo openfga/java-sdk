@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
 import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -444,7 +443,8 @@ public class StreamedListObjectsTest {
 
         // Capture the HttpRequest to verify headers
         var requestCaptor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
-        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any())).thenReturn(responseFuture);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(responseFuture);
 
         List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()
@@ -527,7 +527,8 @@ public class StreamedListObjectsTest {
                 CompletableFuture.completedFuture(mockResponse);
 
         var requestCaptor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
-        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any())).thenReturn(responseFuture);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(responseFuture);
 
         List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
         ClientListObjectsRequest request = new ClientListObjectsRequest()

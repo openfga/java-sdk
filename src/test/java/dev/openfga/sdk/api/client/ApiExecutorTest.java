@@ -470,8 +470,7 @@ public class ApiExecutorTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(String.format(
-                                "{\"access_token\":\"%s\",\"expires_in\":3600}", generatedToken))));
+                        .withBody(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", generatedToken))));
 
         // API endpoint
         stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))

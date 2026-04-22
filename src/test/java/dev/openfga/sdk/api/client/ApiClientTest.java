@@ -71,9 +71,8 @@ class ApiClientTest {
                 .clientSecret("secret")
                 .apiTokenIssuer("issuer.example")
                 .apiAudience("audience");
-        Configuration config = new Configuration()
-                .apiUrl("https://test.example")
-                .credentials(new Credentials(clientCreds));
+        Configuration config =
+                new Configuration().apiUrl("https://test.example").credentials(new Credentials(clientCreds));
 
         assertEquals("oauth2-token-abc", apiClient.getAccessToken(config));
         verify(mockOAuth2, times(1)).getAccessToken();
@@ -89,9 +88,8 @@ class ApiClientTest {
                 .clientSecret("secret")
                 .apiTokenIssuer("issuer.example")
                 .apiAudience("audience");
-        Configuration config = new Configuration()
-                .apiUrl("https://test.example")
-                .credentials(new Credentials(clientCreds));
+        Configuration config =
+                new Configuration().apiUrl("https://test.example").credentials(new Credentials(clientCreds));
 
         assertThrows(IllegalStateException.class, () -> apiClient.getAccessToken(config));
     }
@@ -109,9 +107,8 @@ class ApiClientTest {
                 .clientSecret("secret")
                 .apiTokenIssuer("issuer.example")
                 .apiAudience("audience");
-        Configuration config = new Configuration()
-                .apiUrl("https://test.example")
-                .credentials(new Credentials(clientCreds));
+        Configuration config =
+                new Configuration().apiUrl("https://test.example").credentials(new Credentials(clientCreds));
 
         assertThrows(ApiException.class, () -> apiClient.getAccessToken(config));
     }
