@@ -92,9 +92,11 @@ public class OpenFgaClientTest {
         // Allow setOAuth2Client to store the value and getAccessToken to use real logic
         final OAuth2Client[] oAuth2ClientHolder = new OAuth2Client[1];
         doAnswer(invocation -> {
-            oAuth2ClientHolder[0] = invocation.getArgument(0);
-            return null;
-        }).when(mockApiClient).setOAuth2Client(any());
+                    oAuth2ClientHolder[0] = invocation.getArgument(0);
+                    return null;
+                })
+                .when(mockApiClient)
+                .setOAuth2Client(any());
         when(mockApiClient.getAccessToken(any())).thenAnswer(invocation -> {
             Configuration config = invocation.getArgument(0);
             var credentialsMethod = config.getCredentials().getCredentialsMethod();

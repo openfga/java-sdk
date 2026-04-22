@@ -210,13 +210,11 @@ public class ApiExecutorRequestBuilder {
 
         // Attach authorization header if credentials are configured and the caller
         // has not already provided one.
-        boolean hasAuthorizationHeader =
-                headers.keySet().stream().anyMatch("Authorization"::equalsIgnoreCase);
+        boolean hasAuthorizationHeader = headers.keySet().stream().anyMatch("Authorization"::equalsIgnoreCase);
         String accessToken = apiClient.getAccessToken(configuration);
         if (!hasAuthorizationHeader && accessToken != null) {
             httpRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
-
 
         if (apiClient.getRequestInterceptor() != null) {
             apiClient.getRequestInterceptor().accept(httpRequestBuilder);
