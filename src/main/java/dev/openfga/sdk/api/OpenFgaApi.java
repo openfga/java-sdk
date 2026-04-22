@@ -94,6 +94,7 @@ public class OpenFgaApi {
         } else {
             this.oAuth2Client = null;
         }
+        apiClient.setOAuth2Client(this.oAuth2Client);
 
         var defaultHeaders = configuration.getDefaultHeaders();
         if (defaultHeaders != null) {

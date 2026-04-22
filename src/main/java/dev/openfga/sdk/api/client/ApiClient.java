@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.util.StringUtil;
 import java.io.InputStream;
@@ -41,6 +43,7 @@ public class ApiClient {
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
     private Consumer<HttpResponse<String>> asyncResponseInterceptor;
+    private OAuth2Client oAuth2Client;
 
     /**
      * Create an instance of ApiClient.
@@ -323,5 +326,60 @@ public class ApiClient {
      */
     public Consumer<HttpResponse<String>> getAsyncResponseInterceptor() {
         return asyncResponseInterceptor;
+    }
+
+    /**
+     * Set the OAuth2Client used for client credentials authentication.
+     * This is typically called by {@link dev.openfga.sdk.api.OpenFgaApi} during initialization.
+     *
+     * @param oAuth2Client The OAuth2 client, or null if not using client credentials.
+     */
+    public void setOAuth2Client(OAuth2Client oAuth2Client) {
+        this.oAuth2Client = oAuth2Client;
+    }
+
+    /**
+     * Get the OAuth2Client used for client credentials authentication.
+     *
+     * @return The OAuth2 client, or null if not configured.
+     */
+    public OAuth2Client getOAuth2Client() {
+        return oAuth2Client;
+    }
+
+    /**
+     * Resolve the access token for the given configuration's credentials.
+     * Returns the bearer token string, or null if credentials method is NONE.
+     *
+     * @param configuration The configuration containing credentials
+     * @return The access token string, or null
+     * @throws ApiException if token acquisition fails
+     */
+    public String getAccessToken(Configuration configuration) throws ApiException {
+        dev.openfga.sdk.api.configuration.CredentialsMethod credentialsMethod = configuration.getCredentials().getCredentialsMethod();
+
+        if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.NONE) {
+            return null;
+        }
+
+        if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.API_TOKEN) {
+            return configuration.getCredentials().getApiToken().getToken();
+        }
+
+        if (credentialsMethod == dev.openfga.sdk.api.configuration.CredentialsMethod.CLIENT_CREDENTIALS) {
+            if (oAuth2Client == null) {
+                throw new IllegalStateException(
+                        "OAuth2Client is not initialized but credentials method is CLIENT_CREDENTIALS.");
+            }
+            try {
+                return oAuth2Client.getAccessToken().get();
+            } catch (ApiException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ApiException(e);
+            }
+        }
+
+        throw new IllegalStateException("Configuration is invalid.");
     }
 }

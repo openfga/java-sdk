@@ -378,6 +378,123 @@ public class StreamingApiExecutorTest {
     }
 
     // -----------------------------------------------------------------------
+    // Authorization header tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void stream_withApiToken_attachesAuthorizationHeader() throws Exception {
+        // Given - config with API_TOKEN credentials
+        String apiToken = "test-api-token-streaming-executor";
+        ClientConfiguration authedConfig = new ClientConfiguration()
+                .storeId(DEFAULT_STORE_ID)
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .apiUrl(FgaConstants.TEST_API_URL)
+                .credentials(new Credentials(new dev.openfga.sdk.api.configuration.ApiToken(apiToken)))
+                .readTimeout(Duration.ofMillis(250));
+
+        ApiClient authedMockApiClient = mock(ApiClient.class);
+        when(authedMockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getObjectMapper()).thenReturn(new com.fasterxml.jackson.databind.ObjectMapper());
+        var mockBuilder = mock(HttpClient.Builder.class);
+        when(mockBuilder.executor(any())).thenReturn(mockBuilder);
+        when(mockBuilder.build()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getHttpClientBuilder()).thenReturn(mockBuilder);
+        when(authedMockApiClient.getAccessToken(any())).thenReturn(apiToken);
+
+        OpenFgaClient authedFga = new OpenFgaClient(authedConfig, authedMockApiClient);
+
+        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
+        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
+        ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        List<StreamedListObjectsResponse> received = new ArrayList<>();
+
+        // When
+        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class)
+                .stream(buildStreamedListObjectsRequest(), received::add)
+                .get();
+
+        // Then
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertEquals(1, authHeaders.size());
+        assertEquals("Bearer " + apiToken, authHeaders.get(0));
+        assertEquals(1, received.size());
+    }
+
+    @Test
+    public void stream_withClientCredentials_attachesAuthorizationHeader() throws Exception {
+        // Given - config with CLIENT_CREDENTIALS
+        String oauthToken = "oauth2-token-streaming-executor";
+        ClientConfiguration authedConfig = new ClientConfiguration()
+                .storeId(DEFAULT_STORE_ID)
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .apiUrl(FgaConstants.TEST_API_URL)
+                .credentials(new Credentials(new dev.openfga.sdk.api.configuration.ClientCredentials()
+                        .clientId("cid")
+                        .clientSecret("csecret")
+                        .apiTokenIssuer("issuer.example")
+                        .apiAudience("aud")))
+                .readTimeout(Duration.ofMillis(250));
+
+        ApiClient authedMockApiClient = mock(ApiClient.class);
+        when(authedMockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        var mockBuilder = mock(HttpClient.Builder.class);
+        when(mockBuilder.executor(any())).thenReturn(mockBuilder);
+        when(mockBuilder.build()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getHttpClientBuilder()).thenReturn(mockBuilder);
+        when(authedMockApiClient.getAccessToken(any())).thenReturn(oauthToken);
+
+        OpenFgaClient authedFga = new OpenFgaClient(authedConfig, authedMockApiClient);
+
+        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
+        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
+        ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        List<StreamedListObjectsResponse> received = new ArrayList<>();
+
+        // When
+        authedFga.streamingApiExecutor(StreamedListObjectsResponse.class)
+                .stream(buildStreamedListObjectsRequest(), received::add)
+                .get();
+
+        // Then
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertEquals(1, authHeaders.size());
+        assertEquals("Bearer " + oauthToken, authHeaders.get(0));
+        assertEquals(1, received.size());
+    }
+
+    @Test
+    public void stream_withNoCredentials_noAuthorizationHeader() throws Exception {
+        // Given - default config with NONE credentials
+        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
+        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
+        ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        List<StreamedListObjectsResponse> received = new ArrayList<>();
+
+        // When
+        fga.streamingApiExecutor(StreamedListObjectsResponse.class)
+                .stream(buildStreamedListObjectsRequest(), received::add)
+                .get();
+
+        // Then
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertTrue(authHeaders.isEmpty(), "No Authorization header expected for NONE credentials");
+        assertEquals(1, received.size());
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 

@@ -3,6 +3,7 @@ package dev.openfga.sdk.api.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.util.StringUtil;
 import java.net.http.HttpRequest;
@@ -192,7 +193,7 @@ public class ApiExecutorRequestBuilder {
      * Package-private — used by {@link ApiExecutor} and {@link StreamingApiExecutor}.
      */
     HttpRequest buildHttpRequest(Configuration configuration, ApiClient apiClient)
-            throws FgaInvalidParameterException, JsonProcessingException {
+            throws FgaInvalidParameterException, JsonProcessingException, ApiException {
         String resolvedPath = buildPath(configuration);
 
         HttpRequest.Builder httpRequestBuilder;
@@ -203,6 +204,12 @@ public class ApiExecutorRequestBuilder {
             httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, bodyBytes, configuration);
         } else {
             httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, configuration);
+        }
+
+        // Attach authorization header if credentials are configured
+        String accessToken = apiClient.getAccessToken(configuration);
+        if (accessToken != null) {
+            httpRequestBuilder.header("Authorization", "Bearer " + accessToken);
         }
 
         headers.forEach(httpRequestBuilder::header);

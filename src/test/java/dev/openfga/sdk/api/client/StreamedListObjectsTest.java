@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
 import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -15,6 +16,7 @@ import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -409,6 +411,139 @@ public class StreamedListObjectsTest {
                 "Expected ApiException but got " + error.getClass().getName());
         dev.openfga.sdk.errors.ApiException apiException = (dev.openfga.sdk.errors.ApiException) error;
         assertEquals(400, apiException.getStatusCode());
+    }
+
+    @Test
+    public void streamedListObjects_withApiToken_attachesAuthorizationHeader() throws Exception {
+        // Given - configuration with API_TOKEN credentials
+        String apiToken = "test-api-token-12345";
+        ClientConfiguration authedConfig = new ClientConfiguration()
+                .storeId(DEFAULT_STORE_ID)
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .apiUrl(FgaConstants.TEST_API_URL)
+                .credentials(new Credentials(new dev.openfga.sdk.api.configuration.ApiToken(apiToken)))
+                .readTimeout(Duration.ofMillis(250));
+
+        // Mock ApiClient with getAccessToken returning the token
+        ApiClient authedMockApiClient = mock(ApiClient.class);
+        when(authedMockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        var mockBuilder = mock(HttpClient.Builder.class);
+        when(mockBuilder.executor(any())).thenReturn(mockBuilder);
+        when(mockBuilder.build()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getHttpClientBuilder()).thenReturn(mockBuilder);
+        when(authedMockApiClient.getAccessToken(any())).thenReturn(apiToken);
+
+        OpenFgaClient authedFga = new OpenFgaClient(authedConfig, authedMockApiClient);
+
+        String line1 = "{\"result\":{\"object\":\"document:1\"}}";
+        Stream<String> streamResponse = Stream.of(line1);
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(200, streamResponse);
+        CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                CompletableFuture.completedFuture(mockResponse);
+
+        // Capture the HttpRequest to verify headers
+        var requestCaptor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any())).thenReturn(responseFuture);
+
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        CompletableFuture<Void> future = authedFga.streamedListObjects(request, receivedObjects::add);
+        future.get();
+
+        // Then - verify the Authorization header is present
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertEquals(1, authHeaders.size());
+        assertEquals("Bearer " + apiToken, authHeaders.get(0));
+        assertEquals(1, receivedObjects.size());
+    }
+
+    @Test
+    public void streamedListObjects_withClientCredentials_attachesAuthorizationHeader() throws Exception {
+        // Given - configuration with CLIENT_CREDENTIALS
+        String oauthToken = "oauth2-generated-token-xyz";
+
+        ClientConfiguration authedConfig = new ClientConfiguration()
+                .storeId(DEFAULT_STORE_ID)
+                .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
+                .apiUrl(FgaConstants.TEST_API_URL)
+                .credentials(new Credentials(new dev.openfga.sdk.api.configuration.ClientCredentials()
+                        .clientId("cid")
+                        .clientSecret("csecret")
+                        .apiTokenIssuer("issuer.example")
+                        .apiAudience("aud")))
+                .readTimeout(Duration.ofMillis(250));
+
+        // Mock ApiClient — stub getAccessToken to simulate CLIENT_CREDENTIALS OAuth2 flow
+        ApiClient authedMockApiClient = mock(ApiClient.class);
+        when(authedMockApiClient.getHttpClient()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        var mockBuilder = mock(HttpClient.Builder.class);
+        when(mockBuilder.executor(any())).thenReturn(mockBuilder);
+        when(mockBuilder.build()).thenReturn(mockHttpClient);
+        when(authedMockApiClient.getHttpClientBuilder()).thenReturn(mockBuilder);
+        when(authedMockApiClient.getAccessToken(any())).thenReturn(oauthToken);
+
+        OpenFgaClient authedFga = new OpenFgaClient(authedConfig, authedMockApiClient);
+
+        String line1 = "{\"result\":{\"object\":\"document:1\"}}";
+        Stream<String> streamResponse = Stream.of(line1);
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(200, streamResponse);
+        var requestCaptor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        CompletableFuture<Void> future = authedFga.streamedListObjects(request, receivedObjects::add);
+        future.get();
+
+        // Then
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertEquals(1, authHeaders.size());
+        assertEquals("Bearer " + oauthToken, authHeaders.get(0));
+        assertEquals(1, receivedObjects.size());
+    }
+
+    @Test
+    public void streamedListObjects_withNoCredentials_noAuthorizationHeader() throws Exception {
+        // Given - default config with no credentials (NONE)
+        String line1 = "{\"result\":{\"object\":\"document:1\"}}";
+        Stream<String> streamResponse = Stream.of(line1);
+        HttpResponse<Stream<String>> mockResponse = createMockStreamResponse(200, streamResponse);
+        CompletableFuture<HttpResponse<Stream<String>>> responseFuture =
+                CompletableFuture.completedFuture(mockResponse);
+
+        var requestCaptor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+        when(mockHttpClient.<Stream<String>>sendAsync(requestCaptor.capture(), any())).thenReturn(responseFuture);
+
+        List<StreamedListObjectsResponse> receivedObjects = new ArrayList<>();
+        ClientListObjectsRequest request = new ClientListObjectsRequest()
+                .type(DEFAULT_TYPE)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+
+        // When
+        CompletableFuture<Void> future = fga.streamedListObjects(request, receivedObjects::add);
+        future.get();
+
+        // Then - no Authorization header should be present
+        HttpRequest capturedRequest = requestCaptor.getValue();
+        var authHeaders = capturedRequest.headers().allValues("Authorization");
+        assertTrue(authHeaders.isEmpty(), "No Authorization header expected for NONE credentials");
+        assertEquals(1, receivedObjects.size());
     }
 
     private HttpResponse<Stream<String>> createMockStreamResponse(int statusCode, Stream<String> body) {

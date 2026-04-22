@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.errors.FgaError;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.HashMap;
@@ -394,5 +397,116 @@ public class ApiExecutorTest {
     public void threeParamConstructor_shouldRejectNullTelemetry() {
         ClientConfiguration config = new ClientConfiguration().apiUrl(fgaApiUrl).storeId(DEFAULT_STORE_ID);
         assertThrows(IllegalArgumentException.class, () -> new ApiExecutor(new ApiClient(), config, null));
+    }
+
+    @Test
+    public void rawApi_withApiToken_attachesAuthorizationHeader() throws Exception {
+        // Setup mock server — verify the Authorization header arrives
+        String apiToken = "test-api-token-for-executor";
+        stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"success\":true,\"count\":0,\"message\":\"OK\"}")));
+
+        // Create client with API_TOKEN credentials
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(fgaApiUrl)
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(new ApiToken(apiToken)));
+        OpenFgaClient client = new OpenFgaClient(config);
+
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
+                .pathParam("store_id", DEFAULT_STORE_ID)
+                .build();
+
+        ApiResponse<ExperimentalResponse> response =
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
+
+        // Verify response succeeded
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode());
+
+        // Verify the Authorization header was sent
+        verify(getRequestedFor(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + apiToken)));
+    }
+
+    @Test
+    public void rawApi_withNoCredentials_noAuthorizationHeader() throws Exception {
+        // Setup mock server
+        stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"success\":true,\"count\":0,\"message\":\"OK\"}")));
+
+        // Create client with no credentials
+        OpenFgaClient client = createClient();
+
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
+                .pathParam("store_id", DEFAULT_STORE_ID)
+                .build();
+
+        ApiResponse<ExperimentalResponse> response =
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
+
+        // Verify response succeeded
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode());
+
+        // Verify no Authorization header was sent
+        verify(getRequestedFor(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withoutHeader("Authorization"));
+    }
+
+    @Test
+    public void rawApi_withClientCredentials_attachesAuthorizationHeader() throws Exception {
+        // Setup WireMock to serve as both the OAuth2 token endpoint and the API
+        String generatedToken = "wiremock-oauth2-token-abc";
+
+        // Token endpoint
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(String.format(
+                                "{\"access_token\":\"%s\",\"expires_in\":3600}", generatedToken))));
+
+        // API endpoint
+        stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"success\":true,\"count\":0,\"message\":\"OK\"}")));
+
+        // Create client with CLIENT_CREDENTIALS — point both apiUrl and apiTokenIssuer at WireMock
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(fgaApiUrl)
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(new ClientCredentials()
+                        .clientId("test-client-id")
+                        .clientSecret("test-client-secret")
+                        .apiTokenIssuer(fgaApiUrl)
+                        .apiAudience("test-audience")));
+        OpenFgaClient client = new OpenFgaClient(config);
+
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
+                .pathParam("store_id", DEFAULT_STORE_ID)
+                .build();
+
+        ApiResponse<ExperimentalResponse> response =
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
+
+        // Verify response succeeded
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode());
+
+        // Verify token was requested
+        verify(postRequestedFor(urlEqualTo("/oauth/token")));
+
+        // Verify the Authorization header was sent with the OAuth2 token
+        verify(getRequestedFor(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + generatedToken)));
     }
 }
