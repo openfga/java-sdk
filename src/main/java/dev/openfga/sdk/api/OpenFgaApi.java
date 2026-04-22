@@ -91,10 +91,10 @@ public class OpenFgaApi {
 
         if (configuration.getCredentials().getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
             this.oAuth2Client = new OAuth2Client(configuration, apiClient);
+            apiClient.setOAuth2Client(this.oAuth2Client);
         } else {
             this.oAuth2Client = null;
         }
-        apiClient.setOAuth2Client(this.oAuth2Client);
 
         var defaultHeaders = configuration.getDefaultHeaders();
         if (defaultHeaders != null) {
