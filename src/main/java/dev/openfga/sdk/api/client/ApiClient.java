@@ -384,7 +384,7 @@ public class ApiClient {
                 throw new IllegalStateException("Unknown credentials method: " + method);
         }
 
-        requestBuilder.header("Authorization", "Bearer " + accessToken);
+        requestBuilder.setHeader("Authorization", "Bearer " + accessToken);
     }
 
     private OAuth2Client ensureOAuth2Client(Configuration configuration) throws FgaInvalidParameterException {
