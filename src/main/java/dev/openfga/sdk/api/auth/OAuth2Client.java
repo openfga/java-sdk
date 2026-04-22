@@ -11,13 +11,15 @@ import java.net.http.HttpRequest;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.CompletableFuture;
 
 public class OAuth2Client {
     private static final String DEFAULT_API_TOKEN_ISSUER_PATH = "/oauth/token";
 
     private final ApiClient apiClient;
-    private final AccessToken token = new AccessToken();
+    private final AtomicReference<TokenSnapshot> snapshot = new AtomicReference<>(TokenSnapshot.EMPTY);
+    private final AtomicReference<CompletableFuture<String>> inFlight = new AtomicReference<>();
     private final CredentialsFlowRequest authRequest;
     private final Configuration config;
     private final Telemetry telemetry;
@@ -45,26 +47,54 @@ public class OAuth2Client {
     }
 
     /**
-     * Gets an access token, handling exchange when necessary. The access token is naively cached in memory until it
-     * expires.
+     * Gets an access token, handling exchange when necessary. The token is cached as an immutable
+     * snapshot until it expires. Concurrent calls are deduplicated: only one exchange is in flight
+     * at a time; other callers join the same future rather than issuing redundant requests.
      *
      * @return An access token in a {@link CompletableFuture}
      */
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
-        if (!token.isValid()) {
-            return exchangeToken().thenCompose(response -> {
-                token.setToken(response.getAccessToken());
-                token.setExpiresAt(Instant.now().plusSeconds(response.getExpiresInSeconds()));
-
-                Map<Attribute, String> attributesMap = new HashMap<>();
-
-                telemetry.metrics().credentialsRequest(1L, attributesMap);
-
-                return CompletableFuture.completedFuture(token.getToken());
-            });
+        TokenSnapshot current = snapshot.get();
+        if (current.isValid()) {
+            return CompletableFuture.completedFuture(current.token());
         }
 
-        return CompletableFuture.completedFuture(token.getToken());
+        CompletableFuture<String> promise = new CompletableFuture<>();
+        if (!inFlight.compareAndSet(null, promise)) {
+            // Another thread won the race — join its exchange rather than starting a new one.
+            CompletableFuture<String> existing = inFlight.get();
+            return existing != null ? existing : getAccessToken();
+        }
+
+        // This thread owns the exchange. Start it, wiring completion back to `promise`.
+        try {
+            exchangeToken().whenComplete((response, ex) -> {
+                if (ex != null) {
+                    inFlight.set(null);
+                    promise.completeExceptionally(ex);
+                } else {
+                    String token = response.getAccessToken();
+                    // Write snapshot before clearing the gate so any new caller that arrives
+                    // after inFlight becomes null immediately sees a valid token.
+                    snapshot.set(
+                        new TokenSnapshot(
+                            token,
+                            Instant.now().plusSeconds(response.getExpiresInSeconds())));
+
+                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
+
+                    // Clear before completing
+                    inFlight.set(null);
+                    promise.complete(token);
+                }
+            });
+        } catch (Exception e) {
+            inFlight.set(null);
+            promise.completeExceptionally(e);
+            throw e;
+        }
+
+        return promise;
     }
 
     /**

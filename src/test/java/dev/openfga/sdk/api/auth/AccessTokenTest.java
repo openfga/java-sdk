@@ -38,10 +38,8 @@ class AccessTokenTest {
 
     @MethodSource("expTimeAndResults")
     @ParameterizedTest(name = "{0}")
-    public void testTokenValid(String name, Instant exp, boolean valid) {
-        AccessToken accessToken = new AccessToken();
-        accessToken.setToken("token");
-        accessToken.setExpiresAt(exp);
-        assertEquals(valid, accessToken.isValid());
+    void testTokenValid(String name, Instant exp, boolean valid) {
+        TokenSnapshot snapshot = new TokenSnapshot("token", exp);
+        assertEquals(valid, snapshot.isValid());
     }
 }

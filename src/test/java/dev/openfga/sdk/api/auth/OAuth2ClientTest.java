@@ -18,6 +18,11 @@ import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -164,6 +169,43 @@ class OAuth2ClientTest {
         assertTrue(exception.getMessage().contains("exchangeToken"));
         assertTrue(exception.getMessage().contains("HTTP 429"));
         verify(3, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    @Test
+    void exchangeOAuth2Token_concurrentRequests_singleExchange(WireMockRuntimeInfo wm) throws Exception {
+        // Stub with a delay so concurrent threads pile up before the first exchange completes.
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))
+                        .withFixedDelay(100)));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        int threadCount = 5;
+        CountDownLatch startGate = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threadCount);
+        List<String> tokens = Collections.synchronizedList(new ArrayList<>());
+        List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(() -> {
+                try {
+                    startGate.await();
+                    tokens.add(client.getAccessToken().get());
+                } catch (Exception e) {
+                    failures.add(e);
+                } finally {
+                    done.countDown();
+                }
+            }).start();
+        }
+
+        startGate.countDown();
+        assertTrue(done.await(3, TimeUnit.SECONDS), "threads did not complete in time");
+
+        assertEquals(List.of(), failures, "no thread should have thrown");
+        assertEquals(threadCount, tokens.size(), "all threads should have received a token");
+        assertTrue(tokens.stream().allMatch(ACCESS_TOKEN::equals), "all threads should have received the same token");
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 
     @Test
