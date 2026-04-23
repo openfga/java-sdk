@@ -4,15 +4,13 @@ import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class OAuth2Client {
     private static final String DEFAULT_API_TOKEN_ISSUER_PATH = "/oauth/token";
@@ -76,10 +74,7 @@ public class OAuth2Client {
                     String token = response.getAccessToken();
                     // Write snapshot before clearing the gate so any new caller that arrives
                     // after inFlight becomes null immediately sees a valid token.
-                    snapshot.set(
-                        new TokenSnapshot(
-                            token,
-                            Instant.now().plusSeconds(response.getExpiresInSeconds())));
+                    snapshot.set(new TokenSnapshot(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
 
                     telemetry.metrics().credentialsRequest(1L, new HashMap<>());
 

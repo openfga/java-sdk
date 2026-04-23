@@ -253,11 +253,15 @@ class ApiClientTest {
 
             HttpRequest.Builder requestA = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
             apiClient.applyAuthHeader(requestA, configA);
-            assertEquals("Bearer " + tokenA, requestA.build().headers().firstValue("Authorization").orElseThrow());
+            assertEquals(
+                    "Bearer " + tokenA,
+                    requestA.build().headers().firstValue("Authorization").orElseThrow());
 
             HttpRequest.Builder requestB = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
             apiClient.applyAuthHeader(requestB, configB);
-            assertEquals("Bearer " + tokenB, requestB.build().headers().firstValue("Authorization").orElseThrow());
+            assertEquals(
+                    "Bearer " + tokenB,
+                    requestB.build().headers().firstValue("Authorization").orElseThrow());
 
             // Each issuer is hit exactly once — no cross-contamination.
             mockHttpClient.verify().post(issuerA + "/oauth/token").called(1);

@@ -422,8 +422,7 @@ public class ApiClient {
 
         private static byte[] sha256(String value) {
             try {
-                return MessageDigest.getInstance("SHA-256")
-                        .digest(value == null ? new byte[0] : value.getBytes(UTF_8));
+                return MessageDigest.getInstance("SHA-256").digest(value == null ? new byte[0] : value.getBytes(UTF_8));
             } catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException("SHA-256 not available", e);
             }

@@ -188,15 +188,16 @@ class OAuth2ClientTest {
 
         for (int i = 0; i < threadCount; i++) {
             new Thread(() -> {
-                try {
-                    startGate.await();
-                    tokens.add(client.getAccessToken().get());
-                } catch (Exception e) {
-                    failures.add(e);
-                } finally {
-                    done.countDown();
-                }
-            }).start();
+                        try {
+                            startGate.await();
+                            tokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            done.countDown();
+                        }
+                    })
+                    .start();
         }
 
         startGate.countDown();
