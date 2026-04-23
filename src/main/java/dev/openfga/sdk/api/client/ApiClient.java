@@ -383,7 +383,11 @@ public class ApiClient {
                     Thread.currentThread().interrupt();
                     throw new ApiException(e);
                 } catch (ExecutionException e) {
-                    throw new ApiException(e);
+                    Throwable cause = e.getCause();
+                    if (cause instanceof ApiException) {
+                        throw (ApiException) cause;
+                    }
+                    throw new ApiException(cause != null ? cause : e);
                 }
                 break;
             default:
