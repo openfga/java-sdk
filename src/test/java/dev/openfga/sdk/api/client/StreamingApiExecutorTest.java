@@ -47,6 +47,7 @@ public class StreamingApiExecutorTest {
         mockHttpClient = mock(HttpClient.class);
         var mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
+        when(mockHttpClientBuilder.connectTimeout(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
