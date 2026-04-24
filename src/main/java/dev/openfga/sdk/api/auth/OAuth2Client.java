@@ -16,7 +16,7 @@ public class OAuth2Client {
     private static final String DEFAULT_API_TOKEN_ISSUER_PATH = "/oauth/token";
 
     private final ApiClient apiClient;
-    private final AtomicReference<TokenSnapshot> snapshot = new AtomicReference<>(TokenSnapshot.EMPTY);
+    private final AtomicReference<AccessToken> snapshot = new AtomicReference<>(AccessToken.EMPTY);
     private final AtomicReference<CompletableFuture<String>> inFlight = new AtomicReference<>();
     private final CredentialsFlowRequest authRequest;
     private final Configuration config;
@@ -52,7 +52,7 @@ public class OAuth2Client {
      * @return An access token in a {@link CompletableFuture}
      */
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
-        TokenSnapshot current = snapshot.get();
+        AccessToken current = snapshot.get();
         if (current.isValid()) {
             return CompletableFuture.completedFuture(current.token());
         }
@@ -74,7 +74,7 @@ public class OAuth2Client {
                     String token = response.getAccessToken();
                     // Write snapshot before clearing the gate so any new caller that arrives
                     // after inFlight becomes null immediately sees a valid token.
-                    snapshot.set(new TokenSnapshot(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
+                    snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
 
                     telemetry.metrics().credentialsRequest(1L, new HashMap<>());
 

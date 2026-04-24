@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
-import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
 import dev.openfga.sdk.api.model.StreamResult;
@@ -41,13 +40,15 @@ public class StreamingApiExecutorTest {
 
     private OpenFgaClient fga;
     private HttpClient mockHttpClient;
+    private HttpClient.Builder mockHttpClientBuilder;
     private ApiClient mockApiClient;
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
         mockHttpClient = mock(HttpClient.class);
-        var mockHttpClientBuilder = mock(HttpClient.Builder.class);
+        mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
+        when(mockHttpClientBuilder.connectTimeout(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
@@ -368,10 +369,8 @@ public class StreamingApiExecutorTest {
                 .apiUrl(FgaConstants.TEST_API_URL)
                 .credentials(new Credentials(new ApiToken(apiToken)))
                 .readTimeout(Duration.ofMillis(250));
-        doCallRealMethod()
-                .when(mockApiClient)
-                .applyAuthHeader(any(HttpRequest.Builder.class), any(Configuration.class));
-        OpenFgaClient authFga = new OpenFgaClient(authConfig, mockApiClient);
+        ApiClient realApiClient = new ApiClient(mockHttpClientBuilder);
+        OpenFgaClient authFga = new OpenFgaClient(authConfig, realApiClient);
 
         Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
         HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);

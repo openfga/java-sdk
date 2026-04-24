@@ -39,7 +39,7 @@ class AccessTokenTest {
     @MethodSource("expTimeAndResults")
     @ParameterizedTest(name = "{0}")
     void testTokenValid(String name, Instant exp, boolean valid) {
-        TokenSnapshot snapshot = new TokenSnapshot("token", exp);
+        AccessToken snapshot = new AccessToken("token", exp);
         assertEquals(valid, snapshot.isValid());
     }
 }
