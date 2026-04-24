@@ -54,7 +54,10 @@ class StreamingAuthIntegrationTest {
             OpenFgaClient client = ignored.client;
             List<StreamedListObjectsResponse> results = new ArrayList<>();
             client.streamedListObjects(
-                            new ClientListObjectsRequest().user("user:anne").relation("reader").type("document"),
+                            new ClientListObjectsRequest()
+                                    .user("user:anne")
+                                    .relation("reader")
+                                    .type("document"),
                             results::add)
                     .get();
 
@@ -85,8 +88,7 @@ class StreamingAuthIntegrationTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(String.format(
-                                "{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
+                        .withBody(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
 
         // 2. Stub the streaming endpoint — only matches with the exchanged bearer token.
         stubFor(post(urlEqualTo("/stores/" + STORE_ID + "/streamed-list-objects"))
@@ -109,7 +111,10 @@ class StreamingAuthIntegrationTest {
             OpenFgaClient client = ignored.client;
             List<StreamedListObjectsResponse> results = new ArrayList<>();
             client.streamedListObjects(
-                            new ClientListObjectsRequest().user("user:anne").relation("reader").type("document"),
+                            new ClientListObjectsRequest()
+                                    .user("user:anne")
+                                    .relation("reader")
+                                    .type("document"),
                             results::add)
                     .get();
 
@@ -136,8 +141,7 @@ class StreamingAuthIntegrationTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(String.format(
-                                "{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
+                        .withBody(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
 
         // Non-streaming listObjects endpoint
         stubFor(post(urlEqualTo("/stores/" + STORE_ID + "/list-objects"))
@@ -168,15 +172,20 @@ class StreamingAuthIntegrationTest {
             OpenFgaClient client = ignored.client;
 
             // 1. Non-streaming call — triggers token exchange
-            var listResult = client.listObjects(
-                            new ClientListObjectsRequest().user("user:anne").relation("reader").type("document"))
+            var listResult = client.listObjects(new ClientListObjectsRequest()
+                            .user("user:anne")
+                            .relation("reader")
+                            .type("document"))
                     .get();
             assertEquals(1, listResult.getObjects().size());
 
             // 2. Streaming call — should reuse the cached token (no second exchange)
             List<StreamedListObjectsResponse> streamResults = new ArrayList<>();
             client.streamedListObjects(
-                            new ClientListObjectsRequest().user("user:anne").relation("reader").type("document"),
+                            new ClientListObjectsRequest()
+                                    .user("user:anne")
+                                    .relation("reader")
+                                    .type("document"),
                             streamResults::add)
                     .get();
             assertEquals(1, streamResults.size());
@@ -205,7 +214,10 @@ class StreamingAuthIntegrationTest {
             OpenFgaClient client = ignored.client;
             List<StreamedListObjectsResponse> results = new ArrayList<>();
             client.streamedListObjects(
-                            new ClientListObjectsRequest().user("user:anne").relation("reader").type("document"),
+                            new ClientListObjectsRequest()
+                                    .user("user:anne")
+                                    .relation("reader")
+                                    .type("document"),
                             results::add)
                     .get();
             assertEquals(1, results.size());
@@ -224,8 +236,10 @@ class StreamingAuthIntegrationTest {
         stubFor(post(urlEqualTo("/stores/" + STORE_ID + "/streamed-list-objects"))
                 .willReturn(aResponse().withStatus(401).withBody("Unauthorized")));
 
-        ClientConfiguration config =
-                new ClientConfiguration().apiUrl(wm.getHttpBaseUrl()).storeId(STORE_ID).maxRetries(0);
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(wm.getHttpBaseUrl())
+                .storeId(STORE_ID)
+                .maxRetries(0);
 
         assertThrows(ExecutionException.class, () -> {
             try (var ignored = new AutoCloseableClient(config)) {
@@ -265,9 +279,9 @@ class StreamingAuthIntegrationTest {
             OpenFgaClient client = ignored.client;
             List<StreamedListObjectsResponse> results = new ArrayList<>();
 
-            client.streamingApiExecutor(StreamedListObjectsResponse.class)
-                    .stream(
-                            ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
+            client.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
+                            ApiExecutorRequestBuilder.builder(
+                                            HttpMethod.POST, "/stores/{store_id}/streamed-list-objects")
                                     .body(new ClientListObjectsRequest()
                                             .user("user:anne")
                                             .relation("reader")
@@ -295,8 +309,7 @@ class StreamingAuthIntegrationTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(String.format(
-                                "{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
+                        .withBody(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
 
         stubFor(get(urlEqualTo("/stores/" + STORE_ID + "/custom-endpoint"))
                 .withHeader("Authorization", equalTo("Bearer " + exchangedToken))
@@ -349,4 +362,3 @@ class StreamingAuthIntegrationTest {
         }
     }
 }
-

@@ -173,3 +173,10 @@ tasks.register('test-integration') {
 tasks.named('check').configure {
     dependsOn 'spotlessCheck'
 }
+
+// Temporary task for running the E2E streaming auth test against Docker containers.
+// Usage: ./gradlew e2eStreamingAuth
+tasks.register('e2eStreamingAuth', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.openfga.sdk.e2e.E2EStreamingAuthTest'
+}
