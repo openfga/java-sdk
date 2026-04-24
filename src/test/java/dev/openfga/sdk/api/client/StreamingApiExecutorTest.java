@@ -362,16 +362,20 @@ public class StreamingApiExecutorTest {
         // Regression guard for openfga/java-sdk#330: the streaming path must attach
         // Authorization: Bearer <token> when the configuration uses API_TOKEN credentials.
         String apiToken = "stream-api-token";
+
+        // Use a real ApiClient backed by the same mockHttpClient so applyAuthHeader runs for real.
+        var authBuilder = mock(HttpClient.Builder.class);
+        when(authBuilder.executor(any())).thenReturn(authBuilder);
+        when(authBuilder.build()).thenReturn(mockHttpClient);
+        ApiClient realApiClient = new ApiClient(authBuilder, new ObjectMapper());
+
         ClientConfiguration authConfig = new ClientConfiguration()
                 .storeId(DEFAULT_STORE_ID)
                 .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
                 .apiUrl(FgaConstants.TEST_API_URL)
                 .credentials(new Credentials(new ApiToken(apiToken)))
                 .readTimeout(Duration.ofMillis(250));
-        doCallRealMethod()
-                .when(mockApiClient)
-                .applyAuthHeader(any(HttpRequest.Builder.class), any(Configuration.class));
-        OpenFgaClient authFga = new OpenFgaClient(authConfig, mockApiClient);
+        OpenFgaClient authFga = new OpenFgaClient(authConfig, realApiClient);
 
         Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
         HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);

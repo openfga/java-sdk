@@ -53,6 +53,10 @@ public class ApiClient {
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
     private Consumer<HttpResponse<String>> asyncResponseInterceptor;
+    // NOTE: unbounded — one entry per unique set of client credentials for the lifetime of this ApiClient.
+    // This is intentional for multi-tenant use cases, but stale entries accumulate if credentials rotate
+    // frequently (e.g. per-request dynamic credentials). In those cases, callers should reuse the same
+    // ClientCredentials object or manage ApiClient lifecycle to bound memory growth.
     private final ConcurrentMap<CredentialsCacheKey, OAuth2Client> oAuth2Clients = new ConcurrentHashMap<>();
 
     /**

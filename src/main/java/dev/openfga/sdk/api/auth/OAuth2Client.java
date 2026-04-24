@@ -76,11 +76,13 @@ public class OAuth2Client {
                     // after inFlight becomes null immediately sees a valid token.
                     snapshot.set(new TokenSnapshot(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
 
-                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
-
                     // Clear before completing
                     inFlight.set(null);
                     promise.complete(token);
+
+                    // Telemetry fires after the gate is cleared and waiters are unblocked,
+                    // so a slow or throwing metrics call cannot stall the in-flight promise.
+                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
                 }
             });
         } catch (Exception e) {

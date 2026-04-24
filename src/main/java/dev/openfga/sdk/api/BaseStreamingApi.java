@@ -177,6 +177,8 @@ public abstract class BaseStreamingApi<T> {
             }
 
             return requestBuilder.build();
+        } catch (FgaInvalidParameterException e) {
+            throw e;
         } catch (Exception e) {
             throw new ApiException(e);
         }
