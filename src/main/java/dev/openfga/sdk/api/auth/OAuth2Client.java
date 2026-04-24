@@ -76,11 +76,10 @@ public class OAuth2Client {
                     // after inFlight becomes null immediately sees a valid token.
                     snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
 
-                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
-
                     // Clear before completing
                     inFlight.set(null);
                     promise.complete(token);
+                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
                 }
             });
         } catch (Exception e) {
