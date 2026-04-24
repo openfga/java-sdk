@@ -365,6 +365,7 @@ public class StreamingApiExecutorTest {
         // Use a real ApiClient backed by the same mockHttpClient so applyAuthHeader runs for real.
         var authBuilder = mock(HttpClient.Builder.class);
         when(authBuilder.executor(any())).thenReturn(authBuilder);
+        when(authBuilder.connectTimeout(any())).thenReturn(authBuilder);
         when(authBuilder.build()).thenReturn(mockHttpClient);
         ApiClient realApiClient = new ApiClient(authBuilder, new ObjectMapper());
 
