@@ -1,0 +1,66 @@
+services:
+  # Lightweight mock OAuth2 server — supports client_credentials grant out of the box.
+  # Token endpoint: http://localhost:9090/default/token
+  # Docs: https://github.com/navikt/mock-oauth2-server
+  #
+  # Networking trick: Both the host SDK client and openfga container must use the SAME
+  # hostname to reach mock-oauth2, so the JWT "iss" claim matches OpenFGA's expected issuer.
+  # We achieve this by mapping "localhost" inside the openfga container to the Docker host
+  # gateway (extra_hosts below), which forwards port 9090 back to this container.
+  mock-oauth2:
+    image: ghcr.io/navikt/mock-oauth2-server:3.0.1
+    ports:
+      - "9090:9090"
+    environment:
+      SERVER_PORT: "9090"
+      JSON_CONFIG: |
+        {
+          "interactiveLogin": false,
+          "httpServer": "NettyWrapper",
+          "tokenCallbacks": [
+            {
+              "issuerId": "default",
+              "tokenExpiry": 3600,
+              "requestMappings": [
+                {
+                  "requestParam": "grant_type",
+                  "match": "client_credentials",
+                  "claims": {
+                    "aud": ["openfga"]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+
+  # OpenFGA server configured with OIDC authentication backed by the mock OAuth2 server.
+  # extra_hosts maps "localhost" to the Docker host gateway so that OpenFGA reaches
+  # mock-oauth2 at http://localhost:9090 — the same URL the host SDK client uses.
+  # This ensures the JWT "iss" claim always equals the configured OIDC issuer.
+  openfga:
+    image: openfga/openfga:latest
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "localhost:host-gateway"
+    environment:
+      OPENFGA_AUTHN_METHOD: oidc
+      OPENFGA_AUTHN_OIDC_ISSUER: "http://localhost:9090/default"
+      OPENFGA_AUTHN_OIDC_AUDIENCE: "openfga"
+      OPENFGA_LOG_LEVEL: info
+    command: run
+    depends_on:
+      - mock-oauth2
+
+  # Second OpenFGA instance with preshared key auth (for API_TOKEN testing).
+  openfga-preshared:
+    image: openfga/openfga:latest
+    ports:
+      - "8082:8080"
+    environment:
+      OPENFGA_AUTHN_METHOD: preshared
+      OPENFGA_AUTHN_PRESHARED_KEYS: "test-api-key-123"
+      OPENFGA_LOG_LEVEL: info
+    command: run
+
