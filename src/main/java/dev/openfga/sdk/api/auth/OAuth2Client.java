@@ -23,6 +23,16 @@ public class OAuth2Client {
     private final Telemetry telemetry;
 
     /**
+     * Test-only seam invoked on the cold path after the lock-free snapshot check fails and
+     * before entering the synchronized acquisition gate. Defaults to a no-op. Used by tests to
+     * deterministically interleave threads around the post-exchange race window. Not part of the
+     * public API.
+     */
+    static final Runnable NO_OP_HOOK = () -> {};
+
+    volatile Runnable beforeAcquireHook = NO_OP_HOOK;
+
+    /**
      * Initializes a new instance of the {@link OAuth2Client} class
      *
      * @param configuration Configuration, including credentials, that can be used to retrieve an access tokens
@@ -49,24 +59,55 @@ public class OAuth2Client {
      * snapshot until it expires. Concurrent calls are deduplicated: only one exchange is in flight
      * at a time; other callers join the same future rather than issuing redundant requests.
      *
+     * <p>The hot path (valid cached token) is lock-free. The cold path serializes the
+     * "is snapshot valid? / is there an in-flight exchange? / publish my promise" decision
+     * under a monitor so that:
+     * <ul>
+     *   <li>at most one exchange is started per expiry,</li>
+     *   <li>joiners always observe the same in-flight promise that the owner will complete.</li>
+     * </ul>
+     * The exchange itself (the HTTP round-trip) runs asynchronously outside the monitor.
+     *
      * @return An access token in a {@link CompletableFuture}
      */
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
+        // Lock-free hot path: a valid cached token short-circuits everything.
+        AccessToken current = snapshot.get();
+        if (current.isValid()) {
+            return CompletableFuture.completedFuture(current.token());
+        }
+        // Cold-path test seam (no-op in production).
+        beforeAcquireHook.run();
+        return acquireToken();
+    }
+
+    /**
+     * Cold path: snapshot is missing or expired. Serialized to guarantee a single in-flight
+     * exchange and to avoid the join-vs-clear race that an atomic-CAS-only approach is prone to.
+     */
+    private synchronized CompletableFuture<String> acquireToken()
+            throws FgaInvalidParameterException, ApiException {
+        // Re-check under the monitor: another thread may have just refreshed the snapshot.
         AccessToken current = snapshot.get();
         if (current.isValid()) {
             return CompletableFuture.completedFuture(current.token());
         }
 
-        CompletableFuture<String> promise = new CompletableFuture<>();
-        if (!inFlight.compareAndSet(null, promise)) {
-            // Another thread won the race — join its exchange rather than starting a new one.
-            CompletableFuture<String> existing = inFlight.get();
-            return existing != null ? existing : getAccessToken();
+        // Join an existing exchange if one is already in flight.
+        CompletableFuture<String> existing = inFlight.get();
+        if (existing != null) {
+            return existing;
         }
 
-        // This thread owns the exchange. Start it, wiring completion back to `promise`.
+        // This thread owns the exchange. Publish the promise so concurrent callers can join.
+        CompletableFuture<String> promise = new CompletableFuture<>();
+        inFlight.set(promise);
+
         try {
             exchangeToken().whenComplete((response, ex) -> {
+                // Completion runs asynchronously, outside the monitor. That's fine: state
+                // transitions here (snapshot, inFlight, promise) are each individually
+                // thread-safe, and the monitor only guards the decision to *start* an exchange.
                 if (ex != null) {
                     inFlight.set(null);
                     promise.completeExceptionally(ex);
@@ -75,14 +116,13 @@ public class OAuth2Client {
                     // Write snapshot before clearing the gate so any new caller that arrives
                     // after inFlight becomes null immediately sees a valid token.
                     snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
-
-                    // Clear before completing
                     inFlight.set(null);
                     promise.complete(token);
                     telemetry.metrics().credentialsRequest(1L, new HashMap<>());
                 }
             });
         } catch (Exception e) {
+            // Synchronous failure to even dispatch the request: clear the gate and propagate.
             inFlight.set(null);
             promise.completeExceptionally(e);
             throw e;

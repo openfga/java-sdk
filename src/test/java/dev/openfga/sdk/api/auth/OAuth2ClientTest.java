@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -206,6 +207,102 @@ class OAuth2ClientTest {
         assertEquals(List.of(), failures, "no thread should have thrown");
         assertEquals(threadCount, tokens.size(), "all threads should have received a token");
         assertTrue(tokens.stream().allMatch(ACCESS_TOKEN::equals), "all threads should have received the same token");
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    /**
+     * After a successful exchange, subsequent calls must hit the cached snapshot and avoid the
+     * network entirely. This guards the lock-free hot path in {@link OAuth2Client#getAccessToken()}.
+     */
+    @Test
+    void exchangeOAuth2Token_cachedAcrossCalls_noSecondRequest(WireMockRuntimeInfo wm) throws Exception {
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        // Prime the cache.
+        assertEquals(ACCESS_TOKEN, client.getAccessToken().get());
+
+        // Many subsequent calls should all be served from the snapshot.
+        for (int i = 0; i < 20; i++) {
+            assertEquals(ACCESS_TOKEN, client.getAccessToken().get());
+        }
+
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    /**
+     * Deterministic regression test for the post-exchange race that the synchronized cold path
+     * is meant to close.
+     *
+     * <p>Race being pinned: thread A reads an invalid snapshot, parks; thread B completes a full
+     * exchange (writes snapshot, clears the in-flight gate); thread A then reaches the
+     * acquisition gate. With the original CAS-only logic, A would have started a redundant
+     * second exchange. With the synchronized re-check, A must observe the freshly-written
+     * snapshot and return the cached token without contacting the IdP.
+     *
+     * <p>Determinism is achieved via a package-private {@code beforeAcquireHook} test seam in
+     * {@link OAuth2Client}: thread A is parked at the hook between its lock-free snapshot read
+     * and the synchronized gate; thread B runs end-to-end with the hook disarmed; A is then
+     * released. No sleeps, no thread-scheduling assumptions.
+     *
+     * <p>Asserts: exactly one HTTP exchange total, both threads receive the same token.
+     */
+    @Test
+    void exchangeOAuth2Token_postCompletionRace_noSecondExchange(WireMockRuntimeInfo wm) throws Exception {
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        CountDownLatch threadAParked = new CountDownLatch(1);
+        CountDownLatch releaseThreadA = new CountDownLatch(1);
+
+        // Arm the hook: the next caller (thread A) will park here right between its lock-free
+        // snapshot check and entering the synchronized gate.
+        client.beforeAcquireHook = () -> {
+            threadAParked.countDown();
+            try {
+                if (!releaseThreadA.await(5, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("thread A was never released");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        };
+
+        // Thread A: enters, sees invalid snapshot, parks at the hook.
+        AtomicReference<String> tokenA = new AtomicReference<>();
+        AtomicReference<Throwable> failureA = new AtomicReference<>();
+        Thread a = new Thread(() -> {
+            try {
+                tokenA.set(client.getAccessToken().get(5, TimeUnit.SECONDS));
+            } catch (Throwable t) {
+                failureA.set(t);
+            }
+        }, "race-thread-A");
+        a.start();
+
+        assertTrue(threadAParked.await(2, TimeUnit.SECONDS), "thread A never reached the hook");
+
+        // Disarm the hook so thread B (this thread) is *not* trapped, then perform a full
+        // exchange end-to-end. After this returns: snapshot is valid, inFlight is null.
+        client.beforeAcquireHook = OAuth2Client.NO_OP_HOOK;
+        String tokenB = client.getAccessToken().get(5, TimeUnit.SECONDS);
+        assertEquals(ACCESS_TOKEN, tokenB);
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
+
+        // Now release A. It will enter acquireToken() in *exactly* the post-completion state
+        // (snapshot valid, inFlight null) that the original CAS-only code mishandled.
+        releaseThreadA.countDown();
+        a.join(5_000);
+        assertFalse(a.isAlive(), "thread A did not finish");
+        assertNull(failureA.get(), "thread A threw");
+        assertEquals(ACCESS_TOKEN, tokenA.get());
+
+        // The decisive assertion: A must NOT have triggered a second exchange.
         verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 

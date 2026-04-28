@@ -1,0 +1,10 @@
+# TLA+ tools jar — download on demand, see README
+tla2tools.jar
+
+# TLC working directories
+states/
+*.old
+
+# Default cfg auto-written by pcal.trans (we use named cfgs instead)
+OAuth2Client.cfg
+
