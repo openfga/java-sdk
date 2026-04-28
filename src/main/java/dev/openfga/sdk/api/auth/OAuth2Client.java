@@ -52,43 +52,53 @@ public class OAuth2Client {
      * @return An access token in a {@link CompletableFuture}
      */
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
+        // Fast path (lock-free): return cached token if still valid.
         AccessToken current = snapshot.get();
         if (current.isValid()) {
             return CompletableFuture.completedFuture(current.token());
         }
 
-        CompletableFuture<String> promise = new CompletableFuture<>();
-        if (!inFlight.compareAndSet(null, promise)) {
-            // Another thread won the race — join its exchange rather than starting a new one.
+        // Slow path: decide under the lock who starts the exchange.
+        synchronized (this) {
+            // Double-check: another thread may have refreshed while we waited.
+            AccessToken rechecked = snapshot.get();
+            if (rechecked.isValid()) {
+                return CompletableFuture.completedFuture(rechecked.token());
+            }
+
+            // Join an existing in-flight exchange.
             CompletableFuture<String> existing = inFlight.get();
-            return existing != null ? existing : getAccessToken();
+            if (existing != null) {
+                return existing;
+            }
+
+            // Start a new exchange and publish the future so other callers join it.
+            CompletableFuture<String> promise = new CompletableFuture<>();
+            inFlight.set(promise);
+
+            try {
+                exchangeToken().whenComplete((response, ex) -> {
+                    if (ex != null) {
+                        inFlight.set(null);
+                        promise.completeExceptionally(ex);
+                    } else {
+                        String token = response.getAccessToken();
+                        // Write snapshot before clearing the gate so any new caller that arrives
+                        // after inFlight becomes null immediately sees a valid token.
+                        snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
+                        inFlight.set(null);
+                        promise.complete(token);
+                        telemetry.metrics().credentialsRequest(1L, new HashMap<>());
+                    }
+                });
+            } catch (Exception e) {
+                inFlight.set(null);
+                promise.completeExceptionally(e);
+                throw e;
+            }
+
+            return promise;
         }
-
-        // This thread owns the exchange. Start it, wiring completion back to `promise`.
-        try {
-            exchangeToken().whenComplete((response, ex) -> {
-                if (ex != null) {
-                    inFlight.set(null);
-                    promise.completeExceptionally(ex);
-                } else {
-                    String token = response.getAccessToken();
-                    // Write snapshot before clearing the gate so any new caller that arrives
-                    // after inFlight becomes null immediately sees a valid token.
-                    snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
-
-                    // Clear before completing
-                    inFlight.set(null);
-                    promise.complete(token);
-                    telemetry.metrics().credentialsRequest(1L, new HashMap<>());
-                }
-            });
-        } catch (Exception e) {
-            inFlight.set(null);
-            promise.completeExceptionally(e);
-            throw e;
-        }
-
-        return promise;
     }
 
     /**
