@@ -6,23 +6,12 @@
 ### Added
 
 * oauth2 scopes for authentication ([#326](https://github.com/openfga/java-sdk/issues/326)) ([c02b3cc](https://github.com/openfga/java-sdk/commit/c02b3cca5ac41c96a5f09971f35d054922aea916))
-* release automation configs ([#312](https://github.com/openfga/java-sdk/issues/312)) ([dbd003f](https://github.com/openfga/java-sdk/commit/dbd003fff357a31d65f6cff19f6ae7622d6da4c5))
-* report a per call http metric ([#310](https://github.com/openfga/java-sdk/issues/310)) ([cc3a5f2](https://github.com/openfga/java-sdk/commit/cc3a5f26ce78fe0796dc1acf57bc9f2829c2e534))
+* Add `fga-client.request.count` counter metric to track the total number of HTTP requests made to the FGA server. This metric is **disabled by default** and must be explicitly enabled via `TelemetryConfiguration`. ([#310](https://github.com/openfga/java-sdk/issues/310)) ([cc3a5f2](https://github.com/openfga/java-sdk/commit/cc3a5f26ce78fe0796dc1acf57bc9f2829c2e534))
 
 
 ### Fixed
 
-* attach Authorization header to streaming and ApiExecutor requests ([#330](https://github.com/openfga/java-sdk/issues/330)) ([#331](https://github.com/openfga/java-sdk/issues/331)) ([b09ca16](https://github.com/openfga/java-sdk/commit/b09ca167e9fd9fbbe8d8f83c1fa8af8fd054c84d))
-
-
-### Miscellaneous
-
-* release 0.9.8 ([8d1395c](https://github.com/openfga/java-sdk/commit/8d1395c994e84c4d98dc22397c5b537c89e5ea3b))
-
-## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.7...HEAD)
-
-### Added
-- Add `fga-client.request.count` counter metric to track the total number of HTTP requests made to the FGA server. This metric is **disabled by default** and must be explicitly enabled via `TelemetryConfiguration`.
+* attach Authorization header to streaming and ApiExecutor requests ([#330](https://github.com/openfga/java-sdk/issues/330)) ([#331](https://github.com/openfga/java-sdk/issues/331)) ([b09ca16](https://github.com/openfga/java-sdk/commit/b09ca167e9fd9fbbe8d8f83c1fa8af8fd054c84d)), thanks @cportcvent
 
 ## v0.9.7
 
