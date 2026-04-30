@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.errors.FgaError;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.HashMap;
@@ -380,6 +383,78 @@ public class ApiExecutorTest {
         ApiExecutorRequestBuilder request =
                 ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/test").build();
         assertThrows(IllegalArgumentException.class, () -> client.apiExecutor().send(request, null));
+    }
+
+    @Test
+    public void rawApi_appliesApiTokenAuthHeader() throws Exception {
+        String apiToken = "static-api-token";
+        stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + apiToken))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"success\":true,\"count\":0,\"message\":\"OK\"}")));
+
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(fgaApiUrl)
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(new ApiToken(apiToken)));
+        OpenFgaClient client = new OpenFgaClient(config);
+
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
+                .pathParam("store_id", DEFAULT_STORE_ID)
+                .build();
+
+        ApiResponse<ExperimentalResponse> response =
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
+
+        assertEquals(200, response.getStatusCode());
+        verify(getRequestedFor(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + apiToken)));
+    }
+
+    @Test
+    public void rawApi_appliesClientCredentialsAuthHeader() throws Exception {
+        String clientId = "some-client-id";
+        String clientSecret = "some-client-secret";
+        String apiAudience = "some-audience";
+        String exchangedToken = "exchanged-access-token";
+
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken))));
+        stubFor(get(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + exchangedToken))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"success\":true,\"count\":0,\"message\":\"OK\"}")));
+
+        ClientConfiguration config = new ClientConfiguration()
+                .apiUrl(fgaApiUrl)
+                .storeId(DEFAULT_STORE_ID)
+                .credentials(new Credentials(new ClientCredentials()
+                        .clientId(clientId)
+                        .clientSecret(clientSecret)
+                        .apiAudience(apiAudience)
+                        .apiTokenIssuer(fgaApiUrl)));
+        OpenFgaClient client = new OpenFgaClient(config);
+
+        ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, EXPERIMENTAL_ENDPOINT)
+                .pathParam("store_id", DEFAULT_STORE_ID)
+                .build();
+
+        ApiResponse<ExperimentalResponse> response =
+                client.apiExecutor().send(request, ExperimentalResponse.class).get();
+
+        assertEquals(200, response.getStatusCode());
+        verify(postRequestedFor(urlEqualTo("/oauth/token"))
+                .withRequestBody(containing("client_id=" + clientId))
+                .withRequestBody(containing("grant_type=client_credentials")));
+        verify(getRequestedFor(urlEqualTo("/stores/" + DEFAULT_STORE_ID + "/experimental-feature"))
+                .withHeader("Authorization", equalTo("Bearer " + exchangedToken)));
     }
 
     @Test

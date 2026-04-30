@@ -15,7 +15,6 @@ package dev.openfga.sdk.api;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
-import dev.openfga.sdk.api.auth.*;
 import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.BatchCheckRequest;
@@ -69,7 +68,6 @@ public class OpenFgaApi {
     private final Configuration configuration;
 
     private final ApiClient apiClient;
-    private final OAuth2Client oAuth2Client;
     private final Telemetry telemetry;
 
     public OpenFgaApi(Configuration configuration) throws FgaInvalidParameterException {
@@ -88,12 +86,6 @@ public class OpenFgaApi {
         this.apiClient = apiClient;
         this.configuration = configuration;
         this.telemetry = telemetry;
-
-        if (configuration.getCredentials().getCredentialsMethod() == CredentialsMethod.CLIENT_CREDENTIALS) {
-            this.oAuth2Client = new OAuth2Client(configuration, apiClient);
-        } else {
-            this.oAuth2Client = null;
-        }
 
         var defaultHeaders = configuration.getDefaultHeaders();
         if (defaultHeaders != null) {
@@ -1294,10 +1286,7 @@ public class OpenFgaApi {
         httpRequest.header("Content-Type", "application/json");
         httpRequest.header("Accept", "application/json");
 
-        if (configuration.getCredentials().getCredentialsMethod() != CredentialsMethod.NONE) {
-            String accessToken = getAccessToken(configuration);
-            httpRequest.header("Authorization", "Bearer " + accessToken);
-        }
+        apiClient.applyAuthHeader(httpRequest, configuration);
 
         if (configuration.getUserAgent() != null) {
             httpRequest.header("User-Agent", configuration.getUserAgent());
@@ -1336,30 +1325,5 @@ public class OpenFgaApi {
             path.append("?").append(parameters);
         }
         return path.toString();
-    }
-
-    /**
-     * Get an access token. Expects that configuration is valid (meaning it can
-     * pass {@link Configuration#assertValid()}) and expects that if the
-     * CredentialsMethod is CLIENT_CREDENTIALS that a valid {@link OAuth2Client}
-     * has been initialized. Otherwise, it will throw an IllegalStateException.
-     * @throws IllegalStateException when the configuration is invalid
-     */
-    private String getAccessToken(Configuration configuration) throws ApiException {
-        CredentialsMethod credentialsMethod = configuration.getCredentials().getCredentialsMethod();
-
-        if (credentialsMethod == CredentialsMethod.API_TOKEN) {
-            return configuration.getCredentials().getApiToken().getToken();
-        }
-
-        if (credentialsMethod == CredentialsMethod.CLIENT_CREDENTIALS) {
-            try {
-                return oAuth2Client.getAccessToken().get();
-            } catch (Exception e) {
-                throw new ApiException(e);
-            }
-        }
-
-        throw new IllegalStateException("Configuration is invalid.");
     }
 }
