@@ -85,7 +85,7 @@ jobs:
 
   publish-github-packages:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [test, publish-maven-central]
+    needs: [test]
     runs-on: ubuntu-latest
 
     permissions:
