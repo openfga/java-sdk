@@ -7,7 +7,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.api.auth.OAuth2Client;
+import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.Credentials;
+import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.util.StringUtil;
 import java.io.InputStream;
@@ -16,7 +21,14 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
@@ -41,6 +53,7 @@ public class ApiClient {
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
     private Consumer<HttpResponse<String>> asyncResponseInterceptor;
+    private final ConcurrentMap<CredentialsCacheKey, OAuth2Client> oAuth2Clients = new ConcurrentHashMap<>();
 
     /**
      * Create an instance of ApiClient.
@@ -323,5 +336,119 @@ public class ApiClient {
      */
     public Consumer<HttpResponse<String>> getAsyncResponseInterceptor() {
         return asyncResponseInterceptor;
+    }
+
+    /**
+     * Applies the {@code Authorization: Bearer <token>} header to the request builder based on the
+     * supplied configuration's {@link Credentials}. This is the single entry point for attaching
+     * auth to outbound requests across the SDK — every request builder should delegate here.
+     *
+     * <ul>
+     *   <li>{@link CredentialsMethod#NONE}: no header is applied.</li>
+     *   <li>{@link CredentialsMethod#API_TOKEN}: the static API token from the configuration is used.</li>
+     *   <li>{@link CredentialsMethod#CLIENT_CREDENTIALS}: an {@link OAuth2Client} performs the
+     *       client-credentials exchange and caches the token on this {@code ApiClient} until expiry.
+     *       The client is lazily created from {@code configuration} on first use.</li>
+     * </ul>
+     *
+     * @param requestBuilder the request builder to mutate.
+     * @param configuration  the configuration that supplies credentials.
+     * @throws ApiException                 if CLIENT_CREDENTIALS token exchange fails.
+     * @throws FgaInvalidParameterException if the configuration is invalid when lazily creating
+     *                                      an {@link OAuth2Client}.
+     */
+    public void applyAuthHeader(HttpRequest.Builder requestBuilder, Configuration configuration)
+            throws ApiException, FgaInvalidParameterException {
+
+        Credentials credentials = configuration.getCredentials();
+        if (credentials == null) {
+            return;
+        }
+
+        CredentialsMethod method = credentials.getCredentialsMethod();
+        if (method == null || method == CredentialsMethod.NONE) {
+            return;
+        }
+
+        String accessToken;
+        switch (method) {
+            case API_TOKEN:
+                accessToken = credentials.getApiToken().getToken();
+                break;
+            case CLIENT_CREDENTIALS:
+                try {
+                    accessToken =
+                            ensureOAuth2Client(configuration).getAccessToken().get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new ApiException(e);
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof ApiException) {
+                        throw (ApiException) cause;
+                    }
+                    throw new ApiException(cause != null ? cause : e);
+                }
+                break;
+            default:
+                throw new IllegalStateException("Unknown credentials method: " + method);
+        }
+
+        requestBuilder.setHeader("Authorization", "Bearer " + accessToken);
+    }
+
+    private OAuth2Client ensureOAuth2Client(Configuration configuration) throws FgaInvalidParameterException {
+        ClientCredentials cc = configuration.getCredentials().getClientCredentials();
+        CredentialsCacheKey key = new CredentialsCacheKey(cc);
+        OAuth2Client existing = oAuth2Clients.get(key);
+        if (existing != null) {
+            return existing;
+        }
+        OAuth2Client created = new OAuth2Client(configuration, this);
+        OAuth2Client prior = oAuth2Clients.putIfAbsent(key, created);
+        return prior != null ? prior : created;
+    }
+
+    private static final class CredentialsCacheKey {
+        private final String clientId;
+        private final byte[] clientSecretHash;
+        private final String apiTokenIssuer;
+        private final String apiAudience;
+        private final String scopes;
+
+        CredentialsCacheKey(ClientCredentials cc) {
+            this.clientId = cc.getClientId();
+            this.clientSecretHash = sha256(cc.getClientSecret());
+            this.apiTokenIssuer = cc.getApiTokenIssuer();
+            this.apiAudience = cc.getApiAudience();
+            this.scopes = cc.getScopes();
+        }
+
+        private static byte[] sha256(String value) {
+            try {
+                return MessageDigest.getInstance("SHA-256").digest(value == null ? new byte[0] : value.getBytes(UTF_8));
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("SHA-256 not available", e);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof CredentialsCacheKey)) return false;
+            CredentialsCacheKey that = (CredentialsCacheKey) o;
+            return Objects.equals(clientId, that.clientId)
+                    && Arrays.equals(clientSecretHash, that.clientSecretHash)
+                    && Objects.equals(apiTokenIssuer, that.apiTokenIssuer)
+                    && Objects.equals(apiAudience, that.apiAudience)
+                    && Objects.equals(scopes, that.scopes);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hash(clientId, apiTokenIssuer, apiAudience, scopes);
+            result = 31 * result + Arrays.hashCode(clientSecretHash);
+            return result;
+        }
     }
 }

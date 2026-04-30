@@ -72,6 +72,7 @@ public class OpenFgaClientTest {
 
         var mockHttpClientBuilder = mock(HttpClient.Builder.class);
         when(mockHttpClientBuilder.executor(any())).thenReturn(mockHttpClientBuilder);
+        when(mockHttpClientBuilder.connectTimeout(any())).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockHttpClient);
 
         clientConfiguration = new ClientConfiguration()
@@ -83,12 +84,7 @@ public class OpenFgaClientTest {
                 .maxRetries(FgaConstants.DEFAULT_MAX_RETRY)
                 .minimumRetryDelay(FgaConstants.DEFAULT_MIN_WAIT_IN_MS);
 
-        var mockApiClient = mock(ApiClient.class);
-        when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
-        when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
-
-        fga = new OpenFgaClient(clientConfiguration, mockApiClient);
+        fga = new OpenFgaClient(clientConfiguration, new ApiClient(mockHttpClientBuilder, new ObjectMapper()));
     }
 
     /* ******************
