@@ -11,12 +11,8 @@
 
 ### Fixed
 
-* attach Authorization header to streaming and ApiExecutor requests ([#330](https://github.com/openfga/java-sdk/issues/330)) ([#331](https://github.com/openfga/java-sdk/issues/331)) ([b09ca16](https://github.com/openfga/java-sdk/commit/b09ca167e9fd9fbbe8d8f83c1fa8af8fd054c84d))
+* attach Authorization header to streaming and ApiExecutor requests ([#330](https://github.com/openfga/java-sdk/issues/330)) ([#331](https://github.com/openfga/java-sdk/issues/331)) ([b09ca16](https://github.com/openfga/java-sdk/commit/b09ca167e9fd9fbbe8d8f83c1fa8af8fd054c84d)), thanks @cportcvent
 
-
-### Miscellaneous
-
-* release 0.9.8 ([01c8e6f](https://github.com/openfga/java-sdk/commit/01c8e6f6a1d2593f369ef28ddc76a22c8fe97a3b))
 
 ## [Unreleased](https://github.com/openfga/java-sdk/compare/v0.9.7...HEAD)
 
