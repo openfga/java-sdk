@@ -168,6 +168,8 @@ public abstract class BaseStreamingApi<T> {
             byte[] bodyBytes = objectMapper.writeValueAsBytes(body);
             HttpRequest.Builder requestBuilder = ApiClient.requestBuilder(method, path, bodyBytes, configuration);
 
+            apiClient.applyAuthHeader(requestBuilder, configuration);
+
             // Apply request interceptors if any
             var interceptor = apiClient.getRequestInterceptor();
             if (interceptor != null) {

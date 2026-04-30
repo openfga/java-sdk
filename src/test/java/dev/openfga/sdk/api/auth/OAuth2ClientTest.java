@@ -18,6 +18,11 @@ import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -164,6 +169,173 @@ class OAuth2ClientTest {
         assertTrue(exception.getMessage().contains("exchangeToken"));
         assertTrue(exception.getMessage().contains("HTTP 429"));
         verify(3, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    @Test
+    void exchangeOAuth2Token_concurrentRequests_singleExchange(WireMockRuntimeInfo wm) throws Exception {
+        // Stub with a delay so concurrent threads pile up before the first exchange completes.
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))
+                        .withFixedDelay(100)));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        int threadCount = 5;
+        CountDownLatch startGate = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threadCount);
+        List<String> tokens = Collections.synchronizedList(new ArrayList<>());
+        List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(() -> {
+                        try {
+                            startGate.await();
+                            tokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            done.countDown();
+                        }
+                    })
+                    .start();
+        }
+
+        startGate.countDown();
+        assertTrue(done.await(3, TimeUnit.SECONDS), "threads did not complete in time");
+
+        assertEquals(List.of(), failures, "no thread should have thrown");
+        assertEquals(threadCount, tokens.size(), "all threads should have received a token");
+        assertTrue(tokens.stream().allMatch(ACCESS_TOKEN::equals), "all threads should have received the same token");
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    /**
+     * Regression: after a successful exchange, a second wave of concurrent callers must see the
+     * cached snapshot and NOT trigger a redundant exchange.
+     * This covers a race where thread A reads an invalid snapshot, thread B completes the exchange,
+     * and thread A then enters the slow path synchronized block - but still returns the cached
+     * token without issuing another request.
+     */
+    @Test
+    void getAccessToken_cachedTokenHit(WireMockRuntimeInfo wm) throws Exception {
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))
+                        .withFixedDelay(100)));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        // Wave 1 — triggers the only exchange.
+        int wave1Count = 3;
+        CountDownLatch wave1Start = new CountDownLatch(1);
+        CountDownLatch wave1Done = new CountDownLatch(wave1Count);
+        List<String> wave1Tokens = Collections.synchronizedList(new ArrayList<>());
+        List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < wave1Count; i++) {
+            new Thread(() -> {
+                        try {
+                            wave1Start.await();
+                            wave1Tokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            wave1Done.countDown();
+                        }
+                    })
+                    .start();
+        }
+        wave1Start.countDown();
+        assertTrue(wave1Done.await(2, TimeUnit.SECONDS), "wave 1 did not complete in time");
+        assertTrue(failures.isEmpty(), "wave 1 should not have failures");
+
+        // Wave 2 — arrives after the exchange has completed; must use the cached token.
+        int wave2Count = 5;
+        CountDownLatch wave2Start = new CountDownLatch(1);
+        CountDownLatch wave2Done = new CountDownLatch(wave2Count);
+        List<String> wave2Tokens = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < wave2Count; i++) {
+            new Thread(() -> {
+                        try {
+                            wave2Start.await();
+                            wave2Tokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            wave2Done.countDown();
+                        }
+                    })
+                    .start();
+        }
+        wave2Start.countDown();
+        assertTrue(wave2Done.await(2, TimeUnit.SECONDS), "wave 2 did not complete in time");
+
+        assertEquals(List.of(), failures, "no thread should have thrown");
+        assertEquals(wave1Count, wave1Tokens.size());
+        assertEquals(wave2Count, wave2Tokens.size());
+        assertTrue(wave1Tokens.stream().allMatch(ACCESS_TOKEN::equals));
+        assertTrue(wave2Tokens.stream().allMatch(ACCESS_TOKEN::equals));
+
+        // Only one exchange ever happened across both waves.
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    /**
+     * Regression: a late wave of callers that arrives while the exchange is still in-flight
+     * must join the existing future rather than starting a second exchange.
+     */
+    @Test
+    void getAccessToken_joinInFlightExchange(WireMockRuntimeInfo wm) throws Exception {
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", ACCESS_TOKEN))
+                        .withFixedDelay(300)));
+
+        OAuth2Client client = newOAuth2Client(wm.getHttpBaseUrl(), false);
+
+        List<String> allTokens = Collections.synchronizedList(new ArrayList<>());
+        List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+
+        // Wave 1 — triggers the exchange (300 ms delay).
+        int wave1Count = 2;
+        CountDownLatch wave1Start = new CountDownLatch(1);
+        CountDownLatch allDone = new CountDownLatch(wave1Count + 3);
+
+        for (int i = 0; i < wave1Count; i++) {
+            new Thread(() -> {
+                        try {
+                            wave1Start.await();
+                            allTokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            allDone.countDown();
+                        }
+                    })
+                    .start();
+        }
+        wave1Start.countDown();
+
+        // Wave 2 — arrives 50 ms later while exchange is still in-flight.
+        Thread.sleep(50);
+        int wave2Count = 3;
+        for (int i = 0; i < wave2Count; i++) {
+            new Thread(() -> {
+                        try {
+                            allTokens.add(client.getAccessToken().get());
+                        } catch (Exception e) {
+                            failures.add(e);
+                        } finally {
+                            allDone.countDown();
+                        }
+                    })
+                    .start();
+        }
+
+        assertTrue(allDone.await(5, TimeUnit.SECONDS), "threads did not complete in time");
+        assertEquals(List.of(), failures, "no thread should have thrown");
+        assertEquals(wave1Count + wave2Count, allTokens.size());
+        assertTrue(allTokens.stream().allMatch(ACCESS_TOKEN::equals));
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 
     @Test
