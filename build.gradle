@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.21.2"
+    jackson_version = "2.21.3"
 }
 
 dependencies {
@@ -81,7 +81,7 @@ testing {
             dependencies {
                 implementation 'org.assertj:assertj-core:3.27.7'
                 implementation 'org.mockito:mockito-core:5.23.0'
-                implementation 'org.junit.jupiter:junit-jupiter:5.14.3'
+                implementation 'org.junit.jupiter:junit-jupiter:5.14.4'
                 implementation 'org.wiremock:wiremock:3.13.2'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -113,8 +113,8 @@ testing {
                 implementation "com.fasterxml.jackson.core:jackson-core"
                 implementation "com.fasterxml.jackson.core:jackson-databind"
 
-                implementation "org.testcontainers:testcontainers-junit-jupiter:2.0.4"
-                implementation "org.testcontainers:testcontainers-openfga:2.0.4"
+                implementation "org.testcontainers:testcontainers-junit-jupiter:2.0.5"
+                implementation "org.testcontainers:testcontainers-openfga:2.0.5"
                 implementation project()
             }
 
