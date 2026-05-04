@@ -23,7 +23,7 @@ ext {
 }
 
 dependencies {
-    implementation("dev.openfga:openfga-sdk:0.9.8") // x-release-please-version
+    implementation("dev.openfga:openfga-sdk:0.9.9") // x-release-please-version
 
     // Serialization
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
