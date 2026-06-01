@@ -75,8 +75,8 @@ repositories {
 
 ext {
     fgaSdkVersion = "0.9.9" // x-release-please-version
-    openTelemetryVersion = "1.61.0"
-    openTelemetryAlphaVersion = "1.61.0-alpha"
+    openTelemetryVersion = "1.62.0"
+    openTelemetryAlphaVersion = "1.62.0-alpha"
 }
 
 dependencies {
@@ -96,7 +96,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-exporter-prometheus:$openTelemetryAlphaVersion")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp:$openTelemetryVersion")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$openTelemetryVersion")
-    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.41.0")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.41.1")
 
     // Environment variables for this example
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
