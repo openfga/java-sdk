@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 
     // Quality
     id 'jacoco'
@@ -62,10 +62,10 @@ dependencies {
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 
     // ---- Jackson ----
-    implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
+    api platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
+    api "com.fasterxml.jackson.core:jackson-core"
+    api "com.fasterxml.jackson.core:jackson-annotations"
+    api "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "org.openapitools:jackson-databind-nullable:0.2.10"
 
