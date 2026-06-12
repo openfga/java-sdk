@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.21.3"
+    jackson_version = "2.22.0"
 }
 
 dependencies {
@@ -70,7 +70,7 @@ dependencies {
     implementation "org.openapitools:jackson-databind-nullable:0.2.10"
 
     // ---- OpenTelemetry ----
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.63.0")
     implementation "io.opentelemetry:opentelemetry-api"
 }
 
