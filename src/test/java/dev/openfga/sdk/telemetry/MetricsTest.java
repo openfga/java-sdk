@@ -55,6 +55,7 @@ class MetricsTest {
 
         // then
         assertThat(longCounter).isNotNull();
+        assertThat(metrics.getCounter(counter, value, attributes)).isSameAs(longCounter);
     }
 
     @Test
@@ -70,6 +71,7 @@ class MetricsTest {
 
         // then
         assertThat(doubleHistogram).isNotNull();
+        assertThat(metrics.getHistogram(histogram, value, attributes)).isSameAs(doubleHistogram);
     }
 
     @Test
@@ -84,6 +86,8 @@ class MetricsTest {
 
         // then
         assertThat(longCounter).isNotNull();
+        assertThat(metrics.getCounter(Counters.CREDENTIALS_REQUEST, value, attributes))
+                .isSameAs(longCounter);
     }
 
     @Test
@@ -98,6 +102,8 @@ class MetricsTest {
 
         // then
         assertThat(doubleHistogram).isNotNull();
+        assertThat(metrics.getHistogram(Histograms.REQUEST_DURATION, value, attributes))
+                .isSameAs(doubleHistogram);
     }
 
     @Test
@@ -112,6 +118,8 @@ class MetricsTest {
 
         // then
         assertThat(doubleHistogram).isNotNull();
+        assertThat(metrics.getHistogram(Histograms.QUERY_DURATION, value, attributes))
+                .isSameAs(doubleHistogram);
     }
 
     @Test
