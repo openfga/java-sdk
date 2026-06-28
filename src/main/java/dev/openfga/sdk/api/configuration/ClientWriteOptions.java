@@ -31,11 +31,57 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
         return authorizationModelId;
     }
 
+    /**
+     * Sets whether transactions should be used when writing tuples.
+     *
+     * <p>When {@code true}, writes are sent as a single transactional request. When {@code false},
+     * writes are split into chunks and sent as individual non-transactional requests, with chunk
+     * size controlled by {@link #transactionChunkSize(int)}.
+     *
+     * @param enabled {@code true} to enable transactions (default), {@code false} to disable them
+     * @return this {@code ClientWriteOptions} instance for method chaining
+     * @see #isTransactionsEnabled()
+     */
+    public ClientWriteOptions transactions(boolean enabled) {
+        this.disableTransactions = !enabled;
+        return this;
+    }
+
+    /**
+     * Returns whether transactions are enabled for write operations.
+     *
+     * @return {@code true} if transactions are enabled (default), {@code false} if disabled
+     * @see #transactions(boolean)
+     */
+    public boolean isTransactionsEnabled() {
+        return disableTransactions == null || !disableTransactions;
+    }
+
+    /**
+     * Sets whether transactions should be disabled when writing tuples.
+     *
+     * @param disableTransactions {@code true} to disable transactions, {@code false} to enable them
+     * @return this {@code ClientWriteOptions} instance for method chaining
+     * @deprecated Use {@link #transactions(boolean)} instead. This method will be removed in a
+     *     future release. Replace {@code disableTransactions(true)} with
+     *     {@code transactions(false)}, and {@code disableTransactions(false)} with
+     *     {@code transactions(true)}.
+     */
+    @Deprecated
     public ClientWriteOptions disableTransactions(boolean disableTransactions) {
         this.disableTransactions = disableTransactions;
         return this;
     }
 
+    /**
+     * Returns whether transactions are disabled for write operations.
+     *
+     * @return {@code true} if transactions are disabled, {@code false} if enabled (default)
+     * @deprecated Use {@link #isTransactionsEnabled()} instead. This method will be removed in a
+     *     future release. Note that {@code isTransactionsEnabled()} returns the inverse of
+     *     this method.
+     */
+    @Deprecated
     public boolean disableTransactions() {
         return disableTransactions != null && disableTransactions;
     }
