@@ -59,9 +59,10 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
     /**
      * Sets whether transactions should be used when writing tuples.
      *
-     * <p>When {@code true}, writes are sent as a single transactional request. When {@code false},
-     * writes are split into chunks and sent as individual non-transactional requests, with chunk
-     * size controlled by {@link #transactionChunkSize(int)}.
+     * <p>When {@code true}, all writes and deletes are sent as a single atomic request — if any
+     * tuple fails, the entire operation is rolled back. When {@code false}, tuples are split into
+     * chunks and sent as separate requests, each chunk atomic on its own but with no atomicity
+     * guarantee across the full set. Chunk size is controlled by {@link #transactionChunkSize(int)}.
      *
      * @param enabled {@code true} to enable transactions (default), {@code false} to disable them
      * @return this {@code ClientWriteOptions} instance for method chaining
