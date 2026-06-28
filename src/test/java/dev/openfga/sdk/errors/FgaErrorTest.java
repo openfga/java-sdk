@@ -80,7 +80,7 @@ class FgaErrorTest {
     }
 
     @Test
-    void isUnknownError_trueForUnparseable() {
+    void isUnknownError_trueWhenCodeIsUnknownError() {
         FgaError error = error(400);
         error.setApiErrorCode("unknown_error");
         assertThat(error.isUnknownError()).isTrue();
