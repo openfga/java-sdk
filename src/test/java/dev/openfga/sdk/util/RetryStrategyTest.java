@@ -120,7 +120,6 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
 
         // Then - Should enforce minimum delay to prevent hot-loop retries
-        // Current code will FAIL this test by returning Duration.ZERO
         assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms to prevent hot-loops
     }
 
@@ -135,7 +134,6 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
 
         // Then - Should enforce minimum delay to handle malformed server responses
-        // Current code will FAIL this test by returning negative duration
         assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms for safety
     }
 
@@ -150,7 +148,6 @@ class RetryStrategyTest {
         Duration result = RetryStrategy.calculateRetryDelay(retryAfterDelay, retryCount, minimumRetryDelay);
 
         // Then - Should enforce reasonable minimum delay
-        // Current code will FAIL this test by returning tiny delay
         assertThat(result.toMillis()).isGreaterThanOrEqualTo(1); // At least 1ms for system stability
     }
 }
