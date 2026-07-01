@@ -63,7 +63,7 @@ configurations.testRuntimeClasspath {
     // WireMock 3.x hasn't backported the fix — only the 4.x beta line has.
     // We force the core jar only; handlebars-helpers cannot be forced to 4.5.2 because
     // NumberHelper moved packages between versions, which breaks WireMock at runtime.
-    resolutionStrategy.force 'com.github.jknack:handlebars:4.5.2'
+    resolutionStrategy.force 'com.github.jknack:handlebars:4.5.3'
 }
 
 dependencies {
