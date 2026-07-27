@@ -67,7 +67,7 @@ configurations.testRuntimeClasspath {
 }
 
 dependencies {
-    implementation "com.google.code.findbugs:jsr305:3.0.2"
+    api "com.google.code.findbugs:jsr305:3.0.2"
 
     // ---- Jackson ----
     api platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
@@ -78,8 +78,8 @@ dependencies {
     implementation "org.openapitools:jackson-databind-nullable:0.2.10"
 
     // ---- OpenTelemetry ----
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.63.0")
-    implementation "io.opentelemetry:opentelemetry-api"
+    api platform("io.opentelemetry:opentelemetry-bom:1.63.0")
+    api "io.opentelemetry:opentelemetry-api"
 }
 
 testing {
