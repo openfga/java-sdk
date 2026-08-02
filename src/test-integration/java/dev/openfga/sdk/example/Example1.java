@@ -117,7 +117,7 @@ class Example1 {
                                         // relation
                                         )),
                         new ClientWriteOptions()
-                                .disableTransactions(true)
+                                .transactions(false)
                                 .authorizationModelId(authorizationModel.getAuthorizationModelId()))
                 .get();
         System.out.println("Done Writing Tuples");
