@@ -117,7 +117,7 @@ internal class KotlinExample1 {
                         )
                     ),
                 ClientWriteOptions()
-                    .disableTransactions(true)
+                    .transactions(false)
                     .authorizationModelId(authorizationModel.authorizationModelId)
             )
             .get()
