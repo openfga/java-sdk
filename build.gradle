@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.22.0"
+    jackson_version = "2.22.1"
 }
 
 configurations.testRuntimeClasspath {
@@ -75,10 +75,10 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-annotations"
     api "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "org.openapitools:jackson-databind-nullable:0.2.10"
+    implementation "org.openapitools:jackson-databind-nullable:0.2.11"
 
     // ---- OpenTelemetry ----
-    api platform("io.opentelemetry:opentelemetry-bom:1.63.0")
+    api platform("io.opentelemetry:opentelemetry-bom:1.64.0")
     api "io.opentelemetry:opentelemetry-api"
 }
 
