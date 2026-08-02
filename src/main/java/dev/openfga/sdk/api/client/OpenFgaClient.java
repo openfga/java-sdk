@@ -412,7 +412,7 @@ public class OpenFgaClient {
      * <p>This method can operate in two modes depending on the options provided:</p>
      *
      * <h3>Transactional Mode (default)</h3>
-     * <p>When {@code options.isTransactionsEnabled()} is true (the default):</p>
+     * <p>Used by default, when no options are passed or when {@code transactions(true)} is set:</p>
      * <ul>
      *   <li>All writes and deletes are executed as a single atomic transaction</li>
      *   <li>If any tuple fails, the entire operation fails and no changes are made</li>
@@ -421,7 +421,7 @@ public class OpenFgaClient {
      * </ul>
      *
      * <h3>Non-Transactional Mode</h3>
-     * <p>When {@code options.isTransactionsEnabled()} is false:</p>
+     * <p>Used when {@code transactions(false)} is set on the options:</p>
      * <ul>
      *   <li>Tuples are processed in chunks (size controlled by {@code transactionChunkSize})</li>
      *   <li>Each chunk is processed independently - some may succeed while others fail</li>
@@ -466,7 +466,7 @@ public class OpenFgaClient {
      * <p>This method can operate in two modes depending on the options provided:</p>
      *
      * <h3>Transactional Mode (default)</h3>
-     * <p>When {@code options.isTransactionsEnabled()} is true (the default):</p>
+     * <p>Used by default, when no options are passed or when {@code transactions(true)} is set:</p>
      * <ul>
      *   <li>All writes and deletes are executed as a single atomic transaction</li>
      *   <li>If any tuple fails, the entire operation fails and no changes are made</li>
@@ -475,7 +475,7 @@ public class OpenFgaClient {
      * </ul>
      *
      * <h3>Non-Transactional Mode</h3>
-     * <p>When {@code options.isTransactionsEnabled()} is false:</p>
+     * <p>Used when {@code transactions(false)} is set on the options:</p>
      * <ul>
      *   <li>Tuples are processed in chunks (size controlled by {@code transactionChunkSize})</li>
      *   <li>Each chunk is processed independently - some may succeed while others fail</li>
