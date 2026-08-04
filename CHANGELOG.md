@@ -1,6 +1,9 @@
 # Changelog
 
-## [0.9.10](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.10) (2026-08-04)
+## [0.9.11](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.11) (2026-08-04)
+
+Note ⚠️ : The previous release tag 0.9.10 didn't land properly on the registries because of a bug in the release pipeline, so this is a re-release with the same changelog.
+
 
 ### Fixed
 
