@@ -2,12 +2,6 @@
 
 ## [0.9.10](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.10) (2026-08-04)
 
-
-### Added
-
-* draft releases, version verification, and reusable workflows ([#341](https://github.com/openfga/java-sdk/issues/341)) ([8c36b13](https://github.com/openfga/java-sdk/commit/8c36b135db28848cad8cc7edf93710ec733bb983))
-
-
 ### Fixed
 
 * add transactions and isTransactionsEnabled to ClientWriteOptions ([#352](https://github.com/openfga/java-sdk/issues/352)) ([4d851d2](https://github.com/openfga/java-sdk/commit/4d851d2d34b3406a1f7137798e85f272a3688381))
@@ -16,10 +10,6 @@
 * promote Jackson dependencies to api scope in published POM ([#350](https://github.com/openfga/java-sdk/issues/350)) ([e363ff1](https://github.com/openfga/java-sdk/commit/e363ff172c937ab12d29256f45a3a40791d56645))
 * promote jsr305 and opentelemetry-api to api scope ([#360](https://github.com/openfga/java-sdk/issues/360)) ([89a0a97](https://github.com/openfga/java-sdk/commit/89a0a97f4dc0fc3fd3b80776b15fddf19088a620))
 
-
-### Miscellaneous
-
-* release 0.9.10 ([b2c694f](https://github.com/openfga/java-sdk/commit/b2c694f021d7827d1b67fd6c1ac399c4220527bd))
 
 ## [0.9.9](https://github.com/openfga/java-sdk/compare/v0.9.8...v0.9.9) (2026-05-04)
 
