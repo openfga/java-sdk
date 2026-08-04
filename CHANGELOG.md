@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.10](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.10) (2026-08-04)
+
+### Fixed
+
+* add transactions and isTransactionsEnabled to ClientWriteOptions ([#352](https://github.com/openfga/java-sdk/issues/352)) ([4d851d2](https://github.com/openfga/java-sdk/commit/4d851d2d34b3406a1f7137798e85f272a3688381))
+* force handlebars core to 4.5.2 to resolve path traversal CVE ([#353](https://github.com/openfga/java-sdk/issues/353)) ([62139f7](https://github.com/openfga/java-sdk/commit/62139f787d30f70acb835559985c24d06d23ff9e))
+* migrate transaction docs and examples to transactions() API ([#373](https://github.com/openfga/java-sdk/issues/373)) ([70cfa19](https://github.com/openfga/java-sdk/commit/70cfa19d1901c9dde13ddc6f6e8b4e09e61bd093)), closes [#368](https://github.com/openfga/java-sdk/issues/368)
+* promote Jackson dependencies to api scope in published POM ([#350](https://github.com/openfga/java-sdk/issues/350)) ([e363ff1](https://github.com/openfga/java-sdk/commit/e363ff172c937ab12d29256f45a3a40791d56645))
+* promote jsr305 and opentelemetry-api to api scope ([#360](https://github.com/openfga/java-sdk/issues/360)) ([89a0a97](https://github.com/openfga/java-sdk/commit/89a0a97f4dc0fc3fd3b80776b15fddf19088a620))
+
+
 ## [0.9.9](https://github.com/openfga/java-sdk/compare/v0.9.8...v0.9.9) (2026-05-04)
 
 
