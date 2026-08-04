@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.11](https://github.com/openfga/java-sdk/compare/v0.9.10...v0.9.11) (2026-08-04)
+
+
+### Miscellaneous
+
+* release 0.9.11 ([7ef47e5](https://github.com/openfga/java-sdk/commit/7ef47e5bed5eda472632903ddfba7cec94aa7849))
+
 ## [0.9.10](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.10) (2026-08-04)
 
 ### Fixed
