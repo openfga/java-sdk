@@ -1285,7 +1285,7 @@ public class OpenFgaClientTest {
                 .writes(List.of(writeTuple, writeTuple, writeTuple, writeTuple, writeTuple))
                 .deletes(List.of(tuple, tuple, tuple, tuple, tuple));
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(2);
+                new ClientWriteOptions().transactions(false).transactionChunkSize(2);
 
         // When
         var response = fga.write(request, options).get();
@@ -1353,7 +1353,7 @@ public class OpenFgaClientTest {
                                 .condition(DEFAULT_CONDITION))
                         .collect(Collectors.toList()));
         ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(true).transactionChunkSize(1);
+                new ClientWriteOptions().transactions(false).transactionChunkSize(1);
 
         // When
         ClientWriteResponse response = fga.write(request, options).get();
@@ -1429,8 +1429,7 @@ public class OpenFgaClientTest {
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
-        ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
+        ClientWriteOptions options = new ClientWriteOptions().transactions(true).transactionChunkSize(1);
 
         // When
         var response = fga.write(request, options).get();
@@ -1472,8 +1471,7 @@ public class OpenFgaClientTest {
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
-        ClientWriteOptions options =
-                new ClientWriteOptions().disableTransactions(false).transactionChunkSize(1);
+        ClientWriteOptions options = new ClientWriteOptions().transactions(true).transactionChunkSize(1);
 
         // When
         var execException = assertThrows(
@@ -1683,7 +1681,7 @@ public class OpenFgaClientTest {
         ClientWriteRequest request =
                 new ClientWriteRequest().writes(List.of(writeTuple)).deletes(List.of(deleteTuple));
         ClientWriteOptions options = new ClientWriteOptions()
-                .disableTransactions(true)
+                .transactions(false)
                 .onDuplicate(WriteRequestWrites.OnDuplicateEnum.IGNORE)
                 .onMissing(WriteRequestDeletes.OnMissingEnum.IGNORE);
 

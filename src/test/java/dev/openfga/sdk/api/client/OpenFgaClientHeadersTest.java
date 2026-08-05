@@ -440,7 +440,7 @@ public class OpenFgaClientHeadersTest {
                         .user(DEFAULT_USER)));
         ClientWriteOptions options = new ClientWriteOptions()
                 .additionalHeaders(Map.of("test-header", "test-value-per-call"))
-                .disableTransactions(true);
+                .transactions(false);
 
         // When
         ClientWriteResponse response = fga.write(request, options).get();
