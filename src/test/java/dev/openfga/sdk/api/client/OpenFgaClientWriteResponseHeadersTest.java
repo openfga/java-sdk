@@ -172,7 +172,7 @@ public class OpenFgaClientWriteResponseHeadersTest {
                         .relation(DEFAULT_RELATION)
                         ._object(DEFAULT_OBJECT)));
 
-        ClientWriteOptions options = new ClientWriteOptions().disableTransactions(true);
+        ClientWriteOptions options = new ClientWriteOptions().transactions(false);
 
         // When
         ClientWriteResponse response = fgaClient.write(request, options).get();

@@ -88,7 +88,12 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
      *
      * @param disableTransactions {@code true} to disable transactions, {@code false} to enable them
      * @return this {@code ClientWriteOptions} instance for method chaining
+     * @deprecated Use {@link #transactions(boolean)} instead. This method will be removed in a
+     *     future release. Replace {@code disableTransactions(true)} with
+     *     {@code transactions(false)}, and {@code disableTransactions(false)} with
+     *     {@code transactions(true)}.
      */
+    @Deprecated
     public ClientWriteOptions disableTransactions(boolean disableTransactions) {
         this.transactionsEnabled = !disableTransactions;
         return this;
@@ -98,7 +103,11 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
      * Returns whether transactions are disabled for write operations.
      *
      * @return {@code true} if transactions are disabled, {@code false} if enabled (default)
+     * @deprecated Use {@link #isTransactionsEnabled()} instead. This method will be removed in a
+     *     future release. Note that {@code isTransactionsEnabled()} returns the inverse of
+     *     this method.
      */
+    @Deprecated
     public boolean disableTransactions() {
         return !transactionsEnabled;
     }
