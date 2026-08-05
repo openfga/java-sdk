@@ -1429,8 +1429,7 @@ public class OpenFgaClientTest {
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
-        ClientWriteOptions options =
-                new ClientWriteOptions().transactions(true).transactionChunkSize(1);
+        ClientWriteOptions options = new ClientWriteOptions().transactions(true).transactionChunkSize(1);
 
         // When
         var response = fga.write(request, options).get();
@@ -1472,8 +1471,7 @@ public class OpenFgaClientTest {
                 new ClientWriteRequest().writes(List.of(tuple, tuple, tuple)).deletes(List.of(tuple, tuple, tuple));
 
         // We expect transactionChunkSize will be ignored, and exactly one request will be sent.
-        ClientWriteOptions options =
-                new ClientWriteOptions().transactions(true).transactionChunkSize(1);
+        ClientWriteOptions options = new ClientWriteOptions().transactions(true).transactionChunkSize(1);
 
         // When
         var execException = assertThrows(
