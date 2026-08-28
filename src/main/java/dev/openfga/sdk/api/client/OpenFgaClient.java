@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -735,6 +736,35 @@ public class OpenFgaClient {
     }
 
     /**
+     * Runs one asynchronous task per item with at most {@code maxParallelism} tasks in flight at
+     * a time, without creating any threads or executors. Items are distributed round-robin across
+     * lanes; each lane executes its items sequentially through future composition while all lanes
+     * proceed concurrently. Tasks are expected to capture their own errors and complete normally;
+     * a task that completes exceptionally fails the returned future and skips the remaining items
+     * in its lane.
+     *
+     * @return a future that completes when every task has completed
+     * @throws IllegalArgumentException when {@code maxParallelism} is not positive
+     */
+    private static <T> CompletableFuture<Void> executeInLanes(
+            List<T> items, Function<T, CompletableFuture<Void>> task, int maxParallelism) {
+        if (maxParallelism <= 0) {
+            throw new IllegalArgumentException("maxParallelism must be a positive integer");
+        }
+        int lanes = Math.min(maxParallelism, items.size());
+        CompletableFuture<?>[] laneFutures = new CompletableFuture<?>[lanes];
+        for (int lane = 0; lane < lanes; lane++) {
+            CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
+            for (int i = lane; i < items.size(); i += lanes) {
+                var item = items.get(i);
+                chain = chain.thenCompose(unused -> task.apply(item));
+            }
+            laneFutures[lane] = chain;
+        }
+        return CompletableFuture.allOf(laneFutures);
+    }
+
+    /**
      * WriteTuples - Utility method to write tuples, wraps Write
      *
      * @throws FgaInvalidParameterException When the Store ID is null, empty, or whitespace
@@ -901,28 +931,20 @@ public class OpenFgaClient {
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
                 : FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS;
-        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
-        var latch = new CountDownLatch(requests.size());
-
+        if (maxParallelRequests <= 0) {
+            throw new FgaInvalidParameterException("maxParallelRequests", "ClientBatchCheck");
+        }
         var responses = new ConcurrentLinkedQueue<ClientBatchCheckClientResponse>();
 
         final var clientCheckOptions = options.asClientCheckOptions();
 
-        Consumer<ClientCheckRequest> singleClientCheckRequest =
+        Function<ClientCheckRequest, CompletableFuture<Void>> singleClientCheckRequest =
                 request -> call(() -> this.check(request, clientCheckOptions))
-                        .handleAsync(ClientBatchCheckClientResponse.asyncHandler(request))
-                        .thenAccept(responses::add)
-                        .thenRun(latch::countDown);
+                        .handle(ClientBatchCheckClientResponse.asyncHandler(request))
+                        .thenAccept(responses::add);
 
-        try {
-            requests.forEach(request -> executor.execute(() -> singleClientCheckRequest.accept(request)));
-            latch.await();
-            return CompletableFuture.completedFuture(new ArrayList<>(responses));
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        } finally {
-            executor.shutdown();
-        }
+        return executeInLanes(requests, singleClientCheckRequest, maxParallelRequests)
+                .thenApply(unused -> new ArrayList<>(responses));
     }
 
     /**
@@ -1002,15 +1024,15 @@ public class OpenFgaClient {
         int maxParallelRequests = options.getMaxParallelRequests() != null
                 ? options.getMaxParallelRequests()
                 : FgaConstants.CLIENT_MAX_METHOD_PARALLEL_REQUESTS;
-        var executor = Executors.newScheduledThreadPool(maxParallelRequests);
-        var latch = new CountDownLatch(batchedChecks.size());
-
+        if (maxParallelRequests <= 0) {
+            throw new FgaInvalidParameterException("maxParallelRequests", "BatchCheck");
+        }
         var responses = new ConcurrentLinkedQueue<ClientBatchCheckSingleResponse>();
         var failure = new AtomicReference<Throwable>();
 
         var override = new ConfigurationOverride().addHeaders(options);
 
-        Consumer<List<BatchCheckItem>> singleBatchCheckRequest = request -> call(() -> {
+        Function<List<BatchCheckItem>, CompletableFuture<Void>> singleBatchCheckRequest = request -> call(() -> {
                     BatchCheckRequest body = new BatchCheckRequest().checks(request);
                     if (options.getConsistency() != null) {
                         body.consistency(options.getConsistency());
@@ -1027,42 +1049,39 @@ public class OpenFgaClient {
 
                     return api.batchCheck(configuration.getStoreId(), body, override);
                 })
-                .whenComplete((batchCheckResponseApiResponse, throwable) -> {
-                    try {
-                        if (throwable != null) {
-                            failure.compareAndSet(null, throwable);
-                            return;
-                        }
-
-                        Map<String, BatchCheckSingleResult> response =
-                                batchCheckResponseApiResponse.getData().getResult();
-
-                        List<ClientBatchCheckSingleResponse> batchResults = new ArrayList<>();
-                        response.forEach((key, result) -> {
-                            boolean allowed = Boolean.TRUE.equals(result.getAllowed());
-                            ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
-                            var singleResponse =
-                                    new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
-                            batchResults.add(singleResponse);
-                        });
-                        responses.addAll(batchResults);
-                    } finally {
-                        latch.countDown();
+                .<Void>handle((batchCheckResponseApiResponse, throwable) -> {
+                    if (throwable != null) {
+                        failure.compareAndSet(null, throwable);
+                        return null;
                     }
+
+                    Map<String, BatchCheckSingleResult> response =
+                            batchCheckResponseApiResponse.getData().getResult();
+
+                    List<ClientBatchCheckSingleResponse> batchResults = new ArrayList<>();
+                    response.forEach((key, result) -> {
+                        boolean allowed = Boolean.TRUE.equals(result.getAllowed());
+                        ClientBatchCheckItem checkItem = correlationIdToCheck.get(key);
+                        var singleResponse =
+                                new ClientBatchCheckSingleResponse(allowed, checkItem, key, result.getError());
+                        batchResults.add(singleResponse);
+                    });
+                    responses.addAll(batchResults);
+                    return null;
+                })
+                .exceptionally(processingFailure -> {
+                    failure.compareAndSet(null, processingFailure);
+                    return null;
                 });
 
-        try {
-            batchedChecks.forEach(batch -> executor.execute(() -> singleBatchCheckRequest.accept(batch)));
-            latch.await();
-            if (failure.get() != null) {
-                return CompletableFuture.failedFuture(failure.get());
-            }
-            return CompletableFuture.completedFuture(new ClientBatchCheckResponse(new ArrayList<>(responses)));
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        } finally {
-            executor.shutdown();
-        }
+        return executeInLanes(batchedChecks, singleBatchCheckRequest, maxParallelRequests)
+                .thenCompose(unused -> {
+                    Throwable batchFailure = failure.get();
+                    if (batchFailure != null) {
+                        return CompletableFuture.failedFuture(batchFailure);
+                    }
+                    return CompletableFuture.completedFuture(new ClientBatchCheckResponse(new ArrayList<>(responses)));
+                });
     }
 
     /**
