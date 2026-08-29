@@ -1016,6 +1016,9 @@ public class OpenFgaClient {
 
         int maxBatchSize =
                 options.getMaxBatchSize() != null ? options.getMaxBatchSize() : FgaConstants.CLIENT_MAX_BATCH_SIZE;
+        if (maxBatchSize <= 0) {
+            throw new FgaInvalidParameterException("maxBatchSize", "BatchCheck");
+        }
         List<List<BatchCheckItem>> batchedChecks = IntStream.range(
                         0, (collect.size() + maxBatchSize - 1) / maxBatchSize)
                 .mapToObj(i -> collect.subList(i * maxBatchSize, Math.min((i + 1) * maxBatchSize, collect.size())))

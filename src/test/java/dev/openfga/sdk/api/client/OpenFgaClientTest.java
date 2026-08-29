@@ -2095,6 +2095,23 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void batchCheckRejectsNonPositiveMaxBatchSize() {
+        // Given
+        ClientBatchCheckItem batchItem = new ClientBatchCheckItem()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .correlationId("cor-1");
+
+        for (int invalid : new int[] {0, -1}) {
+            var options = new ClientBatchCheckOptions().maxBatchSize(invalid);
+            assertThrows(
+                    FgaInvalidParameterException.class,
+                    () -> fga.batchCheck(new ClientBatchCheckRequest().checks(List.of(batchItem)), options));
+        }
+    }
+
+    @Test
     public void batchCheckFailsWhenResponseProcessingFails() throws Exception {
         // Given: a 200 response whose body is missing the result payload
         String batchCheckUrl = String.format("%s/stores/%s/batch-check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
