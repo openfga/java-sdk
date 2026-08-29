@@ -2066,6 +2066,11 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(400, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
         assertEquals(400, exception.getStatusCode());
@@ -2092,6 +2097,11 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(404, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
         assertEquals(404, exception.getStatusCode());
@@ -2118,6 +2128,11 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(500, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());

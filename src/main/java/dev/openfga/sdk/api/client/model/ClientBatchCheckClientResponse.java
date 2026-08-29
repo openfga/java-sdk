@@ -4,6 +4,8 @@ import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.errors.FgaError;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
 public class ClientBatchCheckClientResponse extends CheckResponse {
@@ -18,19 +20,24 @@ public class ClientBatchCheckClientResponse extends CheckResponse {
         this.request = request;
         this.throwable = throwable;
 
+        Throwable cause = throwable instanceof CompletionException || throwable instanceof ExecutionException
+                ? throwable.getCause()
+                : throwable;
+
         if (clientCheckResponse != null) {
             this.statusCode = clientCheckResponse.getStatusCode();
             this.headers = clientCheckResponse.getHeaders();
             this.rawResponse = clientCheckResponse.getRawResponse();
             this.setAllowed(clientCheckResponse.getAllowed());
             this.setResolution(clientCheckResponse.getResolution());
-        } else if (throwable instanceof FgaError) {
-            FgaError error = (FgaError) throwable;
+        } else if (cause instanceof FgaError) {
+            FgaError error = (FgaError) cause;
             this.statusCode = error.getStatusCode();
-            this.headers = error.getResponseHeaders().map();
+            var responseHeaders = error.getResponseHeaders();
+            this.headers = responseHeaders != null ? responseHeaders.map() : null;
             this.rawResponse = error.getResponseData();
         } else {
-            // Should be unreachable, but required for type completion
+            // no HTTP response available, e.g. the request never reached the server
             this.statusCode = null;
             this.headers = null;
             this.rawResponse = null;
