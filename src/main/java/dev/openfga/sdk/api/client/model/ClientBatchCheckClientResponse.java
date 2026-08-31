@@ -75,14 +75,30 @@ public class ClientBatchCheckClientResponse extends CheckResponse {
         return throwable;
     }
 
-    public int getStatusCode() {
+    /**
+     * Returns the HTTP status code of the check response.
+     * <p>
+     * If no HTTP response was received — for example, the request never reached the server because of a
+     * network failure (connection refused, timeout, DNS failure) and all retries were exhausted — this
+     * returns {@code null}. In that case the underlying cause can be examined with
+     * {@link ClientBatchCheckClientResponse#getThrowable()}.
+     *
+     * @return the HTTP status code, or {@code null} if no HTTP response was received.
+     */
+    public Integer getStatusCode() {
         return statusCode;
     }
 
+    /**
+     * @return the HTTP response headers, or {@code null} if no HTTP response was received.
+     */
     public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
+    /**
+     * @return the raw HTTP response body, or {@code null} if no HTTP response was received.
+     */
     public String getRawResponse() {
         return rawResponse;
     }
