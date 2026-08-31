@@ -10,6 +10,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.pgssoft.httpclient.HttpClientMock;
@@ -18,6 +19,7 @@ import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -2066,6 +2068,11 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(400, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"validation_error\",\"message\":\"Generic validation error\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiValidationError.class, execException.getCause());
         assertEquals(400, exception.getStatusCode());
@@ -2092,6 +2099,11 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(404, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"undefined_endpoint\",\"message\":\"Endpoint not enabled\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiNotFoundError.class, execException.getCause());
         assertEquals(404, exception.getStatusCode());
@@ -2118,11 +2130,51 @@ public class OpenFgaClientTest {
         assertNotNull(response);
         assertEquals(1, response.size());
         assertNull(response.get(0).getAllowed());
+        assertEquals(500, response.get(0).getStatusCode());
+        assertEquals(
+                "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}",
+                response.get(0).getRawResponse());
+        assertNotNull(response.get(0).getHeaders());
         Throwable execException = response.get(0).getThrowable();
         var exception = assertInstanceOf(FgaApiInternalError.class, execException.getCause());
         assertEquals(500, exception.getStatusCode());
         assertEquals(
                 "{\"code\":\"internal_error\",\"message\":\"Internal Server Error\"}", exception.getResponseData());
+    }
+
+    @Test
+    public void clientBatchCheck_networkError(WireMockRuntimeInfo wireMockRuntimeInfo) throws Exception {
+        // Given
+        String httpBaseUrl = wireMockRuntimeInfo.getHttpBaseUrl();
+        var fga = new OpenFgaClient(clientConfiguration.apiUrl(httpBaseUrl), new ApiClient());
+        String postUrl = String.format("/stores/%s/check", DEFAULT_STORE_ID);
+        WireMock.stubFor(
+                WireMock.post(postUrl).willReturn(WireMock.aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
+
+        // When
+        List<ClientBatchCheckClientResponse> response = fga.clientBatchCheck(
+                        List.of(new ClientCheckRequest()), new ClientBatchCheckClientOptions())
+                .join();
+
+        // Then
+        // Network errors are retried (1 initial + 3 retries = 4 total)
+        WireMock.verify(4, WireMock.postRequestedFor(WireMock.urlEqualTo(postUrl)));
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertNull(response.get(0).getAllowed());
+        // No HTTP response was received, so status code, headers and body are null
+        assertNull(response.get(0).getStatusCode());
+        assertNull(response.get(0).getHeaders());
+        assertNull(response.get(0).getRawResponse());
+        Throwable execException = response.get(0).getThrowable();
+        assertNotNull(execException);
+        var exception = assertInstanceOf(ApiException.class, execException.getCause());
+        assertFalse(exception instanceof FgaError);
+        Throwable rootCause = exception;
+        while (rootCause.getCause() != null) {
+            rootCause = rootCause.getCause();
+        }
+        assertInstanceOf(IOException.class, rootCause);
     }
 
     @Test

@@ -4,6 +4,8 @@ import dev.openfga.sdk.api.model.CheckResponse;
 import dev.openfga.sdk.errors.FgaError;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
 public class ClientBatchCheckClientResponse extends CheckResponse {
@@ -18,19 +20,24 @@ public class ClientBatchCheckClientResponse extends CheckResponse {
         this.request = request;
         this.throwable = throwable;
 
+        Throwable cause = throwable instanceof CompletionException || throwable instanceof ExecutionException
+                ? throwable.getCause()
+                : throwable;
+
         if (clientCheckResponse != null) {
             this.statusCode = clientCheckResponse.getStatusCode();
             this.headers = clientCheckResponse.getHeaders();
             this.rawResponse = clientCheckResponse.getRawResponse();
             this.setAllowed(clientCheckResponse.getAllowed());
             this.setResolution(clientCheckResponse.getResolution());
-        } else if (throwable instanceof FgaError) {
-            FgaError error = (FgaError) throwable;
+        } else if (cause instanceof FgaError) {
+            FgaError error = (FgaError) cause;
             this.statusCode = error.getStatusCode();
-            this.headers = error.getResponseHeaders().map();
+            var responseHeaders = error.getResponseHeaders();
+            this.headers = responseHeaders != null ? responseHeaders.map() : null;
             this.rawResponse = error.getResponseData();
         } else {
-            // Should be unreachable, but required for type completion
+            // no HTTP response available, e.g. the request never reached the server
             this.statusCode = null;
             this.headers = null;
             this.rawResponse = null;
@@ -68,14 +75,30 @@ public class ClientBatchCheckClientResponse extends CheckResponse {
         return throwable;
     }
 
-    public int getStatusCode() {
+    /**
+     * Returns the HTTP status code of the check response.
+     * <p>
+     * If no HTTP response was received — for example, the request never reached the server because of a
+     * network failure (connection refused, timeout, DNS failure) and all retries were exhausted — this
+     * returns {@code null}. In that case the underlying cause can be examined with
+     * {@link ClientBatchCheckClientResponse#getThrowable()}.
+     *
+     * @return the HTTP status code, or {@code null} if no HTTP response was received.
+     */
+    public Integer getStatusCode() {
         return statusCode;
     }
 
+    /**
+     * @return the HTTP response headers, or {@code null} if no HTTP response was received.
+     */
     public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
+    /**
+     * @return the raw HTTP response body, or {@code null} if no HTTP response was received.
+     */
     public String getRawResponse() {
         return rawResponse;
     }
