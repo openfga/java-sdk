@@ -2166,6 +2166,46 @@ public class OpenFgaClientTest {
     }
 
     @Test
+    public void batchCheckContinuesSiblingLaneWhenResponseProcessingFails() throws Exception {
+        // Given: 200 checks form four sub-batches with the default maxBatchSize of 50, distributed
+        // round-robin across two lanes (lane 0: sub-batches 0 and 2, lane 1: sub-batches 1 and 3)
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+        List<ClientBatchCheckItem> checks = IntStream.range(0, 200)
+                .mapToObj(i -> new ClientBatchCheckItem()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)
+                        .correlationId("cor-" + i))
+                .collect(Collectors.toList());
+        var options = new ClientBatchCheckOptions().maxParallelRequests(2);
+
+        // When: both lanes dispatch their first sub-batch concurrently
+        var future = assertTimeoutPreemptively(
+                Duration.ofSeconds(5), () -> fga.batchCheck(new ClientBatchCheckRequest().checks(checks), options));
+        awaitSize(pending, 2);
+
+        // lane 0's sub-batch returns a malformed 200 (null result) that fails during processing
+        pending.get(0).complete(fakeResponse("{\"result\": null}"));
+
+        // the failed lane still dispatches its remaining sub-batch
+        awaitSize(pending, 3);
+
+        // and the healthy sibling lane is unaffected: completing its first sub-batch dispatches its next one
+        pending.get(1).complete(fakeResponse("{\"result\": {}}"));
+        awaitSize(pending, 4);
+        assertFalse(future.isDone());
+
+        pending.get(2).complete(fakeResponse("{\"result\": {}}"));
+        pending.get(3).complete(fakeResponse("{\"result\": {}}"));
+
+        // Then: every sub-batch was attempted and the processing error still fails the returned future
+        var exception = assertThrows(ExecutionException.class, () -> future.get(5, TimeUnit.SECONDS));
+        assertNotNull(exception.getCause());
+        assertEquals(4, pending.size());
+    }
+
+    @Test
     public void clientBatchCheckWithEmptyInputCompletesWithoutDispatch() throws Exception {
         // Given
         var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
