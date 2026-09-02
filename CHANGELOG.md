@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
+
+
+### Fixed
+
+* deprecate disableTransactions in favour of transactions() ([#377](https://github.com/openfga/java-sdk/issues/377)) ([2d3b659](https://github.com/openfga/java-sdk/commit/2d3b659d0240483c76279719eaeec247da307a0e))
+* expose error status, headers and body on failed clientBatchCheck items ([#381](https://github.com/openfga/java-sdk/issues/381)) ([8da296e](https://github.com/openfga/java-sdk/commit/8da296ec553689b74a7dcf3ccb2019d797b46e26))
+* remove per-call thread pools in batchCheck and clientBatchCheck ([#379](https://github.com/openfga/java-sdk/issues/379)) ([2aad182](https://github.com/openfga/java-sdk/commit/2aad182d3130320dea63c87d36df6593c3a54f4d))
+
+
+### Miscellaneous
+
+* release 0.10.0 ([0807184](https://github.com/openfga/java-sdk/commit/08071840e0383e052bd233799ff38b37fed185d9))
+
 ## [0.9.11](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.11) (2026-08-04)
 
 Note ⚠️ : The previous release tag 0.9.10 didn't land properly on the registries because of a bug in the release pipeline, so this is a re-release with the same changelog.
