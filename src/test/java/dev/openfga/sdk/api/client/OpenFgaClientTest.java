@@ -20,21 +20,29 @@ import dev.openfga.sdk.api.model.*;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.*;
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.net.ssl.SSLSession;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -1966,37 +1974,339 @@ public class OpenFgaClientTest {
     }
 
     @Test
-    public void shouldShutdownExecutorAfterBatchCheck() throws Exception {
+    public void batchCheckMethodsShouldNotCreateThreadPools() throws Exception {
         // Given
-        ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
+        String checkUrl = String.format("%s/stores/%s/check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        String batchCheckUrl = String.format("%s/stores/%s/batch-check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        mockHttpClient.onPost(checkUrl).doReturn(200, "{\"allowed\":true}");
+        mockHttpClient
+                .onPost(batchCheckUrl)
+                .doReturn(200, "{\"result\": {\"cor-1\": {\"allowed\": true, \"error\": null}}}");
 
-        try (MockedStatic<Executors> mockedExecutors = mockStatic(Executors.class)) {
-            mockedExecutors
-                    .when(() -> Executors.newScheduledThreadPool(anyInt()))
-                    .thenReturn(mockExecutor);
+        ClientCheckRequest checkRequest = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientBatchCheckItem batchItem = new ClientBatchCheckItem()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .correlationId("cor-1");
 
-            // mockExecutor needs to handle tasks submitted to it so latch can count down
-            doAnswer(invocation -> {
-                        Runnable task = invocation.getArgument(0);
-                        task.run();
-                        return null;
-                    })
-                    .when(mockExecutor)
-                    .execute(any(Runnable.class));
-
-            ClientCheckRequest request = new ClientCheckRequest()
-                    ._object(DEFAULT_OBJECT)
-                    .relation(DEFAULT_RELATION)
-                    .user(DEFAULT_USER);
-            ClientBatchCheckClientOptions options = new ClientBatchCheckClientOptions()
-                    .authorizationModelId(DEFAULT_AUTH_MODEL_ID)
-                    .consistency(ConsistencyPreference.MINIMIZE_LATENCY);
-
+        try (MockedStatic<Executors> mockedExecutors = mockStatic(Executors.class, CALLS_REAL_METHODS)) {
             // When
-            fga.clientBatchCheck(List.of(request), options).get();
+            fga.clientBatchCheck(List.of(checkRequest)).get();
+            fga.batchCheck(new ClientBatchCheckRequest().checks(List.of(batchItem)))
+                    .get();
 
             // Then
-            verify(mockExecutor).shutdown();
+            mockedExecutors.verify(() -> Executors.newScheduledThreadPool(anyInt()), never());
+        }
+    }
+
+    @Test
+    public void clientBatchCheckHonorsMaxParallelRequests() throws Exception {
+        // Given
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+        List<ClientCheckRequest> requests = IntStream.range(0, 5)
+                .mapToObj(ignored -> new ClientCheckRequest()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER))
+                .collect(Collectors.toList());
+        var options = new ClientBatchCheckClientOptions().maxParallelRequests(2);
+
+        // When
+        var future = assertTimeoutPreemptively(Duration.ofSeconds(5), () -> fga.clientBatchCheck(requests, options));
+
+        // Then
+        assertFalse(future.isDone());
+        Thread.sleep(200);
+        assertEquals(2, pending.size());
+
+        // completing one response frees its lane to start the next queued check
+        pending.get(0).complete(fakeResponse("{\"allowed\":true}"));
+        awaitSize(pending, 3);
+        assertFalse(future.isDone());
+
+        completeAllUntilDone(future, pending, "{\"allowed\":true}");
+        assertEquals(5, future.get(5, TimeUnit.SECONDS).size());
+        assertEquals(5, pending.size());
+    }
+
+    @Test
+    public void batchCheckHonorsMaxParallelRequests() throws Exception {
+        // Given: 120 checks form three sub-batches with the default maxBatchSize of 50
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+        List<ClientBatchCheckItem> checks = IntStream.range(0, 120)
+                .mapToObj(i -> new ClientBatchCheckItem()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)
+                        .correlationId("cor-" + i))
+                .collect(Collectors.toList());
+        var options = new ClientBatchCheckOptions().maxParallelRequests(1);
+
+        // When
+        var future = assertTimeoutPreemptively(
+                Duration.ofSeconds(5), () -> fga.batchCheck(new ClientBatchCheckRequest().checks(checks), options));
+
+        // Then: sub-batches are sent strictly one at a time
+        assertFalse(future.isDone());
+        Thread.sleep(200);
+        assertEquals(1, pending.size());
+
+        pending.get(0).complete(fakeResponse("{\"result\": {}}"));
+        awaitSize(pending, 2);
+
+        pending.get(1).complete(fakeResponse("{\"result\": {}}"));
+        awaitSize(pending, 3);
+        assertFalse(future.isDone());
+
+        pending.get(2).complete(fakeResponse("{\"result\": {}}"));
+        future.get(5, TimeUnit.SECONDS);
+        assertEquals(3, pending.size());
+    }
+
+    @Test
+    public void batchCheckMethodsRejectNonPositiveMaxParallelRequests() {
+        // Given
+        ClientCheckRequest checkRequest = new ClientCheckRequest()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER);
+        ClientBatchCheckItem batchItem = new ClientBatchCheckItem()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .correlationId("cor-1");
+
+        for (int invalid : new int[] {0, -1}) {
+            var clientOptions = new ClientBatchCheckClientOptions().maxParallelRequests(invalid);
+            assertThrows(
+                    FgaInvalidParameterException.class,
+                    () -> fga.clientBatchCheck(List.of(checkRequest), clientOptions));
+
+            var serverOptions = new ClientBatchCheckOptions().maxParallelRequests(invalid);
+            assertThrows(
+                    FgaInvalidParameterException.class,
+                    () -> fga.batchCheck(new ClientBatchCheckRequest().checks(List.of(batchItem)), serverOptions));
+        }
+    }
+
+    @Test
+    public void batchCheckRejectsNonPositiveMaxBatchSize() {
+        // Given
+        ClientBatchCheckItem batchItem = new ClientBatchCheckItem()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .correlationId("cor-1");
+
+        for (int invalid : new int[] {0, -1}) {
+            var options = new ClientBatchCheckOptions().maxBatchSize(invalid);
+            assertThrows(
+                    FgaInvalidParameterException.class,
+                    () -> fga.batchCheck(new ClientBatchCheckRequest().checks(List.of(batchItem)), options));
+        }
+    }
+
+    @Test
+    public void batchCheckFailsWhenResponseProcessingFails() throws Exception {
+        // Given: a 200 response whose body is missing the result payload
+        String batchCheckUrl = String.format("%s/stores/%s/batch-check", FgaConstants.TEST_API_URL, DEFAULT_STORE_ID);
+        mockHttpClient.onPost(batchCheckUrl).doReturn(200, "{\"result\": null}");
+
+        ClientBatchCheckItem batchItem = new ClientBatchCheckItem()
+                ._object(DEFAULT_OBJECT)
+                .relation(DEFAULT_RELATION)
+                .user(DEFAULT_USER)
+                .correlationId("cor-1");
+
+        // When
+        var future = fga.batchCheck(new ClientBatchCheckRequest().checks(List.of(batchItem)));
+
+        // Then: the processing error fails the returned future instead of being dropped
+        var exception = assertThrows(ExecutionException.class, () -> future.get(5, TimeUnit.SECONDS));
+        assertNotNull(exception.getCause());
+    }
+
+    @Test
+    public void batchCheckAttemptsRemainingBatchesWhenResponseProcessingFails() throws Exception {
+        // Given: 60 checks form two sub-batches with the default maxBatchSize of 50
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+        List<ClientBatchCheckItem> checks = IntStream.range(0, 60)
+                .mapToObj(i -> new ClientBatchCheckItem()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)
+                        .correlationId("cor-" + i))
+                .collect(Collectors.toList());
+        var options = new ClientBatchCheckOptions().maxParallelRequests(1);
+
+        // When
+        var future = assertTimeoutPreemptively(
+                Duration.ofSeconds(5), () -> fga.batchCheck(new ClientBatchCheckRequest().checks(checks), options));
+
+        assertFalse(future.isDone());
+        Thread.sleep(200);
+        assertEquals(1, pending.size());
+
+        // the first sub-batch returns a malformed 200 (null result) that fails during processing
+        pending.get(0).complete(fakeResponse("{\"result\": null}"));
+
+        // the lane must still send the remaining sub-batch instead of aborting early
+        awaitSize(pending, 2);
+        pending.get(1).complete(fakeResponse("{\"result\": {}}"));
+
+        // Then
+        var exception = assertThrows(ExecutionException.class, () -> future.get(5, TimeUnit.SECONDS));
+        assertNotNull(exception.getCause());
+    }
+
+    @Test
+    public void batchCheckContinuesSiblingLaneWhenResponseProcessingFails() throws Exception {
+        // Given: 200 checks form four sub-batches with the default maxBatchSize of 50, distributed
+        // round-robin across two lanes (lane 0: sub-batches 0 and 2, lane 1: sub-batches 1 and 3)
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+        List<ClientBatchCheckItem> checks = IntStream.range(0, 200)
+                .mapToObj(i -> new ClientBatchCheckItem()
+                        ._object(DEFAULT_OBJECT)
+                        .relation(DEFAULT_RELATION)
+                        .user(DEFAULT_USER)
+                        .correlationId("cor-" + i))
+                .collect(Collectors.toList());
+        var options = new ClientBatchCheckOptions().maxParallelRequests(2);
+
+        // When: both lanes dispatch their first sub-batch concurrently
+        var future = assertTimeoutPreemptively(
+                Duration.ofSeconds(5), () -> fga.batchCheck(new ClientBatchCheckRequest().checks(checks), options));
+        awaitSize(pending, 2);
+
+        // lane 0's sub-batch returns a malformed 200 (null result) that fails during processing
+        pending.get(0).complete(fakeResponse("{\"result\": null}"));
+
+        // the failed lane still dispatches its remaining sub-batch
+        awaitSize(pending, 3);
+
+        // and the healthy sibling lane is unaffected: completing its first sub-batch dispatches its next one
+        pending.get(1).complete(fakeResponse("{\"result\": {}}"));
+        awaitSize(pending, 4);
+        assertFalse(future.isDone());
+
+        pending.get(2).complete(fakeResponse("{\"result\": {}}"));
+        pending.get(3).complete(fakeResponse("{\"result\": {}}"));
+
+        // Then: every sub-batch was attempted and the processing error still fails the returned future
+        var exception = assertThrows(ExecutionException.class, () -> future.get(5, TimeUnit.SECONDS));
+        assertNotNull(exception.getCause());
+        assertEquals(4, pending.size());
+    }
+
+    @Test
+    public void clientBatchCheckWithEmptyInputCompletesWithoutDispatch() throws Exception {
+        // Given
+        var pending = new CopyOnWriteArrayList<CompletableFuture<HttpResponse<String>>>();
+        var fga = clientBackedByPendingResponses(pending);
+
+        // When
+        var results = fga.clientBatchCheck(List.of()).get(5, TimeUnit.SECONDS);
+
+        // Then
+        assertTrue(results.isEmpty());
+        assertEquals(0, pending.size());
+    }
+
+    private OpenFgaClient clientBackedByPendingResponses(List<CompletableFuture<HttpResponse<String>>> pending)
+            throws Exception {
+        HttpClient pendingClient = mock(HttpClient.class);
+        doAnswer(invocation -> {
+                    var responseFuture = new CompletableFuture<HttpResponse<String>>();
+                    pending.add(responseFuture);
+                    return responseFuture;
+                })
+                .when(pendingClient)
+                .sendAsync(any(), any());
+
+        var builder = mock(HttpClient.Builder.class);
+        when(builder.executor(any())).thenReturn(builder);
+        when(builder.connectTimeout(any())).thenReturn(builder);
+        when(builder.build()).thenReturn(pendingClient);
+        return new OpenFgaClient(clientConfiguration, new ApiClient(builder, new ObjectMapper()));
+    }
+
+    private static void awaitSize(List<?> list, int expected) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + 5000;
+        while (list.size() < expected && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertEquals(expected, list.size());
+    }
+
+    private static void completeAllUntilDone(
+            CompletableFuture<?> future, List<CompletableFuture<HttpResponse<String>>> pending, String body)
+            throws InterruptedException {
+        long deadline = System.currentTimeMillis() + 5000;
+        while (!future.isDone() && System.currentTimeMillis() < deadline) {
+            pending.forEach(responseFuture -> responseFuture.complete(fakeResponse(body)));
+            Thread.sleep(10);
+        }
+        assertTrue(future.isDone());
+    }
+
+    private static HttpResponse<String> fakeResponse(String body) {
+        return new FakeHttpResponse(body);
+    }
+
+    private static final class FakeHttpResponse implements HttpResponse<String> {
+        private final String body;
+
+        private FakeHttpResponse(String body) {
+            this.body = body;
+        }
+
+        @Override
+        public int statusCode() {
+            return 200;
+        }
+
+        @Override
+        public HttpRequest request() {
+            return null;
+        }
+
+        @Override
+        public Optional<HttpResponse<String>> previousResponse() {
+            return Optional.empty();
+        }
+
+        @Override
+        public HttpHeaders headers() {
+            return HttpHeaders.of(Map.of(), (name, value) -> true);
+        }
+
+        @Override
+        public String body() {
+            return body;
+        }
+
+        @Override
+        public Optional<SSLSession> sslSession() {
+            return Optional.empty();
+        }
+
+        @Override
+        public URI uri() {
+            return URI.create(FgaConstants.TEST_API_URL);
+        }
+
+        @Override
+        public HttpClient.Version version() {
+            return HttpClient.Version.HTTP_1_1;
         }
     }
 
