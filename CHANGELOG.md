@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
+
+> [!WARNING]
+> **Breaking changes**
+> * `batchCheck` and `clientBatchCheck` now reject a non-positive `maxParallelRequests` or `maxBatchSize` with an `FgaInvalidParameterException` (previously a zero `maxBatchSize` threw `ArithmeticException` and a negative one silently dropped every check). `maxParallelRequests` also now bounds the number of in-flight requests instead of firing them all at once, and callers are no longer blocked until completion. ([#379](https://github.com/openfga/java-sdk/issues/379))
+> * `ClientBatchCheckClientResponse.getStatusCode()` now returns `Integer` instead of `int`, and returns `null` when a failed item has no associated HTTP response (e.g. a client-side error). This is source-compatible, but it changes the compiled method signature and is **binary-incompatible** — consumers compiled against an earlier version must recompile against 0.10.0 to avoid a `NoSuchMethodError`. ([#381](https://github.com/openfga/java-sdk/issues/381))
+
+
+### Fixed
+
+* deprecate disableTransactions in favour of transactions() ([#377](https://github.com/openfga/java-sdk/issues/377)) ([2d3b659](https://github.com/openfga/java-sdk/commit/2d3b659d0240483c76279719eaeec247da307a0e))
+* expose error status, headers and body on failed clientBatchCheck items ([#381](https://github.com/openfga/java-sdk/issues/381)) ([8da296e](https://github.com/openfga/java-sdk/commit/8da296ec553689b74a7dcf3ccb2019d797b46e26))
+* remove per-call thread pools in batchCheck and clientBatchCheck ([#379](https://github.com/openfga/java-sdk/issues/379)) ([2aad182](https://github.com/openfga/java-sdk/commit/2aad182d3130320dea63c87d36df6593c3a54f4d))
+
 ## [0.9.11](https://github.com/openfga/java-sdk/compare/v0.9.9...v0.9.11) (2026-08-04)
 
 Note ⚠️ : The previous release tag 0.9.10 didn't land properly on the registries because of a bug in the release pipeline, so this is a re-release with the same changelog.
