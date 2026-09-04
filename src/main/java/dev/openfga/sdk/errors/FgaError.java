@@ -2,12 +2,7 @@ package dev.openfga.sdk.errors;
 
 import static dev.openfga.sdk.errors.HttpStatusCode.*;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dev.openfga.sdk.api.client.JsonSerializer;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import dev.openfga.sdk.constants.FgaConstants;
@@ -15,7 +10,6 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 
 public class FgaError extends ApiException {
     private static final String UNKNOWN_ERROR_CODE = "unknown_error";
@@ -31,21 +25,7 @@ public class FgaError extends ApiException {
     private String apiErrorMessage = null;
     private String operationName = null;
 
-    private static final ObjectMapper OBJECT_MAPPER = createConfiguredObjectMapper();
-
-    private static ObjectMapper createConfiguredObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-        mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
-        mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new JsonNullableModule());
-        return mapper;
-    }
+    private static final JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.createDefault();
 
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     private static class ApiErrorResponse {
@@ -97,6 +77,16 @@ public class FgaError extends ApiException {
             Configuration configuration,
             HttpResponse<String> response,
             Throwable previousError) {
+        return getError(name, request, configuration, response, previousError, DEFAULT_JSON_SERIALIZER);
+    }
+
+    public static Optional<FgaError> getError(
+            String name,
+            HttpRequest request,
+            Configuration configuration,
+            HttpResponse<String> response,
+            Throwable previousError,
+            JsonSerializer jsonSerializer) {
         int status = response.statusCode();
 
         // FGA and OAuth2 servers are only expected to return HTTP 2xx responses.
@@ -143,10 +133,10 @@ public class FgaError extends ApiException {
         // Parse API error response
         if (body != null && !body.trim().isEmpty()) {
             try {
-                ApiErrorResponse resp = OBJECT_MAPPER.readValue(body, ApiErrorResponse.class);
+                ApiErrorResponse resp = jsonSerializer.readValue(body, ApiErrorResponse.class);
                 error.setApiErrorCode(resp.getCode());
                 error.setApiErrorMessage(resp.getMessage());
-            } catch (JsonProcessingException e) {
+            } catch (SdkSerializationException e) {
                 // Wrap unparseable response
                 error.setApiErrorCode(UNKNOWN_ERROR_CODE);
                 error.setApiErrorMessage("Unable to parse error response. Raw response: " + body);

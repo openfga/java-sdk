@@ -55,7 +55,7 @@ public class StreamedListObjectsTest {
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        when(mockApiClient.getJsonSerializer()).thenReturn(new Jackson2JsonSerializer(new ObjectMapper()));
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);

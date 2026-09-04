@@ -14,9 +14,9 @@ package dev.openfga.sdk.api;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.JsonSerializer;
+import dev.openfga.sdk.api.client.SdkTypeToken;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.Status;
 import dev.openfga.sdk.api.model.StreamResult;
@@ -38,22 +38,22 @@ import java.util.stream.Stream;
 public abstract class BaseStreamingApi<T> {
     protected final Configuration configuration;
     protected final ApiClient apiClient;
-    protected final ObjectMapper objectMapper;
-    protected final TypeReference<StreamResult<T>> streamResultTypeRef;
+    protected final JsonSerializer jsonSerializer;
+    protected final SdkTypeToken<StreamResult<T>> streamResultType;
 
     /**
      * Constructor for BaseStreamingApi
      *
      * @param configuration The API configuration
      * @param apiClient The API client for making HTTP requests
-     * @param streamResultTypeRef TypeReference for deserializing StreamResult<T>
+     * @param streamResultType SDK type token for deserializing StreamResult<T>
      */
     protected BaseStreamingApi(
-            Configuration configuration, ApiClient apiClient, TypeReference<StreamResult<T>> streamResultTypeRef) {
+            Configuration configuration, ApiClient apiClient, SdkTypeToken<StreamResult<T>> streamResultType) {
         this.configuration = configuration;
         this.apiClient = apiClient;
-        this.objectMapper = apiClient.getObjectMapper();
-        this.streamResultTypeRef = streamResultTypeRef;
+        this.jsonSerializer = apiClient.getJsonSerializer();
+        this.streamResultType = streamResultType;
     }
 
     /**
@@ -126,7 +126,7 @@ public abstract class BaseStreamingApi<T> {
     private void processLine(String line, Consumer<T> consumer, Consumer<Throwable> errorConsumer) {
         try {
             // Parse the JSON line to extract the object
-            StreamResult<T> streamResult = objectMapper.readValue(line, streamResultTypeRef);
+            StreamResult<T> streamResult = jsonSerializer.readValue(line, streamResultType);
 
             if (streamResult.getError() != null) {
                 // Handle error in stream
@@ -165,7 +165,7 @@ public abstract class BaseStreamingApi<T> {
     protected HttpRequest buildHttpRequest(String method, String path, Object body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
         try {
-            byte[] bodyBytes = objectMapper.writeValueAsBytes(body);
+            byte[] bodyBytes = jsonSerializer.writeValueAsBytes(body);
             HttpRequest.Builder requestBuilder = ApiClient.requestBuilder(method, path, bodyBytes, configuration);
 
             apiClient.applyAuthHeader(requestBuilder, configuration);

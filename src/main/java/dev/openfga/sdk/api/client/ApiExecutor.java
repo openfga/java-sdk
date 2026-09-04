@@ -4,7 +4,6 @@ import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.telemetry.Telemetry;
-import java.io.IOException;
 import java.net.http.HttpRequest;
 import java.util.concurrent.CompletableFuture;
 
@@ -103,9 +102,8 @@ public class ApiExecutor {
 
             return new HttpRequestAttempt<>(httpRequest, methodName, responseType, apiClient, configuration, telemetry)
                     .attemptHttpRequest();
-
-        } catch (IOException e) {
-            return CompletableFuture.failedFuture(new ApiException(e));
+        } catch (dev.openfga.sdk.errors.SdkSerializationException error) {
+            return CompletableFuture.failedFuture(new ApiException(error));
         }
     }
 }

@@ -55,6 +55,24 @@ class ApiClientTest {
         assertEquals(apiClient.getHttpClient().version(), HttpClient.Version.HTTP_2);
     }
 
+    @Test
+    void objectMapperAccessorsDelegateToJacksonSerializer() {
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), objectMapper);
+
+        assertEquals(objectMapper, apiClient.getObjectMapper());
+        assertEquals(objectMapper, ((Jackson2JsonSerializer) apiClient.getJsonSerializer()).getObjectMapper());
+    }
+
+    @Test
+    void objectMapperAccessorRejectsCustomSerializer() {
+        JsonSerializer serializer = Mockito.mock(JsonSerializer.class);
+        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), serializer);
+
+        assertEquals(serializer, apiClient.getJsonSerializer());
+        assertThrows(UnsupportedOperationException.class, apiClient::getObjectMapper);
+    }
+
     @Nested
     class ApplyAuthHeader {
 

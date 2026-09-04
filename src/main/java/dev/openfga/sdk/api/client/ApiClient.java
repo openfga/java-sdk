@@ -2,11 +2,7 @@ package dev.openfga.sdk.api.client;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Configuration;
@@ -30,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 
 /**
  * Configuration and utility class for API clients.
@@ -49,7 +44,7 @@ public class ApiClient {
 
     private HttpClient.Builder builder;
     private HttpClient client;
-    private ObjectMapper mapper;
+    private JsonSerializer jsonSerializer;
     private Consumer<HttpRequest.Builder> interceptor;
     private Consumer<HttpResponse<InputStream>> responseInterceptor;
     private Consumer<HttpResponse<String>> asyncResponseInterceptor;
@@ -60,7 +55,7 @@ public class ApiClient {
      */
     public ApiClient() {
         this.builder = createDefaultHttpClientBuilder();
-        this.mapper = createDefaultObjectMapper();
+        this.jsonSerializer = JsonSerializer.createDefault();
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -78,7 +73,7 @@ public class ApiClient {
      */
     public ApiClient(HttpClient.Builder builder) {
         this.builder = builder;
-        this.mapper = createDefaultObjectMapper();
+        this.jsonSerializer = JsonSerializer.createDefault();
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -94,10 +89,22 @@ public class ApiClient {
      *
      * @param builder Http client builder.
      * @param mapper Object mapper.
+     * @deprecated Use {@link #ApiClient(HttpClient.Builder, JsonSerializer)}.
      */
+    @Deprecated(since = "0.11.0")
     public ApiClient(HttpClient.Builder builder, ObjectMapper mapper) {
+        this(builder, new Jackson2JsonSerializer(mapper));
+    }
+
+    /**
+     * Create an instance of ApiClient.
+     *
+     * @param builder Http client builder.
+     * @param jsonSerializer JSON serializer.
+     */
+    public ApiClient(HttpClient.Builder builder, JsonSerializer jsonSerializer) {
         this.builder = builder;
-        this.mapper = mapper;
+        this.jsonSerializer = Objects.requireNonNull(jsonSerializer, "JsonSerializer cannot be null");
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -168,20 +175,6 @@ public class ApiClient {
         return URLEncoder.encode(s, UTF_8).replaceAll("\\+", "%20");
     }
 
-    protected ObjectMapper createDefaultObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-        mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
-        mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new JsonNullableModule());
-        return mapper;
-    }
-
     protected String getDefaultBaseUri() {
         return "http://localhost";
     }
@@ -230,24 +223,41 @@ public class ApiClient {
     }
 
     /**
-     * Set a custom {@link ObjectMapper} to serialize and deserialize the request
-     * and response bodies.
+     * Set a custom {@link ObjectMapper} for request and response bodies.
      *
      * @param mapper Custom object mapper.
      * @return This object.
+     * @deprecated Use {@link #setJsonSerializer(JsonSerializer)}.
      */
+    @Deprecated(since = "0.11.0")
     public ApiClient setObjectMapper(ObjectMapper mapper) {
-        this.mapper = mapper;
-        return this;
+        return setJsonSerializer(new Jackson2JsonSerializer(mapper));
     }
 
     /**
-     * Get current {@link ObjectMapper}.
+     * Get the current Jackson 2 object mapper.
      *
-     * @return the current object mapper.
+     * @return Current Jackson 2 object mapper.
+     * @throws UnsupportedOperationException if the active serializer does not use Jackson 2.
+     * @deprecated Use {@link #getJsonSerializer()}.
      */
+    @Deprecated(since = "0.11.0")
     public ObjectMapper getObjectMapper() {
-        return mapper;
+        if (jsonSerializer instanceof Jackson2JsonSerializer) {
+            return ((Jackson2JsonSerializer) jsonSerializer).getObjectMapper();
+        }
+        throw new UnsupportedOperationException("The active JSON serializer does not use Jackson 2");
+    }
+
+    /** Set the serializer for request and response bodies. */
+    public ApiClient setJsonSerializer(JsonSerializer jsonSerializer) {
+        this.jsonSerializer = Objects.requireNonNull(jsonSerializer, "JsonSerializer cannot be null");
+        return this;
+    }
+
+    /** Get the serializer for request and response bodies. */
+    public JsonSerializer getJsonSerializer() {
+        return jsonSerializer;
     }
 
     /**
