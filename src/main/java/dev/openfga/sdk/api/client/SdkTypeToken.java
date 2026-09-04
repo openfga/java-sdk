@@ -34,7 +34,8 @@ public abstract class SdkTypeToken<T> {
         return new SimpleTypeToken<>(new ParameterizedTypeImpl(rawType, typeArguments));
     }
 
-    Type getType() {
+    /** Returns the captured Java type. */
+    public Type getType() {
         return type;
     }
 
