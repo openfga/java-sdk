@@ -1,10 +1,10 @@
 package dev.openfga.sdk.api.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.errors.SdkSerializationException;
 import dev.openfga.sdk.util.StringUtil;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
@@ -193,14 +193,14 @@ public class ApiExecutorRequestBuilder {
      * Package-private — used by {@link ApiExecutor} and {@link StreamingApiExecutor}.
      */
     HttpRequest buildHttpRequest(Configuration configuration, ApiClient apiClient)
-            throws ApiException, FgaInvalidParameterException, JsonProcessingException {
+            throws ApiException, FgaInvalidParameterException, SdkSerializationException {
         String resolvedPath = buildPath(configuration);
 
         HttpRequest.Builder httpRequestBuilder;
         if (hasBody()) {
             byte[] bodyBytes = body instanceof String
                     ? ((String) body).getBytes(StandardCharsets.UTF_8)
-                    : apiClient.getObjectMapper().writeValueAsBytes(body);
+                    : apiClient.getJsonSerializer().writeValueAsBytes(body);
             httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, bodyBytes, configuration);
         } else {
             httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, configuration);

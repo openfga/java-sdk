@@ -1,8 +1,6 @@
 package dev.openfga.sdk.api.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.BaseStreamingApi;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.StreamResult;
@@ -27,7 +25,7 @@ import javax.annotation.Nullable;
  *     .thenRun(() -> System.out.println("Done"));
  * }</pre>
  *
- * <p>If the response type is itself generic, use {@link OpenFgaClient#streamingApiExecutor(TypeReference)} instead.</p>
+ * <p>If the response type is generic, use {@link OpenFgaClient#streamingApiExecutor(SdkTypeToken)}.</p>
  */
 public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
 
@@ -40,37 +38,40 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
         this(
                 apiClient,
                 configuration,
-                buildTypeReference(
-                        requireNonNull(apiClient, "ApiClient cannot be null").getObjectMapper(),
-                        requireNonNull(responseType, "Response type cannot be null")));
+                SdkTypeToken.parameterized(
+                        StreamResult.class, requireNonNull(responseType, "Response type cannot be null")));
     }
 
     /**
-     * Use when the response type {@code T} is itself generic.
-     * For concrete types, prefer {@link #StreamingApiExecutor(ApiClient, Configuration, Class)}.
+     * Use when the response type is generic.
      *
-     * @param apiClient     API client for HTTP operations
+     * @param apiClient API client for HTTP operations
      * @param configuration Client configuration
-     * @param typeRef       TypeReference for {@code StreamResult<T>}
+     * @param type SDK type token for {@code StreamResult<T>}
      */
-    public StreamingApiExecutor(
-            ApiClient apiClient, Configuration configuration, TypeReference<StreamResult<T>> typeRef) {
+    public StreamingApiExecutor(ApiClient apiClient, Configuration configuration, SdkTypeToken<StreamResult<T>> type) {
         super(
                 requireNonNull(configuration, "Configuration cannot be null"),
                 requireNonNull(apiClient, "ApiClient cannot be null"),
-                requireNonNull(typeRef, "TypeReference cannot be null"));
+                requireNonNull(type, "SdkTypeToken cannot be null"));
     }
 
-    /** Builds a {@code TypeReference<StreamResult<T>>} from a plain {@code Class<T>}. */
-    private static <T> TypeReference<StreamResult<T>> buildTypeReference(
-            ObjectMapper objectMapper, Class<T> responseType) {
-        JavaType javaType = objectMapper.getTypeFactory().constructParametricType(StreamResult.class, responseType);
-        return new TypeReference<StreamResult<T>>() {
-            @Override
-            public JavaType getType() {
-                return javaType;
-            }
-        };
+    /**
+     * Use when the response type is generic.
+     *
+     * @param apiClient API client for HTTP operations
+     * @param configuration Client configuration
+     * @param typeRef Jackson type reference for {@code StreamResult<T>}
+     * @deprecated Use {@link #StreamingApiExecutor(ApiClient, Configuration, SdkTypeToken)}.
+     */
+    @Deprecated(since = "0.11.0")
+    public StreamingApiExecutor(
+            ApiClient apiClient, Configuration configuration, TypeReference<StreamResult<T>> typeRef) {
+        this(
+                apiClient,
+                configuration,
+                SdkTypeToken.from(
+                        requireNonNull(typeRef, "TypeReference cannot be null").getType()));
     }
 
     /** Throws {@link IllegalArgumentException} if {@code value} is null. */

@@ -422,7 +422,8 @@ class OAuth2ClientTest {
 
             apiClient = mock(ApiClient.class);
             when(apiClient.getHttpClient()).thenReturn(mockHttpClient);
-            when(apiClient.getObjectMapper()).thenReturn(mapper);
+            when(apiClient.getJsonSerializer())
+                    .thenReturn(new ApiClient().setObjectMapper(mapper).getJsonSerializer());
         } else {
             apiClient = new ApiClient();
         }

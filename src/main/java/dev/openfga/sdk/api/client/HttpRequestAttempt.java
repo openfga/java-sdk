@@ -171,7 +171,8 @@ public class HttpRequestAttempt<T> {
 
     private CompletableFuture<ApiResponse<T>> processHttpResponse(
             HttpResponse<String> response, int retryNumber, Throwable previousError) {
-        Optional<FgaError> fgaError = FgaError.getError(name, request, configuration, response, previousError);
+        Optional<FgaError> fgaError =
+                FgaError.getError(name, request, configuration, response, previousError, apiClient.getJsonSerializer());
 
         if (fgaError.isPresent()) {
             FgaError error = fgaError.get();
@@ -239,7 +240,7 @@ public class HttpRequestAttempt<T> {
         }
 
         try {
-            T deserialized = apiClient.getObjectMapper().readValue(response.body(), clazz);
+            T deserialized = apiClient.getJsonSerializer().readValue(response.body(), clazz);
             return CompletableFuture.completedFuture(deserialized);
         } catch (IOException e) {
             // Malformed response.

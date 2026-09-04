@@ -14,8 +14,8 @@ package dev.openfga.sdk.api;
 
 import static dev.openfga.sdk.util.Validation.assertParamExists;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.SdkTypeToken;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.ConfigurationOverride;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
@@ -36,7 +36,10 @@ import java.util.function.Consumer;
 public class StreamedListObjectsApi extends BaseStreamingApi<StreamedListObjectsResponse> {
 
     public StreamedListObjectsApi(Configuration configuration, ApiClient apiClient) {
-        super(configuration, apiClient, new TypeReference<StreamResult<StreamedListObjectsResponse>>() {});
+        super(
+                configuration,
+                apiClient,
+                SdkTypeToken.parameterized(StreamResult.class, StreamedListObjectsResponse.class));
     }
 
     /**
