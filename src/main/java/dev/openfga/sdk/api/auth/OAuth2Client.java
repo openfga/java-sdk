@@ -21,6 +21,8 @@ public class OAuth2Client {
     private final CredentialsFlowRequest authRequest;
     private final Configuration config;
     private final Telemetry telemetry;
+    private final int tokenExpiryBufferSeconds;
+    private final int tokenExpiryJitterSeconds;
 
     /**
      * Initializes a new instance of the {@link OAuth2Client} class
@@ -29,6 +31,8 @@ public class OAuth2Client {
      */
     public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         var clientCredentials = configuration.getCredentials().getClientCredentials();
+        this.tokenExpiryBufferSeconds = clientCredentials.getTokenExpiryBufferSeconds();
+        this.tokenExpiryJitterSeconds = clientCredentials.getTokenExpiryJitterSeconds();
 
         this.apiClient = apiClient;
         this.authRequest =
@@ -54,7 +58,7 @@ public class OAuth2Client {
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
         // Fast path (lock-free): return cached token if still valid.
         AccessToken current = snapshot.get();
-        if (current.isValid()) {
+        if (current.isValid(tokenExpiryBufferSeconds, tokenExpiryJitterSeconds)) {
             return CompletableFuture.completedFuture(current.token());
         }
 
@@ -62,7 +66,7 @@ public class OAuth2Client {
         synchronized (this) {
             // Double-check: another thread may have refreshed while we waited.
             AccessToken rechecked = snapshot.get();
-            if (rechecked.isValid()) {
+            if (rechecked.isValid(tokenExpiryBufferSeconds, tokenExpiryJitterSeconds)) {
                 return CompletableFuture.completedFuture(rechecked.token());
             }
 
