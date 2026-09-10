@@ -12,6 +12,7 @@ import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.ConfigurationOverride;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.ApiException;
@@ -218,9 +219,9 @@ class ApiClientTest {
                             .clientId(clientId)
                             .clientSecret(clientSecret)
                             .apiAudience(apiAudience)
-                            .tokenExpiryBufferSeconds(buffer)
-                            .tokenExpiryJitterSeconds(jitter)
-                            .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL)));
+                            .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL)))
+                    .tokenExpiryBufferSeconds(buffer)
+                    .tokenExpiryJitterSeconds(jitter);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
             apiClient.applyAuthHeader(requestBuilder, configuration);
@@ -231,7 +232,7 @@ class ApiClientTest {
 
             // Reuse the token only while it is outside the configured refresh window.
             HttpRequest.Builder secondBuilder = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
-            apiClient.applyAuthHeader(secondBuilder, configuration);
+            apiClient.applyAuthHeader(secondBuilder, configuration.override(new ConfigurationOverride()));
             assertEquals(
                     "Bearer " + exchangedToken,
                     secondBuilder.build().headers().firstValue("Authorization").orElseThrow());
@@ -253,14 +254,15 @@ class ApiClientTest {
             ClientCredentials credentials = new ClientCredentials()
                     .clientId("client")
                     .clientSecret("secret")
-                    .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL)
+                    .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL);
+            Configuration configuration = new Configuration()
+                    .credentials(new Credentials(credentials))
                     .tokenExpiryBufferSeconds(30)
                     .tokenExpiryJitterSeconds(10);
-            Configuration configuration = new Configuration().credentials(new Credentials(credentials));
 
             apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
             apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
-            credentials.tokenExpiryBufferSeconds(buffer).tokenExpiryJitterSeconds(jitter);
+            configuration.tokenExpiryBufferSeconds(buffer).tokenExpiryJitterSeconds(jitter);
             apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
             apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
 

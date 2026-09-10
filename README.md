@@ -255,16 +255,18 @@ Both settings default to 300 seconds; jitter is sampled from zero up to, but exc
 the configured value on each validity check. For short-lived tokens, configure a smaller window:
 
 ```java
-var credentials = new ClientCredentials()
-        .clientId(System.getenv("FGA_CLIENT_ID"))
-        .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
-        .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))
+var config = new ClientConfiguration()
+        .credentials(new Credentials(new ClientCredentials()
+                .clientId(System.getenv("FGA_CLIENT_ID"))
+                .clientSecret(System.getenv("FGA_CLIENT_SECRET"))
+                .apiTokenIssuer(System.getenv("FGA_API_TOKEN_ISSUER"))))
         .tokenExpiryBufferSeconds(30)
         .tokenExpiryJitterSeconds(5);
 ```
 
 Values must be non-negative. Set jitter to zero to disable it. Keep the combined window
-below the token lifetime to allow cached tokens to be reused.
+below the token lifetime to allow cached tokens to be reused. These client-level settings
+are preserved when applying per-request configuration overrides.
 
 ### Custom Headers
 

@@ -17,6 +17,12 @@ class ConfigurationTest {
     private static final Map<String, String> DEFAULT_HEADERS = Map.of();
 
     @Test
+    void negativeTokenRefreshSettingsAreRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new Configuration().tokenExpiryBufferSeconds(-1));
+        assertThrows(IllegalArgumentException.class, () -> new Configuration().tokenExpiryJitterSeconds(-1));
+    }
+
+    @Test
     void apiUrl_nullDefaults() throws FgaInvalidParameterException {
         // Given
         String apiUrl = null;

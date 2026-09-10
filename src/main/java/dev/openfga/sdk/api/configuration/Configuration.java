@@ -36,6 +36,8 @@ public class Configuration implements BaseConfiguration {
     private Duration connectTimeout;
     private int maxRetries;
     private Duration minimumRetryDelay;
+    private int tokenExpiryBufferSeconds = FgaConstants.TOKEN_EXPIRY_THRESHOLD_BUFFER_IN_SEC;
+    private int tokenExpiryJitterSeconds = FgaConstants.TOKEN_EXPIRY_JITTER_IN_SEC;
     private Map<String, String> defaultHeaders;
     private TelemetryConfiguration telemetryConfiguration;
 
@@ -87,6 +89,8 @@ public class Configuration implements BaseConfiguration {
 
         Credentials overrideCredentials = configurationOverride.getCredentials();
         result.credentials(overrideCredentials != null ? overrideCredentials : credentials);
+        result.tokenExpiryBufferSeconds(tokenExpiryBufferSeconds);
+        result.tokenExpiryJitterSeconds(tokenExpiryJitterSeconds);
 
         String overrideUserAgent = configurationOverride.getUserAgent();
         result.userAgent(overrideUserAgent != null ? overrideUserAgent : userAgent);
@@ -301,6 +305,41 @@ public class Configuration implements BaseConfiguration {
     @Override
     public Duration getMinimumRetryDelay() {
         return minimumRetryDelay;
+    }
+
+    /**
+     * Sets how many seconds before expiry a cached client-credentials token requires refresh.
+     * Defaults to 300. This is a client-level setting, preserved by request overrides.
+     * @throws IllegalArgumentException if seconds is negative.
+     */
+    public Configuration tokenExpiryBufferSeconds(int seconds) {
+        if (seconds < 0) {
+            throw new IllegalArgumentException("tokenExpiryBufferSeconds must be non-negative");
+        }
+        this.tokenExpiryBufferSeconds = seconds;
+        return this;
+    }
+
+    public int getTokenExpiryBufferSeconds() {
+        return this.tokenExpiryBufferSeconds;
+    }
+
+    /**
+     * Sets the exclusive upper bound of additional random seconds subtracted on each token expiry check.
+     * Defaults to 300. Set to zero to disable jitter. This is a client-level setting,
+     * preserved by request overrides.
+     * @throws IllegalArgumentException if seconds is negative.
+     */
+    public Configuration tokenExpiryJitterSeconds(int seconds) {
+        if (seconds < 0) {
+            throw new IllegalArgumentException("tokenExpiryJitterSeconds must be non-negative");
+        }
+        this.tokenExpiryJitterSeconds = seconds;
+        return this;
+    }
+
+    public int getTokenExpiryJitterSeconds() {
+        return this.tokenExpiryJitterSeconds;
     }
 
     public Configuration defaultHeaders(Map<String, String> defaultHeaders) {

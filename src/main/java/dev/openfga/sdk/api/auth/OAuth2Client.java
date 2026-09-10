@@ -31,8 +31,8 @@ public class OAuth2Client {
      */
     public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         var clientCredentials = configuration.getCredentials().getClientCredentials();
-        this.tokenExpiryBufferSeconds = clientCredentials.getTokenExpiryBufferSeconds();
-        this.tokenExpiryJitterSeconds = clientCredentials.getTokenExpiryJitterSeconds();
+        this.tokenExpiryBufferSeconds = configuration.getTokenExpiryBufferSeconds();
+        this.tokenExpiryJitterSeconds = configuration.getTokenExpiryJitterSeconds();
 
         this.apiClient = apiClient;
         this.authRequest =

@@ -15,12 +15,6 @@ public class ClientCredentialsTest {
     private static final String VALID_API_AUDIENCE = "audience";
 
     @Test
-    void negativeTokenRefreshSettingsAreRejected() {
-        assertThrows(IllegalArgumentException.class, () -> new ClientCredentials().tokenExpiryBufferSeconds(-1));
-        assertThrows(IllegalArgumentException.class, () -> new ClientCredentials().tokenExpiryJitterSeconds(-1));
-    }
-
-    @Test
     public void assertValid_allValid() throws FgaInvalidParameterException {
         // When
         ClientCredentials creds = new ClientCredentials()

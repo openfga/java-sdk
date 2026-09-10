@@ -2,7 +2,7 @@ package dev.openfga.sdk.api.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import dev.openfga.sdk.api.configuration.ClientCredentials;
+import dev.openfga.sdk.api.configuration.Configuration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
@@ -41,7 +41,7 @@ class AccessTokenTest {
     @ParameterizedTest(name = "{0}")
     void testTokenValid(String name, Instant exp, boolean valid) {
         AccessToken snapshot = new AccessToken("token", exp);
-        var defaults = new ClientCredentials();
+        var defaults = new Configuration();
         assertEquals(
                 valid,
                 snapshot.isValid(defaults.getTokenExpiryBufferSeconds(), defaults.getTokenExpiryJitterSeconds()));

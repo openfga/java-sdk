@@ -364,8 +364,7 @@ public class ApiClient {
     }
 
     private OAuth2Client ensureOAuth2Client(Configuration configuration) throws FgaInvalidParameterException {
-        ClientCredentials cc = configuration.getCredentials().getClientCredentials();
-        CredentialsCacheKey key = new CredentialsCacheKey(cc);
+        CredentialsCacheKey key = new CredentialsCacheKey(configuration);
         OAuth2Client existing = oAuth2Clients.get(key);
         if (existing != null) {
             return existing;
@@ -384,14 +383,15 @@ public class ApiClient {
         private final int tokenExpiryBufferSeconds;
         private final int tokenExpiryJitterSeconds;
 
-        CredentialsCacheKey(ClientCredentials cc) {
+        CredentialsCacheKey(Configuration configuration) {
+            ClientCredentials cc = configuration.getCredentials().getClientCredentials();
             this.clientId = cc.getClientId();
             this.clientSecretHash = sha256(cc.getClientSecret());
             this.apiTokenIssuer = cc.getApiTokenIssuer();
             this.apiAudience = cc.getApiAudience();
             this.scopes = cc.getScopes();
-            this.tokenExpiryBufferSeconds = cc.getTokenExpiryBufferSeconds();
-            this.tokenExpiryJitterSeconds = cc.getTokenExpiryJitterSeconds();
+            this.tokenExpiryBufferSeconds = configuration.getTokenExpiryBufferSeconds();
+            this.tokenExpiryJitterSeconds = configuration.getTokenExpiryJitterSeconds();
         }
 
         private static byte[] sha256(String value) {
