@@ -36,10 +36,7 @@ import java.util.function.Consumer;
 public class StreamedListObjectsApi extends BaseStreamingApi<StreamedListObjectsResponse> {
 
     public StreamedListObjectsApi(Configuration configuration, ApiClient apiClient) {
-        super(
-                configuration,
-                apiClient,
-                SdkTypeToken.parameterized(StreamResult.class, StreamedListObjectsResponse.class));
+        super(configuration, apiClient, new SdkTypeToken<StreamResult<StreamedListObjectsResponse>>() {});
     }
 
     /**

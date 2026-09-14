@@ -29,8 +29,11 @@ public abstract class SdkTypeToken<T> {
         return new SimpleTypeToken<>(type);
     }
 
-    /** Creates a token for a parameterized type. */
-    public static <T> SdkTypeToken<T> parameterized(Class<?> rawType, Type... typeArguments) {
+    /**
+     * Creates a token for a runtime parameterized type.
+     * Use an anonymous subclass to capture a compile-time generic type.
+     */
+    public static SdkTypeToken<?> parameterized(Class<?> rawType, Type... typeArguments) {
         return new SimpleTypeToken<>(new ParameterizedTypeImpl(rawType, typeArguments));
     }
 

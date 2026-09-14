@@ -38,8 +38,9 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
         this(
                 apiClient,
                 configuration,
-                SdkTypeToken.parameterized(
-                        StreamResult.class, requireNonNull(responseType, "Response type cannot be null")));
+                SdkTypeToken.from(SdkTypeToken.parameterized(
+                                StreamResult.class, requireNonNull(responseType, "Response type cannot be null"))
+                        .getType()));
     }
 
     /**

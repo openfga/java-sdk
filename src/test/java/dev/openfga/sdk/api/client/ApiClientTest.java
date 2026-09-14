@@ -1,5 +1,6 @@
 package dev.openfga.sdk.api.client;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -7,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -56,12 +59,36 @@ class ApiClientTest {
     }
 
     @Test
-    void objectMapperAccessorsDelegateToJacksonSerializer() {
-        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    void objectMapperCustomizationAppliesThroughSerializer() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), objectMapper);
 
-        assertEquals(objectMapper, apiClient.getObjectMapper());
-        assertEquals(objectMapper, ((Jackson2JsonSerializer) apiClient.getJsonSerializer()).getObjectMapper());
+        assertEquals(
+                "{\"display_name\":\"example\"}",
+                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
+
+        apiClient.setObjectMapper(new ObjectMapper());
+        assertEquals(
+                "{\"displayName\":\"example\"}",
+                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
+    }
+
+    @Test
+    void defaultConstructorHonorsObjectMapperFactoryOverride() throws Exception {
+        ApiClient apiClient = new SnakeCaseApiClient();
+
+        assertEquals(
+                "{\"display_name\":\"example\"}",
+                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
+    }
+
+    @Test
+    void builderConstructorHonorsObjectMapperFactoryOverride() throws Exception {
+        ApiClient apiClient = new SnakeCaseApiClient(HttpClient.newBuilder());
+
+        assertEquals(
+                "{\"display_name\":\"example\"}",
+                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
     }
 
     @Test
@@ -284,6 +311,27 @@ class ApiClientTest {
             // Each issuer is hit exactly once — no cross-contamination.
             mockHttpClient.verify().post(issuerA + "/oauth/token").called(1);
             mockHttpClient.verify().post(issuerB + "/oauth/token").called(1);
+        }
+    }
+
+    private static class SnakeCaseApiClient extends ApiClient {
+        SnakeCaseApiClient() {
+            super();
+        }
+
+        SnakeCaseApiClient(HttpClient.Builder builder) {
+            super(builder);
+        }
+
+        @Override
+        protected ObjectMapper createDefaultObjectMapper() {
+            return super.createDefaultObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        }
+    }
+
+    public static class CustomPayload {
+        public String getDisplayName() {
+            return "example";
         }
     }
 

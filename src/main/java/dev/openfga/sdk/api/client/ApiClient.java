@@ -55,7 +55,7 @@ public class ApiClient {
      */
     public ApiClient() {
         this.builder = createDefaultHttpClientBuilder();
-        this.jsonSerializer = JsonSerializer.createDefault();
+        this.jsonSerializer = new Jackson2JsonSerializer(createDefaultObjectMapper());
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -73,7 +73,7 @@ public class ApiClient {
      */
     public ApiClient(HttpClient.Builder builder) {
         this.builder = builder;
-        this.jsonSerializer = JsonSerializer.createDefault();
+        this.jsonSerializer = new Jackson2JsonSerializer(createDefaultObjectMapper());
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -173,6 +173,18 @@ public class ApiClient {
     @Deprecated(forRemoval = true, since = "0.8.2")
     public static String urlEncode(String s) {
         return URLEncoder.encode(s, UTF_8).replaceAll("\\+", "%20");
+    }
+
+    /**
+     * Create the default Jackson 2 mapper used by constructors without an explicit serializer.
+     *
+     * @return The default object mapper.
+     * @deprecated Supply a {@link JsonSerializer} through
+     *     {@link #ApiClient(HttpClient.Builder, JsonSerializer)} or {@link #setJsonSerializer(JsonSerializer)}.
+     */
+    @Deprecated(since = "0.11.0")
+    protected ObjectMapper createDefaultObjectMapper() {
+        return Jackson2JsonSerializer.createDefaultObjectMapper();
     }
 
     protected String getDefaultBaseUri() {

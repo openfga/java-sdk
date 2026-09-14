@@ -3,6 +3,7 @@ package dev.openfga.sdk;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import dev.openfga.sdk.api.client.JsonSerializer;
 import dev.openfga.sdk.api.client.SdkTypeToken;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -17,5 +18,14 @@ class SdkTypeTokenTest {
 
         assertEquals(List.class, capturedType.getRawType());
         assertEquals(String.class, capturedType.getActualTypeArguments()[0]);
+    }
+
+    @Test
+    void deserializesRuntimeParameterizedTokenWithoutClaimingAnUnrelatedType() throws Exception {
+        SdkTypeToken<?> type = SdkTypeToken.parameterized(List.class, String.class);
+
+        Object result = JsonSerializer.createDefault().readValue("[\"document:one\"]", type);
+
+        assertEquals(List.of("document:one"), result);
     }
 }
