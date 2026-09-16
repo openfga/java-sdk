@@ -1265,7 +1265,7 @@ public class OpenFgaApi {
     private <T> HttpRequest buildHttpRequest(String method, String path, T body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
         try {
-            byte[] localVarPostBody = apiClient.getObjectMapper().writeValueAsBytes(body);
+            byte[] localVarPostBody = apiClient.getJsonSerializer().writeValueAsBytes(body);
             var bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(localVarPostBody);
             return buildHttpRequestWithPublisher(method, path, bodyPublisher, configuration);
         } catch (IOException e) {

@@ -60,7 +60,7 @@ public class StreamingApiExecutorTest {
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getObjectMapper()).thenReturn(new ObjectMapper());
+        when(mockApiClient.getJsonSerializer()).thenReturn(new Jackson2JsonSerializer(new ObjectMapper()));
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);
@@ -318,6 +318,24 @@ public class StreamingApiExecutorTest {
 
         List<StreamedListObjectsResponse> received = new ArrayList<>();
         fga.streamingApiExecutor(typeRef).stream(buildStreamedListObjectsRequest(), received::add)
+                .get();
+
+        assertEquals(1, received.size());
+        assertEquals("document:1", received.get(0).getObject());
+    }
+
+    @Test
+    public void streamingApiExecutor_sdkTypeTokenOverload_works() throws Exception {
+        SdkTypeToken<StreamResult<StreamedListObjectsResponse>> type =
+                new SdkTypeToken<StreamResult<StreamedListObjectsResponse>>() {};
+
+        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
+        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
+        when(mockHttpClient.<Stream<String>>sendAsync(any(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+        List<StreamedListObjectsResponse> received = new ArrayList<>();
+        fga.streamingApiExecutor(type).stream(buildStreamedListObjectsRequest(), received::add)
                 .get();
 
         assertEquals(1, received.size());
