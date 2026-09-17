@@ -95,13 +95,25 @@ public class OpenFgaClient {
     }
 
     /**
-     * Returns a {@link StreamingApiExecutor} for calling streaming endpoints not yet wrapped by the SDK.
-     * Use when the response type {@code T} is itself generic; otherwise prefer {@link #streamingApiExecutor(Class)}.
+     * Returns a streaming executor for a generic response type.
      *
-     * @param <T>     The type of individual response objects delivered to the consumer
-     * @param typeRef TypeReference for {@code StreamResult<T>}
-     * @return StreamingApiExecutor instance
+     * @param <T> The response object type
+     * @param type SDK type token for {@code StreamResult<T>}
+     * @return Streaming API executor
      */
+    public <T> StreamingApiExecutor<T> streamingApiExecutor(SdkTypeToken<StreamResult<T>> type) {
+        return new StreamingApiExecutor<>(this.apiClient, this.configuration, type);
+    }
+
+    /**
+     * Returns a streaming executor for a generic response type.
+     *
+     * @param <T> The response object type
+     * @param typeRef Jackson type reference for {@code StreamResult<T>}
+     * @return Streaming API executor
+     * @deprecated Use {@link #streamingApiExecutor(SdkTypeToken)}.
+     */
+    @Deprecated(since = "0.11.0")
     public <T> StreamingApiExecutor<T> streamingApiExecutor(TypeReference<StreamResult<T>> typeRef) {
         return new StreamingApiExecutor<>(this.apiClient, this.configuration, typeRef);
     }

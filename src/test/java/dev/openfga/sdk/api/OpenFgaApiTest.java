@@ -68,7 +68,8 @@ public class OpenFgaApiTest {
         doNothing().when(mockConfiguration).assertValid();
 
         mockApiClient = mock(ApiClient.class);
-        when(mockApiClient.getObjectMapper()).thenReturn(mapper);
+        when(mockApiClient.getJsonSerializer())
+                .thenReturn(new ApiClient().setObjectMapper(mapper).getJsonSerializer());
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 

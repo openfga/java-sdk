@@ -53,7 +53,8 @@ class StreamingApiTest {
         MockitoAnnotations.openMocks(this);
 
         objectMapper = new ObjectMapper();
-        when(mockApiClient.getObjectMapper()).thenReturn(objectMapper);
+        when(mockApiClient.getJsonSerializer())
+                .thenReturn(new ApiClient().setObjectMapper(objectMapper).getJsonSerializer());
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
 
         when(mockConfiguration.getApiUrl()).thenReturn("https://api.fga.example");

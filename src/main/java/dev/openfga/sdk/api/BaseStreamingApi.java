@@ -17,11 +17,14 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.JsonSerializer;
+import dev.openfga.sdk.api.client.SdkTypeToken;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.Status;
 import dev.openfga.sdk.api.model.StreamResult;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import java.lang.reflect.Type;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
@@ -38,7 +41,18 @@ import java.util.stream.Stream;
 public abstract class BaseStreamingApi<T> {
     protected final Configuration configuration;
     protected final ApiClient apiClient;
+    protected final JsonSerializer jsonSerializer;
+    protected final SdkTypeToken<StreamResult<T>> streamResultType;
+
+    /**
+     * Jackson mapper, or {@code null} when the serializer does not use Jackson 2.
+     * @deprecated Use {@link #jsonSerializer}.
+     */
+    @Deprecated(since = "0.11.0")
     protected final ObjectMapper objectMapper;
+
+    /** @deprecated Use {@link #streamResultType}. */
+    @Deprecated(since = "0.11.0")
     protected final TypeReference<StreamResult<T>> streamResultTypeRef;
 
     /**
@@ -46,14 +60,51 @@ public abstract class BaseStreamingApi<T> {
      *
      * @param configuration The API configuration
      * @param apiClient The API client for making HTTP requests
-     * @param streamResultTypeRef TypeReference for deserializing StreamResult<T>
+     * @param streamResultType SDK type token for deserializing StreamResult<T>
      */
+    protected BaseStreamingApi(
+            Configuration configuration, ApiClient apiClient, SdkTypeToken<StreamResult<T>> streamResultType) {
+        this.configuration = configuration;
+        this.apiClient = apiClient;
+        this.jsonSerializer = apiClient.getJsonSerializer();
+        this.streamResultType = streamResultType;
+        ObjectMapper mapper;
+        try {
+            mapper = apiClient.getObjectMapper();
+        } catch (UnsupportedOperationException ignored) {
+            mapper = null;
+        }
+        this.objectMapper = mapper;
+        this.streamResultTypeRef = new TypeReference<StreamResult<T>>() {
+            @Override
+            public Type getType() {
+                return streamResultType.getType();
+            }
+        };
+    }
+
+    /**
+     * Creates a streaming API with a Jackson type reference.
+     *
+     * @param configuration The API configuration
+     * @param apiClient The API client for making HTTP requests
+     * @param streamResultTypeRef Type reference for deserializing the stream result
+     * @deprecated Use {@link #BaseStreamingApi(Configuration, ApiClient, SdkTypeToken)}.
+     */
+    @Deprecated(since = "0.11.0")
     protected BaseStreamingApi(
             Configuration configuration, ApiClient apiClient, TypeReference<StreamResult<T>> streamResultTypeRef) {
         this.configuration = configuration;
         this.apiClient = apiClient;
         this.objectMapper = apiClient.getObjectMapper();
         this.streamResultTypeRef = streamResultTypeRef;
+        this.jsonSerializer = apiClient.getJsonSerializer();
+        this.streamResultType = new SdkTypeToken<StreamResult<T>>() {
+            @Override
+            public Type getType() {
+                return streamResultTypeRef.getType();
+            }
+        };
     }
 
     /**
@@ -126,7 +177,7 @@ public abstract class BaseStreamingApi<T> {
     private void processLine(String line, Consumer<T> consumer, Consumer<Throwable> errorConsumer) {
         try {
             // Parse the JSON line to extract the object
-            StreamResult<T> streamResult = objectMapper.readValue(line, streamResultTypeRef);
+            StreamResult<T> streamResult = jsonSerializer.readValue(line, streamResultType);
 
             if (streamResult.getError() != null) {
                 // Handle error in stream
@@ -165,7 +216,7 @@ public abstract class BaseStreamingApi<T> {
     protected HttpRequest buildHttpRequest(String method, String path, Object body, Configuration configuration)
             throws ApiException, FgaInvalidParameterException {
         try {
-            byte[] bodyBytes = objectMapper.writeValueAsBytes(body);
+            byte[] bodyBytes = jsonSerializer.writeValueAsBytes(body);
             HttpRequest.Builder requestBuilder = ApiClient.requestBuilder(method, path, bodyBytes, configuration);
 
             apiClient.applyAuthHeader(requestBuilder, configuration);
