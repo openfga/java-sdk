@@ -130,6 +130,18 @@ public class ClientConfiguration extends Configuration {
     }
 
     @Override
+    public ClientConfiguration tokenExpiryBufferSeconds(int seconds) {
+        super.tokenExpiryBufferSeconds(seconds);
+        return this;
+    }
+
+    @Override
+    public ClientConfiguration tokenExpiryJitterSeconds(int seconds) {
+        super.tokenExpiryJitterSeconds(seconds);
+        return this;
+    }
+
+    @Override
     public ClientConfiguration defaultHeaders(java.util.Map<String, String> defaultHeaders) {
         super.defaultHeaders(defaultHeaders);
         return this;
