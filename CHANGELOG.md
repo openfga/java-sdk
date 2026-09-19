@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/openfga/java-sdk/compare/v0.10.0...v0.10.1) (2026-09-19)
+
+
+### Added
+
+* add json serialization bridge ([#387](https://github.com/openfga/java-sdk/issues/387)) ([84096fa](https://github.com/openfga/java-sdk/commit/84096fac4de2aeaa1970fec164bc1f19359eff9f))
+
 ## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
 
 > [!WARNING]
