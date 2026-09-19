@@ -14,8 +14,6 @@ package dev.openfga.sdk.api;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
 import dev.openfga.sdk.api.client.JsonSerializer;
 import dev.openfga.sdk.api.client.SdkTypeToken;
@@ -24,7 +22,6 @@ import dev.openfga.sdk.api.model.Status;
 import dev.openfga.sdk.api.model.StreamResult;
 import dev.openfga.sdk.errors.ApiException;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import java.lang.reflect.Type;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
@@ -45,17 +42,6 @@ public abstract class BaseStreamingApi<T> {
     protected final SdkTypeToken<StreamResult<T>> streamResultType;
 
     /**
-     * Jackson mapper, or {@code null} when the serializer does not use Jackson 2.
-     * @deprecated Use {@link #jsonSerializer}.
-     */
-    @Deprecated(since = "0.11.0")
-    protected final ObjectMapper objectMapper;
-
-    /** @deprecated Use {@link #streamResultType}. */
-    @Deprecated(since = "0.11.0")
-    protected final TypeReference<StreamResult<T>> streamResultTypeRef;
-
-    /**
      * Constructor for BaseStreamingApi
      *
      * @param configuration The API configuration
@@ -68,43 +54,6 @@ public abstract class BaseStreamingApi<T> {
         this.apiClient = apiClient;
         this.jsonSerializer = apiClient.getJsonSerializer();
         this.streamResultType = streamResultType;
-        ObjectMapper mapper;
-        try {
-            mapper = apiClient.getObjectMapper();
-        } catch (UnsupportedOperationException ignored) {
-            mapper = null;
-        }
-        this.objectMapper = mapper;
-        this.streamResultTypeRef = new TypeReference<StreamResult<T>>() {
-            @Override
-            public Type getType() {
-                return streamResultType.getType();
-            }
-        };
-    }
-
-    /**
-     * Creates a streaming API with a Jackson type reference.
-     *
-     * @param configuration The API configuration
-     * @param apiClient The API client for making HTTP requests
-     * @param streamResultTypeRef Type reference for deserializing the stream result
-     * @deprecated Use {@link #BaseStreamingApi(Configuration, ApiClient, SdkTypeToken)}.
-     */
-    @Deprecated(since = "0.11.0")
-    protected BaseStreamingApi(
-            Configuration configuration, ApiClient apiClient, TypeReference<StreamResult<T>> streamResultTypeRef) {
-        this.configuration = configuration;
-        this.apiClient = apiClient;
-        this.objectMapper = apiClient.getObjectMapper();
-        this.streamResultTypeRef = streamResultTypeRef;
-        this.jsonSerializer = apiClient.getJsonSerializer();
-        this.streamResultType = new SdkTypeToken<StreamResult<T>>() {
-            @Override
-            public Type getType() {
-                return streamResultTypeRef.getType();
-            }
-        };
     }
 
     /**

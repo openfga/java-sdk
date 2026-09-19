@@ -6,7 +6,7 @@ import dev.openfga.sdk.errors.SdkSerializationException;
 public interface JsonSerializer {
     /** Creates the SDK default serializer. */
     static JsonSerializer createDefault() {
-        return new Jackson2JsonSerializer();
+        return new Jackson3JsonSerializer();
     }
 
     byte[] writeValueAsBytes(Object value) throws SdkSerializationException;

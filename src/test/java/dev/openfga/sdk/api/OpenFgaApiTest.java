@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
+import dev.openfga.sdk.TestJsonSerializer;
 import dev.openfga.sdk.api.client.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
@@ -38,7 +38,6 @@ public class OpenFgaApiTest {
     private static final String EMPTY_RESPONSE_BODY = "{}";
     private static final TelemetryConfiguration DEFAULT_TELEMETRY_CONFIG = new TelemetryConfiguration();
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private OpenFgaApi fga;
     private Configuration mockConfiguration;
     private ApiClient mockApiClient;
@@ -68,8 +67,7 @@ public class OpenFgaApiTest {
         doNothing().when(mockConfiguration).assertValid();
 
         mockApiClient = mock(ApiClient.class);
-        when(mockApiClient.getJsonSerializer())
-                .thenReturn(new ApiClient().setObjectMapper(mapper).getJsonSerializer());
+        when(mockApiClient.getJsonSerializer()).thenReturn(new TestJsonSerializer());
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 

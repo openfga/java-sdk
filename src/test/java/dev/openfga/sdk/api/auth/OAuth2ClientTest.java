@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.*;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.JsonSerializer;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
@@ -38,7 +38,6 @@ class OAuth2ClientTest {
     private static final String GRANT_TYPE = "client_credentials";
     private static final String ACCESS_TOKEN = "0123456789";
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private HttpClientMock mockHttpClient;
 
     private static Stream<Arguments> apiTokenIssuers() {
@@ -422,8 +421,7 @@ class OAuth2ClientTest {
 
             apiClient = mock(ApiClient.class);
             when(apiClient.getHttpClient()).thenReturn(mockHttpClient);
-            when(apiClient.getJsonSerializer())
-                    .thenReturn(new ApiClient().setObjectMapper(mapper).getJsonSerializer());
+            when(apiClient.getJsonSerializer()).thenReturn(JsonSerializer.createDefault());
         } else {
             apiClient = new ApiClient();
         }

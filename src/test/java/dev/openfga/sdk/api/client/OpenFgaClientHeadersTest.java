@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgssoft.httpclient.HttpClientMock;
+import dev.openfga.sdk.TestJsonSerializer;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
@@ -55,7 +55,7 @@ public class OpenFgaClientHeadersTest {
 
         var mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getJsonSerializer()).thenReturn(new Jackson2JsonSerializer(new ObjectMapper()));
+        when(mockApiClient.getJsonSerializer()).thenReturn(new TestJsonSerializer());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);

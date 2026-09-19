@@ -1,11 +1,10 @@
 package dev.openfga.sdk.example;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.language.DslToJsonTransformer;
 import dev.openfga.sdk.api.client.ApiExecutorRequestBuilder;
 import dev.openfga.sdk.api.client.HttpMethod;
 import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.client.SdkTypeToken;
 import dev.openfga.sdk.api.client.model.ClientTupleKey;
 import dev.openfga.sdk.api.client.model.ClientWriteRequest;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -19,6 +18,7 @@ import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Example demonstrating {@link dev.openfga.sdk.api.client.StreamingApiExecutor} usage.
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>Calls {@code /stores/{store_id}/streamed-list-objects} via
  *       {@code client.streamingApiExecutor(StreamedListObjectsResponse.class).stream(request, consumer)}
  *       to stream all 200 objects back — the preferred API for concrete response types.</li>
- *   <li>Repeats the same call using the {@code TypeReference} overload — for cases where
+ *   <li>Repeats the same call using the {@code SdkTypeToken} overload — for cases where
  *       the response type is itself generic.</li>
  *   <li>Cleans up the store.</li>
  * </ol>
@@ -73,8 +73,8 @@ public class StreamingApiExecutorExample {
                 System.err.println("Is OpenFGA server running? Check " + ENV_API_URL
                         + " environment variable or default " + DEFAULT_API_URL);
             } else {
-                System.err.println("An error occurred. [" + ex.getClass().getSimpleName() + ": " + ex.getMessage()
-                        + "]");
+                System.err.println(
+                        "An error occurred. [" + ex.getClass().getSimpleName() + ": " + ex.getMessage() + "]");
             }
             System.exit(1);
         }
@@ -132,9 +132,7 @@ public class StreamingApiExecutorExample {
                 tuples.add(new ClientTupleKey()
                         .user(USER_ANNE)
                         .relation(RELATION_VIEWER)
-                        ._object(DOCUMENT_TYPE
-                                + ":"
-                                + (VIEWER_DOCUMENT_OFFSET + batch * WRITE_BATCH_SIZE + i)));
+                        ._object(DOCUMENT_TYPE + ":" + (VIEWER_DOCUMENT_OFFSET + batch * WRITE_BATCH_SIZE + i)));
             }
             fga.write(new ClientWriteRequest().writes(tuples)).get();
             totalWritten += tuples.size();
@@ -164,8 +162,7 @@ public class StreamingApiExecutorExample {
         AtomicInteger count = new AtomicInteger(0);
         AtomicInteger errorCount = new AtomicInteger(0);
 
-        fga.streamingApiExecutor(StreamedListObjectsResponse.class)
-                .stream(
+        fga.streamingApiExecutor(StreamedListObjectsResponse.class).stream(
                         request,
                         response -> {
                             int n = count.incrementAndGet();
@@ -185,21 +182,20 @@ public class StreamingApiExecutorExample {
         }
 
         // ------------------------------------------------------------------ //
-        // 3. Same call using the TypeReference overload                       //
+        // 3. Same call using the SdkTypeToken overload                       //
         //    Use this when the response type T is itself generic.             //
         //    For concrete types like StreamedListObjectsResponse, the         //
         //    Class<T> overload above is simpler.                              //
         // ------------------------------------------------------------------ //
 
-        System.out.println("\nRepeating via TypeReference overload...");
+        System.out.println("\nRepeating via SdkTypeToken overload...");
 
-        TypeReference<StreamResult<StreamedListObjectsResponse>> typeRef =
-                new TypeReference<StreamResult<StreamedListObjectsResponse>>() {};
+        SdkTypeToken<StreamResult<StreamedListObjectsResponse>> typeRef =
+                new SdkTypeToken<StreamResult<StreamedListObjectsResponse>>() {};
 
         AtomicInteger typeRefCount = new AtomicInteger(0);
 
-        fga.streamingApiExecutor(typeRef)
-                .stream(
+        fga.streamingApiExecutor(typeRef).stream(
                         request,
                         response -> {
                             int n = typeRefCount.incrementAndGet();
@@ -210,7 +206,7 @@ public class StreamingApiExecutorExample {
                         err -> System.err.println("  Stream error: " + err.getMessage()))
                 .get();
 
-        System.out.println("\n✓ Streamed " + typeRefCount.get() + " objects via TypeReference overload");
+        System.out.println("\n✓ Streamed " + typeRefCount.get() + " objects via SdkTypeToken overload");
 
         // ------------------------------------------------------------------ //
         // 4. Clean up                                                          //
@@ -247,8 +243,8 @@ public class StreamingApiExecutorExample {
 
         try {
             var jsonModel = new DslToJsonTransformer().transform(dslModel);
-            var mapper = new ObjectMapper();
-            mapper.findAndRegisterModules();
+            var mapper = JsonMapper.builderWithJackson2Defaults().build();
+
             var authModel = mapper.readValue(jsonModel, AuthorizationModel.class);
             return new WriteAuthorizationModelRequest()
                     .typeDefinitions(authModel.getTypeDefinitions())
@@ -259,4 +255,3 @@ public class StreamingApiExecutorExample {
         }
     }
 }
-

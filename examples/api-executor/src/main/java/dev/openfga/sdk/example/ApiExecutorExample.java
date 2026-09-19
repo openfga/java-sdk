@@ -1,8 +1,8 @@
 package dev.openfga.sdk.example;
 
+import dev.openfga.sdk.api.client.ApiExecutorRequestBuilder;
 import dev.openfga.sdk.api.client.HttpMethod;
 import dev.openfga.sdk.api.client.OpenFgaClient;
-import dev.openfga.sdk.api.client.ApiExecutorRequestBuilder;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.model.CreateStoreResponse;
 import dev.openfga.sdk.api.model.ListStoresResponse;
@@ -64,7 +64,8 @@ public class ApiExecutorExample {
     private static String listStoresExample(OpenFgaClient fgaClient) {
         try {
             // Build the raw request for GET /stores
-            ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores").build();
+            ApiExecutorRequestBuilder request =
+                    ApiExecutorRequestBuilder.builder(HttpMethod.GET, "/stores").build();
 
             // Execute with typed response
             var response = fgaClient
@@ -101,13 +102,15 @@ public class ApiExecutorExample {
      * Helper method to create a store for examples.
      */
     private static String createStoreForExamples(OpenFgaClient fgaClient) throws Exception {
-        String storeName = "api-executor-example-" + UUID.randomUUID().toString().substring(0, 8);
+        String storeName =
+                "api-executor-example-" + UUID.randomUUID().toString().substring(0, 8);
         ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                 .body(Map.of("name", storeName))
                 .build();
 
         // Use typed response instead of manual JSON parsing
-        var response = fgaClient.apiExecutor().send(request, CreateStoreResponse.class).get();
+        var response =
+                fgaClient.apiExecutor().send(request, CreateStoreResponse.class).get();
         System.out.println("  Created store: " + storeName);
         return response.getData().getId();
     }
@@ -148,7 +151,8 @@ public class ApiExecutorExample {
                     .get();
 
             System.out.println("✓ Status: " + response.getStatusCode());
-            System.out.println("✓ Stores returned: " + response.getData().getStores().size());
+            System.out.println(
+                    "✓ Stores returned: " + response.getData().getStores().size());
             if (response.getData().getContinuationToken() != null) {
                 String token = response.getData().getContinuationToken();
                 String tokenPreview = token.length() > 20 ? token.substring(0, 20) + "..." : token;
@@ -167,7 +171,8 @@ public class ApiExecutorExample {
      */
     private static void createStoreWithHeadersExample(OpenFgaClient fgaClient) {
         try {
-            String storeName = "raw-api-custom-headers-" + UUID.randomUUID().toString().substring(0, 8);
+            String storeName =
+                    "raw-api-custom-headers-" + UUID.randomUUID().toString().substring(0, 8);
             ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores")
                     .header("X-Example-Header", "custom-value")
                     .header("X-Request-ID", "req-" + UUID.randomUUID())
@@ -209,4 +214,3 @@ public class ApiExecutorExample {
         }
     }
 }
-

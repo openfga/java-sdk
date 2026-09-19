@@ -2,7 +2,6 @@ package dev.openfga.sdk.api.client;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.auth.OAuth2Client;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Configuration;
@@ -55,7 +54,7 @@ public class ApiClient {
      */
     public ApiClient() {
         this.builder = createDefaultHttpClientBuilder();
-        this.jsonSerializer = new Jackson2JsonSerializer(createDefaultObjectMapper());
+        this.jsonSerializer = JsonSerializer.createDefault();
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
@@ -73,27 +72,11 @@ public class ApiClient {
      */
     public ApiClient(HttpClient.Builder builder) {
         this.builder = builder;
-        this.jsonSerializer = new Jackson2JsonSerializer(createDefaultObjectMapper());
+        this.jsonSerializer = JsonSerializer.createDefault();
         this.client = this.builder.build();
         interceptor = null;
         responseInterceptor = null;
         asyncResponseInterceptor = null;
-    }
-
-    /**
-     * Create an instance of ApiClient.
-     * <p>
-     * In other contexts, note that any settings in a {@link Configuration}
-     * will take precedence over equivalent settings in the
-     * {@link HttpClient.Builder} here.
-     *
-     * @param builder Http client builder.
-     * @param mapper Object mapper.
-     * @deprecated Use {@link #ApiClient(HttpClient.Builder, JsonSerializer)}.
-     */
-    @Deprecated(since = "0.11.0")
-    public ApiClient(HttpClient.Builder builder, ObjectMapper mapper) {
-        this(builder, new Jackson2JsonSerializer(mapper));
     }
 
     /**
@@ -175,18 +158,6 @@ public class ApiClient {
         return URLEncoder.encode(s, UTF_8).replaceAll("\\+", "%20");
     }
 
-    /**
-     * Create the default Jackson 2 mapper used by constructors without an explicit serializer.
-     *
-     * @return The default object mapper.
-     * @deprecated Supply a {@link JsonSerializer} through
-     *     {@link #ApiClient(HttpClient.Builder, JsonSerializer)} or {@link #setJsonSerializer(JsonSerializer)}.
-     */
-    @Deprecated(since = "0.11.0")
-    protected ObjectMapper createDefaultObjectMapper() {
-        return Jackson2JsonSerializer.createDefaultObjectMapper();
-    }
-
     protected String getDefaultBaseUri() {
         return "http://localhost";
     }
@@ -232,33 +203,6 @@ public class ApiClient {
      */
     public HttpClient.Builder getHttpClientBuilder() {
         return builder;
-    }
-
-    /**
-     * Set a custom {@link ObjectMapper} for request and response bodies.
-     *
-     * @param mapper Custom object mapper.
-     * @return This object.
-     * @deprecated Use {@link #setJsonSerializer(JsonSerializer)}.
-     */
-    @Deprecated(since = "0.11.0")
-    public ApiClient setObjectMapper(ObjectMapper mapper) {
-        return setJsonSerializer(new Jackson2JsonSerializer(mapper));
-    }
-
-    /**
-     * Get the current Jackson 2 object mapper.
-     *
-     * @return Current Jackson 2 object mapper.
-     * @throws UnsupportedOperationException if the active serializer does not use Jackson 2.
-     * @deprecated Use {@link #getJsonSerializer()}.
-     */
-    @Deprecated(since = "0.11.0")
-    public ObjectMapper getObjectMapper() {
-        if (jsonSerializer instanceof Jackson2JsonSerializer) {
-            return ((Jackson2JsonSerializer) jsonSerializer).getObjectMapper();
-        }
-        throw new UnsupportedOperationException("The active JSON serializer does not use Jackson 2");
     }
 
     /** Set the serializer for request and response bodies. */
