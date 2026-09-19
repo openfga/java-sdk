@@ -2,6 +2,8 @@ package dev.openfga.sdk.api.client;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -110,9 +112,42 @@ class Jackson3JsonSerializerTest {
 
     @Test
     void exposesMalformedJsonAsSdkSerializationException() {
-        assertThrows(SdkSerializationException.class, () -> JsonSerializer.createDefault()
-                .readValue("{", Store.class));
-        assertThrows(SdkSerializationException.class, () -> JsonSerializer.createDefault()
-                .readValue("{", new SdkTypeToken<StreamResult<Store>>() {}));
+        JsonSerializer serializer = JsonSerializer.createDefault();
+        byte[] malformed = "{".getBytes(StandardCharsets.UTF_8);
+        SdkTypeToken<StreamResult<Store>> type = new SdkTypeToken<StreamResult<Store>>() {};
+
+        assertNotNull(assertThrows(SdkSerializationException.class, () -> serializer.readValue("{", Store.class))
+                .getCause());
+        assertNotNull(assertThrows(SdkSerializationException.class, () -> serializer.readValue(malformed, Store.class))
+                .getCause());
+        assertNotNull(assertThrows(SdkSerializationException.class, () -> serializer.readValue("{", type))
+                .getCause());
+        assertNotNull(assertThrows(SdkSerializationException.class, () -> serializer.readValue(malformed, type))
+                .getCause());
+    }
+
+    @Test
+    void readsConcreteResponseFromBytes() throws Exception {
+        Store store = JsonSerializer.createDefault()
+                .readValue("{\"id\":\"store-id\",\"name\":\"store\"}".getBytes(StandardCharsets.UTF_8), Store.class);
+
+        assertEquals(new Store().id("store-id").name("store"), store);
+    }
+
+    @Test
+    void preservesGetterFailureWhenSerializationFails() {
+        IllegalStateException failure = new IllegalStateException("Cannot read payload");
+        Object payload = new Object() {
+            public String getValue() {
+                throw failure;
+            }
+        };
+
+        SdkSerializationException error =
+                assertThrows(SdkSerializationException.class, () -> JsonSerializer.createDefault()
+                        .writeValueAsBytes(payload));
+
+        assertNotNull(error.getCause());
+        assertSame(failure, error.getCause().getCause());
     }
 }
