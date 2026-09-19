@@ -26,8 +26,11 @@ dependencies {
     implementation(platform("tools.jackson:jackson-bom:$jacksonVersion"))
     implementation("tools.jackson.core:jackson-databind")
 
+    // openfga-language still requires Jackson 2.
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.2"))
+
     // OpenTelemetry (required by SDK)
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.54.1")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.65.0")
     implementation "io.opentelemetry:opentelemetry-api"
 
     // JSR305 (required by SDK)
