@@ -10,10 +10,10 @@
 
 ### Deprecated
 
-* Jackson 2 types are no longer part of the public SDK API surface. The following remain fully functional as delegating wrappers, but are deprecated and will be removed in a future Jackson 3 major release ([#387](https://github.com/openfga/java-sdk/pull/387), [RFC](https://github.com/openfga/rfcs/pull/36)):
+* New SDK APIs no longer expose Jackson 2 types. The following existing public compatibility wrappers remain fully functional, but are deprecated and will be removed in a future Jackson 3 major release ([#387](https://github.com/openfga/java-sdk/pull/387), [RFC](https://github.com/openfga/rfcs/pull/36)):
   * `ObjectMapper` accessors on `ApiClient` — use the new SDK-owned `JsonSerializer` interface instead
   * API overloads accepting Jackson `TypeReference` — use `SdkTypeToken` instead
-* No action is required for users who don't interact with the mapper directly. Wire format is unchanged and Serialization failures now surface as `SdkSerializationException`.
+* No action is required for users who don't interact with the mapper directly. The wire format is unchanged; direct `JsonSerializer` calls report serialization failures as `SdkSerializationException`, while regular API operations may wrap them in `ApiException`.
   
 
 ## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
