@@ -97,10 +97,10 @@ client.streamingApiExecutor(MyStreamedResponse.class)
     .thenRun(() -> System.out.println("Stream complete"));
 ```
 
-If your response type is itself generic, use the `TypeReference` overload:
+If your response type is generic, use the `SdkTypeToken` overload:
 ```java
-TypeReference<StreamResult<MyStreamedResponse>> typeRef = new TypeReference<StreamResult<MyStreamedResponse>>() {};
-client.streamingApiExecutor(typeRef).stream(request, consumer);
+SdkTypeToken<StreamResult<MyStreamedResponse>> type = new SdkTypeToken<StreamResult<MyStreamedResponse>>() {};
+client.streamingApiExecutor(type).stream(request, consumer);
 ```
 
 ### SDK Features Applied
