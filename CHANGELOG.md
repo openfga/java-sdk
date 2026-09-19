@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.10.1](https://github.com/openfga/java-sdk/compare/v0.10.0...v0.10.1) (2026-09-19)
+
+
+### Added
+
+* add json serialization bridge ([#387](https://github.com/openfga/java-sdk/issues/387)) ([84096fa](https://github.com/openfga/java-sdk/commit/84096fac4de2aeaa1970fec164bc1f19359eff9f))
+
+
+### Deprecated
+
+* New SDK APIs no longer expose Jackson 2 types. The following existing public compatibility wrappers remain fully functional, but are deprecated and will be removed in a future Jackson 3 major release ([#387](https://github.com/openfga/java-sdk/pull/387), [RFC](https://github.com/openfga/rfcs/pull/36)):
+  * `ObjectMapper` accessors on `ApiClient` — use the new SDK-owned `JsonSerializer` interface instead
+  * API overloads accepting Jackson `TypeReference` — use `SdkTypeToken` instead
+* No action is required for users who don't interact with the mapper directly. The wire format is unchanged; direct `JsonSerializer` calls report serialization failures as `SdkSerializationException`, while regular API operations may wrap them in `ApiException`.
+  
+
 ## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
 
 > [!WARNING]
