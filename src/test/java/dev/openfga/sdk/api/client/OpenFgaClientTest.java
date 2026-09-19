@@ -8,12 +8,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.pgssoft.httpclient.HttpClientMock;
+import dev.openfga.sdk.TestJsonSerializer;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
@@ -94,7 +94,7 @@ public class OpenFgaClientTest {
                 .maxRetries(FgaConstants.DEFAULT_MAX_RETRY)
                 .minimumRetryDelay(FgaConstants.DEFAULT_MIN_WAIT_IN_MS);
 
-        fga = new OpenFgaClient(clientConfiguration, new ApiClient(mockHttpClientBuilder, new ObjectMapper()));
+        fga = new OpenFgaClient(clientConfiguration, new ApiClient(mockHttpClientBuilder, new TestJsonSerializer()));
     }
 
     /* ******************
@@ -2236,7 +2236,7 @@ public class OpenFgaClientTest {
         when(builder.executor(any())).thenReturn(builder);
         when(builder.connectTimeout(any())).thenReturn(builder);
         when(builder.build()).thenReturn(pendingClient);
-        return new OpenFgaClient(clientConfiguration, new ApiClient(builder, new ObjectMapper()));
+        return new OpenFgaClient(clientConfiguration, new ApiClient(builder, JsonSerializer.createDefault()));
     }
 
     private static void awaitSize(List<?> list, int expected) throws InterruptedException {

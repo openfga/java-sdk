@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
 import dev.openfga.sdk.api.client.model.ClientStreamedListObjectsOptions;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -55,7 +54,7 @@ public class StreamedListObjectsTest {
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getJsonSerializer()).thenReturn(new Jackson2JsonSerializer(new ObjectMapper()));
+        when(mockApiClient.getJsonSerializer()).thenReturn(JsonSerializer.createDefault());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);

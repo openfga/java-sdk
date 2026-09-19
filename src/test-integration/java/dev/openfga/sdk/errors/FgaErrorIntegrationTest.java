@@ -2,7 +2,6 @@ package dev.openfga.sdk.errors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientTupleKey;
 import dev.openfga.sdk.api.client.model.ClientWriteRequest;
@@ -22,6 +21,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.openfga.OpenFGAContainer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Testcontainers
@@ -30,7 +31,8 @@ public class FgaErrorIntegrationTest {
     @Container
     private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.10.2");
 
-    private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper mapper =
+            JsonMapper.builderWithJackson2Defaults().build();
 
     // Test constants
     private static final String ERROR_CODE_VALIDATION_ERROR = "validation_error";

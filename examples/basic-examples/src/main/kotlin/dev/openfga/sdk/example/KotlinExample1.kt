@@ -1,6 +1,6 @@
 package dev.openfga.sdk.example
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import dev.openfga.sdk.api.client.ClientAssertion
 import dev.openfga.sdk.api.client.OpenFgaClient
 import dev.openfga.sdk.api.client.model.*
@@ -77,7 +77,7 @@ internal class KotlinExample1 {
         } catch (e: Exception) {
             println("Latest Authorization Model not found")
         }
-        val mapper = ObjectMapper().findAndRegisterModules()
+        val mapper = JsonMapper.builderWithJackson2Defaults().build()
 
         // WriteAuthorizationModel
         val authModelJson = loadResource("example1-auth-model.json")

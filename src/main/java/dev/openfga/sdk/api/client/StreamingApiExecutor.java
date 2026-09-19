@@ -1,6 +1,5 @@
 package dev.openfga.sdk.api.client;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import dev.openfga.sdk.api.BaseStreamingApi;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.StreamResult;
@@ -55,24 +54,6 @@ public class StreamingApiExecutor<T> extends BaseStreamingApi<T> {
                 requireNonNull(configuration, "Configuration cannot be null"),
                 requireNonNull(apiClient, "ApiClient cannot be null"),
                 requireNonNull(type, "SdkTypeToken cannot be null"));
-    }
-
-    /**
-     * Use when the response type is generic.
-     *
-     * @param apiClient API client for HTTP operations
-     * @param configuration Client configuration
-     * @param typeRef Jackson type reference for {@code StreamResult<T>}
-     * @deprecated Use {@link #StreamingApiExecutor(ApiClient, Configuration, SdkTypeToken)}.
-     */
-    @Deprecated(since = "0.11.0")
-    public StreamingApiExecutor(
-            ApiClient apiClient, Configuration configuration, TypeReference<StreamResult<T>> typeRef) {
-        this(
-                apiClient,
-                configuration,
-                SdkTypeToken.from(
-                        requireNonNull(typeRef, "TypeReference cannot be null").getType()));
     }
 
     /** Throws {@link IllegalArgumentException} if {@code value} is null. */

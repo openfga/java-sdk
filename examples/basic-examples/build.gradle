@@ -19,18 +19,15 @@ repositories {
 }
 
 ext {
-    jacksonVersion = "2.22.0"
+    jacksonVersion = "3.2.2"
 }
 
 dependencies {
     implementation("dev.openfga:openfga-sdk:0.10.0") // x-release-please-version
 
     // Serialization
-    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("org.openapitools:jackson-databind-nullable:0.2.11")
+    implementation(platform("tools.jackson:jackson-bom:$jacksonVersion"))
+    implementation("tools.jackson.core:jackson-databind")
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

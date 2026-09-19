@@ -1,6 +1,5 @@
 package dev.openfga.sdk.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ClientAssertion;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
@@ -11,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import tools.jackson.databind.json.JsonMapper;
 
 class Example1 {
     public void run(String apiUrl) throws Exception {
@@ -73,7 +73,7 @@ class Example1 {
             System.out.println("Latest Authorization Model not found");
         }
 
-        var mapper = new ObjectMapper().findAndRegisterModules();
+        var mapper = JsonMapper.builderWithJackson2Defaults().build();
 
         // WriteAuthorizationModel
         var authModelJson = loadResource("example1-auth-model.json");

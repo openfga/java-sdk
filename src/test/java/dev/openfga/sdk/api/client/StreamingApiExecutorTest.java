@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
@@ -60,7 +58,7 @@ public class StreamingApiExecutorTest {
 
         mockApiClient = mock(ApiClient.class);
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
-        when(mockApiClient.getJsonSerializer()).thenReturn(new Jackson2JsonSerializer(new ObjectMapper()));
+        when(mockApiClient.getJsonSerializer()).thenReturn(JsonSerializer.createDefault());
         when(mockApiClient.getHttpClientBuilder()).thenReturn(mockHttpClientBuilder);
 
         fga = new OpenFgaClient(clientConfiguration, mockApiClient);
@@ -304,24 +302,6 @@ public class StreamingApiExecutorTest {
     @Test
     public void streamingApiExecutor_throwsForNullResponseType() {
         assertThrows(IllegalArgumentException.class, () -> fga.streamingApiExecutor((Class<Object>) null));
-    }
-
-    @Test
-    public void streamingApiExecutor_typeReferenceOverload_works() throws Exception {
-        TypeReference<StreamResult<StreamedListObjectsResponse>> typeRef =
-                new TypeReference<StreamResult<StreamedListObjectsResponse>>() {};
-
-        Stream<String> lines = Stream.of("{\"result\":{\"object\":\"document:1\"}}");
-        HttpResponse<Stream<String>> mockResponse = mockStreamResponse(200, lines);
-        when(mockHttpClient.<Stream<String>>sendAsync(any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(mockResponse));
-
-        List<StreamedListObjectsResponse> received = new ArrayList<>();
-        fga.streamingApiExecutor(typeRef).stream(buildStreamedListObjectsRequest(), received::add)
-                .get();
-
-        assertEquals(1, received.size());
-        assertEquals("document:1", received.get(0).getObject());
     }
 
     @Test

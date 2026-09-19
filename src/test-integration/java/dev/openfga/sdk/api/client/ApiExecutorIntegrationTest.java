@@ -2,7 +2,6 @@ package dev.openfga.sdk.api.client;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.model.*;
 import java.util.HashMap;
@@ -15,6 +14,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.openfga.OpenFGAContainer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Integration tests for ApiExecutor functionality.
@@ -28,7 +29,8 @@ public class ApiExecutorIntegrationTest {
     @Container
     private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.10.2");
 
-    private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper mapper =
+            JsonMapper.builderWithJackson2Defaults().build();
 
     private OpenFgaClient fga;
 
