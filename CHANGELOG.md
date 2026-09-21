@@ -1,36 +1,5 @@
 # Changelog
 
-## Unreleased
-
-### Changed
-
-- Use Jackson 3 for JSON serialization. Jackson annotations remain unchanged.
-- Remove the Jackson 2 mapper and `TypeReference` APIs deprecated in the bridge release.
-- Keep Jackson core and databind as runtime dependencies, not compile dependencies.
-- Remove the unused `jackson-databind-nullable` dependency.
-
-### Jackson 3 migration
-
-This change is for the next major release. Publish the Jackson 2 bridge release
-before removing its deprecated APIs. The 0.x line remains on Jackson 2 for security fixes.
-
-Applications that use the default serializer do not need source changes.
-For custom serialization, implement `dev.openfga.sdk.api.client.JsonSerializer`
-and pass it to `ApiClient(HttpClient.Builder, JsonSerializer)` or
-`ApiClient.setJsonSerializer(...)`. Use `JsonSerializer.createDefault()` to restore
-the SDK serializer. This release removes the `ObjectMapper` constructor,
-accessors, and protected `createDefaultObjectMapper()` method.
-
-Replace Jackson `TypeReference` arguments with
-`dev.openfga.sdk.api.client.SdkTypeToken`, including in `BaseStreamingApi`
-subclasses. Use its `jsonSerializer` and `streamResultType` fields instead of the
-removed `objectMapper` and `streamResultTypeRef` fields. Serialization failures
-continue to use `SdkSerializationException`.
-
-Applications that use Jackson directly must declare their own Jackson core and
-databind dependencies. For Jackson 3, use the `tools.jackson.core` coordinates.
-The `com.fasterxml.jackson.annotation` package remains available through the SDK.
-
 ## [0.10.0](https://github.com/openfga/java-sdk/compare/v0.9.11...v0.10.0) (2026-09-02)
 
 > [!WARNING]
