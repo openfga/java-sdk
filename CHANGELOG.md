@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.10.1](https://github.com/openfga/java-sdk/compare/v0.10.0...v0.10.1) (2026-09-19)
+## [0.10.1](https://github.com/openfga/java-sdk/compare/v0.10.0...v0.10.1) (2026-09-21)
 
 
 ### Added
