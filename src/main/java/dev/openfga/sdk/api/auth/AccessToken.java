@@ -2,7 +2,6 @@ package dev.openfga.sdk.api.auth;
 
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
-import dev.openfga.sdk.constants.FgaConstants;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,17 +12,13 @@ import java.util.concurrent.ThreadLocalRandom;
  * even if there is some clock skew or delay between retrieval and use.
  */
 record AccessToken(String token, Instant expiresAt) {
-    private static final int TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC = FgaConstants.TOKEN_EXPIRY_THRESHOLD_BUFFER_IN_SEC;
-    // We add some jitter so that token refreshes are less likely to collide
-    private static final int TOKEN_EXPIRY_JITTER_IN_SEC = FgaConstants.TOKEN_EXPIRY_JITTER_IN_SEC;
-
     static final AccessToken EMPTY = new AccessToken(null, null);
 
     AccessToken {
         expiresAt = expiresAt != null ? expiresAt.truncatedTo(ChronoUnit.SECONDS) : null;
     }
 
-    boolean isValid() {
+    boolean isValid(int bufferSeconds, int jitterSeconds) {
         if (isNullOrWhitespace(token)) {
             return false;
         }
@@ -33,11 +28,11 @@ record AccessToken(String token, Instant expiresAt) {
             return true;
         }
 
-        // A token should be considered valid until 5 minutes before the expiry with some jitter
-        // to account for multiple calls to `isValid` at the same time and prevent multiple refresh calls
+        // Refresh before expiry, with optional jitter to spread refreshes across clients.
         Instant expiresWithLeeway = expiresAt
-                .minusSeconds(TOKEN_EXPIRY_BUFFER_THRESHOLD_IN_SEC)
-                .minusSeconds(ThreadLocalRandom.current().nextInt(TOKEN_EXPIRY_JITTER_IN_SEC))
+                .minusSeconds(bufferSeconds)
+                .minusSeconds(
+                        jitterSeconds == 0 ? 0 : ThreadLocalRandom.current().nextInt(jitterSeconds))
                 .truncatedTo(ChronoUnit.SECONDS);
 
         return Instant.now().truncatedTo(ChronoUnit.SECONDS).isBefore(expiresWithLeeway);
