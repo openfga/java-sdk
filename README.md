@@ -146,7 +146,6 @@ We strongly recommend you initialize the `OpenFgaClient` only once and then re-u
 #### No Credentials
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.net.http.HttpClient;
@@ -167,7 +166,6 @@ public class Example {
 #### API Token
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
@@ -193,7 +191,6 @@ public class Example {
 #### Client Credentials
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -225,7 +222,6 @@ public class Example {
 The SDK supports standard OAuth2 client credentials flow for any OAuth2-compliant provider (e.g. Keycloak, Okta). The `apiAudience` parameter is optional, and an optional `scopes` parameter can be provided as a space-separated string. The `apiTokenIssuer` can be set to either a hostname (e.g. `issuer.example.com`, which defaults to `https` and appends `/oauth/token`) or a full token endpoint URL (e.g. `https://mykeycloak.fga.example/realms/myrealm/protocol/openid-connect/token`).
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -259,7 +255,6 @@ public class Example {
 You can set default headers to be sent with every request by using the `defaultHeaders` property of the `ClientConfiguration` class.
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 
@@ -287,7 +282,6 @@ public class Example {
 You can set custom headers to be sent with a specific request by using the `additionalHeaders` property of the options classes (e.g. `ClientReadOptions`, `ClientWriteOptions`, etc.).
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.net.http.HttpClient;
@@ -1247,7 +1241,6 @@ Customize retry behavior using the `ClientConfiguration` builder. The SDK enforc
 - `FgaError` now exposes the `Retry-After` header value via `getRetryAfterHeader()`
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import java.net.http.HttpClient;

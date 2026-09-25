@@ -8,8 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
@@ -17,6 +15,7 @@ import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.ApiException;
+import dev.openfga.sdk.errors.SdkSerializationException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,6 +24,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 class ApiClientTest {
 
@@ -59,45 +61,17 @@ class ApiClientTest {
     }
 
     @Test
-    void objectMapperCustomizationAppliesThroughSerializer() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), objectMapper);
+    void serializerCustomizationAppliesThroughClient() throws Exception {
+        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), new SnakeCaseSerializer());
 
         assertEquals(
                 "{\"display_name\":\"example\"}",
                 new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
 
-        apiClient.setObjectMapper(new ObjectMapper());
+        apiClient.setJsonSerializer(JsonSerializer.createDefault());
         assertEquals(
                 "{\"displayName\":\"example\"}",
                 new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
-    }
-
-    @Test
-    void defaultConstructorHonorsObjectMapperFactoryOverride() throws Exception {
-        ApiClient apiClient = new SnakeCaseApiClient();
-
-        assertEquals(
-                "{\"display_name\":\"example\"}",
-                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
-    }
-
-    @Test
-    void builderConstructorHonorsObjectMapperFactoryOverride() throws Exception {
-        ApiClient apiClient = new SnakeCaseApiClient(HttpClient.newBuilder());
-
-        assertEquals(
-                "{\"display_name\":\"example\"}",
-                new String(apiClient.getJsonSerializer().writeValueAsBytes(new CustomPayload()), UTF_8));
-    }
-
-    @Test
-    void objectMapperAccessorRejectsCustomSerializer() {
-        JsonSerializer serializer = Mockito.mock(JsonSerializer.class);
-        ApiClient apiClient = new ApiClient(HttpClient.newBuilder(), serializer);
-
-        assertEquals(serializer, apiClient.getJsonSerializer());
-        assertThrows(UnsupportedOperationException.class, apiClient::getObjectMapper);
     }
 
     @Nested
@@ -314,18 +288,34 @@ class ApiClientTest {
         }
     }
 
-    private static class SnakeCaseApiClient extends ApiClient {
-        SnakeCaseApiClient() {
-            super();
-        }
+    private static class SnakeCaseSerializer implements JsonSerializer {
+        private final ObjectMapper mapper = JsonMapper.builder()
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build();
 
-        SnakeCaseApiClient(HttpClient.Builder builder) {
-            super(builder);
+        @Override
+        public byte[] writeValueAsBytes(Object value) throws SdkSerializationException {
+            return mapper.writeValueAsBytes(value);
         }
 
         @Override
-        protected ObjectMapper createDefaultObjectMapper() {
-            return super.createDefaultObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        public <T> T readValue(byte[] source, Class<T> type) throws SdkSerializationException {
+            return mapper.readValue(source, type);
+        }
+
+        @Override
+        public <T> T readValue(String source, Class<T> type) throws SdkSerializationException {
+            return mapper.readValue(source, type);
+        }
+
+        @Override
+        public <T> T readValue(byte[] source, SdkTypeToken<T> type) throws SdkSerializationException {
+            return mapper.readValue(source, mapper.getTypeFactory().constructType(type.getType()));
+        }
+
+        @Override
+        public <T> T readValue(String source, SdkTypeToken<T> type) throws SdkSerializationException {
+            return mapper.readValue(source, mapper.getTypeFactory().constructType(type.getType()));
         }
     }
 

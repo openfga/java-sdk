@@ -3,7 +3,6 @@ package dev.openfga.sdk.api.client;
 import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 import static java.util.UUID.randomUUID;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import dev.openfga.sdk.api.*;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.*;
@@ -103,19 +102,6 @@ public class OpenFgaClient {
      */
     public <T> StreamingApiExecutor<T> streamingApiExecutor(SdkTypeToken<StreamResult<T>> type) {
         return new StreamingApiExecutor<>(this.apiClient, this.configuration, type);
-    }
-
-    /**
-     * Returns a streaming executor for a generic response type.
-     *
-     * @param <T> The response object type
-     * @param typeRef Jackson type reference for {@code StreamResult<T>}
-     * @return Streaming API executor
-     * @deprecated Use {@link #streamingApiExecutor(SdkTypeToken)}.
-     */
-    @Deprecated(since = "0.11.0")
-    public <T> StreamingApiExecutor<T> streamingApiExecutor(TypeReference<StreamResult<T>> typeRef) {
-        return new StreamingApiExecutor<>(this.apiClient, this.configuration, typeRef);
     }
 
     public void setStoreId(String storeId) {

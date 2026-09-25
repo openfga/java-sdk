@@ -12,7 +12,7 @@ repositories {
 }
 
 ext {
-    jacksonVersion = "2.18.2"
+    jacksonVersion = "3.2.3"
 }
 
 dependencies {
@@ -23,14 +23,14 @@ dependencies {
     implementation("dev.openfga:openfga-language:v0.2.0-beta.1")
 
     // Serialization
-    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+    implementation(platform("tools.jackson:jackson-bom:$jacksonVersion"))
+    implementation("tools.jackson.core:jackson-databind")
+
+    // openfga-language still requires Jackson 2.
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
 
     // OpenTelemetry (required by SDK)
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.54.1")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.65.0")
     implementation "io.opentelemetry:opentelemetry-api"
 
     // JSR305 (required by SDK)

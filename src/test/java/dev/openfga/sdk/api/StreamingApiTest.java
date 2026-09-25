@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.client.ApiClient;
+import dev.openfga.sdk.api.client.JsonSerializer;
+import dev.openfga.sdk.api.client.SdkTypeToken;
 import dev.openfga.sdk.api.configuration.Configuration;
 import dev.openfga.sdk.api.model.ListObjectsRequest;
+import dev.openfga.sdk.api.model.StreamResult;
 import dev.openfga.sdk.api.model.StreamedListObjectsResponse;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -46,15 +48,12 @@ class StreamingApiTest {
     private ApiClient mockApiClient;
 
     private StreamedListObjectsApi streamingApi;
-    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        objectMapper = new ObjectMapper();
-        when(mockApiClient.getJsonSerializer())
-                .thenReturn(new ApiClient().setObjectMapper(objectMapper).getJsonSerializer());
+        when(mockApiClient.getJsonSerializer()).thenReturn(JsonSerializer.createDefault());
         when(mockApiClient.getHttpClient()).thenReturn(mockHttpClient);
 
         when(mockConfiguration.getApiUrl()).thenReturn("https://api.fga.example");
@@ -233,21 +232,16 @@ class StreamingApiTest {
 
     @Test
     void testGenericStreamResult_deserialization() throws Exception {
-        // Test that StreamResult<T> properly deserializes for different types
-        ObjectMapper mapper = new ObjectMapper();
+        JsonSerializer serializer = JsonSerializer.createDefault();
+        SdkTypeToken<StreamResult<StreamedListObjectsResponse>> type =
+                new SdkTypeToken<StreamResult<StreamedListObjectsResponse>>() {};
+        StreamResult<StreamedListObjectsResponse> result =
+                serializer.readValue("{\"result\":{\"object\":\"document:1\"}}", type);
+        assertEquals("document:1", result.getResult().getObject());
 
-        // Test with result
-        String jsonWithResult = "{\"result\":{\"object\":\"document:1\"}}";
-        var resultType = mapper.getTypeFactory()
-                .constructParametricType(
-                        dev.openfga.sdk.api.model.StreamResult.class, StreamedListObjectsResponse.class);
-
-        Object streamResult = mapper.readValue(jsonWithResult, resultType);
-        assertNotNull(streamResult);
-
-        // Test with error - code should be an integer
-        String jsonWithError = "{\"error\":{\"code\":400,\"message\":\"Error occurred\"}}";
-        Object streamResultWithError = mapper.readValue(jsonWithError, resultType);
-        assertNotNull(streamResultWithError);
+        StreamResult<StreamedListObjectsResponse> error =
+                serializer.readValue("{\"error\":{\"code\":400,\"message\":\"Error occurred\"}}", type);
+        assertEquals(400, error.getError().getCode());
+        assertEquals("Error occurred", error.getError().getMessage());
     }
 }

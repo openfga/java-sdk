@@ -81,8 +81,8 @@ StreamingApiExecutor<MyResponse> executor = client.streamingApiExecutor(MyRespon
 
 **Access — escape hatch (when T is itself generic):**
 ```java
-TypeReference<StreamResult<MyResponse>> typeRef = new TypeReference<StreamResult<MyResponse>>() {};
-StreamingApiExecutor<MyResponse> executor = client.streamingApiExecutor(typeRef);
+SdkTypeToken<StreamResult<MyResponse>> type = new SdkTypeToken<StreamResult<MyResponse>>() {};
+StreamingApiExecutor<MyResponse> executor = client.streamingApiExecutor(type);
 ```
 
 **Methods:**
@@ -147,20 +147,20 @@ client.streamingApiExecutor(StreamedListObjectsResponse.class)
     .thenRun(() -> System.out.println("Received " + objects.size() + " objects"));
 ```
 
-### Streaming endpoint with TypeReference (escape hatch for generic response types)
+### Streaming endpoint with a generic response type
 
-Use `TypeReference` only when the response type `T` is itself generic. For all concrete
-types — which covers the vast majority of endpoints — use `streamingApiExecutor(MyResponse.class)` instead.
+Use `SdkTypeToken` when the response type `T` is generic. For concrete response
+types, use `streamingApiExecutor(MyResponse.class)` instead.
 
 ```java
 // Hypothetical endpoint whose response wraps a generic Page<Item>
-TypeReference<StreamResult<Page<Item>>> typeRef = new TypeReference<StreamResult<Page<Item>>>() {};
+SdkTypeToken<StreamResult<Page<Item>>> type = new SdkTypeToken<StreamResult<Page<Item>>>() {};
 
 ApiExecutorRequestBuilder request = ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/streamed-paged-items")
     .body(requestBody)
     .build();
 
-client.streamingApiExecutor(typeRef)
+client.streamingApiExecutor(type)
     .stream(request, page -> page.getItems().forEach(System.out::println))
     .thenRun(() -> System.out.println("Done"));
 ```
@@ -214,7 +214,7 @@ ApiExecutorRequestBuilder.builder(HttpMethod.POST, "/stores/{store_id}/settings"
 - Path/query parameters are URL-encoded automatically
 - Authentication tokens injected from client config
 - `{store_id}` auto-replaced if not provided via `.pathParam()`
-- For `StreamingApiExecutor`, pass the response class directly (`MyResponse.class`). The SDK builds the required Jackson type internally. Use the `TypeReference` overload only when `T` is itself a generic type.
+- For `StreamingApiExecutor`, pass the response class directly (`MyResponse.class`). Use the `SdkTypeToken` overload when `T` is a generic type.
 
 ## Migration to Typed Methods
 

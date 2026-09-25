@@ -2,8 +2,6 @@ package dev.openfga.sdk.api;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.*;
 import java.io.IOException;
@@ -18,6 +16,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.openfga.OpenFGAContainer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Testcontainers
@@ -26,7 +27,8 @@ public class OpenFgaApiIntegrationTest {
     @Container
     private static final OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.10.2");
 
-    private static final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper mapper =
+            JsonMapper.builderWithJackson2Defaults().build();
     private static final String DEFAULT_USER = "user:81684243-9356-4421-8fbf-a4f8d36aa31b";
     private static final String DEFAULT_DOC = "document:2021-budget";
     private static final TupleKey DEFAULT_TUPLE_KEY =
@@ -178,7 +180,7 @@ public class OpenFgaApiIntegrationTest {
                         assertEquals(
                                 "[{\"type\":\"user\",\"relations\":{},\"metadata\":null},{\"type\":\"document\",\"relations\":{\"owner\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"reader\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null},\"writer\":{\"this\":{},\"computedUserset\":null,\"tupleToUserset\":null,\"union\":null,\"intersection\":null,\"difference\":null}},\"metadata\":{\"relations\":{\"conditional_reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"name_starts_with_a\"}],\"module\":\"\",\"source_info\":null},\"owner\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}],\"module\":\"\",\"source_info\":null},\"reader\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}],\"module\":\"\",\"source_info\":null},\"writer\":{\"directly_related_user_types\":[{\"type\":\"user\",\"relation\":null,\"wildcard\":null,\"condition\":\"\"}],\"module\":\"\",\"source_info\":null}},\"module\":\"\",\"source_info\":null}}]",
                                 typeDefsJson);
-                    } catch (JsonProcessingException ex) {
+                    } catch (JacksonException ex) {
                         assertNull(ex);
                     }
                 });

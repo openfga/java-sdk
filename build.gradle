@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "2.22.2"
+    jackson_version = "3.2.3"
 }
 
 configurations.testRuntimeClasspath {
@@ -70,12 +70,10 @@ dependencies {
     api "com.google.code.findbugs:jsr305:3.0.2"
 
     // ---- Jackson ----
-    api platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
-    api "com.fasterxml.jackson.core:jackson-core"
-    api "com.fasterxml.jackson.core:jackson-annotations"
-    api "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "org.openapitools:jackson-databind-nullable:0.2.11"
+    implementation platform("tools.jackson:jackson-bom:$jackson_version")
+    api "com.fasterxml.jackson.core:jackson-annotations:2.22"
+    implementation "tools.jackson.core:jackson-core"
+    implementation "tools.jackson.core:jackson-databind"
 
     // ---- OpenTelemetry ----
     api platform("io.opentelemetry:opentelemetry-bom:1.65.0")
@@ -91,6 +89,8 @@ testing {
                 implementation 'org.mockito:mockito-core:5.23.0'
                 implementation 'org.junit.jupiter:junit-jupiter:5.14.4'
                 implementation 'org.wiremock:wiremock:3.13.2'
+                implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.3'
+                implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.3'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -117,9 +117,9 @@ testing {
 
             dependencies {
                 // --- Jackson ---
-                implementation platform("com.fasterxml.jackson:jackson-bom:$jackson_version")
-                implementation "com.fasterxml.jackson.core:jackson-core"
-                implementation "com.fasterxml.jackson.core:jackson-databind"
+                implementation platform("tools.jackson:jackson-bom:$jackson_version")
+                implementation "tools.jackson.core:jackson-core"
+                implementation "tools.jackson.core:jackson-databind"
 
                 implementation "org.testcontainers:testcontainers-junit-jupiter:2.0.5"
                 implementation "org.testcontainers:testcontainers-openfga:2.0.5"

@@ -1,6 +1,5 @@
 package dev.openfga.sdk.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.openfga.language.DslToJsonTransformer;
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientListObjectsRequest;
@@ -16,6 +15,7 @@ import dev.openfga.sdk.api.model.WriteAuthorizationModelRequest;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import tools.jackson.databind.json.JsonMapper;
 
 public class StreamedListObjectsExample {
     // Configuration constants
@@ -72,8 +72,8 @@ public class StreamedListObjectsExample {
         var client = new OpenFgaClient(configuration);
 
         System.out.println("Creating temporary store");
-        var store = client.createStore(new CreateStoreRequest().name(STORE_NAME))
-                .get();
+        var store =
+                client.createStore(new CreateStoreRequest().name(STORE_NAME)).get();
 
         var clientWithStore = new OpenFgaClient(
                 new ClientConfiguration().apiUrl(apiUrl).storeId(store.getId()).credentials(new Credentials()));
@@ -89,8 +89,8 @@ public class StreamedListObjectsExample {
                 .authorizationModelId(authModel.getAuthorizationModelId())
                 .credentials(new Credentials()));
 
-        System.out.println("Writing tuples (" + TOTAL_OWNER_DOCUMENTS + " as owner, " + TOTAL_VIEWER_DOCUMENTS
-                + " as viewer)");
+        System.out.println(
+                "Writing tuples (" + TOTAL_OWNER_DOCUMENTS + " as owner, " + TOTAL_VIEWER_DOCUMENTS + " as viewer)");
 
         int totalWritten = 0;
 
@@ -156,9 +156,9 @@ public class StreamedListObjectsExample {
                 """
                 model
                   schema 1.1
-                
+
                 type %s
-                
+
                 type %s
                   relations
                     define %s: [%s]
@@ -178,8 +178,7 @@ public class StreamedListObjectsExample {
         try {
             // Transform DSL to JSON and parse into AuthorizationModel
             var jsonModel = new DslToJsonTransformer().transform(dslModel);
-            var mapper = new ObjectMapper();
-            mapper.findAndRegisterModules();
+            var mapper = JsonMapper.builderWithJackson2Defaults().build();
 
             var authModel = mapper.readValue(jsonModel, AuthorizationModel.class);
 
