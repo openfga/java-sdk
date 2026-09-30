@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/openfga/java-sdk/compare/v0.10.1...v0.11.0) (2026-09-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate to Jackson 3 and remove the Jackson 2 `ObjectMapper` and `TypeReference` APIs deprecated in the bridge release. Applications that use the default serializer without these APIs need no source changes. Code that used the removed wrappers should move to the SDK-owned `JsonSerializer` (replacing `ObjectMapper` accessors) and `SdkTypeToken` (replacing Jackson `TypeReference`) — see [#387](https://github.com/openfga/java-sdk/pull/387) and the [RFC](https://github.com/openfga/rfcs/pull/36).
+
+### Added
+
+* migrate json serialization to jackson 3 ([b56e332](https://github.com/openfga/java-sdk/commit/b56e3329446f648dfb12e99cc2e0ab392a767bc9))
+
+
 ## [0.10.1](https://github.com/openfga/java-sdk/compare/v0.10.0...v0.10.1) (2026-09-21)
 
 
