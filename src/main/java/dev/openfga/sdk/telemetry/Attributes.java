@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * This class represents a collection of attributes used for telemetry purposes.
@@ -89,6 +90,12 @@ public class Attributes {
     public static final Attribute USER_AGENT = new Attribute("user_agent.original");
 
     /**
+     * The attributes that are exported to OpenTelemetry as integers rather than strings.
+     */
+    private static final Set<Attribute> LONG_ATTRIBUTES =
+            Set.of(FGA_CLIENT_REQUEST_BATCH_CHECK_SIZE, HTTP_REQUEST_RESEND_COUNT, HTTP_RESPONSE_STATUS_CODE);
+
+    /**
      * Prepares the attributes for OpenTelemetry publishing by converting them into the expected format.
      *
      * @param attributes the attributes to prepare
@@ -126,7 +133,17 @@ public class Attributes {
 
             String attrVal = attributes.getOrDefault(attr, "");
 
-            if (!isNullOrWhitespace(attrVal)) {
+            if (isNullOrWhitespace(attrVal)) {
+                continue;
+            }
+
+            if (LONG_ATTRIBUTES.contains(attr)) {
+                try {
+                    builder.put(AttributeKey.longKey(attr.getName()), Long.parseLong(attrVal.trim()));
+                } catch (NumberFormatException e) {
+                    // Skip values that cannot be represented as an integer
+                }
+            } else {
                 builder.put(AttributeKey.stringKey(attr.getName()), attrVal);
             }
         }
