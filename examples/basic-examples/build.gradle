@@ -1,7 +1,7 @@
 plugins {
     id 'application'
     id 'com.diffplug.spotless' version '8.0.0'
-    id 'org.jetbrains.kotlin.jvm' version '2.4.20'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.21'
 }
 
 application {
@@ -19,7 +19,7 @@ repositories {
 }
 
 ext {
-    jacksonVersion = "3.2.3"
+    jacksonVersion = "3.2.4"
 }
 
 dependencies {

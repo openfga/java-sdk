@@ -55,7 +55,7 @@ jacocoTestReport {
 }
 
 ext {
-    jackson_version = "3.2.3"
+    jackson_version = "3.2.4"
 }
 
 configurations.testRuntimeClasspath {
@@ -63,7 +63,7 @@ configurations.testRuntimeClasspath {
     // WireMock 3.x hasn't backported the fix — only the 4.x beta line has.
     // We force the core jar only; handlebars-helpers cannot be forced to 4.5.2 because
     // NumberHelper moved packages between versions, which breaks WireMock at runtime.
-    resolutionStrategy.force 'com.github.jknack:handlebars:4.5.5'
+    resolutionStrategy.force 'com.github.jknack:handlebars:4.5.8'
 }
 
 dependencies {
@@ -76,7 +76,7 @@ dependencies {
     implementation "tools.jackson.core:jackson-databind"
 
     // ---- OpenTelemetry ----
-    api platform("io.opentelemetry:opentelemetry-bom:1.66.0")
+    api platform("io.opentelemetry:opentelemetry-bom:1.67.0")
     api "io.opentelemetry:opentelemetry-api"
 }
 
@@ -89,8 +89,8 @@ testing {
                 implementation 'org.mockito:mockito-core:5.24.0'
                 implementation 'org.junit.jupiter:junit-jupiter:5.14.4'
                 implementation 'org.wiremock:wiremock:3.13.2'
-                implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.3'
-                implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.3'
+                implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.4'
+                implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4'
 
                 runtimeOnly 'org.junit.platform:junit-platform-launcher'
 
