@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class ClientListObjectsOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private String authorizationModelId;
     private ConsistencyPreference consistency;
 
@@ -34,5 +35,17 @@ public class ClientListObjectsOptions implements AdditionalHeadersSupplier {
 
     public ConsistencyPreference getConsistency() {
         return consistency;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientListObjectsOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

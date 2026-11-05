@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class ClientDeleteTuplesOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private WriteRequestDeletes.OnMissingEnum onMissing;
 
     public ClientDeleteTuplesOptions additionalHeaders(Map<String, String> additionalHeaders) {
@@ -24,5 +25,17 @@ public class ClientDeleteTuplesOptions implements AdditionalHeadersSupplier {
 
     public WriteRequestDeletes.OnMissingEnum getOnMissing() {
         return onMissing;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientDeleteTuplesOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

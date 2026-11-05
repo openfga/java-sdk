@@ -12,6 +12,7 @@ import java.util.Map;
  */
 public class ClientWriteOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private String authorizationModelId;
     private boolean transactionsEnabled = true;
     private int transactionChunkSize;
@@ -178,5 +179,17 @@ public class ClientWriteOptions implements AdditionalHeadersSupplier {
      */
     public WriteRequestDeletes.OnMissingEnum getOnMissing() {
         return onMissing;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientWriteOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }
