@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class ClientReadAuthorizationModelOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private String authorizationModelId;
 
     public ClientReadAuthorizationModelOptions additionalHeaders(Map<String, String> additionalHeaders) {
@@ -37,5 +38,17 @@ public class ClientReadAuthorizationModelOptions implements AdditionalHeadersSup
     public String getAuthorizationModelIdChecked() throws FgaInvalidParameterException {
         assertValidAuthorizationModelId();
         return authorizationModelId;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientReadAuthorizationModelOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

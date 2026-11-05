@@ -175,7 +175,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientGetStoreResponse> getStore(ClientGetStoreOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.getStore(storeId, overrides)).thenApply(ClientGetStoreResponse::new);
     }
@@ -197,7 +197,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientDeleteStoreResponse> deleteStore(ClientDeleteStoreOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.deleteStore(storeId, overrides)).thenApply(ClientDeleteStoreResponse::new);
     }
@@ -224,7 +224,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientReadAuthorizationModelsResponse> readAuthorizationModels(
             ClientReadAuthorizationModelsOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         Integer pageSize;
         String continuationToken;
@@ -263,7 +263,7 @@ public class OpenFgaClient {
             WriteAuthorizationModelRequest request, ClientWriteAuthorizationModelOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.writeAuthorizationModel(storeId, request, overrides))
                 .thenApply(ClientWriteAuthorizationModelResponse::new);
@@ -291,7 +291,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientReadAuthorizationModelResponse> readAuthorizationModel(
             ClientReadAuthorizationModelOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
         // Set authorizationModelId from options if available; otherwise, require a valid configuration value
         String authorizationModelId;
         if (options != null && !isNullOrWhitespace(options.getAuthorizationModelId())) {
@@ -322,7 +322,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientReadAuthorizationModelResponse> readLatestAuthorizationModel(
             ClientReadLatestAuthorizationModelOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readAuthorizationModels(storeId, 1, null, overrides))
                 .thenApply(ClientReadAuthorizationModelResponse::latestOf);
@@ -351,7 +351,7 @@ public class OpenFgaClient {
             ClientReadChangesRequest request, ClientReadChangesOptions readChangesOptions)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(readChangesOptions != null ? readChangesOptions.getStoreId() : null);
         var options = readChangesOptions != null ? readChangesOptions : new ClientReadChangesOptions();
         var overrides = new ConfigurationOverride().addHeaders(options);
         return call(() -> api.readChanges(
@@ -381,7 +381,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientReadResponse> read(ClientReadRequest request, ClientReadOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         ReadRequest body = new ReadRequest();
 
@@ -512,7 +512,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientWriteResponse> write(ClientWriteRequest request, ClientWriteOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         if (options != null && !options.isTransactionsEnabled()) {
             return writeNonTransaction(storeId, request, options);
@@ -780,7 +780,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientWriteResponse> writeTuples(
             List<ClientTupleKey> tupleKeys, ClientWriteTuplesOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         var body = new WriteRequest();
 
@@ -821,7 +821,7 @@ public class OpenFgaClient {
             List<ClientTupleKeyWithoutCondition> tupleKeys, ClientDeleteTuplesOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         var body = new WriteRequest();
 
@@ -870,7 +870,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientCheckResponse> check(ClientCheckRequest request, ClientCheckOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         CheckRequest body = request.asCheckRequest();
         if (options != null) {
@@ -911,7 +911,7 @@ public class OpenFgaClient {
             List<ClientCheckRequest> requests, ClientBatchCheckClientOptions batchCheckOptions)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        configuration.assertValidStoreId();
+        getStoreIdChecked(batchCheckOptions != null ? batchCheckOptions.getStoreId() : null);
 
         var options = batchCheckOptions != null
                 ? batchCheckOptions
@@ -964,7 +964,7 @@ public class OpenFgaClient {
             ClientBatchCheckRequest requests, ClientBatchCheckOptions batchCheckOptions)
             throws FgaInvalidParameterException, FgaValidationError {
         configuration.assertValid();
-        configuration.assertValidStoreId();
+        String storeId = getStoreIdChecked(batchCheckOptions != null ? batchCheckOptions.getStoreId() : null);
 
         var options = batchCheckOptions != null
                 ? batchCheckOptions
@@ -1048,7 +1048,7 @@ public class OpenFgaClient {
                         body.authorizationModelId(authorizationModelId);
                     }
 
-                    return api.batchCheck(configuration.getStoreId(), body, override);
+                    return api.batchCheck(storeId, body, override);
                 })
                 .<Void>handle((batchCheckResponseApiResponse, throwable) -> {
                     if (throwable != null) {
@@ -1103,7 +1103,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientExpandResponse> expand(ClientExpandRequest request, ClientExpandOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         ExpandRequest body = new ExpandRequest();
 
@@ -1149,7 +1149,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientListObjectsResponse> listObjects(
             ClientListObjectsRequest request, ClientListObjectsOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         ListObjectsRequest body = new ListObjectsRequest();
 
@@ -1301,7 +1301,7 @@ public class OpenFgaClient {
             throw new FgaInvalidParameterException("consumer", "streamedListObjects");
         }
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         ListObjectsRequest body = new ListObjectsRequest();
 
@@ -1404,7 +1404,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientListUsersResponse> listUsers(
             ClientListUsersRequest request, ClientListUsersOptions options) throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         ListUsersRequest body = new ListUsersRequest();
 
@@ -1460,7 +1460,7 @@ public class OpenFgaClient {
     public CompletableFuture<ClientReadAssertionsResponse> readAssertions(ClientReadAssertionsOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         String authorizationModelId;
         if (options != null && options.hasValidAuthorizationModelId()) {
@@ -1494,7 +1494,7 @@ public class OpenFgaClient {
             List<ClientAssertion> assertions, ClientWriteAssertionsOptions options)
             throws FgaInvalidParameterException {
         configuration.assertValid();
-        String storeId = configuration.getStoreIdChecked();
+        String storeId = getStoreIdChecked(options != null ? options.getStoreId() : null);
 
         String authorizationModelId;
         if (options != null && options.hasValidAuthorizationModelId()) {
@@ -1509,6 +1509,16 @@ public class OpenFgaClient {
 
         return call(() -> api.writeAssertions(storeId, authorizationModelId, body, overrides))
                 .thenApply(ClientWriteAssertionsResponse::new);
+    }
+
+    /**
+     * Returns the store ID to send a request to: the per-request override when it is set, otherwise the store ID
+     * from the client configuration.
+     *
+     * @throws FgaInvalidParameterException When neither is set
+     */
+    private String getStoreIdChecked(String storeIdOverride) throws FgaInvalidParameterException {
+        return !isNullOrWhitespace(storeIdOverride) ? storeIdOverride : configuration.getStoreIdChecked();
     }
 
     /**

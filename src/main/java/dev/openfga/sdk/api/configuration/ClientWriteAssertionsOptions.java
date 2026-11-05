@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class ClientWriteAssertionsOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private String authorizationModelId;
 
     public ClientWriteAssertionsOptions additionalHeaders(Map<String, String> additionalHeaders) {
@@ -41,5 +42,17 @@ public class ClientWriteAssertionsOptions implements AdditionalHeadersSupplier {
     public String getAuthorizationModelIdChecked() throws FgaInvalidParameterException {
         assertValidAuthorizationModelId();
         return authorizationModelId;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientWriteAssertionsOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }
