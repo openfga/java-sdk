@@ -17,6 +17,7 @@ public class Metrics {
     private final Map<String, LongCounter> counters;
     private final Map<String, DoubleHistogram> histograms;
     private final Configuration configuration;
+    private final TelemetryConfiguration defaultTelemetryConfiguration;
 
     public Metrics() {
         this(new Configuration());
@@ -27,9 +28,16 @@ public class Metrics {
         this.counters = new ConcurrentHashMap<>();
         this.histograms = new ConcurrentHashMap<>();
         this.configuration = configuration;
-        if (this.configuration.getTelemetryConfiguration() == null) {
-            this.configuration.telemetryConfiguration(new TelemetryConfiguration());
-        }
+        this.defaultTelemetryConfiguration = new TelemetryConfiguration();
+    }
+
+    /**
+     * Returns the telemetry configuration of the configuration, or the default one if it has none. The caller's
+     * configuration is never modified, since it may be shared.
+     */
+    private TelemetryConfiguration telemetryConfiguration() {
+        TelemetryConfiguration telemetryConfiguration = configuration.getTelemetryConfiguration();
+        return telemetryConfiguration != null ? telemetryConfiguration : defaultTelemetryConfiguration;
     }
 
     /**
@@ -51,8 +59,9 @@ public class Metrics {
      * @return The LongCounter metric instance, if the counter was configured. Otherwise, null.
      */
     public LongCounter getCounter(Counter counter, Long value, Map<Attribute, String> attributes) {
-        if (configuration.getTelemetryConfiguration().metrics() == null
-                || !configuration.getTelemetryConfiguration().metrics().containsKey(counter)) {
+        TelemetryConfiguration telemetryConfiguration = telemetryConfiguration();
+        if (telemetryConfiguration.metrics() == null
+                || !telemetryConfiguration.metrics().containsKey(counter)) {
             return null;
         }
         LongCounter counterInstance = counters.computeIfAbsent(counter.getName(), name -> meter.counterBuilder(name)
@@ -60,7 +69,7 @@ public class Metrics {
                 .build());
 
         if (value != null) {
-            counterInstance.add(value, Attributes.prepare(attributes, counter, configuration));
+            counterInstance.add(value, Attributes.prepare(attributes, counter, telemetryConfiguration));
         }
 
         return counterInstance;
@@ -76,8 +85,9 @@ public class Metrics {
      * @return the DoubleHistogram instance, if the histogram was configured. Otherwise, null.
      */
     public DoubleHistogram getHistogram(Histogram histogram, Double value, Map<Attribute, String> attributes) {
-        if (configuration.getTelemetryConfiguration().metrics() == null
-                || !configuration.getTelemetryConfiguration().metrics().containsKey(histogram)) {
+        TelemetryConfiguration telemetryConfiguration = telemetryConfiguration();
+        if (telemetryConfiguration.metrics() == null
+                || !telemetryConfiguration.metrics().containsKey(histogram)) {
             return null;
         }
 
@@ -88,7 +98,7 @@ public class Metrics {
                         .build());
 
         if (value != null) {
-            histogramInstance.record(value, Attributes.prepare(attributes, histogram, configuration));
+            histogramInstance.record(value, Attributes.prepare(attributes, histogram, telemetryConfiguration));
         }
 
         return histogramInstance;

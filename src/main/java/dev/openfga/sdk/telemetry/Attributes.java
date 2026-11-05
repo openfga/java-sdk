@@ -4,6 +4,7 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.configuration.Configuration;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
 import io.opentelemetry.api.common.AttributeKey;
@@ -97,23 +98,32 @@ public class Attributes {
      */
     public static io.opentelemetry.api.common.Attributes prepare(
             Map<Attribute, String> attributes, Metric metric, Configuration configuration) {
+        return prepare(attributes, metric, configuration == null ? null : configuration.getTelemetryConfiguration());
+    }
+
+    /**
+     * Filters the given attributes based on the telemetry configuration.
+     *
+     * @param attributes             the attributes to filter
+     * @param metric                 the metric to filter the attributes for
+     * @param telemetryConfiguration the telemetry configuration to filter with
+     *
+     * @return the prepared attributes
+     */
+    public static io.opentelemetry.api.common.Attributes prepare(
+            Map<Attribute, String> attributes, Metric metric, TelemetryConfiguration telemetryConfiguration) {
         if (attributes == null
                 || attributes.isEmpty()
-                || configuration == null
-                || configuration.getTelemetryConfiguration() == null
-                || configuration.getTelemetryConfiguration().metrics() == null
-                || configuration.getTelemetryConfiguration().metrics().isEmpty()
-                || !configuration.getTelemetryConfiguration().metrics().containsKey(metric)
-                || configuration
-                        .getTelemetryConfiguration()
-                        .metrics()
-                        .get(metric)
-                        .isEmpty()) {
+                || telemetryConfiguration == null
+                || telemetryConfiguration.metrics() == null
+                || telemetryConfiguration.metrics().isEmpty()
+                || !telemetryConfiguration.metrics().containsKey(metric)
+                || telemetryConfiguration.metrics().get(metric).isEmpty()) {
             return io.opentelemetry.api.common.Attributes.empty();
         }
 
         Map<Attribute, Optional<Object>> configAllowedAttributes =
-                configuration.getTelemetryConfiguration().metrics().get(metric);
+                telemetryConfiguration.metrics().get(metric);
 
         io.opentelemetry.api.common.AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
 
