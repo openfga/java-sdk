@@ -73,6 +73,17 @@ class OpenFgaClientHeaderPrecedenceTest {
     }
 
     @Test
+    void perRequestHeaderOverridesDefaultHeaderWithDifferentCase() throws Exception {
+        var config = new ClientConfiguration().apiUrl(apiUrl).defaultHeaders(Map.of("X-Custom-Header", "default"));
+
+        new OpenFgaClient(config)
+                .listStores(new ClientListStoresOptions().additionalHeaders(Map.of("x-custom-header", "per-request")))
+                .get();
+
+        assertEquals(List.of("per-request"), sent(STORES, "X-Custom-Header"));
+    }
+
+    @Test
     void perRequestAuthorizationReplacesCredentialsHeader() throws Exception {
         var config = new ClientConfiguration()
                 .apiUrl(apiUrl)
