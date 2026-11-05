@@ -110,9 +110,10 @@ public class Configuration implements BaseConfiguration {
         Map<String, String> additionalHeaders = configurationOverride.getAdditionalHeaders();
         if (additionalHeaders != null) {
             additionalHeaders.forEach((header, value) -> {
-                if (value == null) {
-                    headers.remove(header);
-                } else {
+                // Header names are case-insensitive, so an additional header replaces a default header with the
+                // same name in any case. Otherwise both would be applied and either value could end up being sent.
+                headers.keySet().removeIf(name -> name.equalsIgnoreCase(header));
+                if (value != null) {
                     headers.put(header, value);
                 }
             });

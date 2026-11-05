@@ -206,9 +206,13 @@ public class ApiExecutorRequestBuilder {
             httpRequestBuilder = ApiClient.requestBuilder(method.name(), resolvedPath, configuration);
         }
 
-        headers.forEach(httpRequestBuilder::header);
-
         apiClient.applyAuthHeader(httpRequestBuilder, configuration);
+
+        // The configuration's default headers, then this request's headers, replace any header of the same name
+        if (configuration.getDefaultHeaders() != null) {
+            configuration.getDefaultHeaders().forEach(httpRequestBuilder::setHeader);
+        }
+        headers.forEach(httpRequestBuilder::setHeader);
 
         if (apiClient.getRequestInterceptor() != null) {
             apiClient.getRequestInterceptor().accept(httpRequestBuilder);
