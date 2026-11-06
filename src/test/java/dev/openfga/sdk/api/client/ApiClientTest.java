@@ -22,6 +22,8 @@ import java.net.http.HttpRequest;
 import java.util.List;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
@@ -187,8 +189,12 @@ class ApiClientTest {
                     requestBuilder.build().headers().firstValue("Authorization").isPresent());
         }
 
-        @Test
-        void clientCredentials_setsAuthHeader() throws Exception {
+        // Columns: token lifetime (s), refresh buffer (s), refresh jitter (s), expected token exchanges over two calls.
+        // A second exchange happens when the cached token is already in its refresh window. Rows are chosen so the
+        // random jitter draw cannot change the outcome.
+        @ParameterizedTest
+        @CsvSource({"3600,300,300,1", "300,300,300,2", "300,30,0,1", "300,30,10,1", "20,30,0,2", "300,0,0,1"})
+        void clientCredentials_setsAuthHeader(int lifetime, int buffer, int jitter, int exchanges) throws Exception {
             String clientId = "some-client-id";
             String clientSecret = "some-client-secret";
             String apiAudience = "some-audience";
@@ -202,7 +208,9 @@ class ApiClientTest {
                             containsString("client_secret=" + clientSecret),
                             containsString("audience=" + apiAudience),
                             containsString("grant_type=client_credentials")))
-                    .doReturn(200, String.format("{\"access_token\":\"%s\",\"expires_in\":3600}", exchangedToken));
+                    .doReturn(
+                            200,
+                            String.format("{\"access_token\":\"%s\",\"expires_in\":%d}", exchangedToken, lifetime));
 
             HttpClient.Builder mockBuilder = mockHttpClientBuilder(mockHttpClient);
             ApiClient apiClient = new ApiClient(mockBuilder);
@@ -213,7 +221,9 @@ class ApiClientTest {
                             .clientId(clientId)
                             .clientSecret(clientSecret)
                             .apiAudience(apiAudience)
-                            .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL)));
+                            .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL)))
+                    .tokenExpiryBufferSeconds(buffer)
+                    .tokenExpiryJitterSeconds(jitter);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
             apiClient.applyAuthHeader(requestBuilder, configuration);
@@ -222,7 +232,7 @@ class ApiClientTest {
                     "Bearer " + exchangedToken,
                     requestBuilder.build().headers().firstValue("Authorization").orElseThrow());
 
-            // A second call should reuse the cached token and not hit the issuer again.
+            // Reuse the token only while it is outside the configured refresh window.
             HttpRequest.Builder secondBuilder = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
             apiClient.applyAuthHeader(secondBuilder, configuration);
             assertEquals(
@@ -232,6 +242,38 @@ class ApiClientTest {
             mockHttpClient
                     .verify()
                     .post(String.format("%s/oauth/token", FgaConstants.TEST_ISSUER_URL))
+                    .called(exchanges);
+        }
+
+        @Test
+        void clientCredentials_differentRefreshSettings_shareOneCache() throws Exception {
+            HttpClientMock mockHttpClient = new HttpClientMock();
+            mockHttpClient
+                    .onPost(FgaConstants.TEST_ISSUER_URL + "/oauth/token")
+                    .doReturn(200, "{\"access_token\":\"token\",\"expires_in\":3600}");
+            ApiClient apiClient = new ApiClient(mockHttpClientBuilder(mockHttpClient));
+
+            ClientCredentials credentials = new ClientCredentials()
+                    .clientId("client")
+                    .clientSecret("secret")
+                    .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL);
+
+            Configuration first = new Configuration()
+                    .credentials(new Credentials(credentials))
+                    .tokenExpiryBufferSeconds(30)
+                    .tokenExpiryJitterSeconds(10);
+            Configuration second = new Configuration()
+                    .credentials(new Credentials(credentials))
+                    .tokenExpiryBufferSeconds(300)
+                    .tokenExpiryJitterSeconds(0);
+
+            apiClient.applyAuthHeader(HttpRequest.newBuilder(), first);
+            apiClient.applyAuthHeader(HttpRequest.newBuilder(), second);
+
+            // Same credentials share one cached client and token, regardless of refresh timing.
+            mockHttpClient
+                    .verify()
+                    .post(FgaConstants.TEST_ISSUER_URL + "/oauth/token")
                     .called(1);
         }
 
