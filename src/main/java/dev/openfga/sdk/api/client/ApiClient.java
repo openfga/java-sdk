@@ -364,7 +364,8 @@ public class ApiClient {
     }
 
     private OAuth2Client ensureOAuth2Client(Configuration configuration) throws FgaInvalidParameterException {
-        CredentialsCacheKey key = new CredentialsCacheKey(configuration);
+        ClientCredentials cc = configuration.getCredentials().getClientCredentials();
+        CredentialsCacheKey key = new CredentialsCacheKey(cc);
         OAuth2Client existing = oAuth2Clients.get(key);
         if (existing != null) {
             return existing;
@@ -380,18 +381,13 @@ public class ApiClient {
         private final String apiTokenIssuer;
         private final String apiAudience;
         private final String scopes;
-        private final int tokenExpiryBufferSeconds;
-        private final int tokenExpiryJitterSeconds;
 
-        CredentialsCacheKey(Configuration configuration) {
-            ClientCredentials cc = configuration.getCredentials().getClientCredentials();
+        CredentialsCacheKey(ClientCredentials cc) {
             this.clientId = cc.getClientId();
             this.clientSecretHash = sha256(cc.getClientSecret());
             this.apiTokenIssuer = cc.getApiTokenIssuer();
             this.apiAudience = cc.getApiAudience();
             this.scopes = cc.getScopes();
-            this.tokenExpiryBufferSeconds = configuration.getTokenExpiryBufferSeconds();
-            this.tokenExpiryJitterSeconds = configuration.getTokenExpiryJitterSeconds();
         }
 
         private static byte[] sha256(String value) {
@@ -411,15 +407,12 @@ public class ApiClient {
                     && Arrays.equals(clientSecretHash, that.clientSecretHash)
                     && Objects.equals(apiTokenIssuer, that.apiTokenIssuer)
                     && Objects.equals(apiAudience, that.apiAudience)
-                    && Objects.equals(scopes, that.scopes)
-                    && tokenExpiryBufferSeconds == that.tokenExpiryBufferSeconds
-                    && tokenExpiryJitterSeconds == that.tokenExpiryJitterSeconds;
+                    && Objects.equals(scopes, that.scopes);
         }
 
         @Override
         public int hashCode() {
-            int result = Objects.hash(
-                    clientId, apiTokenIssuer, apiAudience, scopes, tokenExpiryBufferSeconds, tokenExpiryJitterSeconds);
+            int result = Objects.hash(clientId, apiTokenIssuer, apiAudience, scopes);
             result = 31 * result + Arrays.hashCode(clientSecretHash);
             return result;
         }

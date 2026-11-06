@@ -36,8 +36,8 @@ public class Configuration implements BaseConfiguration {
     private Duration connectTimeout;
     private int maxRetries;
     private Duration minimumRetryDelay;
-    private int tokenExpiryBufferSeconds = FgaConstants.TOKEN_EXPIRY_THRESHOLD_BUFFER_IN_SEC;
-    private int tokenExpiryJitterSeconds = FgaConstants.TOKEN_EXPIRY_JITTER_IN_SEC;
+    private int tokenExpiryBufferSeconds;
+    private int tokenExpiryJitterSeconds;
     private Map<String, String> defaultHeaders;
     private TelemetryConfiguration telemetryConfiguration;
 
@@ -48,6 +48,8 @@ public class Configuration implements BaseConfiguration {
         this.connectTimeout = FgaConstants.DEFAULT_CONNECTION_TIMEOUT_IN_MS;
         this.maxRetries = FgaConstants.DEFAULT_MAX_RETRY;
         this.minimumRetryDelay = FgaConstants.DEFAULT_MIN_WAIT_IN_MS;
+        this.tokenExpiryBufferSeconds = FgaConstants.TOKEN_EXPIRY_THRESHOLD_BUFFER_IN_SEC;
+        this.tokenExpiryJitterSeconds = FgaConstants.TOKEN_EXPIRY_JITTER_IN_SEC;
     }
 
     /**
@@ -89,6 +91,8 @@ public class Configuration implements BaseConfiguration {
 
         Credentials overrideCredentials = configurationOverride.getCredentials();
         result.credentials(overrideCredentials != null ? overrideCredentials : credentials);
+        // Token refresh timing is intentionally client-level only and not part of ConfigurationOverride:
+        // the access token is shared per identity, so per-request timing would have no well-defined meaning.
         result.tokenExpiryBufferSeconds(tokenExpiryBufferSeconds);
         result.tokenExpiryJitterSeconds(tokenExpiryJitterSeconds);
 
@@ -310,6 +314,18 @@ public class Configuration implements BaseConfiguration {
     /**
      * Sets how many seconds before expiry a cached client-credentials token requires refresh.
      * Defaults to 300. This is a client-level setting, preserved by request overrides.
+     *
+     * <p>Set to 0 to refresh only at the exact expiry instant, which removes the margin that guards
+     * against clock skew and in-flight request latency. Together with {@code tokenExpiryJitterSeconds}
+     * this should stay well below the token's lifetime: if their sum meets or exceeds it, every token
+     * is treated as already-expired and re-exchanged on effectively every call.
+     *
+     * <p>The token cache is keyed by credentials only. Configurations that share an {@link
+     * dev.openfga.sdk.api.client.ApiClient} and the same credentials share one cached token, refreshed
+     * with the timing of the configuration that first requested it.
+     *
+     * @param seconds the refresh buffer in seconds; must be non-negative.
+     * @return This Configuration instance for method chaining.
      * @throws IllegalArgumentException if seconds is negative.
      */
     public Configuration tokenExpiryBufferSeconds(int seconds) {
@@ -320,6 +336,9 @@ public class Configuration implements BaseConfiguration {
         return this;
     }
 
+    /**
+     * @return The number of seconds before expiry at which a cached client-credentials token is refreshed.
+     */
     public int getTokenExpiryBufferSeconds() {
         return this.tokenExpiryBufferSeconds;
     }
@@ -328,6 +347,17 @@ public class Configuration implements BaseConfiguration {
      * Sets the exclusive upper bound of additional random seconds subtracted on each token expiry check.
      * Defaults to 300. Set to zero to disable jitter. This is a client-level setting,
      * preserved by request overrides.
+     *
+     * <p>Jitter spreads token refreshes across clients to avoid a thundering herd. Together with
+     * {@code tokenExpiryBufferSeconds} it should stay well below the token's lifetime: if their sum
+     * meets or exceeds it, every token is treated as already-expired and re-exchanged on effectively
+     * every call.
+     *
+     * <p>Like the buffer, this applies per cached token: configurations sharing an {@link
+     * dev.openfga.sdk.api.client.ApiClient} and the same credentials use the timing of the first one.
+     *
+     * @param seconds the exclusive upper bound of random jitter in seconds; must be non-negative.
+     * @return This Configuration instance for method chaining.
      * @throws IllegalArgumentException if seconds is negative.
      */
     public Configuration tokenExpiryJitterSeconds(int seconds) {
@@ -338,6 +368,9 @@ public class Configuration implements BaseConfiguration {
         return this;
     }
 
+    /**
+     * @return The exclusive upper bound, in seconds, of random jitter applied to token expiry checks.
+     */
     public int getTokenExpiryJitterSeconds() {
         return this.tokenExpiryJitterSeconds;
     }

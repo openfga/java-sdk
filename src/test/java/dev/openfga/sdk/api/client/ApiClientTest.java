@@ -12,7 +12,6 @@ import com.pgssoft.httpclient.HttpClientMock;
 import dev.openfga.sdk.api.configuration.ApiToken;
 import dev.openfga.sdk.api.configuration.ClientCredentials;
 import dev.openfga.sdk.api.configuration.Configuration;
-import dev.openfga.sdk.api.configuration.ConfigurationOverride;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.ApiException;
@@ -190,6 +189,9 @@ class ApiClientTest {
                     requestBuilder.build().headers().firstValue("Authorization").isPresent());
         }
 
+        // Columns: token lifetime (s), refresh buffer (s), refresh jitter (s), expected token exchanges over two calls.
+        // A second exchange happens when the cached token is already in its refresh window. Rows are chosen so the
+        // random jitter draw cannot change the outcome.
         @ParameterizedTest
         @CsvSource({"3600,300,300,1", "300,300,300,2", "300,30,0,1", "300,30,10,1", "20,30,0,2", "300,0,0,1"})
         void clientCredentials_setsAuthHeader(int lifetime, int buffer, int jitter, int exchanges) throws Exception {
@@ -232,7 +234,7 @@ class ApiClientTest {
 
             // Reuse the token only while it is outside the configured refresh window.
             HttpRequest.Builder secondBuilder = HttpRequest.newBuilder().uri(URI.create(FgaConstants.TEST_API_URL));
-            apiClient.applyAuthHeader(secondBuilder, configuration.override(new ConfigurationOverride()));
+            apiClient.applyAuthHeader(secondBuilder, configuration);
             assertEquals(
                     "Bearer " + exchangedToken,
                     secondBuilder.build().headers().firstValue("Authorization").orElseThrow());
@@ -243,33 +245,36 @@ class ApiClientTest {
                     .called(exchanges);
         }
 
-        @ParameterizedTest
-        @CsvSource({"31,10", "30,11"})
-        void clientCredentials_differentRefreshSettings_useSeparateCaches(int buffer, int jitter) throws Exception {
+        @Test
+        void clientCredentials_differentRefreshSettings_shareOneCache() throws Exception {
             HttpClientMock mockHttpClient = new HttpClientMock();
             mockHttpClient
                     .onPost(FgaConstants.TEST_ISSUER_URL + "/oauth/token")
-                    .doReturn(200, "{\"access_token\":\"token\",\"expires_in\":300}");
+                    .doReturn(200, "{\"access_token\":\"token\",\"expires_in\":3600}");
             ApiClient apiClient = new ApiClient(mockHttpClientBuilder(mockHttpClient));
+
             ClientCredentials credentials = new ClientCredentials()
                     .clientId("client")
                     .clientSecret("secret")
                     .apiTokenIssuer(FgaConstants.TEST_ISSUER_URL);
-            Configuration configuration = new Configuration()
+
+            Configuration first = new Configuration()
                     .credentials(new Credentials(credentials))
                     .tokenExpiryBufferSeconds(30)
                     .tokenExpiryJitterSeconds(10);
+            Configuration second = new Configuration()
+                    .credentials(new Credentials(credentials))
+                    .tokenExpiryBufferSeconds(300)
+                    .tokenExpiryJitterSeconds(0);
 
-            apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
-            apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
-            configuration.tokenExpiryBufferSeconds(buffer).tokenExpiryJitterSeconds(jitter);
-            apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
-            apiClient.applyAuthHeader(HttpRequest.newBuilder(), configuration);
+            apiClient.applyAuthHeader(HttpRequest.newBuilder(), first);
+            apiClient.applyAuthHeader(HttpRequest.newBuilder(), second);
 
+            // Same credentials share one cached client and token, regardless of refresh timing.
             mockHttpClient
                     .verify()
                     .post(FgaConstants.TEST_ISSUER_URL + "/oauth/token")
-                    .called(2);
+                    .called(1);
         }
 
         @Test

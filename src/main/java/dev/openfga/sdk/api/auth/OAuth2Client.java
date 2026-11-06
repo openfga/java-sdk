@@ -21,8 +21,6 @@ public class OAuth2Client {
     private final CredentialsFlowRequest authRequest;
     private final Configuration config;
     private final Telemetry telemetry;
-    private final int tokenExpiryBufferSeconds;
-    private final int tokenExpiryJitterSeconds;
 
     /**
      * Initializes a new instance of the {@link OAuth2Client} class
@@ -31,8 +29,6 @@ public class OAuth2Client {
      */
     public OAuth2Client(Configuration configuration, ApiClient apiClient) throws FgaInvalidParameterException {
         var clientCredentials = configuration.getCredentials().getClientCredentials();
-        this.tokenExpiryBufferSeconds = configuration.getTokenExpiryBufferSeconds();
-        this.tokenExpiryJitterSeconds = configuration.getTokenExpiryJitterSeconds();
 
         this.apiClient = apiClient;
         this.authRequest =
@@ -44,7 +40,9 @@ public class OAuth2Client {
                 .connectTimeout(configuration.getConnectTimeout())
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay())
-                .telemetryConfiguration(configuration.getTelemetryConfiguration());
+                .telemetryConfiguration(configuration.getTelemetryConfiguration())
+                .tokenExpiryBufferSeconds(configuration.getTokenExpiryBufferSeconds())
+                .tokenExpiryJitterSeconds(configuration.getTokenExpiryJitterSeconds());
         this.telemetry = new Telemetry(this.config);
     }
 
@@ -58,7 +56,7 @@ public class OAuth2Client {
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
         // Fast path (lock-free): return cached token if still valid.
         AccessToken current = snapshot.get();
-        if (current.isValid(tokenExpiryBufferSeconds, tokenExpiryJitterSeconds)) {
+        if (current.isValid(this.config.getTokenExpiryBufferSeconds(), this.config.getTokenExpiryJitterSeconds())) {
             return CompletableFuture.completedFuture(current.token());
         }
 
@@ -66,7 +64,8 @@ public class OAuth2Client {
         synchronized (this) {
             // Double-check: another thread may have refreshed while we waited.
             AccessToken rechecked = snapshot.get();
-            if (rechecked.isValid(tokenExpiryBufferSeconds, tokenExpiryJitterSeconds)) {
+            if (rechecked.isValid(
+                    this.config.getTokenExpiryBufferSeconds(), this.config.getTokenExpiryJitterSeconds())) {
                 return CompletableFuture.completedFuture(rechecked.token());
             }
 
