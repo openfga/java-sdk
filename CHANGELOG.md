@@ -3,13 +3,9 @@
 ## [0.11.1](https://github.com/openfga/java-sdk/compare/v0.11.0...v0.11.1) (2026-11-10)
 
 
-### Fixed
+### Chore
 
-* update vulnerable Spring Boot dependencies to address Snyk findings
-
-### Miscellaneous
-
-* release 0.11.1 ([313938b](https://github.com/openfga/java-sdk/commit/313938bba28ec097784d0be9b2fe1b7f502079e5))
+* bump vulnerable Spring Boot dependencies 
 
 ## [0.11.0](https://github.com/openfga/java-sdk/compare/v0.10.1...v0.11.0) (2026-09-29)
 
