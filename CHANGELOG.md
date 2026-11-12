@@ -7,6 +7,11 @@
 
 * release 0.11.2 ([a15c604](https://github.com/openfga/java-sdk/commit/a15c604818b2db022bbd68e1a90ec20a9624e374))
 
+
+### Security
+
+* Fixed [GHSA-c949-2vhm-4ghg](https://github.com/openfga/java-sdk/security/advisories/GHSA-c949-2vhm-4ghg), where the client secret could be written to standard error when `HttpRequestAttempt.debug-logging` is enabled. ([4950bd2](https://github.com/openfga/java-sdk/commit/4950bd20e37764bbcb00e6da2cb1c6231b4ebbf3))
+
 ## [0.11.1](https://github.com/openfga/java-sdk/compare/v0.11.0...v0.11.1) (2026-11-10)
 
 
