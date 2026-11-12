@@ -170,6 +170,11 @@ public abstract class BaseStreamingApi<T> {
 
             apiClient.applyAuthHeader(requestBuilder, configuration);
 
+            // The per-call headers replace any header of the same name, including Authorization
+            if (configuration.getDefaultHeaders() != null) {
+                configuration.getDefaultHeaders().forEach(requestBuilder::setHeader);
+            }
+
             // Apply request interceptors if any
             var interceptor = apiClient.getRequestInterceptor();
             if (interceptor != null) {

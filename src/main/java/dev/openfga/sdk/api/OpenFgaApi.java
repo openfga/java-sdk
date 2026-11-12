@@ -87,11 +87,6 @@ public class OpenFgaApi {
         this.configuration = configuration;
         this.telemetry = telemetry;
 
-        var defaultHeaders = configuration.getDefaultHeaders();
-        if (defaultHeaders != null) {
-            apiClient.addRequestInterceptor(httpRequest -> defaultHeaders.forEach(httpRequest::setHeader));
-        }
-
         Duration connectTimeout = configuration.getConnectTimeout();
         if (connectTimeout != null) {
             apiClient.setHttpClientBuilder(apiClient.getHttpClientBuilder().connectTimeout(connectTimeout));
@@ -1292,8 +1287,10 @@ public class OpenFgaApi {
             httpRequest.header("User-Agent", configuration.getUserAgent());
         }
 
+        // The per-call headers (the client's default headers merged with the request's additional headers)
+        // replace any header of the same name, including the Authorization header from the credentials.
         if (configuration.getDefaultHeaders() != null) {
-            configuration.getDefaultHeaders().forEach(httpRequest::header);
+            configuration.getDefaultHeaders().forEach(httpRequest::setHeader);
         }
 
         httpRequest.method(method, bodyPublisher);
