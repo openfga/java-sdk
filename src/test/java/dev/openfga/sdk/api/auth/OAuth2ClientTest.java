@@ -20,6 +20,8 @@ import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.telemetry.Attribute;
 import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Metrics;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -162,6 +164,42 @@ class OAuth2ClientTest {
 
         assertEquals(ACCESS_TOKEN, result);
         verify(3, postRequestedFor(urlEqualTo("/oauth/token")));
+    }
+
+    @Test
+    public void exchangeOAuth2TokenDebugLoggingRedactsClientSecret(WireMockRuntimeInfo wm) throws Exception {
+        // Given
+        String clientSecret = "debug-logging-client-secret";
+        stubFor(post(urlEqualTo("/oauth/token"))
+                .withRequestBody(containing("client_secret=" + clientSecret))
+                .willReturn(ok(String.format("{\"access_token\":\"%s\"}", ACCESS_TOKEN))));
+
+        OAuth2Client client = newClientCredentialsClient(
+                wm.getHttpBaseUrl(),
+                new Credentials(new ClientCredentials()
+                        .clientId(CLIENT_ID)
+                        .clientSecret(clientSecret)
+                        .apiAudience(AUDIENCE)
+                        .apiTokenIssuer(wm.getHttpBaseUrl())),
+                false);
+
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(stderr, true, StandardCharsets.UTF_8));
+        String result;
+        try {
+            // When
+            result = client.getAccessToken().get();
+        } finally {
+            System.setErr(originalErr);
+        }
+
+        // Then
+        assertEquals(ACCESS_TOKEN, result);
+        String output = stderr.toString(StandardCharsets.UTF_8);
+        assertFalse(output.contains(clientSecret), output);
+        assertTrue(output.contains("client_secret=[REDACTED]"), output);
+        verify(1, postRequestedFor(urlEqualTo("/oauth/token")));
     }
 
     @Test
