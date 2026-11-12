@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class ClientReadAuthorizationModelsOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private Integer pageSize;
     private String continuationToken;
 
@@ -33,5 +34,17 @@ public class ClientReadAuthorizationModelsOptions implements AdditionalHeadersSu
 
     public String getContinuationToken() {
         return continuationToken;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientReadAuthorizationModelsOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

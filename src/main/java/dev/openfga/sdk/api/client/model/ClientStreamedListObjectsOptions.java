@@ -25,6 +25,7 @@ public class ClientStreamedListObjectsOptions implements AdditionalHeadersSuppli
     private String authorizationModelId;
     private ConsistencyPreference consistency;
     private Map<String, String> additionalHeaders;
+    private String storeId;
 
     public ClientStreamedListObjectsOptions authorizationModelId(String authorizationModelId) {
         this.authorizationModelId = authorizationModelId;
@@ -52,5 +53,17 @@ public class ClientStreamedListObjectsOptions implements AdditionalHeadersSuppli
     @Override
     public Map<String, String> getAdditionalHeaders() {
         return additionalHeaders;
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientStreamedListObjectsOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

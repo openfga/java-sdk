@@ -738,7 +738,10 @@ var request = new ClientCheckRequest()
 var options = new ClientCheckOptions()
     .additionalHeaders(Map.of("Some-Http-Header", "Some value"))
     // You can rely on the model id set in the configuration or override it for this specific request
-    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1");
+    .authorizationModelId("01GXSA8YR785C4FYS3C0RTG7B1")
+    // You can rely on the store id set in the configuration or override it for this specific request,
+    // e.g. to use one client for several stores. Every method that works on a store has this option.
+    .storeId("01YCP46JKYM8FJCQ37NMBYHE5X");
 
 var response = fgaClient.check(request, options).get();
 // response.getAllowed() = true

@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private Integer maxParallelRequests;
     private String authorizationModelId;
     private ConsistencyPreference consistency;
@@ -52,6 +53,19 @@ public class ClientListRelationsOptions implements AdditionalHeadersSupplier {
                 .authorizationModelId(authorizationModelId)
                 .additionalHeaders(additionalHeaders != null ? new HashMap<>(additionalHeaders) : null)
                 .maxParallelRequests(maxParallelRequests)
+                .storeId(storeId)
                 .consistency(consistency);
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientListRelationsOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }

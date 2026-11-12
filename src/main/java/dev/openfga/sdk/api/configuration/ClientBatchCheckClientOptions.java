@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class ClientBatchCheckClientOptions implements AdditionalHeadersSupplier {
     private Map<String, String> additionalHeaders;
+    private String storeId;
     private Integer maxParallelRequests;
     private String authorizationModelId;
     private ConsistencyPreference consistency;
@@ -51,6 +52,19 @@ public class ClientBatchCheckClientOptions implements AdditionalHeadersSupplier 
         return new ClientCheckOptions()
                 .additionalHeaders(additionalHeaders != null ? new HashMap<>(additionalHeaders) : null)
                 .authorizationModelId(authorizationModelId)
+                .storeId(storeId)
                 .consistency(consistency);
+    }
+
+    /**
+     * Sets the store to send this request to, instead of the store in the client configuration.
+     */
+    public ClientBatchCheckClientOptions storeId(String storeId) {
+        this.storeId = storeId;
+        return this;
+    }
+
+    public String getStoreId() {
+        return storeId;
     }
 }
