@@ -31,6 +31,34 @@ class MetricsTest {
     }
 
     @Test
+    void shouldNotModifyTheConfiguration() {
+        // given
+        Configuration configuration = new Configuration();
+        TelemetryConfiguration before = configuration.getTelemetryConfiguration();
+
+        // when
+        new Metrics(configuration).credentialsRequest(1L, Map.of());
+
+        // then
+        assertThat(configuration.getTelemetryConfiguration()).isSameAs(before);
+    }
+
+    @Test
+    void shouldUseTheDefaultTelemetryConfigurationWhenTheConfigurationHasNone() {
+        // given
+        Configuration configuration = new Configuration();
+        configuration.telemetryConfiguration(null);
+        Metrics metrics = new Metrics(configuration);
+
+        // when
+        LongCounter longCounter = metrics.credentialsRequest(1L, Map.of());
+
+        // then
+        assertThat(longCounter).isNotNull();
+        assertThat(configuration.getTelemetryConfiguration()).isNull();
+    }
+
+    @Test
     void shouldGetMeter() {
         // given
         Metrics metrics = new Metrics();
