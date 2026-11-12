@@ -5,6 +5,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.junit5.*;
@@ -15,6 +17,9 @@ import dev.openfga.sdk.api.client.JsonSerializer;
 import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.constants.FgaConstants;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.telemetry.Attribute;
+import dev.openfga.sdk.telemetry.Attributes;
+import dev.openfga.sdk.telemetry.Metrics;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.net.URLEncoder;
@@ -23,13 +28,17 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockedConstruction;
+import org.mockito.invocation.Invocation;
 
 @WireMockTest
 class OAuth2ClientTest {
@@ -404,6 +413,32 @@ class OAuth2ClientTest {
                 "Required parameter apiTokenIssuer was invalid when calling ClientCredentials.",
                 exception.getMessage());
         assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+    }
+
+    @Test
+    public void credentialsRequestMetricHasTheTokenRequestAttributes() throws Exception {
+        try (MockedConstruction<Metrics> metrics = mockConstruction(Metrics.class)) {
+            // Given
+            OAuth2Client auth0 = newAuth0Client("https://issuer.fga.example");
+            mockHttpClient
+                    .onPost("https://issuer.fga.example/oauth/token")
+                    .doReturn(200, String.format("{\"access_token\":\"%s\"}", ACCESS_TOKEN));
+
+            // When
+            auth0.getAccessToken().get();
+
+            // Then
+            List<Invocation> credentialsRequests = metrics.constructed().stream()
+                    .flatMap(m -> mockingDetails(m).getInvocations().stream())
+                    .filter(invocation -> invocation.getMethod().getName().equals("credentialsRequest"))
+                    .collect(Collectors.toList());
+            assertEquals(1, credentialsRequests.size());
+
+            Map<Attribute, String> attributes = credentialsRequests.get(0).getArgument(1);
+            assertEquals("issuer.fga.example", attributes.get(Attributes.HTTP_HOST));
+            assertEquals("200", attributes.get(Attributes.HTTP_RESPONSE_STATUS_CODE));
+            assertEquals("POST", attributes.get(Attributes.HTTP_REQUEST_METHOD));
+        }
     }
 
     private OAuth2Client newAuth0Client(String apiTokenIssuer) throws FgaInvalidParameterException {

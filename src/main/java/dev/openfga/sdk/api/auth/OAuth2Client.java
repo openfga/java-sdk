@@ -8,7 +8,6 @@ import dev.openfga.sdk.telemetry.Telemetry;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -88,7 +87,6 @@ public class OAuth2Client {
                         snapshot.set(new AccessToken(token, Instant.now().plusSeconds(response.getExpiresInSeconds())));
                         inFlight.set(null);
                         promise.complete(token);
-                        telemetry.metrics().credentialsRequest(1L, new HashMap<>());
                     }
                 });
             } catch (Exception e) {
@@ -112,10 +110,14 @@ public class OAuth2Client {
                 ApiClient.formRequestBuilder("POST", "", this.authRequest.buildFormRequestBody(), config);
         HttpRequest request = requestBuilder.build();
 
-        return new HttpRequestAttempt<>(
-                        request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config, telemetry)
-                .attemptHttpRequest()
-                .thenApply(ApiResponse::getData);
+        HttpRequestAttempt<CredentialsFlowResponse> attempt = new HttpRequestAttempt<>(
+                request, "exchangeToken", CredentialsFlowResponse.class, apiClient, config, telemetry);
+
+        return attempt.attemptHttpRequest().thenApply(response -> {
+            // Record the token request with the attributes of its HTTP request, e.g. the host and status code
+            telemetry.metrics().credentialsRequest(1L, attempt.getTelemetryAttributes());
+            return response.getData();
+        });
     }
 
     private static String buildApiTokenIssuer(String issuer) throws FgaInvalidParameterException {
