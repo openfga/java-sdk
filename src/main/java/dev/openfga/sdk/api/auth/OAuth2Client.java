@@ -40,7 +40,9 @@ public class OAuth2Client {
                 .connectTimeout(configuration.getConnectTimeout())
                 .maxRetries(configuration.getMaxRetries())
                 .minimumRetryDelay(configuration.getMinimumRetryDelay())
-                .telemetryConfiguration(configuration.getTelemetryConfiguration());
+                .telemetryConfiguration(configuration.getTelemetryConfiguration())
+                .tokenExpiryBufferSeconds(configuration.getTokenExpiryBufferSeconds())
+                .tokenExpiryJitterSeconds(configuration.getTokenExpiryJitterSeconds());
         this.telemetry = new Telemetry(this.config);
     }
 
@@ -54,7 +56,7 @@ public class OAuth2Client {
     public CompletableFuture<String> getAccessToken() throws FgaInvalidParameterException, ApiException {
         // Fast path (lock-free): return cached token if still valid.
         AccessToken current = snapshot.get();
-        if (current.isValid()) {
+        if (current.isValid(this.config.getTokenExpiryBufferSeconds(), this.config.getTokenExpiryJitterSeconds())) {
             return CompletableFuture.completedFuture(current.token());
         }
 
@@ -62,7 +64,8 @@ public class OAuth2Client {
         synchronized (this) {
             // Double-check: another thread may have refreshed while we waited.
             AccessToken rechecked = snapshot.get();
-            if (rechecked.isValid()) {
+            if (rechecked.isValid(
+                    this.config.getTokenExpiryBufferSeconds(), this.config.getTokenExpiryJitterSeconds())) {
                 return CompletableFuture.completedFuture(rechecked.token());
             }
 

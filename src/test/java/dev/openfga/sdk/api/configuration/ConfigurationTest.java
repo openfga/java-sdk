@@ -333,4 +333,126 @@ class ConfigurationTest {
         assertNotNull(defaultDelay, "minimumRetryDelay should have a default value");
         assertEquals(Duration.ofMillis(100), defaultDelay, "Default minimumRetryDelay should be 100ms");
     }
+
+    @Test
+    void tokenExpiryBufferSeconds_validValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        Configuration result = config.tokenExpiryBufferSeconds(42);
+
+        // Then
+        assertEquals(42, result.getTokenExpiryBufferSeconds());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void tokenExpiryBufferSeconds_zero() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        Configuration result = config.tokenExpiryBufferSeconds(0);
+
+        // Then
+        assertEquals(0, result.getTokenExpiryBufferSeconds());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void tokenExpiryBufferSeconds_negativeValue_throwsException() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> config.tokenExpiryBufferSeconds(-1),
+                "Should throw IllegalArgumentException for negative value");
+
+        assertEquals("tokenExpiryBufferSeconds must be non-negative", exception.getMessage());
+        assertEquals(300, config.getTokenExpiryBufferSeconds(), "A rejected value should leave the setting unchanged");
+    }
+
+    @Test
+    void tokenExpiryBufferSeconds_hasDefaultValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        int defaultValue = config.getTokenExpiryBufferSeconds();
+
+        // Then
+        assertEquals(300, defaultValue, "Default tokenExpiryBufferSeconds should be 300");
+    }
+
+    @Test
+    void tokenExpiryJitterSeconds_validValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        Configuration result = config.tokenExpiryJitterSeconds(42);
+
+        // Then
+        assertEquals(42, result.getTokenExpiryJitterSeconds());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void tokenExpiryJitterSeconds_zero() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        Configuration result = config.tokenExpiryJitterSeconds(0);
+
+        // Then
+        assertEquals(0, result.getTokenExpiryJitterSeconds());
+        assertSame(config, result, "Should return the same Configuration instance for method chaining");
+    }
+
+    @Test
+    void tokenExpiryJitterSeconds_negativeValue_throwsException() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> config.tokenExpiryJitterSeconds(-1),
+                "Should throw IllegalArgumentException for negative value");
+
+        assertEquals("tokenExpiryJitterSeconds must be non-negative", exception.getMessage());
+        assertEquals(300, config.getTokenExpiryJitterSeconds(), "A rejected value should leave the setting unchanged");
+    }
+
+    @Test
+    void tokenExpiryJitterSeconds_hasDefaultValue() {
+        // Given
+        Configuration config = new Configuration();
+
+        // When
+        int defaultValue = config.getTokenExpiryJitterSeconds();
+
+        // Then
+        assertEquals(300, defaultValue, "Default tokenExpiryJitterSeconds should be 300");
+    }
+
+    @Test
+    void override_preservesTokenExpirySettings() {
+        // Given
+        Configuration original =
+                new Configuration().tokenExpiryBufferSeconds(42).tokenExpiryJitterSeconds(7);
+
+        // When
+        Configuration result = original.override(new ConfigurationOverride());
+
+        // Then
+        assertEquals(42, result.getTokenExpiryBufferSeconds());
+        assertEquals(7, result.getTokenExpiryJitterSeconds());
+        assertEquals(42, original.getTokenExpiryBufferSeconds(), "The original buffer should be unmodified.");
+        assertEquals(7, original.getTokenExpiryJitterSeconds(), "The original jitter should be unmodified.");
+    }
 }
