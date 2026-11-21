@@ -4,9 +4,9 @@ import static dev.openfga.sdk.util.StringUtil.isNullOrWhitespace;
 
 import dev.openfga.sdk.api.client.ApiResponse;
 import dev.openfga.sdk.api.configuration.Configuration;
-import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import dev.openfga.sdk.api.configuration.Credentials;
 import dev.openfga.sdk.api.configuration.CredentialsMethod;
+import dev.openfga.sdk.api.configuration.TelemetryConfiguration;
 import io.opentelemetry.api.common.AttributeKey;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
