@@ -11,6 +11,7 @@ import dev.openfga.sdk.telemetry.Attributes;
 import dev.openfga.sdk.telemetry.Telemetry;
 import dev.openfga.sdk.util.RetryAfterHeaderParser;
 import dev.openfga.sdk.util.RetryStrategy;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.http.*;
@@ -20,6 +21,7 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HttpRequestAttempt<T> {
     private final ApiClient apiClient;
@@ -84,9 +86,13 @@ public class HttpRequestAttempt<T> {
         this.requestStarted = System.currentTimeMillis();
 
         if (enableDebugLogging) {
+            boolean formEncoded = request.headers()
+                    .firstValue("content-type")
+                    .map(contentType -> contentType.startsWith("application/x-www-form-urlencoded"))
+                    .orElse(false);
             request.bodyPublisher()
                     .ifPresent(requestBodyPublisher ->
-                            requestBodyPublisher.subscribe(new BodyLogger(System.err, "request")));
+                            requestBodyPublisher.subscribe(new BodyLogger(System.err, "request", formEncoded)));
         }
 
         addTelemetryAttribute(Attributes.HTTP_HOST, request.uri().getHost());
@@ -248,13 +254,19 @@ public class HttpRequestAttempt<T> {
         }
     }
 
-    private static class BodyLogger implements Flow.Subscriber<ByteBuffer> {
+    static class BodyLogger implements Flow.Subscriber<ByteBuffer> {
+        // Form fields that are logged as-is. All other form values, such as client_secret, are redacted.
+        private static final Set<String> LOGGED_FORM_FIELDS = Set.of("grant_type", "client_id", "audience", "scope");
+
         private final PrintStream out;
         private final String target;
+        private final boolean formEncoded;
+        private final ByteArrayOutputStream body = new ByteArrayOutputStream();
 
-        BodyLogger(PrintStream out, String target) {
+        BodyLogger(PrintStream out, String target, boolean formEncoded) {
             this.out = out;
             this.target = target;
+            this.formEncoded = formEncoded;
         }
 
         @Override
@@ -265,9 +277,10 @@ public class HttpRequestAttempt<T> {
 
         @Override
         public void onNext(ByteBuffer item) {
-            out.printf(
-                    "[%s] %s: %s\n",
-                    this.getClass().getName(), target, new String(item.array(), StandardCharsets.UTF_8));
+            ByteBuffer copy = item.duplicate();
+            byte[] bytes = new byte[copy.remaining()];
+            copy.get(bytes);
+            body.write(bytes, 0, bytes.length);
         }
 
         @Override
@@ -277,7 +290,22 @@ public class HttpRequestAttempt<T> {
 
         @Override
         public void onComplete() {
+            if (body.size() > 0) {
+                String content = body.toString(StandardCharsets.UTF_8);
+                String logged = formEncoded ? redactFormBody(content) : content;
+                out.printf("[%s] %s: %s\n", this.getClass().getName(), target, logged);
+            }
             out.flush();
+        }
+
+        static String redactFormBody(String formBody) {
+            return Arrays.stream(formBody.split("&"))
+                    .map(field -> {
+                        int separator = field.indexOf('=');
+                        String name = separator < 0 ? field : field.substring(0, separator);
+                        return LOGGED_FORM_FIELDS.contains(name) ? field : name + "=[REDACTED]";
+                    })
+                    .collect(Collectors.joining("&"));
         }
     }
 }
